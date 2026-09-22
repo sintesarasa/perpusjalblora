@@ -18,6 +18,10 @@ import { loansController } from './modules/loans/loans.controller.js';
 import { eventsRoutes } from './modules/events/events.routes.js';
 import { lettersRoutes } from './modules/letters/letters.routes.js';
 import { lettersController } from './modules/letters/letters.controller.js';
+import { notificationsRouter } from './modules/notifications/notifications.routes.js';
+import { badgesRouter } from './modules/badges/badges.routes.js';
+import { usersRouter } from './modules/users/users.routes.js';
+import { adminRouter } from './modules/admin/admin.routes.js';
 import { prisma } from './lib/prisma.js';
 import { Role } from '@perpusjal/types';
 
@@ -49,6 +53,10 @@ app.use('/api/v1/books', booksRoutes);
 app.use('/api/v1/loans', loansRoutes);
 app.use('/api/v1/events', eventsRoutes);
 app.use('/api/v1/letters', lettersRoutes);
+app.use('/api/v1/notifications', notificationsRouter);
+app.use('/api/v1/badges', badgesRouter);
+app.use('/api/v1/users', usersRouter);
+app.use('/api/v1/admin', adminRouter);
 
 // Convenience aliases per API-SPEC §6, §11, §14
 app.get('/api/v1/me/articles', requireAuth, (req, res, next) =>

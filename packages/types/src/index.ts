@@ -7,5 +7,7 @@ export * from './comment.js';
 export * from './search.js';
 export * from './event.js';
 export * from './letter.js';
-
-
+export * from './badge.js';
+export * from './notification.js';
+export * from './profile.js';
+export * from './admin.js';

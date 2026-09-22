@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import { Logo } from '@/components/logo';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { ScrollProgress } from '@/components/ui/scroll-progress';
+import { NotificationBell } from '@/components/layout/notification-bell';
 import { Menu, X, Search } from 'lucide-react';
 
 export function Header() {
@@ -69,6 +70,8 @@ export function Header() {
               <Search className="w-3.5 h-3.5" />
               <span className="hidden sm:inline text-[10px] text-muted">Cari</span>
             </Link>
+
+            <NotificationBell />
 
             <ThemeToggle />
 
