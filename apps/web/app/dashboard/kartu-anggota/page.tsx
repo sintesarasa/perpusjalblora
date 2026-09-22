@@ -2,13 +2,10 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { Header } from '@/components/layout/header';
-import { Footer } from '@/components/layout/footer';
 import { CustomLoader } from '@/components/ui/custom-loader';
 import { Logo } from '@/components/logo';
 import { apiClient } from '@/lib/api';
-import { UserSessionPayload } from '@perpusjal/types';
-import { ArrowLeft, Printer, ShieldCheck, BookOpen, Sparkles } from 'lucide-react';
+import { ArrowLeft, Printer } from 'lucide-react';
 
 interface UserProfile {
   id: string;
@@ -27,10 +24,11 @@ export default function MemberCardPage() {
   React.useEffect(() => {
     async function loadUser() {
       setLoading(true);
-      const res = await apiClient<{ user: UserProfile }>('/auth/me');
+      const res = await apiClient<any>('/auth/me');
       setLoading(false);
-      if (res.data?.user) {
-        setUser(res.data.user);
+      const userData = res.data?.user || (res.data?.id ? res.data : null);
+      if (userData) {
+        setUser(userData);
       }
     }
     loadUser();
@@ -44,30 +42,22 @@ export default function MemberCardPage() {
 
   if (loading) {
     return (
-      <div className="flex flex-col min-h-screen bg-background">
-        <Header />
-        <main className="flex-1 flex items-center justify-center p-12">
-          <CustomLoader size="md" label="MEMBUAT KARTU TANDA ANGGOTA..." />
-        </main>
-        <Footer />
+      <div className="p-12 flex items-center justify-center">
+        <CustomLoader size="md" label="MEMBUAT KARTU TANDA ANGGOTA..." />
       </div>
     );
   }
 
   if (!user) {
     return (
-      <div className="flex flex-col min-h-screen bg-background">
-        <Header />
-        <main className="flex-1 max-w-md mx-auto w-full px-4 py-20 text-center space-y-4 font-sans">
-          <p className="text-muted text-sm">Silakan masuk untuk melihat Kartu Tanda Anggota Anda.</p>
-          <Link
-            href="/masuk"
-            className="px-5 py-2.5 bg-foreground text-background font-mono text-xs uppercase tracking-widest font-bold inline-block"
-          >
-            Masuk Akun
-          </Link>
-        </main>
-        <Footer />
+      <div className="max-w-md mx-auto w-full px-4 py-20 text-center space-y-4 font-sans">
+        <p className="text-muted text-sm">Silakan masuk untuk melihat Kartu Tanda Anggota Anda.</p>
+        <Link
+          href="/masuk"
+          className="px-5 py-2.5 bg-foreground text-background font-mono text-xs uppercase tracking-widest font-bold inline-block"
+        >
+          Masuk Akun
+        </Link>
       </div>
     );
   }
@@ -75,18 +65,15 @@ export default function MemberCardPage() {
   const memberCode = `PJL-${user.id.slice(-6).toUpperCase()}`;
 
   return (
-    <div className="flex flex-col min-h-screen bg-background text-foreground font-sans">
-      <Header />
-
-      <main className="flex-1 max-w-4xl mx-auto w-full px-4 sm:px-8 py-8 sm:py-12 space-y-8">
-        <div className="flex items-center justify-between">
-          <Link
-            href="/dashboard/pinjaman"
-            className="inline-flex items-center gap-1.5 font-mono text-xs uppercase tracking-wider text-muted hover:text-foreground transition-colors"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Kembali ke Dasbor Pinjaman</span>
-          </Link>
+    <div className="p-4 sm:p-8 space-y-8 max-w-4xl">
+      <div className="flex items-center justify-between">
+        <Link
+          href="/dashboard"
+          className="inline-flex items-center gap-1.5 font-mono text-xs uppercase tracking-wider text-muted hover:text-foreground transition-colors"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" />
+          <span>Kembali ke Dasbor Utama</span>
+        </Link>
 
           <button
             type="button"
@@ -166,9 +153,6 @@ export default function MemberCardPage() {
             </div>
           </div>
         </div>
-      </main>
-
-      <Footer />
     </div>
   );
 }

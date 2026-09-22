@@ -111,11 +111,11 @@ export function Header() {
               })}
               <div className="pt-3 border-t border-border-hairline flex flex-col gap-2">
                 <Link
-                  href="/dashboard/pinjaman"
+                  href="/dashboard"
                   onClick={() => setMobileMenuOpen(false)}
                   className="w-full text-center py-2 bg-foreground text-background font-bold text-xs tracking-wider"
                 >
-                  DASBOR ANGGOTA & PINJAMAN
+                  DASBOR ANGGOTA
                 </Link>
                 <div className="flex gap-2">
                   <Link

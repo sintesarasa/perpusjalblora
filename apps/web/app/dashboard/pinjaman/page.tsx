@@ -2,8 +2,6 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { Header } from '@/components/layout/header';
-import { Footer } from '@/components/layout/footer';
 import { CustomLoader } from '@/components/ui/custom-loader';
 import { apiClient } from '@/lib/api';
 import { LoanItem, LoanStatus } from '@perpusjal/types';
@@ -138,11 +136,8 @@ export default function MemberLoansDashboardPage() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-background text-foreground font-sans">
-      <Header />
-
-      <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-8 py-8 sm:py-12 space-y-8">
-        {/* Masthead */}
+    <div className="p-4 sm:p-8 space-y-8 max-w-6xl">
+      {/* Masthead */}
         <div className="border-b-2 border-foreground pb-4 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div className="space-y-1">
             <div className="flex items-center gap-2 font-mono text-xs text-muted uppercase tracking-widest">
@@ -384,9 +379,6 @@ export default function MemberLoansDashboardPage() {
             ))}
           </div>
         )}
-      </main>
-
-      <Footer />
     </div>
   );
 }

@@ -15,6 +15,7 @@ import {
   Shield,
   Layers,
   Users,
+  LayoutDashboard,
 } from 'lucide-react';
 import { Role } from '@perpusjal/types';
 import { apiClient } from '@/lib/api';
@@ -109,64 +110,82 @@ export function UserMenu() {
 
   // AUTHENTICATED STATE
   return (
-    <div className="relative inline-block text-left" ref={menuRef}>
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 p-1 sm:px-2.5 sm:py-1 border border-foreground bg-surface hover:bg-surface-muted transition-colors"
-        aria-expanded={isOpen}
+    <div className="flex items-center gap-2">
+      <Link
+        href="/dashboard"
+        className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 border border-foreground bg-foreground text-background font-mono text-[11px] uppercase tracking-wider font-semibold hover:bg-foreground/90 transition-colors"
       >
-        {/* Monogram / Avatar */}
-        <div className="w-5 h-5 bg-foreground text-background flex items-center justify-center font-serif text-[11px] font-bold uppercase shrink-0">
-          {user.avatarUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={user.avatarUrl} alt={user.name} className="w-full h-full object-cover grayscale" />
-          ) : (
-            user.name.slice(0, 1)
-          )}
-        </div>
+        <LayoutDashboard className="w-3.5 h-3.5" />
+        <span>Dasbor</span>
+      </Link>
 
-        {/* Display name & role */}
-        <div className="hidden sm:flex flex-col text-left leading-none">
-          <span className="font-serif text-xs font-bold text-foreground truncate max-w-[110px]">
-            {user.name.split(' ')[0]}
-          </span>
-          <span className="font-mono text-[9px] uppercase tracking-wider text-muted mt-0.5">
-            {user.role}
-          </span>
-        </div>
-
-        <ChevronDown className="w-3 h-3 text-muted" />
-      </button>
-
-      {/* DROPDOWN MENU */}
-      {isOpen && (
-        <div className="absolute right-0 mt-2 w-64 bg-surface border border-foreground shadow-2xl z-50 animate-in fade-in-50 duration-150 divide-y divide-border-hairline">
-          {/* User Header */}
-          <div className="p-3 bg-surface-muted/40 font-mono">
-            <div className="text-xs font-bold font-serif text-foreground truncate">{user.name}</div>
-            <div className="text-[10px] text-muted truncate">@{user.username}</div>
-            <div className="mt-1 flex items-center gap-1.5">
-              <span className="px-1.5 py-0.2 border border-foreground bg-foreground text-background text-[9px] font-bold uppercase tracking-wider">
-                {user.role}
-              </span>
-              <span className="text-[9px] text-muted truncate">{user.email}</span>
-            </div>
+      <div className="relative inline-block text-left" ref={menuRef}>
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="flex items-center gap-2 p-1 sm:px-2.5 sm:py-1 border border-foreground bg-surface hover:bg-surface-muted transition-colors"
+          aria-expanded={isOpen}
+        >
+          {/* Monogram / Avatar */}
+          <div className="w-5 h-5 bg-foreground text-background flex items-center justify-center font-serif text-[11px] font-bold uppercase shrink-0">
+            {user.avatarUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={user.avatarUrl} alt={user.name} className="w-full h-full object-cover grayscale" />
+            ) : (
+              user.name.slice(0, 1)
+            )}
           </div>
 
-          {/* Member Services (Dasbor) */}
-          <div className="py-1 font-mono text-xs">
-            <div className="px-3 py-1 text-[9px] uppercase tracking-widest text-muted font-bold">
-              Dasbor Anggota
+          {/* Display name & role */}
+          <div className="hidden sm:flex flex-col text-left leading-none">
+            <span className="font-serif text-xs font-bold text-foreground truncate max-w-[110px]">
+              {user.name.split(' ')[0]}
+            </span>
+            <span className="font-mono text-[9px] uppercase tracking-wider text-muted mt-0.5">
+              {user.role}
+            </span>
+          </div>
+
+          <ChevronDown className="w-3 h-3 text-muted" />
+        </button>
+
+        {/* DROPDOWN MENU */}
+        {isOpen && (
+          <div className="absolute right-0 mt-2 w-64 bg-surface border border-foreground shadow-2xl z-50 animate-in fade-in-50 duration-150 divide-y divide-border-hairline">
+            {/* User Header */}
+            <div className="p-3 bg-surface-muted/40 font-mono">
+              <div className="text-xs font-bold font-serif text-foreground truncate">{user.name}</div>
+              <div className="text-[10px] text-muted truncate">@{user.username}</div>
+              <div className="mt-1 flex items-center gap-1.5">
+                <span className="px-1.5 py-0.2 border border-foreground bg-foreground text-background text-[9px] font-bold uppercase tracking-wider">
+                  {user.role}
+                </span>
+                <span className="text-[9px] text-muted truncate">{user.email}</span>
+              </div>
             </div>
 
-            <Link
-              href="/dashboard/pinjaman"
-              onClick={() => setIsOpen(false)}
-              className="flex items-center gap-2 px-3 py-1.5 text-foreground hover:bg-surface-muted transition-colors"
-            >
-              <BookOpen className="w-3.5 h-3.5 text-muted" />
-              <span>Pinjaman Buku</span>
-            </Link>
+            {/* Member Services (Dasbor) */}
+            <div className="py-1 font-mono text-xs">
+              <div className="px-3 py-1 text-[9px] uppercase tracking-widest text-muted font-bold">
+                Dasbor Anggota
+              </div>
+
+              <Link
+                href="/dashboard"
+                onClick={() => setIsOpen(false)}
+                className="flex items-center gap-2 px-3 py-1.5 text-foreground hover:bg-surface-muted transition-colors font-bold"
+              >
+                <LayoutDashboard className="w-3.5 h-3.5 text-foreground" />
+                <span>Ikhtisar Dasbor</span>
+              </Link>
+
+              <Link
+                href="/dashboard/pinjaman"
+                onClick={() => setIsOpen(false)}
+                className="flex items-center gap-2 px-3 py-1.5 text-foreground hover:bg-surface-muted transition-colors"
+              >
+                <BookOpen className="w-3.5 h-3.5 text-muted" />
+                <span>Pinjaman Buku</span>
+              </Link>
 
             <Link
               href="/dashboard/kartu-anggota"
@@ -275,6 +294,7 @@ export function UserMenu() {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }

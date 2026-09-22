@@ -3,8 +3,6 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Header } from '@/components/layout/header';
-import { Footer } from '@/components/layout/footer';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { CustomLoader } from '@/components/ui/custom-loader';
@@ -83,11 +81,8 @@ export default function MyArticlesDashboardPage() {
   ];
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <Header />
-
-      <main className="flex-1 max-w-6xl mx-auto w-full px-4 sm:px-8 py-8 sm:py-12 space-y-8">
-        {/* Top Header */}
+    <div className="p-4 sm:p-8 space-y-8 max-w-6xl">
+      {/* Top Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b-2 border-foreground pb-6">
           <div className="space-y-1">
             <div className="font-mono text-[10px] uppercase tracking-widest text-muted">
@@ -241,9 +236,6 @@ export default function MyArticlesDashboardPage() {
             onAction={() => router.push('/tulis')}
           />
         )}
-      </main>
-
-      <Footer />
     </div>
   );
 }
