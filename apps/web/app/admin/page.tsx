@@ -228,10 +228,10 @@ export default function AdminDashboardPage() {
                     {stats.availableCopies} eksemplar tersedia di lapak
                   </div>
                   <Link
-                    href="/buku"
+                    href="/admin/buku"
                     className="text-[10px] font-bold text-foreground hover:underline block mt-3"
                   >
-                    Katalog Koleksi →
+                    Kelola Koleksi Pustaka →
                   </Link>
                 </div>
 

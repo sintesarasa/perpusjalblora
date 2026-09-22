@@ -151,9 +151,11 @@ export class BooksService {
   /**
    * Detail dossier of a book + 4 similar books + estimated return date
    */
-  async getBookBySlug(slug: string): Promise<BookDetail> {
-    const book = await prisma.book.findUnique({
-      where: { slug },
+  async getBookBySlug(slugOrId: string): Promise<BookDetail> {
+    const book = await prisma.book.findFirst({
+      where: {
+        OR: [{ slug: slugOrId }, { id: slugOrId }],
+      },
       include: {
         category: {
           select: {
