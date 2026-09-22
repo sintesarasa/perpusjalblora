@@ -5,4 +5,7 @@ export * from './book.js';
 export * from './loan.js';
 export * from './comment.js';
 export * from './search.js';
+export * from './event.js';
+export * from './letter.js';
+
 

@@ -15,6 +15,9 @@ import { searchRoutes } from './modules/search/search.routes.js';
 import { booksRoutes } from './modules/books/books.routes.js';
 import { loansRoutes } from './modules/loans/loans.routes.js';
 import { loansController } from './modules/loans/loans.controller.js';
+import { eventsRoutes } from './modules/events/events.routes.js';
+import { lettersRoutes } from './modules/letters/letters.routes.js';
+import { lettersController } from './modules/letters/letters.controller.js';
 import { prisma } from './lib/prisma.js';
 import { Role } from '@perpusjal/types';
 
@@ -44,13 +47,21 @@ app.use('/api/v1/comments', commentsRoutes);
 app.use('/api/v1/search', searchRoutes);
 app.use('/api/v1/books', booksRoutes);
 app.use('/api/v1/loans', loansRoutes);
+app.use('/api/v1/events', eventsRoutes);
+app.use('/api/v1/letters', lettersRoutes);
 
-// Convenience aliases per API-SPEC §6, §11
+// Convenience aliases per API-SPEC §6, §11, §14
 app.get('/api/v1/me/articles', requireAuth, (req, res, next) =>
   articlesController.getMyArticles(req, res, next)
 );
 app.get('/api/v1/me/loans', requireAuth, (req, res, next) =>
   loansController.getMyLoans(req, res, next)
+);
+app.get('/api/v1/me/letters', requireAuth, (req, res, next) =>
+  lettersController.getMyLetters(req, res, next)
+);
+app.get('/api/v1/moderation/letters', requireRole(Role.KURATOR), (req, res, next) =>
+  lettersController.getModerationLetters(req, res, next)
 );
 app.get('/api/v1/admin/articles', requireRole(Role.KURATOR), (req, res, next) =>
   articlesController.getAdminArticles(req, res, next)
