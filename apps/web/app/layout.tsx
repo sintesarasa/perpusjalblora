@@ -1,7 +1,9 @@
+import * as React from 'react';
 import type { Metadata } from 'next';
 import { Playfair_Display, Inter } from 'next/font/google';
 import './globals.css';
 import { ThemeProvider } from '@/components/theme-provider';
+import { PageProgressBar } from '@/components/ui/page-progress-bar';
 
 const playfair = Playfair_Display({
   subsets: ['latin'],
@@ -38,6 +40,9 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+          <React.Suspense fallback={null}>
+            <PageProgressBar />
+          </React.Suspense>
           {children}
         </ThemeProvider>
       </body>

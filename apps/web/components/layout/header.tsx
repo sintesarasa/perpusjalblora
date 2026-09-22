@@ -8,6 +8,7 @@ import { Logo } from '@/components/logo';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { ScrollProgress } from '@/components/ui/scroll-progress';
 import { NotificationBell } from '@/components/layout/notification-bell';
+import { UserMenu } from '@/components/layout/user-menu';
 import { Menu, X, Search } from 'lucide-react';
 
 export function Header() {
@@ -75,12 +76,7 @@ export function Header() {
 
             <ThemeToggle />
 
-            <Link
-              href="/masuk"
-              className="hidden sm:inline-flex items-center px-3 py-1 border border-foreground font-mono text-[11px] uppercase tracking-wider font-semibold hover:bg-foreground hover:text-background transition-colors"
-            >
-              Masuk
-            </Link>
+            <UserMenu />
 
             {/* Mobile Hamburger Toggle */}
             <button
@@ -115,19 +111,28 @@ export function Header() {
               })}
               <div className="pt-3 border-t border-border-hairline flex flex-col gap-2">
                 <Link
-                  href="/dashboard/tulisan/baru"
+                  href="/dashboard/pinjaman"
                   onClick={() => setMobileMenuOpen(false)}
                   className="w-full text-center py-2 bg-foreground text-background font-bold text-xs tracking-wider"
                 >
-                  + KIRIM TULISAN
+                  DASBOR ANGGOTA & PINJAMAN
                 </Link>
-                <Link
-                  href="/masuk"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="w-full text-center py-2 border border-foreground text-foreground text-xs"
-                >
-                  Masuk ke Akun
-                </Link>
+                <div className="flex gap-2">
+                  <Link
+                    href="/tulis"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex-1 text-center py-2 border border-foreground text-foreground text-xs font-bold"
+                  >
+                    + Tulis
+                  </Link>
+                  <Link
+                    href="/masuk"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex-1 text-center py-2 border border-border-hairline text-muted hover:text-foreground text-xs"
+                  >
+                    Masuk
+                  </Link>
+                </div>
               </div>
             </nav>
           </div>
