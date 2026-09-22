@@ -202,8 +202,6 @@ export class AuthService {
       where: {
         tokenHash,
         type: TokenType.EMAIL_VERIFY,
-        usedAt: null,
-        expiresAt: { gt: new Date() },
       },
       include: { user: true },
     });
@@ -213,6 +211,60 @@ export class AuthService {
     }
 
     const { user } = verificationToken;
+
+    // Idempotent: If token was already used recently and user is ACTIVE, return success seamlessly
+    if (verificationToken.usedAt) {
+      if (user.status === UserStatus.ACTIVE || user.emailVerifiedAt) {
+        const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+        const sessionTokenRaw = crypto.randomBytes(32).toString('hex');
+        const sessionTokenHash = hashToken(sessionTokenRaw);
+
+        const session = await prisma.session.create({
+          data: {
+            userId: user.id,
+            tokenHash: sessionTokenHash,
+            userAgent: meta.userAgent,
+            ipAddress: meta.ipAddress,
+            expiresAt,
+          },
+        });
+
+        const sessionPayload: UserSessionPayload = {
+          userId: user.id,
+          sessionId: session.id,
+          email: user.email,
+          username: user.username,
+          name: user.name,
+          role: user.role as unknown as Role,
+          status: UserStatus.ACTIVE,
+          trustLevel: user.trustLevel as unknown as TrustLevel,
+        };
+
+        const sessionToken = jwt.sign(sessionPayload, JWT_SECRET, { expiresIn: '7d' });
+
+        return {
+          user: {
+            id: user.id,
+            name: user.name,
+            username: user.username,
+            email: user.email,
+            role: user.role,
+            status: UserStatus.ACTIVE,
+            trustLevel: user.trustLevel,
+            emailVerified: true,
+            avatarUrl: user.avatarUrl,
+          },
+          sessionToken,
+          expiresAt: expiresAt.toISOString(),
+          message: 'Email berhasil diverifikasi.',
+        };
+      }
+      throw HttpError.badRequest('Tautan verifikasi sudah pernah digunakan.', 'TOKEN_ALREADY_USED');
+    }
+
+    if (verificationToken.expiresAt < new Date()) {
+      throw HttpError.badRequest('Tautan verifikasi sudah kedaluwarsa.', 'TOKEN_EXPIRED');
+    }
 
     // Update user status and mark token used
     await prisma.$transaction([

@@ -4,6 +4,7 @@ import * as React from 'react';
 import Link from 'next/link';
 import { Bell, Check, ExternalLink } from 'lucide-react';
 import { NotificationItem } from '@perpusjal/types';
+import { apiClient } from '@/lib/api';
 
 export function NotificationBell() {
   const [isOpen, setIsOpen] = React.useState(false);
@@ -14,10 +15,9 @@ export function NotificationBell() {
 
   const fetchUnreadCount = React.useCallback(async () => {
     try {
-      const res = await fetch('/api/v1/notifications/unread-count', { credentials: 'include' });
-      if (res.ok) {
-        const json = await res.json();
-        setUnreadCount(json.data?.unreadCount || 0);
+      const res = await apiClient<{ unreadCount: number }>('/notifications/unread-count');
+      if (res.data) {
+        setUnreadCount(res.data.unreadCount || 0);
       }
     } catch {
       // User might be unauthenticated, silence
@@ -27,11 +27,10 @@ export function NotificationBell() {
   const fetchNotifications = React.useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/v1/notifications?limit=5', { credentials: 'include' });
-      if (res.ok) {
-        const json = await res.json();
-        setNotifications(json.data?.items || []);
-        setUnreadCount(json.data?.unreadCount || 0);
+      const res = await apiClient<{ items: NotificationItem[]; unreadCount: number }>('/notifications?limit=5');
+      if (res.data) {
+        setNotifications(res.data.items || []);
+        setUnreadCount(res.data.unreadCount || 0);
       }
     } catch {
       // Ignored
@@ -68,9 +67,8 @@ export function NotificationBell() {
   const handleMarkAsRead = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
     try {
-      await fetch(`/api/v1/notifications/${id}/read`, {
+      await apiClient(`/notifications/${id}/read`, {
         method: 'PATCH',
-        credentials: 'include',
       });
       setNotifications((prev) =>
         prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
@@ -83,9 +81,8 @@ export function NotificationBell() {
 
   const handleMarkAllRead = async () => {
     try {
-      await fetch('/api/v1/notifications/mark-all-read', {
+      await apiClient('/notifications/mark-all-read', {
         method: 'POST',
-        credentials: 'include',
       });
       setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
       setUnreadCount(0);

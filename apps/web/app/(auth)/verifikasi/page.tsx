@@ -47,8 +47,11 @@ function VerifyEmailContent() {
     }
   }, []);
 
+  const hasCalledRef = React.useRef(false);
+
   React.useEffect(() => {
-    if (tokenFromUrl) {
+    if (tokenFromUrl && !hasCalledRef.current) {
+      hasCalledRef.current = true;
       performVerification(tokenFromUrl);
     }
   }, [tokenFromUrl, performVerification]);
