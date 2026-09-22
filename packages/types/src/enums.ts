@@ -1,0 +1,149 @@
+export enum Role {
+  USER = 'USER',
+  KURATOR = 'KURATOR',
+  ADMIN = 'ADMIN',
+}
+
+export enum UserStatus {
+  PENDING_VERIFICATION = 'PENDING_VERIFICATION',
+  ACTIVE = 'ACTIVE',
+  SUSPENDED = 'SUSPENDED',
+  DEACTIVATED = 'DEACTIVATED',
+  DELETED = 'DELETED',
+}
+
+export enum TrustLevel {
+  TL0 = 'TL0',
+  TL1 = 'TL1',
+  TL2 = 'TL2',
+  RESTRICTED = 'RESTRICTED',
+}
+
+export enum TokenType {
+  EMAIL_VERIFY = 'EMAIL_VERIFY',
+  PASSWORD_RESET = 'PASSWORD_RESET',
+}
+
+export enum ArticleStatus {
+  DRAFT = 'DRAFT',
+  PENDING_REVIEW = 'PENDING_REVIEW',
+  REVISION = 'REVISION',
+  APPROVED = 'APPROVED',
+  SCHEDULED = 'SCHEDULED',
+  PUBLISHED = 'PUBLISHED',
+  ARCHIVED = 'ARCHIVED',
+  REJECTED = 'REJECTED',
+}
+
+export enum RejectionReason {
+  PLAGIARISM = 'PLAGIARISM',
+  HATE_SPEECH = 'HATE_SPEECH',
+  PROMOTIONAL = 'PROMOTIONAL',
+  OFF_TOPIC = 'OFF_TOPIC',
+  LOW_QUALITY = 'LOW_QUALITY',
+  OTHER = 'OTHER',
+}
+
+export enum CommentStatus {
+  PENDING = 'PENDING',
+  PUBLISHED = 'PUBLISHED',
+  HIDDEN = 'HIDDEN',
+  DELETED_BY_USER = 'DELETED_BY_USER',
+  DELETED = 'DELETED',
+}
+
+export enum ReportReason {
+  SPAM = 'SPAM',
+  ABUSE = 'ABUSE',
+  OFF_TOPIC = 'OFF_TOPIC',
+  PERSONAL_INFO = 'PERSONAL_INFO',
+}
+
+export enum BookCopyStatus {
+  AVAILABLE = 'AVAILABLE',
+  BORROWED = 'BORROWED',
+  RESERVED = 'RESERVED',
+  UNAVAILABLE = 'UNAVAILABLE',
+  LOST = 'LOST',
+  DAMAGED = 'DAMAGED',
+}
+
+export enum BookCondition {
+  BARU = 'BARU',
+  BAIK = 'BAIK',
+  CUKUP = 'CUKUP',
+  RUSAK_RINGAN = 'RUSAK_RINGAN',
+}
+
+export enum LoanStatus {
+  PENDING = 'PENDING',
+  APPROVED = 'APPROVED',
+  BORROWED = 'BORROWED',
+  RETURNED = 'RETURNED',
+  RETURNED_LOST = 'RETURNED_LOST',
+  OVERDUE = 'OVERDUE',
+  REJECTED = 'REJECTED',
+  CANCELLED = 'CANCELLED',
+  EXPIRED = 'EXPIRED',
+}
+
+export enum ReturnCondition {
+  BAIK = 'BAIK',
+  RUSAK = 'RUSAK',
+  HILANG = 'HILANG',
+}
+
+export enum EventStatus {
+  DRAFT = 'DRAFT',
+  PUBLISHED = 'PUBLISHED',
+  OPEN = 'OPEN',
+  FULL = 'FULL',
+  CLOSED = 'CLOSED',
+  COMPLETED = 'COMPLETED',
+  CANCELLED = 'CANCELLED',
+}
+
+export enum EventType {
+  KELAS = 'KELAS',
+  DISKUSI = 'DISKUSI',
+  WORKSHOP = 'WORKSHOP',
+  LAPAK = 'LAPAK',
+  LAINNYA = 'LAINNYA',
+}
+
+export enum RegistrationStatus {
+  REGISTERED = 'REGISTERED',
+  WAITLISTED = 'WAITLISTED',
+  CANCELLED = 'CANCELLED',
+  ATTENDED = 'ATTENDED',
+  NO_SHOW = 'NO_SHOW',
+}
+
+export enum LetterStatus {
+  PENDING = 'PENDING',
+  PUBLISHED = 'PUBLISHED',
+  REJECTED = 'REJECTED',
+}
+
+export enum Language {
+  ID = 'ID',
+  EN = 'EN',
+  JV = 'JV',
+  AR = 'AR',
+  OTHER = 'OTHER',
+}
+
+export enum CategoryType {
+  ARTICLE = 'ARTICLE',
+  BOOK = 'BOOK',
+  BOTH = 'BOTH',
+}
+
+export enum WaitlistStatus {
+  WAITING = 'WAITING',
+  NOTIFIED = 'NOTIFIED',
+  FULFILLED = 'FULFILLED',
+  EXPIRED = 'EXPIRED',
+  CANCELLED = 'CANCELLED',
+}
+

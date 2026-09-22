@@ -1,0 +1,858 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearchPostgres"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────
+// ENUM
+// ─────────────────────────────────────────────
+
+enum Role {
+  USER
+  KURATOR
+  ADMIN
+}
+
+enum UserStatus {
+  PENDING_VERIFICATION
+  ACTIVE
+  SUSPENDED
+  DEACTIVATED
+  DELETED
+}
+
+enum TrustLevel {
+  TL0
+  TL1
+  TL2
+  RESTRICTED
+}
+
+enum TokenType {
+  EMAIL_VERIFY
+  PASSWORD_RESET
+}
+
+enum ArticleStatus {
+  DRAFT
+  PENDING_REVIEW
+  REVISION
+  APPROVED
+  SCHEDULED
+  PUBLISHED
+  ARCHIVED
+  REJECTED
+}
+
+enum RejectionReason {
+  PLAGIARISM
+  HATE_SPEECH
+  PROMOTIONAL
+  OFF_TOPIC
+  LOW_QUALITY
+  OTHER
+}
+
+enum CommentStatus {
+  PENDING
+  PUBLISHED
+  HIDDEN
+  DELETED_BY_USER
+  DELETED
+}
+
+enum ReportReason {
+  SPAM
+  ABUSE
+  OFF_TOPIC
+  PERSONAL_INFO
+}
+
+enum BookCopyStatus {
+  AVAILABLE
+  BORROWED
+  RESERVED
+  UNAVAILABLE
+  LOST
+  DAMAGED
+}
+
+enum BookCondition {
+  BARU
+  BAIK
+  CUKUP
+  RUSAK_RINGAN
+}
+
+enum LoanStatus {
+  PENDING
+  APPROVED
+  BORROWED
+  RETURNED
+  RETURNED_LOST
+  OVERDUE
+  REJECTED
+  CANCELLED
+  EXPIRED
+}
+
+enum ReturnCondition {
+  BAIK
+  RUSAK
+  HILANG
+}
+
+enum ReminderType {
+  PICKUP_DEADLINE
+  DUE_SOON
+  DUE_TODAY
+  OVERDUE_1
+  OVERDUE_3
+  OVERDUE_7
+}
+
+enum WaitlistStatus {
+  WAITING
+  NOTIFIED
+  FULFILLED
+  EXPIRED
+  CANCELLED
+}
+
+enum EventStatus {
+  DRAFT
+  PUBLISHED
+  OPEN
+  FULL
+  CLOSED
+  COMPLETED
+  CANCELLED
+}
+
+enum EventType {
+  KELAS
+  DISKUSI
+  WORKSHOP
+  LAPAK
+  LAINNYA
+}
+
+enum RegistrationStatus {
+  REGISTERED
+  WAITLISTED
+  CANCELLED
+  ATTENDED
+  NO_SHOW
+}
+
+enum LetterStatus {
+  PENDING
+  PUBLISHED
+  REJECTED
+}
+
+enum Language {
+  ID
+  EN
+  JV
+  AR
+  OTHER
+}
+
+enum CategoryType {
+  ARTICLE
+  BOOK
+  BOTH
+}
+
+enum BadgeCriteria {
+  ARTICLES_READ
+  ARTICLES_PUBLISHED
+  COMMENTS_PUBLISHED
+  EVENTS_ATTENDED
+  LOANS_RETURNED
+  ONTIME_STREAK
+  ACCOUNT_AGE_DAYS
+  MANUAL
+}
+
+enum MediaType {
+  ARTICLE_COVER
+  ARTICLE_INLINE
+  BOOK_COVER
+  AVATAR
+  EVENT_COVER
+  PAGE_IMAGE
+}
+
+// ─────────────────────────────────────────────
+// IDENTITAS
+// ─────────────────────────────────────────────
+
+model User {
+  id                   String     @id @default(cuid())
+  name                 String     @db.VarChar(60)
+  username             String     @unique @db.VarChar(20)
+  email                String     @unique @db.VarChar(120)
+  passwordHash         String?
+  avatarUrl            String?
+  bio                  String?    @db.VarChar(200)
+  instagramUrl         String?
+  websiteUrl           String?
+
+  role                 Role       @default(USER)
+  status               UserStatus @default(PENDING_VERIFICATION)
+  trustLevel           TrustLevel @default(TL0)
+
+  emailVerifiedAt      DateTime?
+  lastLoginAt          DateTime?
+  failedLoginCount     Int        @default(0)
+  lockedUntil          DateTime?
+
+  // Perpustakaan
+  borrowSuspendedUntil DateTime?
+  suspensionReason     String?
+  noShowCount          Int        @default(0)
+  onTimeStreak         Int        @default(0)
+
+  // Privasi
+  isProfilePublic      Boolean    @default(true)
+  showBadges           Boolean    @default(true)
+
+  createdAt            DateTime   @default(now())
+  updatedAt            DateTime   @updatedAt
+  deletedAt            DateTime?
+
+  sessions             Session[]
+  tokens               VerificationToken[]
+  articles             Article[]               @relation("ArticleAuthor")
+  revisions            ArticleRevision[]
+  comments             Comment[]
+  commentReports       CommentReport[]
+  loans                Loan[]                  @relation("LoanBorrower")
+  approvedLoans        Loan[]                  @relation("LoanApprover")
+  handedOverLoans      Loan[]                  @relation("LoanHandover")
+  receivedLoans        Loan[]                  @relation("LoanReceiver")
+  waitlists            Waitlist[]
+  organizedEvents      Event[]
+  registrations        EventRegistration[]
+  letters              ReaderLetter[]          @relation("LetterAuthor")
+  moderatedLetters     ReaderLetter[]          @relation("LetterModerator")
+  notifications        Notification[]
+  notificationPrefs    NotificationPreference[]
+  badges               UserBadge[]
+  readingLogs          ReadingLog[]
+  uploads              Media[]
+  auditLogs            AuditLog[]
+
+  @@index([role])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  userId       String
+  tokenHash    String   @unique
+  userAgent    String?
+  ipAddress    String?
+  expiresAt    DateTime
+  lastActiveAt DateTime @default(now())
+  createdAt    DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model VerificationToken {
+  id        String    @id @default(cuid())
+  userId    String
+  type      TokenType
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, type])
+  @@index([expiresAt])
+}
+
+// ─────────────────────────────────────────────
+// KATEGORI & TAG
+// ─────────────────────────────────────────────
+
+model Category {
+  id          String       @id @default(cuid())
+  name        String       @db.VarChar(60)
+  slug        String       @unique @db.VarChar(60)
+  description String?      @db.VarChar(300)
+  iconName    String?
+  color       String?      @db.VarChar(9)
+  type        CategoryType @default(BOTH)
+  parentId    String?
+  order       Int          @default(0)
+  isActive    Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  parent   Category?  @relation("CategoryTree", fields: [parentId], references: [id])
+  children Category[] @relation("CategoryTree")
+  articles Article[]
+  books    Book[]
+
+  @@index([type, isActive])
+  @@index([parentId])
+}
+
+model Tag {
+  id        String    @id @default(cuid())
+  name      String    @db.VarChar(40)
+  slug      String    @unique @db.VarChar(40)
+  createdAt DateTime  @default(now())
+  articles  Article[]
+}
+
+// ─────────────────────────────────────────────
+// ARTIKEL
+// ─────────────────────────────────────────────
+
+model Article {
+  id             String        @id @default(cuid())
+  title          String        @db.VarChar(120)
+  slug           String        @unique @db.VarChar(160)
+  subtitle       String?       @db.VarChar(160)
+  excerpt        String?       @db.VarChar(300)
+  content        Json
+  plainText      String?
+  coverImage     String?
+  coverCredit    String?       @db.VarChar(120)
+
+  categoryId     String
+  authorId       String
+
+  status         ArticleStatus @default(DRAFT)
+  publishedAt    DateTime?
+  scheduledAt    DateTime?
+  isFeatured     Boolean       @default(false)
+  allowComments  Boolean       @default(true)
+
+  readingTime    Int           @default(1)
+  wordCount      Int           @default(0)
+  viewCount      Int           @default(0)
+  commentCount   Int           @default(0)
+
+  // Kurasi
+  reviewLockedById String?
+  reviewLockedAt   DateTime?
+  submittedAt      DateTime?
+
+  // SEO
+  seoTitle       String?       @db.VarChar(60)
+  seoDescription String?       @db.VarChar(160)
+  ogImage        String?
+  previewToken   String?       @unique
+
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  deletedAt      DateTime?
+
+  category  Category          @relation(fields: [categoryId], references: [id])
+  author    User              @relation("ArticleAuthor", fields: [authorId], references: [id])
+  tags      Tag[]
+  revisions ArticleRevision[]
+  comments  Comment[]
+  readLogs  ReadingLog[]
+
+  @@index([status, publishedAt(sort: Desc)])
+  @@index([categoryId, status])
+  @@index([authorId, status])
+  @@index([isFeatured, publishedAt(sort: Desc)])
+  @@index([scheduledAt])
+  @@index([deletedAt])
+}
+
+model ArticleRevision {
+  id                   String           @id @default(cuid())
+  articleId            String
+  editorId             String
+  content              Json?
+  statusFrom           ArticleStatus
+  statusTo             ArticleStatus
+  note                 String?          @db.Text
+  rejectionReason      RejectionReason?
+  originalityConfirmed Boolean          @default(false)
+  createdAt            DateTime         @default(now())
+
+  article Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  editor  User    @relation(fields: [editorId], references: [id])
+
+  @@index([articleId, createdAt(sort: Desc)])
+}
+
+// ─────────────────────────────────────────────
+// KOMENTAR
+// ─────────────────────────────────────────────
+
+model Comment {
+  id            String        @id @default(cuid())
+  content       String        @db.VarChar(1500)
+  authorId      String
+  articleId     String?
+  letterId      String?
+  parentId      String?
+  status        CommentStatus @default(PENDING)
+  moderatedById String?
+  moderatedAt   DateTime?
+  reportCount   Int           @default(0)
+  editedAt      DateTime?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  deletedAt     DateTime?
+
+  author   User            @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  article  Article?        @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  letter   ReaderLetter?   @relation(fields: [letterId], references: [id], onDelete: Cascade)
+  parent   Comment?        @relation("CommentThread", fields: [parentId], references: [id])
+  replies  Comment[]       @relation("CommentThread")
+  reports  CommentReport[]
+
+  @@index([articleId, status, createdAt])
+  @@index([letterId, status, createdAt])
+  @@index([authorId])
+  @@index([status, createdAt])
+  @@index([parentId])
+}
+
+model CommentReport {
+  id         String       @id @default(cuid())
+  commentId  String
+  reporterId String
+  reason     ReportReason
+  note       String?      @db.VarChar(300)
+  createdAt  DateTime     @default(now())
+
+  comment  Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  reporter User    @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+
+  @@unique([commentId, reporterId])
+  @@index([commentId])
+}
+
+// ─────────────────────────────────────────────
+// PERPUSTAKAAN
+// ─────────────────────────────────────────────
+
+model Book {
+  id              String     @id @default(cuid())
+  title           String     @db.VarChar(200)
+  slug            String     @unique @db.VarChar(220)
+  author          String     @db.VarChar(150)
+  isbn            String?    @unique @db.VarChar(13)
+  publisher       String?    @db.VarChar(120)
+  publicationYear Int?
+  categoryId      String
+  description     String?    @db.VarChar(2000)
+  coverImage      String?
+  language        Language   @default(ID)
+  pages           Int?
+  shelfLocation   String?    @db.VarChar(60)
+  donatedBy       String?    @db.VarChar(120)
+
+  isPublished     Boolean    @default(false)
+  isBorrowable    Boolean    @default(true)
+
+  totalCopies     Int        @default(0)
+  availableCopies Int        @default(0)
+  borrowCount     Int        @default(0)
+
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  deletedAt       DateTime?
+
+  category  Category   @relation(fields: [categoryId], references: [id])
+  copies    BookCopy[]
+  loans     Loan[]
+  waitlists Waitlist[]
+
+  @@index([isPublished, createdAt(sort: Desc)])
+  @@index([categoryId, isPublished])
+  @@index([availableCopies])
+  @@index([borrowCount(sort: Desc)])
+  @@index([deletedAt])
+}
+
+model BookCopy {
+  id            String         @id @default(cuid())
+  bookId        String
+  inventoryCode String         @unique @db.VarChar(20)
+  condition     BookCondition  @default(BAIK)
+  status        BookCopyStatus @default(AVAILABLE)
+  acquiredAt    DateTime       @default(now())
+  note          String?        @db.VarChar(300)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  book  Book   @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  loans Loan[]
+
+  @@index([bookId, status])
+  @@index([status])
+}
+
+model Loan {
+  id              String           @id @default(cuid())
+  loanCode        String           @unique @db.VarChar(20)
+  userId          String
+  bookId          String
+  bookCopyId      String?
+
+  status          LoanStatus       @default(PENDING)
+
+  requestedAt     DateTime         @default(now())
+  pickupPoint     String           @db.VarChar(60)
+  pickupDatePlan  DateTime?
+  userNote        String?          @db.VarChar(300)
+
+  approvedAt      DateTime?
+  approvedById    String?
+  rejectionReason String?          @db.VarChar(300)
+
+  pickupCode      String?          @db.VarChar(6)
+  pickupDeadline  DateTime?
+
+  borrowedAt      DateTime?
+  handedOverById  String?
+  dueDate         DateTime?
+  extensionCount  Int              @default(0)
+  lastExtendedAt  DateTime?
+
+  returnedAt      DateTime?
+  receivedById    String?
+  returnCondition ReturnCondition?
+
+  adminNote       String?          @db.VarChar(500)
+
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  user         User           @relation("LoanBorrower", fields: [userId], references: [id])
+  book         Book           @relation(fields: [bookId], references: [id])
+  bookCopy     BookCopy?      @relation(fields: [bookCopyId], references: [id])
+  approvedBy   User?          @relation("LoanApprover", fields: [approvedById], references: [id])
+  handedOverBy User?          @relation("LoanHandover", fields: [handedOverById], references: [id])
+  receivedBy   User?          @relation("LoanReceiver", fields: [receivedById], references: [id])
+  reminders    LoanReminder[]
+
+  @@index([userId, status])
+  @@index([status, dueDate])
+  @@index([status, pickupDeadline])
+  @@index([pickupCode])
+  @@index([bookId, status])
+}
+
+model LoanReminder {
+  id     String       @id @default(cuid())
+  loanId String
+  type   ReminderType
+  sentAt DateTime     @default(now())
+
+  loan Loan @relation(fields: [loanId], references: [id], onDelete: Cascade)
+
+  @@unique([loanId, type])
+}
+
+model Waitlist {
+  id            String         @id @default(cuid())
+  bookId        String
+  userId        String
+  position      Int
+  status        WaitlistStatus @default(WAITING)
+  notifiedAt    DateTime?
+  priorityUntil DateTime?
+  createdAt     DateTime       @default(now())
+
+  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([bookId, status, position])
+  @@index([userId, status])
+}
+
+// ─────────────────────────────────────────────
+// KEGIATAN
+// ─────────────────────────────────────────────
+
+model Event {
+  id                      String      @id @default(cuid())
+  title                   String      @db.VarChar(120)
+  slug                    String      @unique @db.VarChar(140)
+  type                    EventType   @default(LAINNYA)
+  description             Json
+  coverImage              String?
+
+  startAt                 DateTime
+  endAt                   DateTime
+  locationName            String      @db.VarChar(120)
+  locationDetail          String?     @db.VarChar(300)
+  mapUrl                  String?
+  isOnline                Boolean     @default(false)
+  meetingUrl              String?
+
+  quota                   Int?
+  registrationOpenAt      DateTime?
+  registrationCloseAt     DateTime?
+  isParticipantListPublic Boolean     @default(false)
+
+  organizerId             String
+  status                  EventStatus @default(DRAFT)
+
+  // Dokumentasi pascakegiatan
+  summary                 String?     @db.Text
+  gallery                 Json?
+
+  createdAt               DateTime    @default(now())
+  updatedAt               DateTime    @updatedAt
+
+  organizer     User                @relation(fields: [organizerId], references: [id])
+  registrations EventRegistration[]
+
+  @@index([status, startAt])
+  @@index([startAt])
+  @@index([organizerId])
+}
+
+model EventRegistration {
+  id             String             @id @default(cuid())
+  eventId        String
+  userId         String
+  status         RegistrationStatus @default(REGISTERED)
+  attendanceCode String             @db.VarChar(6)
+  note           String?            @db.VarChar(300)
+  registeredAt   DateTime           @default(now())
+  checkedInAt    DateTime?
+  cancelledAt    DateTime?
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, userId])
+  @@index([eventId, status])
+  @@index([userId, status])
+}
+
+// ─────────────────────────────────────────────
+// SURAT PEMBACA
+// ─────────────────────────────────────────────
+
+model ReaderLetter {
+  id              String       @id @default(cuid())
+  title           String       @db.VarChar(120)
+  slug            String       @unique @db.VarChar(140)
+  content         String       @db.Text
+  originalContent String?      @db.Text
+  authorId        String
+  displayName     String       @db.VarChar(60)
+  isAnonymous     Boolean      @default(false)
+  status          LetterStatus @default(PENDING)
+  publishedAt     DateTime?
+  moderatedById   String?
+  moderatedAt     DateTime?
+  rejectionReason String?      @db.VarChar(300)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  author      User      @relation("LetterAuthor", fields: [authorId], references: [id])
+  moderatedBy User?     @relation("LetterModerator", fields: [moderatedById], references: [id])
+  comments    Comment[]
+
+  @@index([status, createdAt(sort: Desc)])
+  @@index([authorId])
+}
+
+// ─────────────────────────────────────────────
+// NOTIFIKASI
+// ─────────────────────────────────────────────
+
+model Notification {
+  id         String    @id @default(cuid())
+  userId     String
+  type       String    @db.VarChar(40)
+  title      String    @db.VarChar(160)
+  body       String    @db.VarChar(400)
+  actionUrl  String?
+  entityType String?   @db.VarChar(30)
+  entityId   String?
+  isRead     Boolean   @default(false)
+  readAt     DateTime?
+  createdAt  DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead, createdAt(sort: Desc)])
+  @@index([createdAt])
+}
+
+model NotificationPreference {
+  id     String  @id @default(cuid())
+  userId String
+  type   String  @db.VarChar(40)
+  inApp  Boolean @default(true)
+  email  Boolean @default(true)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, type])
+}
+
+// ─────────────────────────────────────────────
+// GAMIFIKASI
+// ─────────────────────────────────────────────
+
+model Badge {
+  id            String        @id @default(cuid())
+  code          String        @unique @db.VarChar(40)
+  name          String        @db.VarChar(60)
+  description   String        @db.VarChar(200)
+  iconName      String
+  criteriaType  BadgeCriteria
+  criteriaValue Int           @default(1)
+  order         Int           @default(0)
+  isActive      Boolean       @default(true)
+  createdAt     DateTime      @default(now())
+
+  userBadges UserBadge[]
+}
+
+model UserBadge {
+  id       String    @id @default(cuid())
+  userId   String
+  badgeId  String
+  progress Int       @default(0)
+  earnedAt DateTime?
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge Badge @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, badgeId])
+  @@index([userId, earnedAt])
+}
+
+model ReadingLog {
+  id           String   @id @default(cuid())
+  userId       String?
+  anonId       String?  @db.VarChar(40)
+  articleId    String
+  secondsSpent Int      @default(0)
+  scrollDepth  Int      @default(0)
+  counted      Boolean  @default(false)
+  readAt       DateTime @default(now())
+
+  user    User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+  article Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  @@index([articleId, readAt])
+  @@index([userId, counted])
+  @@index([anonId, articleId, readAt])
+}
+
+// ─────────────────────────────────────────────
+// CMS & SISTEM
+// ─────────────────────────────────────────────
+
+model Page {
+  id             String   @id @default(cuid())
+  title          String   @db.VarChar(120)
+  slug           String   @unique @db.VarChar(120)
+  content        Json
+  isPublished    Boolean  @default(false)
+  isSystem       Boolean  @default(false)
+  showInFooter   Boolean  @default(false)
+  showInNav      Boolean  @default(false)
+  order          Int      @default(0)
+  seoTitle       String?  @db.VarChar(60)
+  seoDescription String?  @db.VarChar(160)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([isPublished])
+}
+
+model Media {
+  id           String    @id @default(cuid())
+  url          String
+  publicId     String    @unique
+  type         MediaType
+  width        Int?
+  height       Int?
+  sizeBytes    Int?
+  format       String?   @db.VarChar(10)
+  alt          String?   @db.VarChar(200)
+  uploadedById String
+  usedIn       String?   @db.VarChar(60)
+  createdAt    DateTime  @default(now())
+
+  uploadedBy User @relation(fields: [uploadedById], references: [id])
+
+  @@index([uploadedById])
+  @@index([type, createdAt])
+}
+
+model Setting {
+  key         String   @id @db.VarChar(60)
+  value       Json
+  description String?  @db.VarChar(300)
+  updatedById String?
+  updatedAt   DateTime @updatedAt
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String?
+  action     String   @db.VarChar(60)
+  entityType String   @db.VarChar(40)
+  entityId   String?
+  before     Json?
+  after      Json?
+  ipAddress  String?  @db.VarChar(45)
+  userAgent  String?  @db.VarChar(300)
+  createdAt  DateTime @default(now())
+
+  actor User? @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([entityType, entityId])
+  @@index([actorId, createdAt(sort: Desc)])
+  @@index([createdAt(sort: Desc)])
+}
+
+model SearchQueryLog {
+  id          String   @id @default(cuid())
+  query       String   @db.VarChar(120)
+  type        String?  @db.VarChar(20)
+  resultCount Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([resultCount])
+}
+
+model JobRun {
+  id          String    @id @default(cuid())
+  jobName     String    @db.VarChar(60)
+  startedAt   DateTime  @default(now())
+  finishedAt  DateTime?
+  durationMs  Int?
+  processed   Int       @default(0)
+  failed      Int       @default(0)
+  errorDetail String?   @db.Text
+
+  @@index([jobName, startedAt(sort: Desc)])
+}

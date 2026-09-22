@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <rect width="512" height="512" fill="#0A0A0A" />
+  <!-- Double Slanted Parallelogram Emblem from official Perpusjal Logo -->
+  <g fill="#F9F9F7" transform="translate(48, 64) scale(0.28)">
+    <polygon points="1610.3,286.34 2672.96,286.34 2626.34,525.81 1563.69,525.81" />
+    <polygon points="1238.52,562.01 2301.17,562.01 2254.56,801.48 1191.9,801.48" />
+  </g>
+</svg>

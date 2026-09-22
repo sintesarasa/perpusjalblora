@@ -1,0 +1,107 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: #f9f9f7;
+    --foreground: #0a0a0a;
+    --surface: #ffffff;
+    --surface-muted: #f2f2ed;
+    --border: #0a0a0a;
+    --border-hairline: #e2e2db;
+    --border-subtle: #ecece6;
+    --muted: #666661;
+  }
+
+  .dark {
+    --background: #0a0a0a;
+    --foreground: #f9f9f7;
+    --surface: #141414;
+    --surface-muted: #1c1c1a;
+    --border: #f9f9f7;
+    --border-hairline: #292926;
+    --border-subtle: #1f1f1d;
+    --muted: #999993;
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Sharp Editorial Scrollbar */
+  ::-webkit-scrollbar {
+    width: 3px;
+    height: 3px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--background);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--foreground);
+  }
+}
+
+/* Subtle book paper texture */
+.editorial-grain {
+  background-image: radial-gradient(rgba(10, 10, 10, 0.035) 1px, transparent 0);
+  background-size: 16px 16px;
+}
+
+.dark .editorial-grain {
+  background-image: radial-gradient(rgba(249, 249, 247, 0.035) 1px, transparent 0);
+  background-size: 16px 16px;
+}
+
+/* Authentic Press Double Rule */
+.double-rule {
+  position: relative;
+  border-top: 3px solid currentColor;
+  padding-top: 2px;
+}
+.double-rule::after {
+  content: '';
+  display: block;
+  border-top: 1px solid currentColor;
+}
+
+/* Double Rule Bottom */
+.double-rule-bottom {
+  position: relative;
+  border-bottom: 1px solid currentColor;
+  padding-bottom: 2px;
+}
+.double-rule-bottom::after {
+  content: '';
+  display: block;
+  border-bottom: 3px solid currentColor;
+}
+
+/* Editorial Drop Cap */
+.drop-cap::first-letter {
+  font-family: var(--font-playfair), Georgia, serif;
+  float: left;
+  font-size: 3.75rem;
+  line-height: 0.8;
+  padding-top: 4px;
+  padding-right: 8px;
+  padding-bottom: 2px;
+  font-weight: 900;
+}
+
+/* Dramatic Display Headline clamp */
+.display-headline {
+  font-size: clamp(2.5rem, 7vw, 7.5rem);
+  line-height: 0.92;
+  letter-spacing: -0.04em;
+}
+
+.sub-headline {
+  font-size: clamp(1.75rem, 4vw, 3.75rem);
+  line-height: 0.98;
+  letter-spacing: -0.03em;
+}

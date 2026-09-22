@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PERPUSTAKAAN JALANAN BLORA — Ruang Baca Independen</title>
+    
+    <!-- Google Fonts: Playfair Display & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400;1,600&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        serif: ['"Playfair Display"', 'serif'],
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        black: '#090909',
+                        white: '#fcfcfc',
+                        surface: '#f3f3f3',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #f7f7f4;
+            color: #090909;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Sophisticated Warm Paper Grain & Subtle Watermark Background */
+        .editorial-paper-bg {
+            background-color: #f7f7f4;
+            background-image: 
+                radial-gradient(rgba(0, 0, 0, 0.035) 1px, transparent 0),
+                radial-gradient(rgba(0, 0, 0, 0.02) 1px, transparent 0);
+            background-size: 24px 24px;
+            background-position: 0 0, 12px 12px;
+            position: relative;
+        }
+
+        /* Floating background editorial watermark */
+        .editorial-paper-bg::before {
+            content: "BLORA RAKSASA LITERASI";
+            position: absolute;
+            top: 10%;
+            left: -5%;
+            font-family: 'Playfair Display', serif;
+            font-weight: 900;
+            font-size: 16vw;
+            color: rgba(9, 9, 9, 0.012);
+            white-space: nowrap;
+            pointer-events: none;
+            z-index: 0;
+            user-select: none;
+            line-height: 1;
+        }
+
+        .editorial-paper-bg::after {
+            content: "AKAR RUMPUT — BEBAS — SWADAYA";
+            position: absolute;
+            top: 55%;
+            right: -5%;
+            font-family: 'Playfair Display', serif;
+            font-weight: 900;
+            font-size: 12vw;
+            color: rgba(9, 9, 9, 0.012);
+            white-space: nowrap;
+            pointer-events: none;
+            z-index: 0;
+            user-select: none;
+            line-height: 1;
+        }
+
+        /* Minimalist scrollbar */
+        ::-webkit-scrollbar { width: 3px; }
+        ::-webkit-scrollbar-track { background: #f7f7f4; }
+        ::-webkit-scrollbar-thumb { background: #090909; }
+
+        /* Typography scale */
+        .hero-title {
+            font-size: clamp(3rem, 7.5vw, 9rem);
+            line-height: 0.95;
+            letter-spacing: -0.04em;
+        }
+
+        /* Editorial underline link effect */
+        .editorial-link {
+            position: relative;
+        }
+        .editorial-link::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 1px;
+            bottom: -2px;
+            left: 0;
+            background-color: currentColor;
+            transform: scaleX(0);
+            transform-origin: right;
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .editorial-link:hover::after {
+            transform: scaleX(1);
+            transform-origin: left;
+        }
+
+        /* Marquee animation */
+        @keyframes marquee {
+            0% { transform: translateX(0%); }
+            100% { transform: translateX(-50%); }
+        }
+        .animate-editorial-marquee {
+            display: flex;
+            width: 200%;
+            animation: marquee 35s linear infinite;
+        }
+        .animate-editorial-marquee:hover {
+            animation-play-state: paused;
+        }
+
+        /* Modal transition */
+        .modal-backdrop {
+            backdrop-filter: blur(8px);
+            background-color: rgba(9, 9, 9, 0.6);
+        }
+    </style>
+</head>
+<body class="font-sans selection:bg-black selection:text-white editorial-paper-bg">
+
+    <header class="fixed w-full top-0 bg-[#f7f7f4]/90 backdrop-blur-md z-40 border-b border-neutral-300/40">
+        <div class="max-w-7xl mx-auto px-6 md:px-12 h-20 flex items-center justify-between relative z-10">
+            <a href="#" class="group">
+                <span class="font-serif font-bold text-base md:text-lg tracking-tight uppercase block group-hover:italic transition-all">Perpusjal Blora</span>
+            </a>
+            
+            <nav class="hidden md:flex items-center space-x-8">
+                <a href="#manifesto" class="font-medium uppercase text-xs tracking-widest text-neutral-600 hover:text-black transition-colors">Manifesto</a>
+                <a href="#aktivitas" class="font-medium uppercase text-xs tracking-widest text-neutral-600 hover:text-black transition-colors">Aktivitas</a>
+                <a href="#koleksi" class="font-medium uppercase text-xs tracking-widest text-neutral-600 hover:text-black transition-colors">Koleksi</a>
+                <a href="#jadwal" class="font-medium uppercase text-xs tracking-widest text-neutral-600 hover:text-black transition-colors">Jadwal</a>
+            </nav>
+            
+            <div>
+                <a href="#donasi" class="bg-black text-white font-mono font-bold uppercase text-[11px] tracking-widest py-2.5 px-5 hover:bg-neutral-800 transition-colors rounded-xl">
+                    Gabung
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="pt-32 md:pt-40 relative z-10">
+        
+        <section class="max-w-7xl mx-auto px-6 md:px-12 py-12 md:py-24">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+                <div class="lg:col-span-8 flex flex-col justify-center">
+                    <div class="flex items-center gap-4 text-xs font-mono uppercase tracking-widest text-neutral-500 mb-6">
+                        <span>[ Blora, Jawa Tengah ]</span>
+                        <span class="w-1.5 h-1.5 bg-neutral-400 rounded-full"></span>
+                        <span>Ruang Baca Terbuka Akar Rumput</span>
+                    </div>
+
+                    <h1 class="hero-title font-serif font-black uppercase tracking-tight mb-8">
+                        Membaca <br>
+                        <span class="italic font-normal lowercase">&amp;</span> Berbahagia.
+                    </h1>
+
+                    <p class="font-sans text-lg md:text-xl font-normal text-neutral-700 max-w-2xl leading-relaxed mb-10">
+                        Kami menyalakan kembali api akal sehat di ruang publik Blora. Lapak buku gratis tanpa syarat, tanpa sekat kelas, terbuka untuk seluruh warga.
+                    </p>
+
+                    <div class="flex flex-wrap items-center gap-8">
+                        <a href="#koleksi" class="inline-flex items-center gap-3 bg-black text-white px-8 py-5 font-mono text-xs uppercase tracking-widest hover:bg-neutral-800 transition-colors rounded-xl shadow-sm">
+                            <span>Telusuri Koleksi Buku</span>
+                            <span>&rarr;</span>
+                        </a>
+                        <a href="#manifesto" class="font-mono text-xs uppercase tracking-widest editorial-link pb-1 text-neutral-800">
+                            Baca Manifesto Kami &darr;
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Hero Quote Box -->
+                <div class="lg:col-span-4 bg-neutral-900 text-white p-8 md:p-10 rounded-3xl flex flex-col justify-between shadow-2xl relative overflow-hidden">
+                    <div class="absolute -right-10 -bottom-10 opacity-10 font-mono font-black text-8xl pointer-events-none select-none">&#43;</div>
+                    <div>
+                        <div class="flex justify-between items-center mb-8 pb-4 border-b border-neutral-800">
+                            <span class="font-mono text-[10px] uppercase tracking-widest text-neutral-400">[ Jurnal Kutipan ]</span>
+                            <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span>
+                        </div>
+                        <blockquote id="hero-quote" class="font-serif italic text-xl md:text-2xl leading-relaxed mb-6">
+                            &ldquo;Membaca adalah melawan lupa, merawat akal sehat di tengah bisingnya zaman industri informasi.&rdquo;
+                        </blockquote>
+                        <cite id="hero-author" class="block font-mono text-xs uppercase tracking-widest text-neutral-400 not-italic">&mdash; Catatan Pinggir Perpusjal</cite>
+                    </div>
+
+                    <div class="pt-8 mt-8 border-t border-neutral-800">
+                        <button onclick="nextQuote()" class="w-full text-left font-mono text-xs uppercase tracking-widest hover:text-neutral-300 transition-colors flex items-center justify-between">
+                            <span>Putar Kutipan Berikutnya</span>
+                            <span>&#8634;</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="bg-black text-white py-4 overflow-hidden whitespace-nowrap my-12 shadow-inner">
+            <div class="animate-editorial-marquee font-mono text-xs uppercase tracking-widest">
+                <span class="mx-8">&bull; RUANG PUBLIK UNTUK AKAL SEHAT</span>
+                <span class="mx-8">&bull; 100% SWADAYA &amp; INDEPENDEN</span>
+                <span class="mx-8">&bull; BAWA BUKUMU, GELAR TERPALMU</span>
+                <span class="mx-8">&bull; LITERASI ADALAH PERLAWANAN</span>
+                <span class="mx-8">&bull; RUANG PUBLIK UNTUK AKAL SEHAT</span>
+                <span class="mx-8">&bull; 100% SWADAYA &amp; INDEPENDEN</span>
+                <span class="mx-8">&bull; BAWA BUKUMU, GELAR TERPALMU</span>
+                <span class="mx-8">&bull; LITERASI ADALAH PERLAWANAN</span>
+            </div>
+        </div>
+
+        <!-- MANIFESTO SECTION -->
+        <section id="manifesto" class="max-w-7xl mx-auto px-6 md:px-12 py-24">
+            <div class="mb-16">
+                <span class="font-mono text-xs uppercase font-bold tracking-widest text-neutral-500 block mb-3">[ 01 / Manifesto ]</span>
+                <h2 class="font-serif font-black text-4xl md:text-6xl uppercase tracking-tight leading-none">
+                    Merawat Akal Sehat <br><span class="italic font-normal lowercase">&amp;</span> Pengetahuan Warga
+                </h2>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
+                
+                <div class="lg:col-span-5 bg-black text-white p-10 md:p-14 rounded-3xl flex flex-col justify-between shadow-xl">
+                    <div>
+                        <span class="font-mono text-[10px] uppercase tracking-widest text-neutral-400 block mb-6">[ Proklamasi Pustaka ]</span>
+                        <blockquote class="font-serif italic text-2xl md:text-3xl leading-relaxed text-neutral-100">
+                            &ldquo;Gagasan tidak diciptakan untuk dikurung dalam kebisuan arsip berbiaya tinggi atau disembunyikan di balik meja birokrasi.&rdquo;
+                        </blockquote>
+                    </div>
+                    <div class="pt-10 mt-10 border-t border-neutral-800 font-mono text-xs uppercase tracking-widest text-neutral-400">
+                        Blora Bergerak &bull; Sejak 2016
+                    </div>
+                </div>
+
+                <div class="lg:col-span-7 flex flex-col justify-center space-y-8 pt-4">
+                    <p class="font-serif text-2xl md:text-3xl italic text-neutral-900 leading-relaxed">
+                        Di bawah rindangnya pepohonan alun-alun dan riuh rendah angin sudut kampung, kami membentangkan lapak baca tanpa syarat.
+                    </p>
+                    
+                    <p class="font-sans text-base md:text-lg text-neutral-700 leading-relaxed">
+                        Tanpa kartu anggota, tanpa batas kasta, dan tanpa sekat sosial. Sebab di hadapan lembar-lembar pengetahuan, setiap warga memiliki kedaulatan yang sama untuk membaca dan berbahagia.
+                    </p>
+
+                    <div class="pt-6 grid grid-cols-2 sm:grid-cols-4 gap-4 font-mono text-[11px] uppercase tracking-wider text-neutral-800 border-t border-neutral-300">
+                        <div>&bull; 100% Akses Gratis</div>
+                        <div>&bull; Tanpa Syarat KTP</div>
+                        <div>&bull; Donasi Kolektif</div>
+                        <div>&bull; Ruang Terbuka</div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <section id="aktivitas" class="max-w-7xl mx-auto px-6 md:px-12 py-20">
+            <div class="flex flex-col md:flex-row md:items-end justify-between mb-16">
+                <div>
+                    <span class="font-mono text-xs uppercase font-bold tracking-widest text-neutral-500 block mb-2">[ 02 / Program ]</span>
+                    <h3 class="font-serif font-bold text-3xl md:text-5xl uppercase tracking-tight">Pilar Aktivitas Gerakan</h3>
+                </div>
+                <p class="font-mono text-xs uppercase tracking-widest text-neutral-500 mt-4 md:mt-0">Kerja nyata di ruang publik</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-[#fcfcfc] p-8 md:p-10 rounded-3xl shadow-sm border border-neutral-200/80 flex flex-col justify-between hover:shadow-md transition-shadow">
+                    <div>
+                        <span class="font-mono text-xs text-neutral-500 font-bold block mb-4">01 / LAPAK JALANAN</span>
+                        <h4 class="font-serif font-bold text-2xl uppercase mb-4">Lapak Baca Terbuka</h4>
+                        <p class="font-sans text-sm text-neutral-600 leading-relaxed mb-8">
+                            Menggelar ratusan buku pilihan di ruang publik setiap akhir pekan, mengundang siapa saja untuk duduk bersama dan membaca.
+                        </p>
+                    </div>
+                    <span class="font-mono text-xs uppercase font-bold tracking-wider pt-6 border-t border-neutral-100">&rarr; Setiap Minggu Pagi</span>
+                </div>
+
+                <div class="bg-[#fcfcfc] p-8 md:p-10 rounded-3xl shadow-sm border border-neutral-200/80 flex flex-col justify-between hover:shadow-md transition-shadow">
+                    <div>
+                        <span class="font-mono text-xs text-neutral-500 font-bold block mb-4">02 / DISKUSI PUBLIK</span>
+                        <h4 class="font-serif font-bold text-2xl uppercase mb-4">Bedah Buku &amp; Diskusi</h4>
+                        <p class="font-sans text-sm text-neutral-600 leading-relaxed mb-8">
+                            Ruang tukar pikiran santai membahas isu sosial, kebudayaan lokal Blora, hingga pemikiran besar dunia secara membumi.
+                        </p>
+                    </div>
+                    <span class="font-mono text-xs uppercase font-bold tracking-wider pt-6 border-t border-neutral-100">&rarr; Berkala / Bulanan</span>
+                </div>
+
+                <div class="bg-[#fcfcfc] p-8 md:p-10 rounded-3xl shadow-sm border border-neutral-200/80 flex flex-col justify-between hover:shadow-md transition-shadow">
+                    <div>
+                        <span class="font-mono text-xs text-neutral-500 font-bold block mb-4">03 / SEBAR PUSTAKA</span>
+                        <h4 class="font-serif font-bold text-2xl uppercase mb-4">Donasi &amp; Mobil Pustaka</h4>
+                        <p class="font-sans text-sm text-neutral-600 leading-relaxed mb-8">
+                            Menyalurkan donasi buku layak baca ke pelosok desa, sudut kampung, dan komunitas belajar marjinal di wilayah Blora.
+                        </p>
+                    </div>
+                    <span class="font-mono text-xs uppercase font-bold tracking-wider pt-6 border-t border-neutral-100">&rarr; Setiap Hari</span>
+                </div>
+            </div>
+        </section>
+
+        <section id="koleksi" class="max-w-7xl mx-auto px-6 md:px-12 py-20">
+            <div class="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
+                <div>
+                    <span class="font-mono text-xs uppercase font-bold tracking-widest text-neutral-500 block mb-2">[ 03 / Pustaka ]</span>
+                    <h3 class="font-serif font-black text-3xl md:text-5xl uppercase tracking-tight">Koleksi Pilihan Lapak</h3>
+                    <p class="font-sans text-xs text-neutral-500 mt-2">Klik kartu buku untuk melihat sinopsis lengkap dan detail kurasi.</p>
+                </div>
+                
+                <div class="flex flex-wrap gap-2" id="filter-group">
+                    <button onclick="filterBooks('all')" class="cat-btn active-filter px-5 py-2.5 rounded-full font-mono text-xs uppercase tracking-wider bg-black text-white transition-all shadow-sm">Semua</button>
+                    <button onclick="filterBooks('sastra')" class="cat-btn px-5 py-2.5 rounded-full font-mono text-xs uppercase tracking-wider bg-neutral-200 text-neutral-800 hover:bg-black hover:text-white transition-all">Sastra</button>
+                    <button onclick="filterBooks('sosial')" class="cat-btn px-5 py-2.5 rounded-full font-mono text-xs uppercase tracking-wider bg-neutral-200 text-neutral-800 hover:bg-black hover:text-white transition-all">Sosial &amp; Sejarah</button>
+                    <button onclick="filterBooks('filsafat')" class="cat-btn px-5 py-2.5 rounded-full font-mono text-xs uppercase tracking-wider bg-neutral-200 text-neutral-800 hover:bg-black hover:text-white transition-all">Filsafat</button>
+                </div>
+            </div>
+
+            <!-- Books Grid with Covers -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8" id="books-grid">
+                
+                <!-- Book 1 -->
+                <div class="book-item sastra bg-[#fcfcfc] rounded-3xl p-6 shadow-sm border border-neutral-200/80 flex flex-col justify-between hover:-translate-y-1 transition-all group cursor-pointer" onclick="openBookModal('Bumi Manusia', 'Pramoedya Ananta Toer', 'Sastra', 'Tetralogi Buru &mdash; Buku Pertama', 'Karya mahakarya yang ditulis Pramoedya saat berada di Pulau Buru. Mengisahkan gejolak pergerakan nasional awal abad ke-20 melalui tokoh Minke dan Annelies.')">
+                    <div>
+                        <div class="w-full h-56 bg-neutral-900 rounded-2xl mb-6 relative overflow-hidden flex flex-col justify-between p-6 text-white group-hover:bg-neutral-800 transition-colors shadow-inner">
+                            <div class="absolute inset-0 opacity-10 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px]"></div>
+                            <span class="font-mono text-[10px] tracking-widest uppercase text-neutral-400 relative z-10">[ 01 / Sastra ]</span>
+                            <div class="relative z-10">
+                                <span class="font-serif italic text-sm text-neutral-400 block mb-1">Tetralogi Buru</span>
+                                <h5 class="font-serif font-black text-xl uppercase leading-tight">Bumi Manusia</h5>
+                            </div>
+                        </div>
+                        <h4 class="font-serif font-bold text-xl uppercase tracking-tight mb-1">Bumi Manusia</h4>
+                        <p class="font-sans text-xs uppercase text-neutral-500 mb-4">Pramoedya Ananta Toer</p>
+                    </div>
+                    <div class="pt-4 border-t border-neutral-100 flex justify-between items-center text-xs font-mono text-neutral-700">
+                        <span>Lihat Sinopsis</span>
+                        <span>&rarr;</span>
+                    </div>
+                </div>
+
+                <!-- Book 2 -->
+                <div class="book-item sosial bg-[#fcfcfc] rounded-3xl p-6 shadow-sm border border-neutral-200/80 flex flex-col justify-between hover:-translate-y-1 transition-all group cursor-pointer" onclick="openBookModal('Madilog', 'Tan Malaka', 'Sosial & Sejarah', 'Karya Monumental Pemikiran Kritis', 'Materialisme, Dialektika, dan Logika. Buku revolusioner yang membedah cara berpikir bangsa Indonesia agar terbebas dari mitos menuju ilmu pengetahuan.')">
+                    <div>
+                        <div class="w-full h-56 bg-stone-800 rounded-2xl mb-6 relative overflow-hidden flex flex-col justify-between p-6 text-white group-hover:bg-stone-700 transition-colors shadow-inner">
+                            <div class="absolute inset-0 opacity-10 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px]"></div>
+                            <span class="font-mono text-[10px] tracking-widest uppercase text-neutral-400 relative z-10">[ 02 / Sosial ]</span>
+                            <div class="relative z-10">
+                                <span class="font-serif italic text-sm text-neutral-400 block mb-1">Karya Monumental</span>
+                                <h5 class="font-serif font-black text-xl uppercase leading-tight">Madilog</h5>
+                            </div>
+                        </div>
+                        <h4 class="font-serif font-bold text-xl uppercase tracking-tight mb-1">Madilog</h4>
+                        <p class="font-sans text-xs uppercase text-neutral-500 mb-4">Tan Malaka</p>
+                    </div>
+                    <div class="pt-4 border-t border-neutral-100 flex justify-between items-center text-xs font-mono text-neutral-700">
+                        <span>Lihat Sinopsis</span>
+                        <span>&rarr;</span>
+                    </div>
+                </div>
+
+                <!-- Book 3 -->
+                <div class="book-item sosial bg-[#fcfcfc] rounded-3xl p-6 shadow-sm border border-neutral-200/80 flex flex-col justify-between hover:-translate-y-1 transition-all group cursor-pointer" onclick="openBookModal('Catatan Seorang Demonstran', 'Soe Hok Gie', 'Sosial & Sejarah', 'Memoar Aktivis & Intelektual Muda', 'Catatan harian jujur, tajam, dan penuh idealisme dari seorang aktivis mahasiswa UI yang menolak kompromi terhadap tirani kekuasaan.')">
+                    <div>
+                        <div class="w-full h-56 bg-neutral-800 rounded-2xl mb-6 relative overflow-hidden flex flex-col justify-between p-6 text-white group-hover:bg-neutral-700 transition-colors shadow-inner">
+                            <div class="absolute inset-0 opacity-10 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px]"></div>
+                            <span class="font-mono text-[10px] tracking-widest uppercase text-neutral-400 relative z-10">[ 03 / Sejarah ]</span>
+                            <div class="relative z-10">
+                                <span class="font-serif italic text-sm text-neutral-400 block mb-1">Memoar Aktivis</span>
+                                <h5 class="font-serif font-black text-lg uppercase leading-tight">Catatan Seorang Demonstran</h5>
+                            </div>
+                        </div>
+                        <h4 class="font-serif font-bold text-xl uppercase tracking-tight mb-1">Catatan Seorang Demonstran</h4>
+                        <p class="font-sans text-xs uppercase text-neutral-500 mb-4">Soe Hok Gie</p>
+                    </div>
+                    <div class="pt-4 border-t border-neutral-100 flex justify-between items-center text-xs font-mono text-neutral-700">
+                        <span>Lihat Sinopsis</span>
+                        <span>&rarr;</span>
+                    </div>
+                </div>
+
+                <!-- Book 4 -->
+                <div class="book-item filsafat bg-[#fcfcfc] rounded-3xl p-6 shadow-sm border border-neutral-200/80 flex flex-col justify-between hover:-translate-y-1 transition-all group cursor-pointer" onclick="openBookModal('Dunia Sophie', 'Jostein Gaarder', 'Filsafat', 'Novel Pengantar Sejarah Filsafat', 'Petualangan filosofis yang memikat pembaca menelusuri sejarah pemikiran barat dari zaman Yunani kuno hingga era modern dalam bentuk novel naratif.')">
+                    <div>
+                        <div class="w-full h-56 bg-zinc-900 rounded-2xl mb-6 relative overflow-hidden flex flex-col justify-between p-6 text-white group-hover:bg-zinc-800 transition-colors shadow-inner">
+                            <div class="absolute inset-0 opacity-10 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px]"></div>
+                            <span class="font-mono text-[10px] tracking-widest uppercase text-neutral-400 relative z-10">[ 04 / Filsafat ]</span>
+                            <div class="relative z-10">
+                                <span class="font-serif italic text-sm text-neutral-400 block mb-1">Sejarah Filsafat</span>
+                                <h5 class="font-serif font-black text-xl uppercase leading-tight">Dunia Sophie</h5>
+                            </div>
+                        </div>
+                        <h4 class="font-serif font-bold text-xl uppercase tracking-tight mb-1">Dunia Sophie</h4>
+                        <p class="font-sans text-xs uppercase text-neutral-500 mb-4">Jostein Gaarder</p>
+                    </div>
+                    <div class="pt-4 border-t border-neutral-100 flex justify-between items-center text-xs font-mono text-neutral-700">
+                        <span>Lihat Sinopsis</span>
+                        <span>&rarr;</span>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <section id="jadwal" class="max-w-7xl mx-auto px-6 md:px-12 py-20">
+            <div class="mb-12">
+                <span class="font-mono text-xs uppercase font-bold tracking-widest text-neutral-500 block mb-2">[ 04 / Temu Warga ]</span>
+                <h3 class="font-serif font-black text-3xl md:text-5xl uppercase tracking-tight">Jadwal &amp; Hitung Mundur Lapak</h3>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
+                
+                <!-- Left: Live Countdown Card -->
+                <div class="lg:col-span-5 bg-black text-white p-8 md:p-12 rounded-3xl flex flex-col justify-between shadow-xl">
+                    <div>
+                        <div class="flex justify-between items-center mb-6 pb-4 border-b border-neutral-800">
+                            <span class="font-mono text-[10px] uppercase tracking-widest text-neutral-400">[ Sesi Lapak Terdekat ]</span>
+                            <span class="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-emerald-400">
+                                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                                Minggu Pagi
+                            </span>
+                        </div>
+                        
+                        <h4 class="font-serif font-bold text-2xl uppercase mb-2">Alun-Alun Kota Blora</h4>
+                        <p class="font-sans text-xs text-neutral-400 mb-8">Setiap Hari Minggu Pukul 06:00 &mdash; 09:30 WIB</p>
+
+                        <!-- Countdown Timer Grid -->
+                        <div class="grid grid-cols-4 gap-3 text-center mb-8">
+                            <div class="bg-neutral-900 p-4 rounded-2xl border border-neutral-800">
+                                <span id="cd-days" class="font-mono font-black text-2xl md:text-3xl block">00</span>
+                                <span class="font-mono text-[9px] uppercase tracking-widest text-neutral-500">Hari</span>
+                            </div>
+                            <div class="bg-neutral-900 p-4 rounded-2xl border border-neutral-800">
+                                <span id="cd-hours" class="font-mono font-black text-2xl md:text-3xl block">00</span>
+                                <span class="font-mono text-[9px] uppercase tracking-widest text-neutral-500">Jam</span>
+                            </div>
+                            <div class="bg-neutral-900 p-4 rounded-2xl border border-neutral-800">
+                                <span id="cd-mins" class="font-mono font-black text-2xl md:text-3xl block">00</span>
+                                <span class="font-mono text-[9px] uppercase tracking-widest text-neutral-500">Menit</span>
+                            </div>
+                            <div class="bg-neutral-900 p-4 rounded-2xl border border-neutral-800">
+                                <span id="cd-secs" class="font-mono font-black text-2xl md:text-3xl block">00</span>
+                                <span class="font-mono text-[9px] uppercase tracking-widest text-neutral-500">Detik</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-6 border-t border-neutral-800 font-mono text-[11px] text-neutral-400 uppercase tracking-widest text-center">
+                        Bawa buku sendiri atau pinjam di tempat &bull; Gratis!
+                    </div>
+                </div>
+
+                <!-- Right: All Locations List -->
+                <div class="lg:col-span-7 space-y-6">
+                    <div class="bg-[#fcfcfc] p-8 rounded-3xl shadow-sm border border-neutral-200/80">
+                        <button onclick="toggleAccordion('1')" class="w-full flex justify-between items-center text-left group">
+                            <span class="font-serif font-bold text-xl md:text-2xl uppercase group-hover:italic transition-all">01. Alun-Alun Kota Blora</span>
+                            <span id="icon-1" class="font-mono text-2xl font-bold transition-transform">+</span>
+                        </button>
+                        <div id="content-1" class="hidden pt-6 mt-6 border-t border-neutral-100 text-sm font-sans text-neutral-700 leading-relaxed">
+                            <p class="mb-1"><strong>Waktu:</strong> Minggu Pagi, 06:00 &mdash; 09:30 WIB</p>
+                            <p><strong>Lokasi:</strong> Sisi timur alun-alun di bawah pohon trembesi.</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-[#fcfcfc] p-8 rounded-3xl shadow-sm border border-neutral-200/80">
+                        <button onclick="toggleAccordion('2')" class="w-full flex justify-between items-center text-left group">
+                            <span class="font-serif font-bold text-xl md:text-2xl uppercase group-hover:italic transition-all">02. Taman Tuk Bondo / GOR</span>
+                            <span id="icon-2" class="font-mono text-2xl font-bold transition-transform">+</span>
+                        </button>
+                        <div id="content-2" class="hidden pt-6 mt-6 border-t border-neutral-100 text-sm font-sans text-neutral-700 leading-relaxed">
+                            <p class="mb-1"><strong>Waktu:</strong> Sabtu Sore, 15:30 &mdash; 18:00 WIB</p>
+                            <p><strong>Lokasi:</strong> Area terbuka hijau sekitar GOR Mustika Blora.</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-[#fcfcfc] p-8 rounded-3xl shadow-sm border border-neutral-200/80">
+                        <button onclick="toggleAccordion('3')" class="w-full flex justify-between items-center text-left group">
+                            <span class="font-serif font-bold text-xl md:text-2xl uppercase group-hover:italic transition-all">03. Lapak Keliling &amp; Desa</span>
+                            <span id="icon-3" class="font-mono text-2xl font-bold transition-transform">+</span>
+                        </button>
+                        <div id="content-3" class="hidden pt-6 mt-6 border-t border-neutral-100 text-sm font-sans text-neutral-700 leading-relaxed">
+                            <p class="mb-1"><strong>Waktu:</strong> Kondisional (Menyesuaikan undangan komunitas)</p>
+                            <p><strong>Lokasi:</strong> Balai desa atau ruang publik wilayah Blora.</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <section id="donasi" class="max-w-7xl mx-auto px-6 md:px-12 py-20">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center bg-[#f2f2ef] p-8 md:p-16 rounded-3xl border border-neutral-200/60 shadow-sm">
+                <div class="lg:col-span-6 flex flex-col justify-between">
+                    <div>
+                        <span class="font-mono text-xs uppercase font-bold tracking-widest text-neutral-500 block mb-2">[ 05 / Solidaritas ]</span>
+                        <h3 class="font-serif font-black text-3xl md:text-4xl uppercase tracking-tight mb-4">Donasi Buku &amp; Kontak</h3>
+                        <p class="font-sans text-sm md:text-base text-neutral-700 leading-relaxed mb-8">
+                            Punya buku layak baca yang menumpuk di rumah? Salurkan kepada kami agar dapat dibaca bersama warga di ruang publik Blora.
+                        </p>
+                    </div>
+                    
+                    <div class="space-y-3 font-mono text-xs uppercase tracking-wider">
+                        <div class="bg-[#fcfcfc] p-4 rounded-2xl flex justify-between items-center shadow-sm border border-neutral-200/80">
+                            <span>WhatsApp Relawan</span>
+                            <span class="font-bold">+62 858-7654-3210</span>
+                        </div>
+                        <div class="bg-[#fcfcfc] p-4 rounded-2xl flex justify-between items-center shadow-sm border border-neutral-200/80">
+                            <span>Instagram Resmi</span>
+                            <span class="font-bold">@perpusjalanankotablora</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-6 bg-[#fcfcfc] p-8 md:p-12 rounded-3xl shadow-sm border border-neutral-200/80">
+                    <h4 class="font-serif font-bold text-2xl uppercase mb-6">Konfirmasi Donasi / Pesan</h4>
+                    <form onsubmit="handleForm(event)" class="space-y-5">
+                        <div>
+                            <label class="block font-mono text-xs uppercase font-bold mb-2">Nama / Komunitas</label>
+                            <input type="text" id="fname" required placeholder="cth: Budi Santoso" class="w-full bg-[#f7f7f4] rounded-xl p-4 text-sm font-sans border border-neutral-200 focus:outline-none focus:ring-1 focus:ring-black">
+                        </div>
+                        <div>
+                            <label class="block font-mono text-xs uppercase font-bold mb-2">Jenis Donasi / Keperluan</label>
+                            <input type="text" id="fmsg" required placeholder="cth: Donasi 5 buku novel sastra" class="w-full bg-[#f7f7f4] rounded-xl p-4 text-sm font-sans border border-neutral-200 focus:outline-none focus:ring-1 focus:ring-black">
+                        </div>
+                        <button type="submit" class="w-full bg-black text-white font-mono text-xs uppercase tracking-widest py-4 font-bold rounded-xl hover:bg-neutral-800 transition-colors">
+                            Kirim Konfirmasi &rarr;
+                        </button>
+                    </form>
+                    <div id="form-alert" class="hidden mt-4 p-4 bg-neutral-900 text-white rounded-xl font-mono text-xs text-center uppercase font-bold">
+                        Terima kasih! Pesan Anda berhasil tercatat.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="max-w-7xl mx-auto px-6 md:px-12 py-16 relative z-10">
+        <div class="bg-black text-white rounded-3xl p-10 md:p-14 flex flex-col md:flex-row justify-between items-start md:items-center gap-8 shadow-2xl">
+            <div>
+                <span class="font-mono text-[10px] uppercase tracking-widest text-neutral-400 block mb-2">[ Kolofon ]</span>
+                <h3 class="font-serif font-bold text-2xl uppercase tracking-tight mb-2">Perpustakaan Jalanan Blora</h3>
+                <p class="font-mono text-xs text-neutral-400 uppercase tracking-wider">&copy; 2026 &bull; Dikelola Secara Swadaya &amp; Kolektif</p>
+            </div>
+            <div class="flex flex-wrap items-center gap-6 font-mono text-xs uppercase tracking-widest text-neutral-300">
+                <a href="#manifesto" class="hover:text-white transition-colors">Manifesto</a>
+                <a href="#koleksi" class="hover:text-white transition-colors">Koleksi</a>
+                <a href="#jadwal" class="hover:text-white transition-colors">Jadwal</a>
+                <a href="#" class="bg-neutral-900 px-4 py-2.5 rounded-xl border border-neutral-800 hover:text-white transition-colors">Atas &uarr;</a>
+            </div>
+        </div>
+    </footer>
+
+    <div id="book-modal" class="fixed inset-0 z-50 flex items-center justify-center p-6 modal-backdrop opacity-0 pointer-events-none transition-opacity duration-300">
+        <div id="modal-content-box" class="bg-[#fcfcfc] rounded-3xl max-w-lg w-full p-8 md:p-10 relative transform scale-95 transition-transform duration-300 shadow-2xl border border-neutral-200">
+            <button onclick="closeBookModal()" class="absolute top-6 right-6 font-mono text-xs uppercase tracking-widest bg-neutral-200 hover:bg-black hover:text-white w-10 h-10 rounded-full flex items-center justify-center transition-colors">&times;</button>
+            
+            <span id="modal-cat" class="font-mono text-xs text-neutral-500 font-bold uppercase tracking-wider block mb-2">[ Sastra ]</span>
+            <h3 id="modal-title" class="font-serif font-black text-3xl uppercase tracking-tight mb-1">Judul Buku</h3>
+            <p id="modal-author" class="font-sans text-xs uppercase tracking-wider text-neutral-500 mb-6">Penulis</p>
+            
+            <div class="bg-[#f2f2ef] p-6 rounded-2xl mb-8 border border-neutral-200/80">
+                <span class="block font-mono text-[10px] uppercase text-neutral-500 mb-2">Kurasi Pustaka</span>
+                <p id="modal-desc" class="font-sans text-sm text-neutral-700 leading-relaxed">Deskripsi lengkap buku akan muncul di sini.</p>
+            </div>
+
+            <div class="flex items-center justify-between pt-4 border-t border-neutral-200">
+                <span class="font-mono text-xs uppercase tracking-widest text-neutral-700">Status: Tersedia di Lapak</span>
+                <button onclick="closeBookModal()" class="bg-black text-white px-6 py-3 font-mono text-xs uppercase tracking-widest hover:bg-neutral-800 transition-colors rounded-xl">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Hero Quotes Rotator
+        const quotes = [
+            { text: "Membaca adalah melawan lupa, merawat akal sehat di tengah bisingnya zaman industri informasi.", author: "Catatan Pinggir Perpusjal" },
+            { text: "Buku adalah senjata untuk membebaskan pikiran dari belenggu ketidaktahuan.", author: "Pramoedya Ananta Toer" },
+            { text: "Tiada yang lebih merdeka selain pikiran yang terawat oleh bacaan bermutu.", author: "Arsip Jalanan" },
+            { text: "Ilmu pengetahuan tumbuh tatkala ia dibagikan di atas terpal sederhana di ruang publik.", author: "Relawan Blora" }
+        ];
+        let qIdx = 0;
+        function nextQuote() {
+            qIdx = (qIdx + 1) % quotes.length;
+            const qEl = document.getElementById('hero-quote');
+            const aEl = document.getElementById('hero-author');
+            qEl.style.opacity = '0';
+            aEl.style.opacity = '0';
+            setTimeout(() => {
+                qEl.textContent = `\u201c${quotes[qIdx].text}\u201d`;
+                aEl.textContent = `\u2014 ${quotes[qIdx].author}`;
+                qEl.style.opacity = '1';
+                aEl.style.opacity = '1';
+            }, 200);
+        }
+        document.getElementById('hero-quote').style.transition = 'opacity 0.2s ease';
+        document.getElementById('hero-author').style.transition = 'opacity 0.2s ease';
+
+        // Countdown Timer Logic to next Sunday 06:00 AM
+        function updateCountdown() {
+            const now = new Date();
+            const resultDate = new Date(now);
+            resultDate.setDate(now.getDate() + (7 + 0 - now.getDay()) % 7);
+            resultDate.setHours(6, 0, 0, 0);
+
+            if (now > resultDate) {
+                resultDate.setDate(resultDate.getDate() + 7);
+            }
+
+            const diff = resultDate - now;
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+            const mins = Math.floor((diff / 1000 / 60) % 60);
+            const secs = Math.floor((diff / 1000) % 60);
+
+            document.getElementById('cd-days').textContent = String(days).padStart(2, '0');
+            document.getElementById('cd-hours').textContent = String(hours).padStart(2, '0');
+            document.getElementById('cd-mins').textContent = String(mins).padStart(2, '0');
+            document.getElementById('cd-secs').textContent = String(secs).padStart(2, '0');
+        }
+        setInterval(updateCountdown, 1000);
+        updateCountdown();
+
+        // Catalog Filter
+        function filterBooks(cat) {
+            const btns = document.querySelectorAll('.cat-btn');
+            btns.forEach(b => {
+                b.classList.remove('bg-black', 'text-white', 'shadow-sm');
+                b.classList.add('bg-neutral-200', 'text-neutral-800');
+            });
+            event.target.classList.remove('bg-neutral-200', 'text-neutral-800');
+            event.target.classList.add('bg-black', 'text-white', 'shadow-sm');
+
+            const items = document.querySelectorAll('.book-item');
+            items.forEach(item => {
+                if (cat === 'all' || item.classList.contains(cat)) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        // Accordion Toggle
+        function toggleAccordion(id) {
+            const content = document.getElementById(`content-${id}`);
+            const icon = document.getElementById(`icon-${id}`);
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                icon.textContent = '\u2013';
+                icon.style.transform = 'rotate(180deg)';
+            } else {
+                content.classList.add('hidden');
+                icon.textContent = '+';
+                icon.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        // Book Preview Modal Logic
+        function openBookModal(title, author, cat, sub, desc) {
+            document.getElementById('modal-title').textContent = title;
+            document.getElementById('modal-author').textContent = author;
+            document.getElementById('modal-cat').textContent = `[ ${cat} &bull; ${sub} ]`;
+            document.getElementById('modal-desc').textContent = desc;
+
+            const modal = document.getElementById('book-modal');
+            const box = document.getElementById('modal-content-box');
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            box.classList.remove('scale-95');
+            box.classList.add('scale-100');
+        }
+
+        function closeBookModal() {
+            const modal = document.getElementById('book-modal');
+            const box = document.getElementById('modal-content-box');
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            box.classList.remove('scale-100');
+            box.classList.add('scale-95');
+        }
+
+        // Form handler without alert()
+        function handleForm(e) {
+            e.preventDefault();
+            const name = document.getElementById('fname').value;
+            const alertBox = document.getElementById('form-alert');
+            alertBox.textContent = `Terima kasih ${name}! Konfirmasi berhasil tercatat. Relawan akan segera menghubungi Anda.`;
+            alertBox.classList.remove('hidden');
+            e.target.reset();
+            setTimeout(() => {
+                alertBox.classList.add('hidden');
+            }, 6000);
+        }
+    </script>
+</body>
+</html>
