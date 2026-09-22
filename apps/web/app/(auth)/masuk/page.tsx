@@ -45,8 +45,7 @@ export default function LoginPage() {
       }
 
       // Successful login -> navigate to user dashboard or home
-      router.push('/');
-      router.refresh();
+      window.location.href = '/';
     } catch {
       setErrorMessage('Gagal menghubungi server. Periksa koneksi internetmu.');
     } finally {

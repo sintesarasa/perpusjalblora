@@ -17,6 +17,7 @@ export async function apiClient<T>(
 ): Promise<ApiResponse<T>> {
   try {
     const res = await fetch(`${API_URL}${endpoint}`, {
+      cache: 'no-store',
       ...options,
       credentials: 'include',
       headers: {

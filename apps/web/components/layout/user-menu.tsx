@@ -37,9 +37,10 @@ export function UserMenu() {
 
   const fetchCurrentUser = React.useCallback(async () => {
     try {
-      const res = await apiClient<{ user: CurrentUser }>('/auth/me');
-      if (res.data?.user) {
-        setUser(res.data.user);
+      const res = await apiClient<any>('/auth/me');
+      const u = res.data?.user || (res.data?.id ? res.data : null);
+      if (u) {
+        setUser(u);
       } else {
         setUser(null);
       }

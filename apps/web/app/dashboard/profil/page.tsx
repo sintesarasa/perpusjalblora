@@ -33,7 +33,7 @@ export default function DashboardProfileSettingsPage() {
         const res = await fetch('/api/v1/auth/me', { credentials: 'include' });
         if (res.ok) {
           const json = await res.json();
-          const u = json.data?.user;
+          const u = json.data?.user || (json.data?.id ? json.data : null);
           if (u) {
             setProfile({
               name: u.name || '',

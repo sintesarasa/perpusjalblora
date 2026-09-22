@@ -30,6 +30,8 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 4000;
 
+app.set('etag', false);
+
 // Security & Utility Middleware
 app.use(helmet());
 app.use(
@@ -42,6 +44,14 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(morgan('dev'));
 app.use(authMiddleware);
+
+// Disable 304 caching on API routes for live session freshness
+app.use('/api', (req, res, next) => {
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.set('Pragma', 'no-cache');
+  res.set('Expires', '0');
+  next();
+});
 
 // Routes
 app.use('/api/v1/auth', authRoutes);
