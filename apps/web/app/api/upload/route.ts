@@ -20,10 +20,37 @@ export async function POST(req: NextRequest) {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    const cloudName = process.env.CLOUDINARY_CLOUD_NAME || process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
-    const apiKey = process.env.CLOUDINARY_API_KEY;
-    const apiSecret = process.env.CLOUDINARY_API_SECRET;
-    const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+    let cloudName = process.env.CLOUDINARY_CLOUD_NAME || process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+    let apiKey = process.env.CLOUDINARY_API_KEY;
+    let apiSecret = process.env.CLOUDINARY_API_SECRET;
+
+    // Fallback: If running Next.js without .env loaded in worker process, read from disk
+    if (!cloudName || !apiKey || !apiSecret) {
+      try {
+        const envCandidates = [
+          path.join(process.cwd(), '.env'),
+          path.join(process.cwd(), '..', '..', '.env'),
+        ];
+        for (const p of envCandidates) {
+          try {
+            const raw = await fs.readFile(p, 'utf-8');
+            for (const line of raw.split('\n')) {
+              const [k, ...v] = line.split('=');
+              if (!k) continue;
+              const key = k.trim();
+              const val = v.join('=').trim().replace(/^["']|["']$/g, '');
+              if (key === 'CLOUDINARY_CLOUD_NAME' || key === 'NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME') {
+                cloudName = cloudName || val;
+              } else if (key === 'CLOUDINARY_API_KEY') {
+                apiKey = apiKey || val;
+              } else if (key === 'CLOUDINARY_API_SECRET') {
+                apiSecret = apiSecret || val;
+              }
+            }
+          } catch {}
+        }
+      } catch {}
+    }
 
     // 1. ATTEMPT CLOUDINARY UPLOAD FIRST (PRIMARY SCALABLE STORAGE)
     if (cloudName && cloudName !== 'perpusjal' && apiKey && apiSecret && apiKey !== 'mock-key') {
@@ -33,9 +60,11 @@ export async function POST(req: NextRequest) {
         const strToSign = `folder=${folder}&timestamp=${timestamp}${apiSecret}`;
         const signature = crypto.createHash('sha1').update(strToSign).digest('hex');
 
+        const mime = file.type || 'image/jpeg';
+        const base64Data = `data:${mime};base64,${buffer.toString('base64')}`;
+
         const cFormData = new FormData();
-        const blob = new Blob([buffer], { type: file.type || 'image/jpeg' });
-        cFormData.append('file', blob, file.name);
+        cFormData.append('file', base64Data);
         cFormData.append('api_key', apiKey);
         cFormData.append('timestamp', timestamp.toString());
         cFormData.append('signature', signature);
@@ -48,6 +77,7 @@ export async function POST(req: NextRequest) {
 
         if (cRes.ok) {
           const cData = await cRes.json();
+          console.log(`[Cloudinary Upload Success]: ${cData.secure_url}`);
           return NextResponse.json({
             url: cData.secure_url,
             publicId: cData.public_id,
