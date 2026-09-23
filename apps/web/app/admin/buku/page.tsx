@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { apiClient } from '@/lib/api';
 import { BookItem, BookDetail } from '@perpusjal/types';
 import { AdminBookCopiesModal } from '@/components/admin/admin-book-copies-modal';
+import { AdminAddBookModal } from '@/components/admin/admin-add-book-modal';
+import { AdminEditBookModal } from '@/components/admin/admin-edit-book-modal';
 import { CustomLoader } from '@/components/ui/custom-loader';
 import {
   BookOpen,
@@ -39,7 +41,9 @@ export default function AdminBookListPage() {
   const [actionMessage, setActionMessage] = React.useState<string | null>(null);
   const [actionError, setActionError] = React.useState<string | null>(null);
 
-  // Copies Modal State
+  // Modals States
+  const [isAddModalOpen, setIsAddModalOpen] = React.useState(false);
+  const [editModalBookId, setEditModalBookId] = React.useState<string | null>(null);
   const [copiesModalBook, setCopiesModalBook] = React.useState<{
     id: string;
     title: string;
@@ -124,13 +128,14 @@ export default function AdminBookListPage() {
           </div>
 
           <div className="flex items-center gap-3">
-            <Link
-              href="/admin/buku/tambah"
+            <button
+              type="button"
+              onClick={() => setIsAddModalOpen(true)}
               className="px-5 py-2.5 bg-foreground text-background font-mono text-xs uppercase tracking-widest font-bold hover:opacity-90 transition-opacity inline-flex items-center gap-2 shadow-sm shrink-0"
             >
               <Plus className="w-4 h-4" />
               <span>Tambah Koleksi Buku</span>
-            </Link>
+            </button>
           </div>
         </div>
       </section>
@@ -257,12 +262,13 @@ export default function AdminBookListPage() {
             <h2 className="font-serif text-xl font-normal text-foreground">
               Tidak ada buku yang sesuai dengan kriteria pencarian.
             </h2>
-            <Link
-              href="/admin/buku/tambah"
+            <button
+              type="button"
+              onClick={() => setIsAddModalOpen(true)}
               className="inline-block mt-2 px-4 py-2 bg-foreground text-background text-xs font-bold uppercase tracking-wider"
             >
               + Tambah Buku Pertama Sekarang
-            </Link>
+            </button>
           </div>
         ) : (
           <div className="border border-border-hairline bg-surface divide-y divide-border-hairline">
@@ -353,14 +359,15 @@ export default function AdminBookListPage() {
                       <span>Eksemplar ({total})</span>
                     </button>
 
-                    {/* Sunting Buku */}
-                    <Link
-                      href={`/admin/buku/${book.id}/sunting`}
+                    {/* Sunting Buku (Buka Pop-up Edit Modal) */}
+                    <button
+                      type="button"
+                      onClick={() => setEditModalBookId(book.id)}
                       className="p-1.5 border border-border-hairline hover:border-foreground text-muted hover:text-foreground transition-colors"
                       title="Sunting data buku"
                     >
                       <Edit3 className="w-4 h-4" />
-                    </Link>
+                    </button>
 
                     {/* Buka Tampilan Publik */}
                     <Link
@@ -400,6 +407,21 @@ export default function AdminBookListPage() {
           onCopiesUpdated={fetchBooks}
         />
       )}
+
+      {/* 6. ADD BOOK POP-UP MODAL */}
+      <AdminAddBookModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onSuccess={fetchBooks}
+      />
+
+      {/* 7. EDIT BOOK POP-UP MODAL */}
+      <AdminEditBookModal
+        bookId={editModalBookId}
+        isOpen={!!editModalBookId}
+        onClose={() => setEditModalBookId(null)}
+        onSuccess={fetchBooks}
+      />
     </div>
   );
 }

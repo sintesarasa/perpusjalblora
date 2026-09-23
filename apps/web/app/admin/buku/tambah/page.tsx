@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { apiClient } from '@/lib/api';
 import { Language } from '@perpusjal/types';
+import { BookCoverUploader } from '@/components/admin/book-cover-uploader';
 import {
   ArrowLeft,
   BookOpen,
@@ -448,44 +449,10 @@ export default function AdminAddBookPage() {
                   </h3>
                 </div>
 
-                <div className="font-mono text-xs space-y-2">
-                  <label className="block text-[10px] uppercase text-muted font-bold">
-                    URL Gambar Sampul (HTTPS)
-                  </label>
-                  <input
-                    type="url"
-                    value={coverImage}
-                    onChange={(e) => setCoverImage(e.target.value)}
-                    placeholder="https://images.unsplash.com/..."
-                    className="w-full px-3 py-2 border border-border-hairline bg-surface text-foreground font-mono text-xs focus:border-foreground focus:outline-none"
-                  />
-                  <span className="text-[10px] text-muted block">
-                    Masukkan URL gambar sampul beresolusi jelas.
-                  </span>
-                </div>
-
-                {/* Cover Live Preview Card */}
-                <div className="border border-dashed border-border-hairline bg-surface-muted/30 p-4 flex flex-col items-center justify-center text-center min-h-[260px]">
-                  {coverImage ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={coverImage}
-                      alt={title || 'Pratinjau Sampul'}
-                      onError={(e) => {
-                        (e.target as HTMLElement).style.display = 'none';
-                      }}
-                      className="w-36 h-52 object-cover border border-foreground shadow-md"
-                    />
-                  ) : (
-                    <div className="space-y-2 text-muted">
-                      <ImageIcon className="w-10 h-10 mx-auto stroke-1" />
-                      <p className="font-mono text-[11px]">
-                        Belum ada tautan sampul.<br />
-                        Katalog akan memakai sampul tipografi standar.
-                      </p>
-                    </div>
-                  )}
-                </div>
+                <BookCoverUploader
+                  value={coverImage}
+                  onChange={setCoverImage}
+                />
 
                 {/* Mini Meta Preview */}
                 <div className="p-3 bg-surface-muted border border-border-hairline font-mono text-xs space-y-1">
