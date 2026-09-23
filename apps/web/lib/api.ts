@@ -41,7 +41,44 @@ export async function apiClient<T>(
       };
     }
 
-    return { data: json?.data ?? json };
+    if (!json || typeof json !== 'object') {
+      return { data: json as T };
+    }
+
+    // Envelope with meta (e.g. paginated lists { data: [...], meta: {...} })
+    if ('data' in json && 'meta' in json) {
+      return { data: json as T };
+    }
+
+    // Standard envelope { data: inner, ... }
+    if ('data' in json) {
+      const inner = json.data;
+      if (inner && typeof inner === 'object') {
+        try {
+          if (!('data' in inner)) {
+            Object.defineProperty(inner, 'data', {
+              value: inner,
+              enumerable: false,
+              writable: true,
+              configurable: true,
+            });
+          }
+          if ('message' in json && !('message' in inner)) {
+            Object.defineProperty(inner, 'message', {
+              value: (json as Record<string, unknown>).message,
+              enumerable: false,
+              writable: true,
+              configurable: true,
+            });
+          }
+        } catch {
+          // Ignore sealed/frozen objects
+        }
+        return { data: inner as T };
+      }
+    }
+
+    return { data: json as T };
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Tidak dapat terhubung ke server perpusjal.';
     return {

@@ -58,19 +58,22 @@ export default function AdminEditBookPage() {
       setLoading(true);
       try {
         const [catRes, bookRes] = await Promise.all([
-          apiClient<{ data: CategoryItem[] }>('/articles/categories'),
-          apiClient<{ data: BookDetail }>(`/books/${bookId}`),
+          apiClient<CategoryItem[]>('/articles/categories'),
+          apiClient<BookDetail>(`/books/${bookId}`),
         ]);
 
-        if (catRes.data?.data) {
-          setCategories(catRes.data.data);
-        }
+        const catList: CategoryItem[] = Array.isArray(catRes.data)
+          ? catRes.data
+          : Array.isArray((catRes.data as any)?.data)
+          ? (catRes.data as any).data
+          : [];
+        setCategories(catList);
 
-        if (bookRes.data?.data) {
-          const b = bookRes.data.data;
+        const b: BookDetail | null = (bookRes.data as any)?.data || (bookRes.data as any) || null;
+        if (b && (b as any).id) {
           setTitle(b.title || '');
           setAuthor(b.author || '');
-          setCategoryId(b.category?.id || '');
+          setCategoryId(b.category?.id || (catList.length > 0 ? catList[0].id : ''));
           setIsbn(b.isbn || '');
           setPublisher(b.publisher || '');
           setPublicationYear(b.publicationYear ? b.publicationYear.toString() : '');
@@ -242,13 +245,25 @@ export default function AdminEditBookPage() {
                         required
                         value={categoryId}
                         onChange={(e) => setCategoryId(e.target.value)}
-                        className="w-full px-3 py-2 border border-border-hairline bg-surface text-foreground font-sans text-sm focus:border-foreground focus:outline-none"
+                        disabled={loading || categories.length === 0}
+                        className="w-full px-3 py-2 border border-border-hairline bg-surface text-foreground font-sans text-sm focus:border-foreground focus:outline-none disabled:opacity-60"
                       >
-                        {categories.map((c) => (
-                          <option key={c.id} value={c.id}>
-                            {c.name}
+                        {categories.length === 0 ? (
+                          <option value="" disabled>
+                            Memuat kategori...
                           </option>
-                        ))}
+                        ) : (
+                          <>
+                            <option value="" disabled>
+                              -- Pilih Kategori Pustaka --
+                            </option>
+                            {categories.map((c) => (
+                              <option key={c.id} value={c.id}>
+                                {c.name}
+                              </option>
+                            ))}
+                          </>
+                        )}
                       </select>
                     </div>
                   </div>

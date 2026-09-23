@@ -62,15 +62,22 @@ export default function AdminBookListPage() {
 
       const [booksRes, catRes] = await Promise.all([
         apiClient<{ data: BookItem[]; meta: any }>(`/books?${params.toString()}`),
-        apiClient<{ data: CategoryItem[] }>('/articles/categories'),
+        apiClient<CategoryItem[]>('/articles/categories'),
       ]);
 
-      if (booksRes.data) {
-        setBooks(booksRes.data.data || []);
-      }
-      if (catRes.data?.data) {
-        setCategories(catRes.data.data);
-      }
+      const bookList: BookItem[] = Array.isArray(booksRes.data)
+        ? booksRes.data
+        : Array.isArray((booksRes.data as any)?.data)
+        ? (booksRes.data as any).data
+        : [];
+      setBooks(bookList);
+
+      const catList: CategoryItem[] = Array.isArray(catRes.data)
+        ? catRes.data
+        : Array.isArray((catRes.data as any)?.data)
+        ? (catRes.data as any).data
+        : [];
+      setCategories(catList);
     } catch {
       setActionError('Gagal memuat katalog buku.');
     } finally {

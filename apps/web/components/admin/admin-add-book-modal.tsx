@@ -61,13 +61,18 @@ export function AdminAddBookModal({
     if (!isOpen) return;
 
     async function loadCategories() {
+      setLoadingCategories(true);
       try {
-        const res = await apiClient<{ data: CategoryItem[] }>('/articles/categories');
-        if (res.data?.data) {
-          setCategories(res.data.data);
-          if (res.data.data.length > 0 && !categoryId) {
-            setCategoryId(res.data.data[0].id);
-          }
+        const res = await apiClient<CategoryItem[]>('/articles/categories');
+        const list: CategoryItem[] = Array.isArray(res.data)
+          ? res.data
+          : Array.isArray((res.data as any)?.data)
+          ? (res.data as any).data
+          : [];
+
+        if (list.length > 0) {
+          setCategories(list);
+          setCategoryId((prev) => prev || list[0].id);
         }
       } catch (err) {
         console.error('Failed to load categories', err);
@@ -76,7 +81,7 @@ export function AdminAddBookModal({
       }
     }
     loadCategories();
-  }, [isOpen, categoryId]);
+  }, [isOpen]);
 
   const resetForm = () => {
     setTitle('');
@@ -252,14 +257,29 @@ export function AdminAddBookModal({
                         required
                         value={categoryId}
                         onChange={(e) => setCategoryId(e.target.value)}
-                        disabled={loadingCategories}
-                        className="w-full px-3 py-2 border border-border-hairline bg-surface text-foreground font-sans text-sm focus:border-foreground focus:outline-none"
+                        disabled={loadingCategories || categories.length === 0}
+                        className="w-full px-3 py-2 border border-border-hairline bg-surface text-foreground font-sans text-sm focus:border-foreground focus:outline-none disabled:opacity-60"
                       >
-                        {categories.map((c) => (
-                          <option key={c.id} value={c.id}>
-                            {c.name}
+                        {loadingCategories ? (
+                          <option value="" disabled>
+                            Memuat daftar kategori...
                           </option>
-                        ))}
+                        ) : categories.length === 0 ? (
+                          <option value="" disabled>
+                            Tidak ada kategori ditemukan
+                          </option>
+                        ) : (
+                          <>
+                            <option value="" disabled>
+                              -- Pilih Kategori Pustaka --
+                            </option>
+                            {categories.map((c) => (
+                              <option key={c.id} value={c.id}>
+                                {c.name}
+                              </option>
+                            ))}
+                          </>
+                        )}
                       </select>
                     </div>
                   </div>
