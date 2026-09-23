@@ -24,6 +24,40 @@ function computeAvailability(availableCopies: number, isBorrowable: boolean): Bo
   return 'BORROWED';
 }
 
+async function getNextInventoryCodeSequence(
+  prismaOrTx: any,
+  year: number
+): Promise<number> {
+  const copies = await prismaOrTx.bookCopy.findMany({
+    where: {
+      inventoryCode: {
+        startsWith: `PJ-${year}-`,
+      },
+    },
+    select: {
+      inventoryCode: true,
+    },
+    orderBy: {
+      inventoryCode: 'desc',
+    },
+    take: 50,
+  });
+
+  let maxSeq = 0;
+  const prefix = `PJ-${year}-`;
+  for (const c of copies) {
+    if (c.inventoryCode.startsWith(prefix)) {
+      const numPart = c.inventoryCode.slice(prefix.length);
+      const parsed = parseInt(numPart, 10);
+      if (!isNaN(parsed) && parsed > maxSeq) {
+        maxSeq = parsed;
+      }
+    }
+  }
+
+  return maxSeq;
+}
+
 function slugify(text: string): string {
   return text
     .toLowerCase()
@@ -434,12 +468,22 @@ export class BooksService {
       });
 
       if (initialCopiesCount > 0) {
-        const copyData = Array.from({ length: initialCopiesCount }).map((_, idx) => ({
-          bookId: created.id,
-          inventoryCode: `PJ-${year}-${(idx + 1).toString().padStart(4, '0')}`,
-          condition: BookCondition.BAIK as unknown as any,
-          status: BookCopyStatus.AVAILABLE as unknown as any,
-        }));
+        let baseSeq = await getNextInventoryCodeSequence(tx, year);
+        const copyData = [];
+        for (let i = 0; i < initialCopiesCount; i++) {
+          baseSeq += 1;
+          let candidate = `PJ-${year}-${baseSeq.toString().padStart(4, '0')}`;
+          while (await tx.bookCopy.findUnique({ where: { inventoryCode: candidate } })) {
+            baseSeq += 1;
+            candidate = `PJ-${year}-${baseSeq.toString().padStart(4, '0')}`;
+          }
+          copyData.push({
+            bookId: created.id,
+            inventoryCode: candidate,
+            condition: BookCondition.BAIK as unknown as any,
+            status: BookCopyStatus.AVAILABLE as unknown as any,
+          });
+        }
 
         await tx.bookCopy.createMany({
           data: copyData,
@@ -542,8 +586,23 @@ export class BooksService {
     }
 
     const year = new Date().getFullYear();
-    const count = await prisma.bookCopy.count({ where: { bookId } });
-    const inventoryCode = input.inventoryCode || `PJ-${year}-${(count + 1).toString().padStart(4, '0')}`;
+    let inventoryCode = input.inventoryCode ? input.inventoryCode.trim() : '';
+
+    if (inventoryCode) {
+      const existing = await prisma.bookCopy.findUnique({ where: { inventoryCode } });
+      if (existing) {
+        throw HttpError.badRequest(`Kode inventaris '${inventoryCode}' sudah digunakan.`);
+      }
+    } else {
+      let seq = await getNextInventoryCodeSequence(prisma, year);
+      seq += 1;
+      let candidate = `PJ-${year}-${seq.toString().padStart(4, '0')}`;
+      while (await prisma.bookCopy.findUnique({ where: { inventoryCode: candidate } })) {
+        seq += 1;
+        candidate = `PJ-${year}-${seq.toString().padStart(4, '0')}`;
+      }
+      inventoryCode = candidate;
+    }
 
     const isAvailable = (input.status || BookCopyStatus.AVAILABLE) === BookCopyStatus.AVAILABLE;
 
