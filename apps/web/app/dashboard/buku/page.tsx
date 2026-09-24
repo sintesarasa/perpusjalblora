@@ -28,7 +28,10 @@ import {
   Eye,
   EyeOff,
   ShieldAlert,
+  Tag,
 } from 'lucide-react';
+import { usePrintQueue } from '@/lib/print-queue-context';
+import { StickerPrintQueueDrawer } from '@/components/admin/sticker-print-queue-drawer';
 
 interface CategoryItem {
   id: string;
@@ -76,12 +79,11 @@ export default function DashboardBookManagementPage() {
 
   // Modals States
   const [isAddModalOpen, setIsAddModalOpen] = React.useState(false);
+  const [isQueueOpen, setIsQueueOpen] = React.useState(false);
   const [editModalBookId, setEditModalBookId] = React.useState<string | null>(null);
-  const [copiesModalBook, setCopiesModalBook] = React.useState<{
-    id: string;
-    title: string;
-    slug: string;
-  } | null>(null);
+  const [copiesModalBook, setCopiesModalBook] = React.useState<BookItem | null>(null);
+
+  const { totalCount, addMultipleToQueue } = usePrintQueue();
 
   // Custom Delete Modal State
   const [deleteTarget, setDeleteTarget] = React.useState<{ id: string; title: string } | null>(null);
@@ -281,7 +283,22 @@ export default function DashboardBookManagementPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-3 shrink-0">
+        <div className="flex items-center gap-3 shrink-0 flex-wrap">
+          <button
+            type="button"
+            onClick={() => setIsQueueOpen(true)}
+            className="px-4 py-2.5 border border-foreground bg-surface hover:bg-surface-muted text-foreground font-mono text-xs uppercase tracking-widest font-bold inline-flex items-center gap-2 shadow-sm transition-colors relative"
+            title="Buka antrean cetak stiker punggung buku A4"
+          >
+            <Tag className="w-4 h-4" />
+            <span>Antrean Stiker</span>
+            {totalCount > 0 && (
+              <span className="px-1.5 py-0.2 bg-foreground text-background text-[10px] font-bold">
+                {totalCount}
+              </span>
+            )}
+          </button>
+
           <button
             type="button"
             onClick={() => setIsAddModalOpen(true)}
@@ -567,18 +584,54 @@ export default function DashboardBookManagementPage() {
                     {/* Kelola Eksemplar Fisik */}
                     <button
                       type="button"
-                      onClick={() =>
-                        setCopiesModalBook({
-                          id: book.id,
-                          title: book.title,
-                          slug: book.slug,
-                        })
-                      }
+                      onClick={() => setCopiesModalBook(book)}
                       className="px-3 py-1.5 border border-foreground bg-surface hover:bg-surface-muted text-foreground font-semibold inline-flex items-center gap-1.5 transition-colors"
                       title="Kelola nomor dan kondisi eksemplar fisik"
                     >
                       <Layers className="w-3.5 h-3.5" />
                       <span>Eksemplar ({total})</span>
+                    </button>
+
+                    {/* Tombol Cepat Tambah ke Antrean Stiker */}
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        try {
+                          const res = await apiClient<{ data: any[] }>(`/books/${book.id}/copies`);
+                          const raw = res.data;
+                          const copies: any[] = Array.isArray(raw)
+                            ? raw
+                            : Array.isArray((raw as any)?.data)
+                            ? (raw as any).data
+                            : [];
+                          if (copies.length === 0) {
+                            setActionError(`Buku "${book.title}" belum memiliki eksemplar fisik untuk dicetak.`);
+                            return;
+                          }
+                          addMultipleToQueue(
+                            copies.map((c: any, idx: number) => ({
+                              bookId: book.id,
+                              bookTitle: book.title,
+                              bookSlug: book.slug,
+                              author: book.author,
+                              categoryName: book.category?.name,
+                              categorySlug: book.category?.slug,
+                              shelfLocation: book.shelfLocation,
+                              inventoryCode: c.inventoryCode,
+                              copyNumber: idx + 1,
+                              count: 1,
+                            }))
+                          );
+                          setActionMessage(`${copies.length} stiker untuk "${book.title}" berhasil dimasukkan ke antrean cetak!`);
+                          setIsQueueOpen(true);
+                        } catch {
+                          setActionError('Gagal mengambil data eksemplar untuk stiker.');
+                        }
+                      }}
+                      className="p-1.5 border border-border-hairline hover:border-foreground text-muted hover:text-foreground transition-colors"
+                      title="Masukkan semua stiker buku ini ke antrean cetak A4"
+                    >
+                      <Tag className="w-4 h-4" />
                     </button>
 
                     {/* Sunting Buku (Buka Pop-up Edit Modal) */}
@@ -664,11 +717,21 @@ export default function DashboardBookManagementPage() {
           bookId={copiesModalBook.id}
           bookTitle={copiesModalBook.title}
           bookSlug={copiesModalBook.slug}
+          author={copiesModalBook.author}
+          categoryName={copiesModalBook.category?.name}
+          categorySlug={copiesModalBook.category?.slug}
+          shelfLocation={copiesModalBook.shelfLocation}
           isOpen={!!copiesModalBook}
           onClose={() => setCopiesModalBook(null)}
           onCopiesUpdated={fetchBooks}
         />
       )}
+
+      {/* 8. STICKER PRINT QUEUE DRAWER */}
+      <StickerPrintQueueDrawer
+        isOpen={isQueueOpen}
+        onClose={() => setIsQueueOpen(false)}
+      />
 
       {/* 8. ADD BOOK POP-UP MODAL */}
       <AdminAddBookModal

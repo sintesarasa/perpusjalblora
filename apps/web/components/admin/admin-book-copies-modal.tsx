@@ -15,7 +15,10 @@ import {
   HelpCircle,
   Copy,
   Check,
+  Tag,
+  Printer,
 } from 'lucide-react';
+import { usePrintQueue } from '@/lib/print-queue-context';
 
 interface BookCopyItem {
   id: string;
@@ -30,6 +33,10 @@ interface AdminBookCopiesModalProps {
   bookId: string;
   bookTitle: string;
   bookSlug: string;
+  author?: string;
+  categoryName?: string;
+  categorySlug?: string;
+  shelfLocation?: string | null;
   isOpen: boolean;
   onClose: () => void;
   onCopiesUpdated?: () => void;
@@ -38,6 +45,11 @@ interface AdminBookCopiesModalProps {
 export function AdminBookCopiesModal({
   bookId,
   bookTitle,
+  bookSlug,
+  author = '',
+  categoryName = '',
+  categorySlug = '',
+  shelfLocation = null,
   isOpen,
   onClose,
   onCopiesUpdated,
@@ -47,6 +59,9 @@ export function AdminBookCopiesModal({
   const [actionLoading, setActionLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [successMessage, setSuccessMessage] = React.useState<string | null>(null);
+
+  const { addToQueue, addMultipleToQueue } = usePrintQueue();
+  const [queuedToast, setQueuedToast] = React.useState<string | null>(null);
 
   // New copy form state
   const [showAddForm, setShowAddForm] = React.useState(false);
@@ -332,22 +347,63 @@ export function AdminBookCopiesModal({
         {/* Modal Body */}
         <div className="p-4 sm:p-6 overflow-y-auto flex-1 space-y-6">
           {/* Action Toolbar */}
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-2">
             <span className="font-mono text-xs uppercase tracking-wider text-muted font-bold">
-              Daftar Eksemplar Buku
+              Daftar Eksemplar Buku ({copies.length})
             </span>
 
-            {!showAddForm && (
-              <button
-                type="button"
-                onClick={() => setShowAddForm(true)}
-                className="px-3 py-1.5 border border-foreground bg-foreground text-background font-mono text-xs font-bold uppercase tracking-wider hover:opacity-90 inline-flex items-center gap-1.5"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>Tambah Eksemplar Baru</span>
-              </button>
-            )}
+            <div className="flex items-center gap-2">
+              {copies.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    addMultipleToQueue(
+                      copies.map((c, idx) => ({
+                        bookId,
+                        bookTitle,
+                        bookSlug,
+                        author,
+                        categoryName,
+                        categorySlug,
+                        shelfLocation,
+                        inventoryCode: c.inventoryCode,
+                        copyNumber: idx + 1,
+                        count: 1,
+                      }))
+                    );
+                    setQueuedToast(`Semua (${copies.length}) stiker berhasil dimasukkan ke antrean cetak!`);
+                    setTimeout(() => setQueuedToast(null), 3000);
+                  }}
+                  className="px-3 py-1.5 border border-border-hairline hover:border-foreground bg-surface text-foreground font-mono text-xs font-semibold uppercase tracking-wider inline-flex items-center gap-1.5 transition-colors"
+                  title="Tambahkan seluruh stiker eksemplar buku ini ke antrean cetak A4"
+                >
+                  <Tag className="w-3.5 h-3.5" />
+                  <span>+ Antrean Cetak ({copies.length})</span>
+                </button>
+              )}
+
+              {!showAddForm && (
+                <button
+                  type="button"
+                  onClick={() => setShowAddForm(true)}
+                  className="px-3 py-1.5 border border-foreground bg-foreground text-background font-mono text-xs font-bold uppercase tracking-wider hover:opacity-90 inline-flex items-center gap-1.5"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Tambah Eksemplar Baru</span>
+                </button>
+              )}
+            </div>
           </div>
+
+          {queuedToast && (
+            <div className="p-2.5 bg-emerald-50 border border-emerald-500 font-mono text-xs text-emerald-900 flex items-center justify-between animate-in fade-in">
+              <div className="flex items-center gap-1.5">
+                <Check className="w-4 h-4 text-emerald-600" />
+                <span>{queuedToast}</span>
+              </div>
+              <button onClick={() => setQueuedToast(null)} className="font-bold">&times;</button>
+            </div>
+          )}
 
           {/* Form: Add New Copy */}
           {showAddForm && (
@@ -604,6 +660,30 @@ export function AdminBookCopiesModal({
 
                     {/* Actions */}
                     <div className="flex items-center gap-2 self-end sm:self-center">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          addToQueue({
+                            bookId,
+                            bookTitle,
+                            bookSlug,
+                            author,
+                            categoryName,
+                            categorySlug,
+                            shelfLocation,
+                            inventoryCode: copy.inventoryCode,
+                            count: 1,
+                          });
+                          setQueuedToast(`Stiker ${copy.inventoryCode} berhasil ditambahkan ke antrean cetak!`);
+                          setTimeout(() => setQueuedToast(null), 3000);
+                        }}
+                        className="px-2.5 py-1 border border-border-hairline hover:border-foreground text-foreground text-[11px] uppercase tracking-wider font-semibold inline-flex items-center gap-1 transition-colors"
+                        title="Tambahkan stiker buku ini ke antrean cetak A4"
+                      >
+                        <Tag className="w-3 h-3" />
+                        <span>+ Stiker</span>
+                      </button>
+
                       <button
                         type="button"
                         onClick={() => startEdit(copy)}
