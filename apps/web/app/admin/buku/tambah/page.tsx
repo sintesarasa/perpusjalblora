@@ -116,7 +116,7 @@ export default function AdminAddBookPage() {
       } else {
         setSuccess(true);
         setTimeout(() => {
-          router.push('/admin/buku');
+          router.push('/dashboard/buku');
         }, 1200);
       }
     } catch {
@@ -132,7 +132,7 @@ export default function AdminAddBookPage() {
       <section className="border-b border-border-hairline bg-surface-muted/30 py-8 px-4 sm:px-8">
         <div className="max-w-5xl mx-auto space-y-3">
           <Link
-            href="/admin/buku"
+            href="/dashboard/buku"
             className="inline-flex items-center gap-1.5 font-mono text-xs uppercase tracking-wider text-muted hover:text-foreground transition-colors"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
@@ -504,7 +504,7 @@ export default function AdminAddBookPage() {
                 </button>
 
                 <Link
-                  href="/admin/buku"
+                  href="/dashboard/buku"
                   className="w-full py-2.5 border border-border-hairline text-center block text-muted hover:text-foreground hover:bg-surface-muted transition-colors uppercase tracking-wider font-semibold"
                 >
                   Batal & Kembali
