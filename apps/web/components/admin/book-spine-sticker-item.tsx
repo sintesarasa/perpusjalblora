@@ -65,7 +65,11 @@ export function BookSpineStickerItem({
 
   React.useEffect(() => {
     // Generate QR Code containing public URL or book check-in url
-    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://perpusjalblora.id';
+    // Prioritize configured domain, then window origin, then fallback
+    const configuredBase = process.env.NEXT_PUBLIC_APP_URL;
+    const origin = configuredBase && !configuredBase.includes('localhost')
+      ? configuredBase
+      : (typeof window !== 'undefined' ? window.location.origin : 'https://perpusjalblora.id');
     const targetUrl = `${origin}/buku/${bookSlug}`;
 
     QRCode.toString(targetUrl, {
