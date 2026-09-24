@@ -79,15 +79,19 @@ export class BooksService {
       tahunMin,
       tahunMax,
       sort = 'terbaru',
+      includeDraft = false,
       page = 1,
       perPage = 24,
     } = query;
     const skip = (page - 1) * perPage;
 
     const where: any = {
-      isPublished: true,
       deletedAt: null,
     };
+
+    if (!includeDraft) {
+      where.isPublished = true;
+    }
 
     if (q && q.trim()) {
       const term = q.trim();
@@ -142,6 +146,7 @@ export class BooksService {
           totalCopies: true,
           availableCopies: true,
           isBorrowable: true,
+          isPublished: true,
           shelfLocation: true,
           publicationYear: true,
           category: {
@@ -167,6 +172,7 @@ export class BooksService {
       availableCopies: b.availableCopies,
       isBorrowable: b.isBorrowable,
       availability: computeAvailability(b.availableCopies, b.isBorrowable),
+      isPublished: b.isPublished,
       shelfLocation: b.shelfLocation,
       publicationYear: b.publicationYear,
     }));
@@ -526,6 +532,32 @@ export class BooksService {
     });
 
     return this.getBookBySlug(updated.slug);
+  }
+
+  /**
+   * Toggle publish status (publish / unpublish draft)
+   */
+  async togglePublish(id: string) {
+    const existing = await prisma.book.findUnique({ where: { id } });
+    if (!existing || existing.deletedAt) {
+      throw HttpError.notFound('Buku tidak ditemukan.');
+    }
+
+    const updated = await prisma.book.update({
+      where: { id },
+      data: {
+        isPublished: !existing.isPublished,
+      },
+    });
+
+    return {
+      id: updated.id,
+      title: updated.title,
+      isPublished: updated.isPublished,
+      message: updated.isPublished
+        ? `Buku "${updated.title}" berhasil diterbitkan ke katalog publik.`
+        : `Buku "${updated.title}" ditarik ke status Draft (disembunyikan dari publik).`,
+    };
   }
 
   /**

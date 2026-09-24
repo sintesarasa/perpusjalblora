@@ -60,6 +60,16 @@ export class BooksController {
     }
   }
 
+  async togglePublish(req: Request, res: Response, next: NextFunction) {
+    try {
+      const id = req.params.id as string;
+      const result = await booksService.togglePublish(id);
+      res.status(200).json({ data: result, message: result.message });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async deleteBook(req: Request, res: Response, next: NextFunction) {
     try {
       const id = req.params.id as string;

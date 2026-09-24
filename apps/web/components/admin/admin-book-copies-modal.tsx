@@ -13,6 +13,8 @@ import {
   BookOpen,
   Wrench,
   HelpCircle,
+  Copy,
+  Check,
 } from 'lucide-react';
 
 interface BookCopyItem {
@@ -52,12 +54,25 @@ export function AdminBookCopiesModal({
   const [newCondition, setNewCondition] = React.useState<BookCondition>(BookCondition.BAIK);
   const [newStatus, setNewStatus] = React.useState<BookCopyStatus>(BookCopyStatus.AVAILABLE);
   const [newNote, setNewNote] = React.useState('');
-
   // Edit condition state
   const [editingCopyId, setEditingCopyId] = React.useState<string | null>(null);
   const [editCondition, setEditCondition] = React.useState<BookCondition>(BookCondition.BAIK);
   const [editStatus, setEditStatus] = React.useState<BookCopyStatus>(BookCopyStatus.AVAILABLE);
   const [editNote, setEditNote] = React.useState('');
+
+  const [copiedCode, setCopiedCode] = React.useState<string | null>(null);
+
+  const handleCopyCode = async (code: string) => {
+    try {
+      await navigator.clipboard.writeText(code);
+      setCopiedCode(code);
+      setTimeout(() => {
+        setCopiedCode(null);
+      }, 2000);
+    } catch {
+      // Fallback
+    }
+  };
 
   const fetchCopies = React.useCallback(async () => {
     if (!bookId) return;
@@ -550,10 +565,24 @@ export function AdminBookCopiesModal({
                   >
                     <div className="space-y-1.5">
                       <div className="flex items-center gap-2 flex-wrap">
-                        {/* Stylized Inventory Code */}
-                        <span className="font-bold text-foreground text-sm tracking-wider px-2 py-0.5 bg-surface-muted border border-border-hairline">
-                          {copy.inventoryCode}
-                        </span>
+                        {/* Stylized Inventory Code with Copy Action */}
+                        <div className="flex items-center gap-1">
+                          <span className="font-bold text-foreground text-sm tracking-wider px-2 py-0.5 bg-surface-muted border border-border-hairline">
+                            {copy.inventoryCode}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleCopyCode(copy.inventoryCode)}
+                            className="p-1 border border-border-hairline hover:border-foreground text-muted hover:text-foreground transition-colors"
+                            title="Salin Kode Inventaris"
+                          >
+                            {copiedCode === copy.inventoryCode ? (
+                              <Check className="w-3.5 h-3.5 text-emerald-600" />
+                            ) : (
+                              <Copy className="w-3.5 h-3.5" />
+                            )}
+                          </button>
+                        </div>
                         {getConditionBadge(copy.condition)}
                         {getStatusBadge(copy.status)}
                       </div>
