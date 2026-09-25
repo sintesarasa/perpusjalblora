@@ -116,6 +116,7 @@ export interface ArticleDetail extends ArticleSummary {
   plainText: string | null;
   allowComments: boolean;
   status: ArticleStatus;
+  previewToken?: string | null;
   preview?: {
     status: ArticleStatus;
   };

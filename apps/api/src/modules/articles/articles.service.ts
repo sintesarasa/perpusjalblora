@@ -161,19 +161,35 @@ export class ArticlesService {
 
     // Check preview permissions if not published
     let isPreview = false;
+    let previewToken = article.previewToken;
+
     if (!isPublished) {
+      if (!previewToken) {
+        previewToken = Math.random().toString(36).substring(2) + Math.random().toString(36).substring(2);
+        await prisma.article.update({
+          where: { id: article.id },
+          data: { previewToken },
+        });
+      }
+
       const isAuthor = options.user && options.user.userId === article.authorId;
       const isCuratorOrAdmin =
         options.user &&
         (options.user.role === Role.KURATOR || options.user.role === Role.ADMIN);
       const hasValidPreviewToken =
-        options.previewToken && options.previewToken === article.previewToken;
+        options.previewToken && options.previewToken === previewToken;
 
       if (!isAuthor && !isCuratorOrAdmin && !hasValidPreviewToken) {
         throw HttpError.notFound('Artikel ini belum diterbitkan atau tidak tersedia untuk publik.');
       }
       isPreview = true;
     }
+
+    const canSeePreviewToken =
+      options.user &&
+      (options.user.userId === article.authorId ||
+        options.user.role === Role.KURATOR ||
+        options.user.role === Role.ADMIN);
 
     return {
       id: article.id,
@@ -196,6 +212,7 @@ export class ArticlesService {
       author: article.author,
       category: article.category,
       tags: article.tags,
+      previewToken: canSeePreviewToken ? previewToken : undefined,
       ...(isPreview ? { preview: { status: article.status as unknown as ArticleStatus } } : {}),
     };
   }

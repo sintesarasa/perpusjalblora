@@ -12,7 +12,7 @@ import { CommentsSection } from '@/components/comments/comments-section';
 import { CustomLoader } from '@/components/ui/custom-loader';
 import { BrandStamp } from '@/components/ui/brand-stamp';
 import { apiClient } from '@/lib/api';
-import { ArticleDetail, ArticleSummary } from '@perpusjal/types';
+import { ArticleDetail, ArticleSummary, ArticleStatus } from '@perpusjal/types';
 import { ArrowLeft, Share2, Check, MessageSquare, Eye, Clock, Calendar } from 'lucide-react';
 
 function ArticleDetailContent() {
@@ -166,9 +166,15 @@ function ArticleDetailContent() {
 
         {/* Article Masthead */}
         <header className="space-y-6">
-          {article.preview && (
-            <div className="p-3 border-2 border-foreground bg-surface font-mono text-xs uppercase tracking-wider font-semibold">
-              Mode Pratinjau Naskah &bull; Status: {article.preview.status}
+          {(article.preview || article.status !== ArticleStatus.PUBLISHED) && (
+            <div className="p-3.5 border-2 border-foreground bg-surface font-mono text-xs uppercase tracking-wider font-semibold flex flex-wrap items-center justify-between gap-2 shadow-sm">
+              <span className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                Mode Pratinjau Naskah &bull; Status: {article.status || article.preview?.status}
+              </span>
+              <span className="text-[10px] text-muted font-normal lowercase">
+                (Draf sedang dalam antrean kurasi)
+              </span>
             </div>
           )}
 

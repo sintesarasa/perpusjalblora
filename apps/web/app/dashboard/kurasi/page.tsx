@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { CustomLoader } from '@/components/ui/custom-loader';
-import { RichTextRenderer } from '@/components/articles/rich-text-renderer';
 import { apiClient } from '@/lib/api';
 import { ArticleStatus, RejectionReason, Role, ArticleDetail } from '@perpusjal/types';
 import {
@@ -22,7 +21,12 @@ import {
   Feather,
   RefreshCw,
   ExternalLink,
-  BookOpen,
+  MessageSquare,
+  MessageSquarePlus,
+  Trash2,
+  Edit2,
+  CornerDownRight,
+  Sparkles,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -40,6 +44,11 @@ interface AdminArticleItem {
   category: { name: string };
 }
 
+interface BlockNote {
+  quote: string;
+  note: string;
+}
+
 export default function DashboardCuratorPage() {
   const [currentUser, setCurrentUser] = React.useState<{ id: string; role: Role; name: string } | null>(null);
   const [authLoading, setAuthLoading] = React.useState(true);
@@ -55,6 +64,11 @@ export default function DashboardCuratorPage() {
   const [previewArticle, setPreviewArticle] = React.useState<ArticleDetail | null>(null);
   const [previewLoading, setPreviewLoading] = React.useState(false);
   const [previewError, setPreviewError] = React.useState<string | null>(null);
+
+  // Inline Editorial Annotations state (catatan per indeks blok paragraf)
+  const [blockNotes, setBlockNotes] = React.useState<Record<number, BlockNote>>({});
+  const [activeEditingIndex, setActiveEditingIndex] = React.useState<number | null>(null);
+  const [draftNoteText, setDraftNoteText] = React.useState('');
 
   // Form states inside modal
   const [revisionNote, setRevisionNote] = React.useState('');
@@ -104,6 +118,9 @@ export default function DashboardCuratorPage() {
     setPreviewLoading(true);
     setPreviewError(null);
     setPreviewArticle(null);
+    setBlockNotes({});
+    setActiveEditingIndex(null);
+    setDraftNoteText('');
 
     const res = await apiClient<ArticleDetail>(`/articles/${item.slug}`);
     setPreviewLoading(false);
@@ -119,6 +136,63 @@ export default function DashboardCuratorPage() {
     setPreviewSlug(null);
     setPreviewArticle(null);
     setPreviewError(null);
+    setBlockNotes({});
+    setActiveEditingIndex(null);
+    setDraftNoteText('');
+  };
+
+  // Inline annotation handlers
+  const handleStartAnnotation = (index: number, quote: string) => {
+    setActiveEditingIndex(index);
+    setDraftNoteText(blockNotes[index]?.note || '');
+  };
+
+  const handleSaveAnnotation = (index: number, quote: string) => {
+    const trimmed = draftNoteText.trim();
+    if (!trimmed) {
+      handleDeleteAnnotation(index);
+      return;
+    }
+    setBlockNotes((prev) => ({
+      ...prev,
+      [index]: {
+        quote: quote.length > 80 ? quote.slice(0, 80) + '...' : quote,
+        note: trimmed,
+      },
+    }));
+    setActiveEditingIndex(null);
+    setDraftNoteText('');
+  };
+
+  const handleDeleteAnnotation = (index: number) => {
+    setBlockNotes((prev) => {
+      const copy = { ...prev };
+      delete copy[index];
+      return copy;
+    });
+    if (activeEditingIndex === index) {
+      setActiveEditingIndex(null);
+      setDraftNoteText('');
+    }
+  };
+
+  // Compile block notes into revision form
+  const handlePrepareRevisionModal = (articleItem: AdminArticleItem) => {
+    setSelectedArticle(articleItem);
+    const noteKeys = Object.keys(blockNotes).map(Number).sort((a, b) => a - b);
+    if (noteKeys.length > 0) {
+      const compiled = noteKeys
+        .map((idx, n) => {
+          const item = blockNotes[idx];
+          return `${n + 1}. [Bagian #${idx + 1}]: "${item.quote}"\n   Catatan Redaksi: ${item.note}`;
+        })
+        .join('\n\n');
+
+      setRevisionNote(`Catatan Kurasi Naskah:\n\n${compiled}\n\nCatatan Tambahan:\nMohon periksa dan perbaiki poin-poin di atas agar naskah siap diterbitkan.`);
+    } else {
+      setRevisionNote('');
+    }
+    setModalMode('revision');
   };
 
   const handleApprove = async (articleId: string) => {
@@ -207,6 +281,46 @@ export default function DashboardCuratorPage() {
     }
   };
 
+  // Helper to extract paragraphs/blocks from TipTap or plain text
+  const extractBlocks = (content: unknown, plainText?: string | null): Array<{ id: number; text: string; type: string }> => {
+    if (content && typeof content === 'object') {
+      const doc = content as any;
+      if (doc.content && Array.isArray(doc.content)) {
+        return doc.content.map((node: any, idx: number) => {
+          let text = '';
+          if (node.text) {
+            text = node.text;
+          } else if (node.content && Array.isArray(node.content)) {
+            text = node.content.map((c: any) => c.text || '').join('');
+          }
+          return {
+            id: idx,
+            text: text || `[Blok ${node.type || 'Konten'}]`,
+            type: node.type || 'paragraph',
+          };
+        });
+      }
+    }
+
+    if (typeof content === 'string') {
+      return content.split('\n\n').filter(Boolean).map((p, idx) => ({
+        id: idx,
+        text: p,
+        type: 'paragraph',
+      }));
+    }
+
+    if (plainText) {
+      return plainText.split('\n\n').filter(Boolean).map((p, idx) => ({
+        id: idx,
+        text: p,
+        type: 'paragraph',
+      }));
+    }
+
+    return [];
+  };
+
   // Loading state
   if (authLoading) {
     return (
@@ -240,6 +354,8 @@ export default function DashboardCuratorPage() {
       </div>
     );
   }
+
+  const annotationCount = Object.keys(blockNotes).length;
 
   return (
     <div className="p-4 sm:p-8 space-y-8 max-w-7xl mx-auto font-sans">
@@ -393,10 +509,7 @@ export default function DashboardCuratorPage() {
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => {
-                                setSelectedArticle(item);
-                                setModalMode('revision');
-                              }}
+                              onClick={() => handlePrepareRevisionModal(item)}
                               className="hover:bg-foreground hover:text-background"
                               title="Minta Revisi kepada Penulis"
                             >
@@ -411,10 +524,10 @@ export default function DashboardCuratorPage() {
                                 setSelectedArticle(item);
                                 setModalMode('reject');
                               }}
-                              className="hover:bg-foreground hover:text-background"
+                              className="border-border text-destructive hover:bg-destructive hover:text-white hover:border-destructive transition-colors"
                               title="Tolak Naskah"
                             >
-                              <X className="w-3.5 h-3.5 text-destructive mr-1" />
+                              <X className="w-3.5 h-3.5 mr-1" />
                               <span>Tolak</span>
                             </Button>
                           </>
@@ -446,17 +559,17 @@ export default function DashboardCuratorPage() {
       )}
 
       {/* Empty State */}
-      {!isLoading && articles.length === 0 && (
+      {!isLoading && articles.length > 0 === false && (
         <EmptyState
           title="Tidak Ada Naskah dalam Antrean Ini"
           description="Semua naskah dalam tab ini telah selesai diproses oleh meja redaksi."
         />
       )}
 
-      {/* QUICK INLINE PREVIEW MODAL / DRAWER */}
+      {/* QUICK INLINE PREVIEW MODAL / DRAWER WITH INLINE ANNOTATIONS */}
       {previewSlug && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-2 sm:p-6 overflow-y-auto">
-          <div className="border-2 border-foreground bg-background w-full max-w-4xl max-h-[92vh] flex flex-col shadow-2xl animate-in fade-in-50 duration-200">
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-2 sm:p-6 overflow-y-auto">
+          <div className="border-2 border-foreground bg-background w-full max-w-4xl max-h-[94vh] flex flex-col shadow-2xl animate-in fade-in-50 duration-200">
             {/* Drawer Header */}
             <div className="p-4 sm:p-5 border-b border-border-hairline bg-surface-muted/40 flex items-center justify-between gap-4 shrink-0">
               <div className="space-y-0.5">
@@ -472,16 +585,16 @@ export default function DashboardCuratorPage() {
                   {previewArticle ? previewArticle.title : 'Memuat Naskah...'}
                 </h2>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 font-mono text-xs">
                 {previewArticle && (
                   <Link
-                    href={`/artikel/${previewArticle.slug}`}
+                    href={`/artikel/${previewArticle.slug}${previewArticle.previewToken ? `?preview=${previewArticle.previewToken}` : ''}`}
                     target="_blank"
-                    className="p-2 border border-border-hairline bg-surface hover:border-foreground transition-colors font-mono text-[10px] text-muted hover:text-foreground inline-flex items-center gap-1"
-                    title="Buka Halaman Publik di Tab Baru"
+                    className="p-2 border border-border-hairline bg-surface hover:border-foreground transition-colors font-mono text-[10px] text-muted hover:text-foreground inline-flex items-center gap-1.5"
+                    title="Buka Pratinjau Publik di Tab Baru"
                   >
                     <ExternalLink className="w-3.5 h-3.5" />
-                    <span className="hidden sm:inline">Buka Publik</span>
+                    <span className="hidden sm:inline">Pratinjau Tab Baru</span>
                   </Link>
                 )}
                 <button
@@ -538,6 +651,21 @@ export default function DashboardCuratorPage() {
                     </div>
                   </div>
 
+                  {/* Editorial Instruction Ticker */}
+                  {previewArticle.status === ArticleStatus.PENDING_REVIEW && (
+                    <div className="p-3 bg-surface-muted/60 border border-border-hairline flex items-center justify-between gap-2 font-mono text-[11px] text-muted">
+                      <div className="flex items-center gap-2">
+                        <Sparkles className="w-4 h-4 text-amber-500 shrink-0" />
+                        <span>Arahkan kursor ke tiap paragraf untuk memberi <strong>Catatan Blok Redaksi</strong>.</span>
+                      </div>
+                      {annotationCount > 0 && (
+                        <span className="px-2 py-0.5 bg-foreground text-background font-bold text-[10px] shrink-0">
+                          {annotationCount} Catatan Aktif
+                        </span>
+                      )}
+                    </div>
+                  )}
+
                   {/* Cover Image if present */}
                   {previewArticle.coverImage && (
                     <div className="border border-border-hairline overflow-hidden bg-surface-muted">
@@ -557,9 +685,121 @@ export default function DashboardCuratorPage() {
                     </div>
                   )}
 
-                  {/* Article Body Content */}
-                  <div className="pt-2">
-                    <RichTextRenderer content={previewArticle.content} />
+                  {/* Interactive Article Blocks with Inline Annotations */}
+                  <div className="space-y-6 pt-2">
+                    {extractBlocks(previewArticle.content, previewArticle.plainText).map((block) => {
+                      const hasNote = !!blockNotes[block.id];
+                      const isEditing = activeEditingIndex === block.id;
+                      const isFirst = block.id === 0;
+
+                      return (
+                        <div
+                          key={block.id}
+                          className={cn(
+                            'group relative transition-all duration-150 rounded-none',
+                            hasNote
+                              ? 'border-l-4 border-amber-500 bg-amber-500/[0.04] pl-4 py-2'
+                              : 'hover:bg-surface-muted/30 pl-2 -ml-2 py-1'
+                          )}
+                        >
+                          {/* Block Text */}
+                          {block.type === 'heading' ? (
+                            <h3 className="font-serif text-2xl font-bold text-foreground mt-4 mb-2">
+                              {block.text}
+                            </h3>
+                          ) : (
+                            <p
+                              className={cn(
+                                'font-serif text-lg leading-[1.8] text-foreground/90 font-normal',
+                                isFirst && 'first-letter:float-left first-letter:text-5xl first-letter:font-serif first-letter:pr-3 first-letter:pt-1 first-letter:font-bold'
+                              )}
+                            >
+                              {block.text}
+                            </p>
+                          )}
+
+                          {/* Hover Action to Add Annotation */}
+                          {previewArticle.status === ArticleStatus.PENDING_REVIEW && !isEditing && !hasNote && (
+                            <div className="opacity-0 group-hover:opacity-100 transition-opacity mt-1.5 flex items-center justify-end">
+                              <button
+                                onClick={() => handleStartAnnotation(block.id, block.text)}
+                                className="px-2 py-1 bg-surface border border-border-hairline hover:border-foreground text-muted hover:text-foreground font-mono text-[10px] uppercase tracking-wider inline-flex items-center gap-1.5 shadow-sm"
+                              >
+                                <MessageSquarePlus className="w-3 h-3 text-amber-500" />
+                                <span>+ Catatan Blok</span>
+                              </button>
+                            </div>
+                          )}
+
+                          {/* Existing Annotation Card */}
+                          {hasNote && !isEditing && (
+                            <div className="mt-3 p-3 border border-amber-500/40 bg-surface shadow-sm font-sans space-y-2">
+                              <div className="flex items-center justify-between gap-2 border-b border-border-hairline pb-1.5">
+                                <span className="font-mono text-[10px] uppercase tracking-widest text-amber-600 font-bold flex items-center gap-1.5">
+                                  <CornerDownRight className="w-3 h-3" />
+                                  Catatan Redaksi (Blok #{block.id + 1})
+                                </span>
+                                <div className="flex items-center gap-1">
+                                  <button
+                                    onClick={() => handleStartAnnotation(block.id, block.text)}
+                                    className="p-1 text-muted hover:text-foreground hover:bg-surface-muted"
+                                    title="Sunting catatan"
+                                  >
+                                    <Edit2 className="w-3 h-3" />
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeleteAnnotation(block.id)}
+                                    className="p-1 text-muted hover:text-destructive hover:bg-surface-muted"
+                                    title="Hapus catatan"
+                                  >
+                                    <Trash2 className="w-3 h-3" />
+                                  </button>
+                                </div>
+                              </div>
+                              <p className="text-xs text-foreground/90 font-mono leading-relaxed">
+                                {blockNotes[block.id].note}
+                              </p>
+                            </div>
+                          )}
+
+                          {/* Inline Editing Form */}
+                          {isEditing && (
+                            <div className="mt-3 p-3.5 border-2 border-foreground bg-surface shadow-md space-y-3">
+                              <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-wider text-muted">
+                                <span className="font-bold text-foreground">
+                                  Catatan Redaksi untuk Paragraf #{block.id + 1}
+                                </span>
+                                <span>Tekan Simpan setelah selesai</span>
+                              </div>
+                              <textarea
+                                autoFocus
+                                rows={3}
+                                value={draftNoteText}
+                                onChange={(e) => setDraftNoteText(e.target.value)}
+                                placeholder="Tulis instruksi revisi spesifik untuk paragraf ini (misal: perlu tambahan rujukan, perjelas logika kalimat, dll)..."
+                                className="w-full p-2.5 bg-background border border-border text-xs font-sans focus:outline-none focus:border-foreground rounded-none"
+                              />
+                              <div className="flex items-center justify-end gap-2 font-mono text-xs">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => setActiveEditingIndex(null)}
+                                >
+                                  Batal
+                                </Button>
+                                <Button
+                                  variant="solid"
+                                  size="sm"
+                                  onClick={() => handleSaveAnnotation(block.id, block.text)}
+                                >
+                                  Simpan Catatan Blok
+                                </Button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
 
                   {/* Tags */}
@@ -580,8 +820,14 @@ export default function DashboardCuratorPage() {
             {/* Drawer Footer (Sticky Actions) */}
             {previewArticle && (
               <div className="p-4 sm:p-5 border-t border-border-hairline bg-surface-muted/60 flex flex-wrap items-center justify-between gap-3 shrink-0">
-                <div className="font-mono text-xs text-muted">
-                  Status: <strong className="text-foreground uppercase">{previewArticle.status}</strong>
+                <div className="font-mono text-xs text-muted flex items-center gap-3">
+                  <span>Status: <strong className="text-foreground uppercase">{previewArticle.status}</strong></span>
+                  {annotationCount > 0 && (
+                    <span className="px-2 py-0.5 bg-amber-500/10 border border-amber-500 text-amber-700 dark:text-amber-400 font-bold inline-flex items-center gap-1 text-[10px]">
+                      <MessageSquare className="w-3 h-3" />
+                      {annotationCount} Catatan Blok Siap Dikirim
+                    </span>
+                  )}
                 </div>
 
                 <div className="flex items-center gap-2 font-mono text-xs">
@@ -611,9 +857,9 @@ export default function DashboardCuratorPage() {
                           setSelectedArticle(matched);
                           setModalMode('reject');
                         }}
-                        className="hover:border-destructive hover:text-destructive"
+                        className="border-border text-destructive hover:bg-destructive hover:text-white hover:border-destructive transition-colors"
                       >
-                        <X className="w-3.5 h-3.5 mr-1 text-destructive" />
+                        <X className="w-3.5 h-3.5 mr-1" />
                         Tolak
                       </Button>
 
@@ -634,12 +880,12 @@ export default function DashboardCuratorPage() {
                             author: { name: previewArticle.author.name, username: previewArticle.author.username },
                             category: { name: previewArticle.category.name },
                           };
-                          setSelectedArticle(matched);
-                          setModalMode('revision');
+                          handlePrepareRevisionModal(matched);
                         }}
+                        className="hover:bg-foreground hover:text-background"
                       >
                         <RotateCcw className="w-3.5 h-3.5 mr-1 text-amber-600" />
-                        Minta Revisi
+                        <span>Minta Revisi {annotationCount > 0 ? `(${annotationCount} Catatan)` : ''}</span>
                       </Button>
 
                       <Button
@@ -678,7 +924,7 @@ export default function DashboardCuratorPage() {
       {/* CURATION DECISION MODAL DIALOG */}
       {modalMode && selectedArticle && (
         <div className="fixed inset-0 z-[60] bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="border-2 border-foreground bg-background p-6 sm:p-8 max-w-lg w-full space-y-6 shadow-2xl">
+          <div className="border-2 border-foreground bg-background p-6 sm:p-8 max-w-xl w-full space-y-6 shadow-2xl">
             <div className="space-y-1">
               <span className="font-mono text-[10px] uppercase tracking-widest text-muted">
                 TINDAKAN KURASI REDAKSI
@@ -722,18 +968,25 @@ export default function DashboardCuratorPage() {
             {modalMode === 'revision' && (
               <div className="space-y-4">
                 <div className="space-y-1.5">
-                  <label className="font-mono text-[10px] uppercase tracking-wider text-muted font-semibold">
-                    Catatan Perbaikan untuk Penulis (Wajib)
-                  </label>
+                  <div className="flex items-center justify-between">
+                    <label className="font-mono text-[10px] uppercase tracking-wider text-muted font-semibold">
+                      Catatan Perbaikan untuk Penulis (Wajib)
+                    </label>
+                    {annotationCount > 0 && (
+                      <span className="font-mono text-[10px] text-amber-600 font-bold">
+                        {annotationCount} Catatan Blok Terangkum Otomatis
+                      </span>
+                    )}
+                  </div>
                   <textarea
-                    rows={4}
+                    rows={8}
                     placeholder="Jelaskan bagian naskah yang perlu disempurnakan atau diperbaiki..."
                     value={revisionNote}
                     onChange={(e) => setRevisionNote(e.target.value)}
-                    className="w-full p-3 bg-surface border border-border text-xs font-sans focus:outline-none focus:border-foreground rounded-none"
+                    className="w-full p-3 bg-surface border border-border text-xs font-mono leading-relaxed focus:outline-none focus:border-foreground rounded-none"
                   />
                   <p className="font-mono text-[10px] text-muted">
-                    Catatan ini akan dikirimkan langsung ke dasbor penulis agar dapat diperbaiki.
+                    Catatan ini akan dikirimkan langsung ke lonceng notifikasi dan dasbor penulis agar dapat diperbaiki dengan jelas.
                   </p>
                 </div>
                 <div className="pt-2 flex justify-end gap-2">
@@ -795,8 +1048,9 @@ export default function DashboardCuratorPage() {
                     size="sm"
                     onClick={() => handleReject(selectedArticle.id)}
                     isLoading={isProcessing}
+                    className="bg-destructive border-destructive text-white hover:bg-destructive/90"
                   >
-                    Tolak Naskah
+                    Konfirmasi Tolak Naskah
                   </Button>
                 </div>
               </div>
