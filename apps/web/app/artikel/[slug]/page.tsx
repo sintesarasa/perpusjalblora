@@ -50,6 +50,7 @@ function ArticleDetailContent() {
         if (relatedRes.data) {
           setRelated(relatedRes.data);
         }
+        setIsLoading(false);
 
         // Record view ping after 5 seconds of active reading
         const timer = setTimeout(() => {
