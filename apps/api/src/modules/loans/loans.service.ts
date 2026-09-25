@@ -13,6 +13,7 @@ import {
   BookCopyStatus,
   UserSessionPayload,
 } from '@perpusjal/types';
+import { notificationsService } from '../notifications/notifications.service.js';
 
 function generateLoanCode(): string {
   const year = new Date().getFullYear();
@@ -567,6 +568,25 @@ export class LoansService {
       },
     });
 
+    // Notify borrower
+    try {
+      const deadlineStr = pickupDeadline.toLocaleDateString('id-ID', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      });
+      await notificationsService.createNotification(updated.userId, {
+        type: 'LOAN_APPROVED',
+        title: 'Pengajuan Pinjaman Disetujui!',
+        body: `Buku "${updated.book.title}" siap diambil di Meja Lapak. Kode Ambil: ${pickupCode} (berlaku s.d. ${deadlineStr}).`,
+        actionUrl: '/dashboard/pinjaman',
+        entityType: 'LOAN',
+        entityId: updated.id,
+      });
+    } catch (e) {
+      console.error('Failed to send loan approved notification:', e);
+    }
+
     return {
       data: formatLoanItem(updated, true),
       message: `Peminjaman disetujui. Kode pengambilan: ${pickupCode}`,
@@ -577,9 +597,14 @@ export class LoansService {
    * Admin / Curator: Reject loan & restore available copies
    */
   async rejectLoan(loanId: string, reason: string, user?: UserSessionPayload) {
-    return prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx) => {
       const loan = await tx.loan.findUnique({
         where: { id: loanId },
+        include: {
+          book: {
+            select: { title: true },
+          },
+        },
       });
 
       if (!loan) {
@@ -602,10 +627,31 @@ export class LoansService {
           status: LoanStatus.REJECTED as unknown as any,
           rejectionReason: reason.trim(),
         },
+        include: {
+          book: {
+            select: { title: true },
+          },
+        },
       });
 
       return { message: 'Pengajuan peminjaman ditolak.', data: updated };
     });
+
+    // Notify borrower
+    try {
+      await notificationsService.createNotification(result.data.userId, {
+        type: 'LOAN_REJECTED',
+        title: 'Pengajuan Pinjaman Ditolak',
+        body: `Pengajuan pinjaman buku "${result.data.book?.title || 'buku'}" belum dapat disetujui. Alasan: ${reason.trim()}`,
+        actionUrl: '/dashboard/pinjaman',
+        entityType: 'LOAN',
+        entityId: result.data.id,
+      });
+    } catch (e) {
+      console.error('Failed to send loan rejection notification:', e);
+    }
+
+    return result;
   }
 
   /**
@@ -614,7 +660,7 @@ export class LoansService {
   async pickupLoan(input: LoanPickupInput, user: UserSessionPayload) {
     const { pickupCode, bookCopyId } = input;
 
-    return prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx) => {
       const loan = await tx.loan.findFirst({
         where: {
           pickupCode,
@@ -694,6 +740,32 @@ export class LoansService {
         message: 'Buku berhasil diserahkan kepada peminjam.',
       };
     });
+
+    // Notify borrower
+    try {
+      const borrowerId = result.data.borrower?.id;
+      if (borrowerId) {
+        const dueStr = result.data.dueDate
+          ? new Date(result.data.dueDate).toLocaleDateString('id-ID', {
+              day: 'numeric',
+              month: 'short',
+              year: 'numeric',
+            })
+          : '7 hari ke depan';
+        await notificationsService.createNotification(borrowerId, {
+          type: 'LOAN_ACTIVE',
+          title: 'Buku Berhasil Diserah-terimakan!',
+          body: `Selamat membaca "${result.data.book.title}". Batas pengembalian buku adalah ${dueStr}.`,
+          actionUrl: '/dashboard/pinjaman',
+          entityType: 'LOAN',
+          entityId: result.data.id,
+        });
+      }
+    } catch (e) {
+      console.error('Failed to send loan handover notification:', e);
+    }
+
+    return result;
   }
 
   /**
@@ -702,7 +774,7 @@ export class LoansService {
   async returnLoan(loanId: string, input: LoanReturnInput, user: UserSessionPayload) {
     const { condition, note } = input;
 
-    return prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx) => {
       const loan = await tx.loan.findUnique({
         where: { id: loanId },
         include: { bookCopy: true },
@@ -806,6 +878,25 @@ export class LoansService {
         message: 'Pengembalian buku berhasil dicatat.',
       };
     });
+
+    // Notify borrower
+    try {
+      const borrowerId = result.data.borrower?.id;
+      if (borrowerId) {
+        await notificationsService.createNotification(borrowerId, {
+          type: 'LOAN_RETURNED',
+          title: 'Buku Berhasil Dikembalikan',
+          body: `Buku "${result.data.book.title}" telah diterima kembali di Meja Lapak dengan kondisi ${condition}. Terima kasih telah membaca bersama Perpusjal Blora!`,
+          actionUrl: '/dashboard/pinjaman',
+          entityType: 'LOAN',
+          entityId: result.data.id,
+        });
+      }
+    } catch (e) {
+      console.error('Failed to send loan return notification:', e);
+    }
+
+    return result;
   }
 
   /**

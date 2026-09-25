@@ -12,6 +12,7 @@ import {
   Role,
   UserSessionPayload,
 } from '@perpusjal/types';
+import { notificationsService } from '../notifications/notifications.service.js';
 
 export class ArticlesService {
   /**
@@ -743,6 +744,22 @@ export class ArticlesService {
       }),
     ]);
 
+    // Notify author
+    try {
+      await notificationsService.createNotification(article.authorId, {
+        type: 'ARTICLE_APPROVED',
+        title: isScheduled ? 'Naskah Dijadwalkan Terbit' : 'Naskah Berhasil Diterbitkan!',
+        body: isScheduled
+          ? `Naskah Anda "${article.title}" telah disetujui dan dijadwalkan terbit.`
+          : `Selamat! Naskah Anda "${article.title}" telah disetujui kurator dan terbit di Perpusjal Blora.`,
+        actionUrl: `/artikel/${article.slug}`,
+        entityType: 'ARTICLE',
+        entityId: article.id,
+      });
+    } catch (e) {
+      console.error('Failed to send article approved notification:', e);
+    }
+
     return { message: isScheduled ? 'Naskah dijadwalkan terbit.' : 'Naskah berhasil diterbitkan.' };
   }
 
@@ -776,6 +793,21 @@ export class ArticlesService {
         },
       }),
     ]);
+
+    // Notify author
+    try {
+      const previewNote = input.note.length > 80 ? input.note.slice(0, 80) + '...' : input.note;
+      await notificationsService.createNotification(article.authorId, {
+        type: 'ARTICLE_REVISION',
+        title: 'Catatan Revisi dari Redaksi',
+        body: `Kurator telah meninjau naskah "${article.title}": "${previewNote}". Silakan periksa catatan dan perbarui tulisan Anda.`,
+        actionUrl: '/dashboard/tulisan',
+        entityType: 'ARTICLE',
+        entityId: article.id,
+      });
+    } catch (e) {
+      console.error('Failed to send article revision notification:', e);
+    }
 
     return { message: 'Catatan revisi telah dikirimkan ke penulis.' };
   }
@@ -811,6 +843,21 @@ export class ArticlesService {
         },
       }),
     ]);
+
+    // Notify author
+    try {
+      const reasonText = input.note ? ` Catatan: ${input.note}` : '';
+      await notificationsService.createNotification(article.authorId, {
+        type: 'ARTICLE_REJECTED',
+        title: 'Status Naskah: Belum Dapat Diterbitkan',
+        body: `Naskah "${article.title}" belum dapat diterbitkan (${input.reason}).${reasonText}`,
+        actionUrl: '/dashboard/tulisan',
+        entityType: 'ARTICLE',
+        entityId: article.id,
+      });
+    } catch (e) {
+      console.error('Failed to send article rejection notification:', e);
+    }
 
     return { message: 'Naskah ditolak.' };
   }

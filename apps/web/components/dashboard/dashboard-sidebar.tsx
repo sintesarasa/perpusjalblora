@@ -193,11 +193,11 @@ export function DashboardSidebar({ user, onNavigate }: DashboardSidebarProps) {
               </Link>
 
               <Link
-                href="/admin/kurasi"
+                href="/dashboard/kurasi"
                 onClick={onNavigate}
                 className={cn(
                   'flex items-center justify-between px-3 py-2 transition-colors border-l-2',
-                  pathname.startsWith('/admin/kurasi')
+                  pathname.startsWith('/dashboard/kurasi') || pathname.startsWith('/admin/kurasi')
                     ? 'border-foreground bg-foreground text-background font-bold'
                     : 'border-transparent text-foreground/80 hover:bg-surface-muted hover:text-foreground'
                 )}
