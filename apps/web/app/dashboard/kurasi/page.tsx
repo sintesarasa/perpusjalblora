@@ -27,8 +27,11 @@ import {
   Edit2,
   CornerDownRight,
   Sparkles,
+  Mail,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { CuratorLettersTab } from '@/components/dashboard/curator-letters-tab';
+import { CuratorCommentsTab } from '@/components/dashboard/curator-comments-tab';
 
 interface AdminArticleItem {
   id: string;
@@ -49,10 +52,13 @@ interface BlockNote {
   note: string;
 }
 
+type MainTab = 'ARTICLES' | 'LETTERS' | 'COMMENTS';
+
 export default function DashboardCuratorPage() {
   const [currentUser, setCurrentUser] = React.useState<{ id: string; role: Role; name: string } | null>(null);
   const [authLoading, setAuthLoading] = React.useState(true);
 
+  const [mainTab, setMainTab] = React.useState<MainTab>('ARTICLES');
   const [articles, setArticles] = React.useState<AdminArticleItem[]>([]);
   const [statusFilter, setStatusFilter] = React.useState<string>(ArticleStatus.PENDING_REVIEW);
   const [isLoading, setIsLoading] = React.useState(true);
@@ -364,26 +370,28 @@ export default function DashboardCuratorPage() {
         <div className="space-y-1">
           <div className="flex items-center gap-2 font-mono text-xs text-muted uppercase tracking-widest">
             <span>Meja Redaksi</span>
-            <span>// KURASI LITERASI WARGA BLORA</span>
+            <span>// KURASI LITERASI &amp; MODERASI WARGA</span>
           </div>
           <h1 className="font-serif text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
-            Meja Kurasi Naskah
+            Meja Kurasi &amp; Moderasi
           </h1>
           <p className="font-sans text-xs sm:text-sm text-muted max-w-2xl leading-relaxed">
-            Periksa keaslian gagasan, kualitas bahasa, dan integritas tulisan warga sebelum dipublikasikan ke katalog umum Perpusjal Blora.
+            Periksa keaslian gagasan naskah warta, kurasi surat pembaca, dan jaga ketertiban ruang dialektika komunitas Perpusjal Blora.
           </p>
         </div>
 
         <div className="flex items-center gap-2 font-mono text-xs">
-          <button
-            onClick={() => loadQueue()}
-            disabled={isLoading}
-            className="px-3 py-1.5 border border-border-hairline bg-surface hover:border-foreground transition-colors inline-flex items-center gap-1.5"
-            title="Segarkan Antrean"
-          >
-            <RefreshCw className={cn('w-3.5 h-3.5', isLoading && 'animate-spin')} />
-            <span>Segarkan</span>
-          </button>
+          {mainTab === 'ARTICLES' && (
+            <button
+              onClick={() => loadQueue()}
+              disabled={isLoading}
+              className="px-3 py-1.5 border border-border-hairline bg-surface hover:border-foreground transition-colors inline-flex items-center gap-1.5"
+              title="Segarkan Antrean"
+            >
+              <RefreshCw className={cn('w-3.5 h-3.5', isLoading && 'animate-spin')} />
+              <span>Segarkan</span>
+            </button>
+          )}
           <Link
             href="/dashboard/tulisan"
             className="px-3 py-1.5 border border-border-hairline bg-surface hover:border-foreground transition-colors inline-flex items-center gap-1.5"
@@ -398,15 +406,63 @@ export default function DashboardCuratorPage() {
         </div>
       </div>
 
-      {/* Status Filters */}
-      <div className="flex flex-wrap items-center gap-1 font-mono text-[11px] uppercase tracking-wider border-b border-border pb-2">
-        {[
-          { key: ArticleStatus.PENDING_REVIEW, label: 'Menunggu Kurasi' },
-          { key: ArticleStatus.REVISION, label: 'Perlu Revisi' },
-          { key: ArticleStatus.PUBLISHED, label: 'Sudah Terbit' },
-          { key: ArticleStatus.REJECTED, label: 'Ditolak' },
-        ].map((tab) => (
-          <button
+      {/* Main Tab Navigation */}
+      <div className="flex items-center gap-2 border-b-2 border-foreground font-mono text-xs uppercase tracking-wider overflow-x-auto select-none">
+        <button
+          type="button"
+          onClick={() => setMainTab('ARTICLES')}
+          className={cn(
+            'px-4 py-2.5 transition-colors flex items-center gap-2 border-t-2 border-x-2 -mb-[2px]',
+            mainTab === 'ARTICLES'
+              ? 'border-foreground bg-surface text-foreground font-bold'
+              : 'border-transparent text-muted hover:text-foreground hover:bg-surface-muted/50'
+          )}
+        >
+          <Feather className="w-3.5 h-3.5" />
+          <span>Naskah Warta Warga</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setMainTab('LETTERS')}
+          className={cn(
+            'px-4 py-2.5 transition-colors flex items-center gap-2 border-t-2 border-x-2 -mb-[2px]',
+            mainTab === 'LETTERS'
+              ? 'border-foreground bg-surface text-foreground font-bold'
+              : 'border-transparent text-muted hover:text-foreground hover:bg-surface-muted/50'
+          )}
+        >
+          <Mail className="w-3.5 h-3.5" />
+          <span>Surat Pembaca Warga</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setMainTab('COMMENTS')}
+          className={cn(
+            'px-4 py-2.5 transition-colors flex items-center gap-2 border-t-2 border-x-2 -mb-[2px]',
+            mainTab === 'COMMENTS'
+              ? 'border-foreground bg-surface text-foreground font-bold'
+              : 'border-transparent text-muted hover:text-foreground hover:bg-surface-muted/50'
+          )}
+        >
+          <MessageSquare className="w-3.5 h-3.5" />
+          <span>Moderasi Komentar &amp; Laporan</span>
+        </button>
+      </div>
+
+      {/* TAB 1: ARTICLES CONTENT */}
+      {mainTab === 'ARTICLES' && (
+        <div className="space-y-6">
+          {/* Status Filters */}
+          <div className="flex flex-wrap items-center gap-1 font-mono text-[11px] uppercase tracking-wider border-b border-border pb-2">
+            {[
+              { key: ArticleStatus.PENDING_REVIEW, label: 'Menunggu Kurasi' },
+              { key: ArticleStatus.REVISION, label: 'Perlu Revisi' },
+              { key: ArticleStatus.PUBLISHED, label: 'Sudah Terbit' },
+              { key: ArticleStatus.REJECTED, label: 'Ditolak' },
+            ].map((tab) => (
+              <button
             key={tab.key}
             type="button"
             onClick={() => setStatusFilter(tab.key)}
@@ -1058,6 +1114,16 @@ export default function DashboardCuratorPage() {
           </div>
         </div>
       )}
+
+      {/* Close mainTab === 'ARTICLES' block */}
+        </div>
+      )}
+
+      {/* TAB 2: LETTERS */}
+      {mainTab === 'LETTERS' && <CuratorLettersTab />}
+
+      {/* TAB 3: COMMENTS */}
+      {mainTab === 'COMMENTS' && <CuratorCommentsTab />}
     </div>
   );
 }

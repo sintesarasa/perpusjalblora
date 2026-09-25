@@ -1,5 +1,6 @@
 import { prisma } from '../../lib/prisma.js';
 import { HttpError } from '../../utils/errors.js';
+import { notificationsService } from '../notifications/notifications.service.js';
 import {
   LetterQueryInput,
   LetterCreateInput,
@@ -275,6 +276,19 @@ export class LettersService {
       },
     });
 
+    try {
+      await notificationsService.createNotification(updated.authorId, {
+        type: 'ARTICLE_APPROVED',
+        title: 'Surat Pembaca Diterbitkan',
+        body: `Surat pembaca Anda yang berjudul "${updated.title}" telah disetujui kurator dan terbit di ruang publik Perpusjal Blora.`,
+        actionUrl: `/surat-pembaca/${updated.slug}`,
+        entityType: 'readerLetter',
+        entityId: updated.id,
+      });
+    } catch {
+      // Ignored
+    }
+
     return {
       message: 'Surat pembaca berhasil diterbitkan.',
       letter: updated,
@@ -299,6 +313,19 @@ export class LettersService {
         moderatedAt: new Date(),
       },
     });
+
+    try {
+      await notificationsService.createNotification(updated.authorId, {
+        type: 'ARTICLE_REJECTED',
+        title: 'Surat Pembaca Belum Dapat Diterbitkan',
+        body: `Surat pembaca Anda "${updated.title}" belum dapat diterbitkan: ${reason.trim()}`,
+        actionUrl: `/surat-pembaca`,
+        entityType: 'readerLetter',
+        entityId: updated.id,
+      });
+    } catch {
+      // Ignored
+    }
 
     return {
       message: 'Surat pembaca ditolak.',
