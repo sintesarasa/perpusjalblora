@@ -26,7 +26,9 @@ import {
   Printer,
   ShieldAlert,
   ArrowRight,
+  Camera,
 } from 'lucide-react';
+import { CameraQrScannerModal } from '@/components/circulation/camera-qr-scanner-modal';
 
 interface LookupResponse {
   loan: LoanItem;
@@ -64,6 +66,10 @@ export default function DashboardCirculationPage() {
     overdue: LoanPickupBoardItem[];
   } | null>(null);
   const [boardLoading, setBoardLoading] = React.useState(false);
+
+  // Camera QR Scanner Modal State
+  const [scannerOpen, setScannerOpen] = React.useState(false);
+  const [scannerContext, setScannerContext] = React.useState<'pickup' | 'pickupCopy' | 'return'>('pickup');
 
   // Check user role
   React.useEffect(() => {
@@ -258,6 +264,52 @@ export default function DashboardCirculationPage() {
     executeReturnLookup(loanCode);
   };
 
+  // Handle scan result from CameraQrScannerModal
+  const handleScanResult = (scannedText: string) => {
+    let cleanText = scannedText.trim();
+
+    // If scanned text is a URL (e.g. from book sticker or profile QR), extract code or parameter
+    if (cleanText.startsWith('http://') || cleanText.startsWith('https://')) {
+      try {
+        const url = new URL(cleanText);
+        const searchCopy = url.searchParams.get('copy');
+        if (searchCopy) {
+          cleanText = searchCopy;
+        } else {
+          const parts = url.pathname.split('/').filter(Boolean);
+          if (parts.length >= 2 && parts[0] === 'u') {
+            cleanText = `@${parts[1]}`;
+          }
+        }
+      } catch {
+        // keep as is
+      }
+    }
+
+    if (scannerContext === 'pickup') {
+      setPickupCodeInput(cleanText);
+      setPickupSuccess(null);
+      setPickupError(null);
+      executePickupLookup(cleanText);
+    } else if (scannerContext === 'return') {
+      setReturnCodeInput(cleanText);
+      setReturnSuccess(null);
+      setReturnError(null);
+      executeReturnLookup(cleanText);
+    } else if (scannerContext === 'pickupCopy') {
+      const matched = availableCopies.find(
+        (c) => c.inventoryCode.toLowerCase() === cleanText.toLowerCase()
+      );
+      if (matched) {
+        setSelectedCopyId(matched.id);
+        setPickupSuccess(`Stiker eksemplar "${matched.inventoryCode}" berhasil dicocokkan!`);
+        setPickupError(null);
+      } else {
+        setPickupError(`Eksemplar fisik "${cleanText}" tidak tersedia untuk judul ini.`);
+      }
+    }
+  };
+
   if (authLoading) {
     return (
       <div className="p-12 flex items-center justify-center">
@@ -412,14 +464,29 @@ export default function DashboardCirculationPage() {
                     placeholder="Contoh: 482913 atau PJL-A1B2C3"
                     className="flex-1 p-3 text-center sm:text-left font-mono text-lg tracking-wider font-bold bg-surface-muted border-2 border-foreground focus:outline-none rounded-none text-foreground uppercase placeholder:normal-case placeholder:font-normal placeholder:tracking-normal placeholder:text-muted"
                   />
-                  <button
-                    type="submit"
-                    disabled={pickupLoading || !pickupCodeInput.trim()}
-                    className="px-6 py-3 bg-foreground text-background font-mono text-xs uppercase tracking-widest font-bold hover:bg-foreground/90 disabled:opacity-40 transition-colors inline-flex items-center justify-center gap-2"
-                  >
-                    {pickupLoading ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Search className="w-3.5 h-3.5" />}
-                    <span>{pickupLoading ? 'Mencari...' : 'Periksa'}</span>
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      type="submit"
+                      disabled={pickupLoading || !pickupCodeInput.trim()}
+                      className="flex-1 sm:flex-none px-6 py-3 bg-foreground text-background font-mono text-xs uppercase tracking-widest font-bold hover:bg-foreground/90 disabled:opacity-40 transition-colors inline-flex items-center justify-center gap-2"
+                    >
+                      {pickupLoading ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Search className="w-3.5 h-3.5" />}
+                      <span>{pickupLoading ? 'Mencari...' : 'Periksa'}</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setScannerContext('pickup');
+                        setScannerOpen(true);
+                      }}
+                      className="px-4 py-3 border-2 border-foreground bg-surface hover:bg-surface-muted transition-colors inline-flex items-center justify-center gap-1.5 font-mono text-xs uppercase tracking-wider font-bold text-foreground"
+                      title="Pindai QR Kartu Anggota atau Kode Ambil menggunakan Kamera HP"
+                    >
+                      <Camera className="w-4 h-4 text-foreground" />
+                      <span className="hidden sm:inline">Scan Kamera HP</span>
+                      <span className="sm:hidden">Scan</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             </form>
@@ -463,17 +530,31 @@ export default function DashboardCirculationPage() {
                     </span>
                   </label>
                   {availableCopies.length > 0 ? (
-                    <select
-                      value={selectedCopyId}
-                      onChange={(e) => setSelectedCopyId(e.target.value)}
-                      className="w-full p-2.5 bg-surface border-2 border-foreground rounded-none text-xs text-foreground focus:outline-none font-mono"
-                    >
-                      {availableCopies.map((c) => (
-                        <option key={c.id} value={c.id}>
-                          {c.inventoryCode} — Kondisi: {c.condition}
-                        </option>
-                      ))}
-                    </select>
+                    <div className="flex gap-2">
+                      <select
+                        value={selectedCopyId}
+                        onChange={(e) => setSelectedCopyId(e.target.value)}
+                        className="flex-1 p-2.5 bg-surface border-2 border-foreground rounded-none text-xs text-foreground focus:outline-none font-mono"
+                      >
+                        {availableCopies.map((c) => (
+                          <option key={c.id} value={c.id}>
+                            {c.inventoryCode} — Kondisi: {c.condition}
+                          </option>
+                        ))}
+                      </select>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setScannerContext('pickupCopy');
+                          setScannerOpen(true);
+                        }}
+                        className="px-3 py-2 border-2 border-foreground bg-surface hover:bg-surface-muted transition-colors inline-flex items-center gap-1.5 font-mono text-xs uppercase tracking-wider font-bold text-foreground shrink-0"
+                        title="Scan stiker punggung buku yang diambil"
+                      >
+                        <Camera className="w-3.5 h-3.5 text-foreground" />
+                        <span>Scan Stiker</span>
+                      </button>
+                    </div>
                   ) : (
                     <p className="text-xs text-destructive bg-destructive/10 p-2.5 border border-destructive">
                       Tidak ada eksemplar fisik berstatus AVAILABLE untuk buku ini. Silakan tambahkan eksemplar di Meja Koleksi Buku.
@@ -536,14 +617,29 @@ export default function DashboardCirculationPage() {
                     placeholder="Contoh: PJ-2026-0001 atau LN-XXXXXX"
                     className="flex-1 p-3 font-mono text-sm bg-surface-muted border-2 border-foreground focus:outline-none rounded-none text-foreground uppercase placeholder:normal-case placeholder:text-muted"
                   />
-                  <button
-                    type="submit"
-                    disabled={returnLoading || !returnCodeInput.trim()}
-                    className="px-6 py-3 bg-foreground text-background font-mono text-xs uppercase tracking-widest font-bold hover:bg-foreground/90 disabled:opacity-40 transition-colors inline-flex items-center justify-center gap-2"
-                  >
-                    {returnLoading ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Search className="w-3.5 h-3.5" />}
-                    <span>{returnLoading ? 'Mencari...' : 'Cari Data'}</span>
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      type="submit"
+                      disabled={returnLoading || !returnCodeInput.trim()}
+                      className="flex-1 sm:flex-none px-6 py-3 bg-foreground text-background font-mono text-xs uppercase tracking-widest font-bold hover:bg-foreground/90 disabled:opacity-40 transition-colors inline-flex items-center justify-center gap-2"
+                    >
+                      {returnLoading ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Search className="w-3.5 h-3.5" />}
+                      <span>{returnLoading ? 'Mencari...' : 'Cari Data'}</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setScannerContext('return');
+                        setScannerOpen(true);
+                      }}
+                      className="px-4 py-3 border-2 border-foreground bg-surface hover:bg-surface-muted transition-colors inline-flex items-center justify-center gap-1.5 font-mono text-xs uppercase tracking-wider font-bold text-foreground"
+                      title="Pindai Stiker Punggung Buku menggunakan Kamera HP"
+                    >
+                      <Camera className="w-4 h-4 text-foreground" />
+                      <span className="hidden sm:inline">Scan Kamera HP</span>
+                      <span className="sm:hidden">Scan</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             </form>
@@ -780,6 +876,27 @@ export default function DashboardCirculationPage() {
           ) : null}
         </div>
       )}
+
+      {/* Mobile Camera QR/Barcode Scanner Modal */}
+      <CameraQrScannerModal
+        isOpen={scannerOpen}
+        onClose={() => setScannerOpen(false)}
+        onScan={handleScanResult}
+        title={
+          scannerContext === 'pickup'
+            ? 'Scan QR Kartu Anggota / Kode Ambil'
+            : scannerContext === 'pickupCopy'
+            ? 'Scan Stiker Punggung Eksemplar Buku'
+            : 'Scan Stiker Buku / Kode Pinjam'
+        }
+        instruction={
+          scannerContext === 'pickup'
+            ? 'Arahkan kamera ponsel ke QR Kartu Anggota digital pembaca atau kode ambil 6-digit.'
+            : scannerContext === 'pickupCopy'
+            ? 'Arahkan kamera ponsel ke stiker di punggung buku fisik yang akan diserahkan.'
+            : 'Arahkan kamera ponsel ke stiker punggung buku yang sedang dikembalikan oleh pembaca.'
+        }
+      />
     </div>
   );
 }
