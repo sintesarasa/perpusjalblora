@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { Html5Qrcode, Html5QrcodeCameraScanConfig } from 'html5-qrcode';
-import { X, Camera, Flashlight, RefreshCw, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { X, Camera, Flashlight, RefreshCw, AlertTriangle, CheckCircle2, Image as ImageIcon } from 'lucide-react';
 
 interface CameraQrScannerModalProps {
   isOpen: boolean;
@@ -260,6 +260,49 @@ export function CameraQrScannerModal({
     }
   };
 
+  // Handle file upload fallback
+  const fileInputRef = React.useRef<HTMLInputElement | null>(null);
+  const [isFileScanning, setIsFileScanning] = React.useState(false);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsFileScanning(true);
+    setErrorMsg(null);
+
+    try {
+      let scanner = scannerRef.current;
+      if (!scanner) {
+        scanner = new Html5Qrcode(readerElementId);
+        scannerRef.current = scanner;
+      }
+
+      const decodedText = await scanner.scanFile(file, true);
+      handleSuccess(decodedText);
+    } catch (err: any) {
+      console.warn('File QR scan error:', err);
+      setErrorMsg('Tidak ditemukan QR Code yang valid pada gambar tersebut.');
+    } finally {
+      setIsFileScanning(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  // Close on Escape key
+  React.useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        handleCloseModal();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen]);
+
   const handleCloseModal = async () => {
     await stopScanner();
     onClose();
@@ -334,25 +377,44 @@ export function CameraQrScannerModal({
             <div className="absolute inset-0 bg-background/95 p-6 flex flex-col items-center justify-center text-center space-y-3 font-mono text-xs z-10 text-foreground">
               <AlertTriangle className="w-8 h-8 text-destructive" />
               <p className="font-sans text-xs text-muted max-w-xs">{errorMsg}</p>
-              <button
-                type="button"
-                onClick={handleCloseModal}
-                className="mt-2 px-4 py-2 border border-foreground bg-foreground text-background font-mono text-xs uppercase font-bold hover:bg-foreground/90 transition-colors"
-              >
-                Tutup & Ketik Manual
-              </button>
+              <div className="flex flex-wrap items-center justify-center gap-2 mt-2">
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="px-3.5 py-2 border border-foreground bg-surface text-foreground font-mono text-xs uppercase font-bold hover:bg-surface-muted transition-colors inline-flex items-center gap-1.5"
+                >
+                  <ImageIcon className="w-3.5 h-3.5" />
+                  <span>Pilih Foto dari Galeri</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCloseModal}
+                  className="px-4 py-2 border border-foreground bg-foreground text-background font-mono text-xs uppercase font-bold hover:bg-foreground/90 transition-colors"
+                >
+                  Tutup & Ketik Manual
+                </button>
+              </div>
             </div>
           )}
         </div>
 
+        {/* Hidden File Input for fallback scan */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={handleFileUpload}
+        />
+
         {/* Footer Controls & Instructions */}
         <div className="p-4 border-t-2 border-foreground bg-surface space-y-3 font-mono text-xs">
           <p className="font-sans text-xs text-center text-muted">
-            {instruction}
+            {isFileScanning ? 'Sedang memproses gambar...' : instruction}
           </p>
 
           <div className="flex items-center justify-between gap-2 pt-1 border-t border-border-hairline">
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               {cameras.length > 1 && (
                 <button
                   type="button"
@@ -381,6 +443,17 @@ export function CameraQrScannerModal({
                   <span>{torchOn ? 'Senter ON' : 'Senter'}</span>
                 </button>
               )}
+
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isFileScanning}
+                className="px-2.5 py-1.5 border border-border-hairline hover:border-foreground bg-surface-muted text-foreground transition-colors inline-flex items-center gap-1 font-mono text-[11px] uppercase tracking-wider"
+                title="Pilih foto QR dari galeri file"
+              >
+                <ImageIcon className="w-3 h-3" />
+                <span className="hidden sm:inline">Pilih Foto</span>
+              </button>
             </div>
 
             <button

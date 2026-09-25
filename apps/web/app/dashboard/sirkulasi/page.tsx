@@ -27,6 +27,9 @@ import {
   ShieldAlert,
   ArrowRight,
   Camera,
+  X,
+  History,
+  Calendar,
 } from 'lucide-react';
 import { CameraQrScannerModal } from '@/components/circulation/camera-qr-scanner-modal';
 
@@ -35,11 +38,24 @@ interface LookupResponse {
   availableCopies: Array<{ id: string; inventoryCode: string; condition: string }>;
 }
 
+interface SessionLogItem {
+  id: string;
+  type: 'pickup' | 'return';
+  title: string;
+  borrower: string;
+  code: string;
+  time: string;
+  condition?: ReturnCondition;
+}
+
 export default function DashboardCirculationPage() {
   const [currentUser, setCurrentUser] = React.useState<{ id: string; role: Role; name: string } | null>(null);
   const [authLoading, setAuthLoading] = React.useState(true);
 
   const [activeTab, setActiveTab] = React.useState<'pickup' | 'return' | 'board'>('pickup');
+
+  // Session Logs (Riwayat transaksi lapak hari ini)
+  const [sessionLogs, setSessionLogs] = React.useState<SessionLogItem[]>([]);
 
   // Tab 1: Pickup
   const [pickupCodeInput, setPickupCodeInput] = React.useState('');
@@ -174,9 +190,25 @@ export default function DashboardCirculationPage() {
       return;
     }
 
-    setPickupSuccess(`Buku "${pickupLoan.book.title}" berhasil diserahkan kepada ${pickupLoan.borrower?.name}!`);
+    const borrowerName = pickupLoan.borrower?.name || 'Pembaca';
+    const bookTitle = pickupLoan.book.title;
+    const loanCode = pickupLoan.loanCode;
+
+    setPickupSuccess(`Buku "${bookTitle}" berhasil diserahkan kepada ${borrowerName}!`);
+    setSessionLogs((prev) => [
+      {
+        id: Math.random().toString(),
+        type: 'pickup',
+        title: bookTitle,
+        borrower: borrowerName,
+        code: loanCode,
+        time: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+      },
+      ...prev.slice(0, 8),
+    ]);
     setPickupLoan(null);
     setPickupCodeInput('');
+    loadBoard();
   };
 
   // Lookup for Return (by Book Copy code PJ-, Loan code, or Member code PJL-)
@@ -241,10 +273,27 @@ export default function DashboardCirculationPage() {
       return;
     }
 
-    setReturnSuccess(`Pengembalian buku "${returnLoan.book.title}" berhasil dicatat (Kondisi: ${returnCondition}).`);
+    const borrowerName = returnLoan.borrower?.name || 'Pembaca';
+    const bookTitle = returnLoan.book.title;
+    const loanCode = returnLoan.loanCode;
+
+    setReturnSuccess(`Pengembalian buku "${bookTitle}" berhasil dicatat (Kondisi: ${returnCondition}).`);
+    setSessionLogs((prev) => [
+      {
+        id: Math.random().toString(),
+        type: 'return',
+        title: bookTitle,
+        borrower: borrowerName,
+        code: loanCode,
+        condition: returnCondition,
+        time: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+      },
+      ...prev.slice(0, 8),
+    ]);
     setReturnLoan(null);
     setReturnCodeInput('');
     setReturnNote('');
+    loadBoard();
   };
 
   // Quick process from Board items
@@ -457,13 +506,25 @@ export default function DashboardCirculationPage() {
                   KODE AMBIL (6 DIGIT) ATAU QR ANGGOTA:
                 </label>
                 <div className="flex flex-col sm:flex-row gap-2">
-                  <input
-                    type="text"
-                    value={pickupCodeInput}
-                    onChange={(e) => setPickupCodeInput(e.target.value)}
-                    placeholder="Contoh: 482913 atau PJL-A1B2C3"
-                    className="flex-1 p-3 text-center sm:text-left font-mono text-lg tracking-wider font-bold bg-surface-muted border-2 border-foreground focus:outline-none rounded-none text-foreground uppercase placeholder:normal-case placeholder:font-normal placeholder:tracking-normal placeholder:text-muted"
-                  />
+                  <div className="relative flex-1">
+                    <input
+                      type="text"
+                      value={pickupCodeInput}
+                      onChange={(e) => setPickupCodeInput(e.target.value)}
+                      placeholder="Contoh: 482913 atau PJL-A1B2C3"
+                      className="w-full p-3 pr-8 text-center sm:text-left font-mono text-lg tracking-wider font-bold bg-surface-muted border-2 border-foreground focus:outline-none rounded-none text-foreground uppercase placeholder:normal-case placeholder:font-normal placeholder:tracking-normal placeholder:text-muted"
+                    />
+                    {pickupCodeInput && (
+                      <button
+                        type="button"
+                        onClick={() => setPickupCodeInput('')}
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-muted hover:text-foreground transition-colors"
+                        aria-label="Bersihkan input"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
                   <div className="flex gap-2">
                     <button
                       type="submit"
@@ -556,21 +617,40 @@ export default function DashboardCirculationPage() {
                       </button>
                     </div>
                   ) : (
-                    <p className="text-xs text-destructive bg-destructive/10 p-2.5 border border-destructive">
-                      Tidak ada eksemplar fisik berstatus AVAILABLE untuk buku ini. Silakan tambahkan eksemplar di Meja Koleksi Buku.
-                    </p>
+                    <div className="p-3 text-xs text-destructive bg-destructive/10 border border-destructive space-y-1">
+                      <p>Tidak ada eksemplar fisik berstatus AVAILABLE untuk buku ini.</p>
+                      <Link
+                        href={`/dashboard/buku?q=${encodeURIComponent(pickupLoan.book.title)}`}
+                        className="inline-block underline font-bold hover:text-foreground"
+                      >
+                        Buka Meja Koleksi Buku untuk menambah eksemplar &rarr;
+                      </Link>
+                    </div>
                   )}
                 </div>
 
-                <button
-                  type="button"
-                  onClick={handleExecutePickup}
-                  disabled={pickupLoading || !selectedCopyId}
-                  className="w-full py-3 bg-foreground text-background font-bold text-xs uppercase tracking-widest hover:bg-foreground/90 disabled:opacity-40 transition-colors flex items-center justify-center gap-2"
-                >
-                  <Check className="w-4 h-4" />
-                  <span>SERAHKAN BUKU KE PEMINJAM</span>
-                </button>
+                <div className="flex gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPickupLoan(null);
+                      setPickupCodeInput('');
+                      setPickupError(null);
+                    }}
+                    className="px-4 py-3 border border-border-hairline bg-surface hover:border-foreground transition-colors font-bold text-xs uppercase tracking-wider text-muted hover:text-foreground"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleExecutePickup}
+                    disabled={pickupLoading || !selectedCopyId}
+                    className="flex-1 py-3 bg-foreground text-background font-bold text-xs uppercase tracking-widest hover:bg-foreground/90 disabled:opacity-40 transition-colors flex items-center justify-center gap-2"
+                  >
+                    <Check className="w-4 h-4" />
+                    <span>SERAHKAN BUKU KE PEMINJAM</span>
+                  </button>
+                </div>
               </div>
             )}
           </div>
@@ -610,13 +690,25 @@ export default function DashboardCirculationPage() {
                   KODE STIKER BUKU / KODE PINJAM:
                 </label>
                 <div className="flex flex-col sm:flex-row gap-2">
-                  <input
-                    type="text"
-                    value={returnCodeInput}
-                    onChange={(e) => setReturnCodeInput(e.target.value)}
-                    placeholder="Contoh: PJ-2026-0001 atau LN-XXXXXX"
-                    className="flex-1 p-3 font-mono text-sm bg-surface-muted border-2 border-foreground focus:outline-none rounded-none text-foreground uppercase placeholder:normal-case placeholder:text-muted"
-                  />
+                  <div className="relative flex-1">
+                    <input
+                      type="text"
+                      value={returnCodeInput}
+                      onChange={(e) => setReturnCodeInput(e.target.value)}
+                      placeholder="Contoh: PJ-2026-0001 atau LN-XXXXXX"
+                      className="w-full p-3 pr-8 font-mono text-sm bg-surface-muted border-2 border-foreground focus:outline-none rounded-none text-foreground uppercase placeholder:normal-case placeholder:text-muted"
+                    />
+                    {returnCodeInput && (
+                      <button
+                        type="button"
+                        onClick={() => setReturnCodeInput('')}
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-muted hover:text-foreground transition-colors"
+                        aria-label="Bersihkan input"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
                   <div className="flex gap-2">
                     <button
                       type="submit"
@@ -676,6 +768,36 @@ export default function DashboardCirculationPage() {
                       </strong>
                     </div>
                   </div>
+
+                  {/* Overdue / Due Date Context Banner */}
+                  {returnLoan.dueDate && (() => {
+                    const isOverdue = new Date(returnLoan.dueDate) < new Date();
+                    const overdueDays = isOverdue
+                      ? Math.max(1, Math.ceil((Date.now() - new Date(returnLoan.dueDate).getTime()) / (1000 * 60 * 60 * 24)))
+                      : 0;
+
+                    return isOverdue ? (
+                      <div className="p-3 bg-destructive/10 border-2 border-destructive flex items-center justify-between text-xs font-mono">
+                        <div className="flex items-center gap-2 font-bold text-destructive">
+                          <AlertTriangle className="w-4 h-4 shrink-0 text-destructive" />
+                          <span>TERLAMBAT {overdueDays} HARI</span>
+                        </div>
+                        <span className="text-[10px] text-destructive uppercase tracking-wider">
+                          Tenggat: {new Date(returnLoan.dueDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="p-2.5 bg-surface border border-border-hairline flex items-center justify-between text-xs font-mono text-muted">
+                        <div className="flex items-center gap-1.5 text-foreground font-medium">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                          <span>Tepat Waktu (Dalam Masa Pinjam)</span>
+                        </div>
+                        <span className="text-[10px]">
+                          Tenggat: {new Date(returnLoan.dueDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        </span>
+                      </div>
+                    );
+                  })()}
                 </div>
 
                 {/* Physical condition selection */}
@@ -718,15 +840,29 @@ export default function DashboardCirculationPage() {
                   />
                 </div>
 
-                <button
-                  type="button"
-                  onClick={handleExecuteReturn}
-                  disabled={returnLoading}
-                  className="w-full py-3 bg-foreground text-background font-bold text-xs uppercase tracking-widest hover:bg-foreground/90 disabled:opacity-40 transition-colors flex items-center justify-center gap-2"
-                >
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span>CATAT PENGEMBALIAN BUKU</span>
-                </button>
+                <div className="flex gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setReturnLoan(null);
+                      setReturnCodeInput('');
+                      setReturnNote('');
+                      setReturnError(null);
+                    }}
+                    className="px-4 py-3 border border-border-hairline bg-surface hover:border-foreground transition-colors font-bold text-xs uppercase tracking-wider text-muted hover:text-foreground"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleExecuteReturn}
+                    disabled={returnLoading}
+                    className="flex-1 py-3 bg-foreground text-background font-bold text-xs uppercase tracking-widest hover:bg-foreground/90 disabled:opacity-40 transition-colors flex items-center justify-center gap-2"
+                  >
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span>CATAT PENGEMBALIAN BUKU</span>
+                  </button>
+                </div>
               </div>
             )}
           </div>
@@ -874,6 +1010,54 @@ export default function DashboardCirculationPage() {
               </div>
             </div>
           ) : null}
+        </div>
+      )}
+
+      {/* Session Activity Log (Riwayat Transaksi Sesi Lapak Ini) */}
+      {sessionLogs.length > 0 && (
+        <div className="border-2 border-foreground bg-surface p-5 space-y-4 font-mono text-xs">
+          <div className="flex items-center justify-between border-b border-border-hairline pb-2">
+            <span className="font-bold text-foreground uppercase tracking-wider flex items-center gap-2">
+              <History className="w-4 h-4 text-foreground" />
+              <span>Riwayat Transaksi Sesi Lapak Ini ({sessionLogs.length})</span>
+            </span>
+            <button
+              type="button"
+              onClick={() => setSessionLogs([])}
+              className="text-[10px] text-muted hover:text-foreground uppercase underline"
+            >
+              Bersihkan Riwayat
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+            {sessionLogs.map((log) => (
+              <div
+                key={log.id}
+                className="p-3 bg-surface-muted border border-border-hairline text-xs space-y-1.5 hover:border-foreground transition-colors"
+              >
+                <div className="flex justify-between items-center text-[10px]">
+                  <span
+                    className={`px-1.5 py-0.5 font-bold uppercase tracking-wider ${
+                      log.type === 'pickup'
+                        ? 'bg-foreground text-background'
+                        : 'border border-foreground text-foreground'
+                    }`}
+                  >
+                    {log.type === 'pickup' ? 'SERAH-TERIMA' : 'PENGEMBALIAN'}
+                  </span>
+                  <span className="text-muted">{log.time}</span>
+                </div>
+                <p className="font-sans font-bold text-foreground text-xs line-clamp-1">{log.title}</p>
+                <div className="flex justify-between text-[11px] text-muted pt-0.5">
+                  <span className="truncate">Peminjam: <strong className="text-foreground">{log.borrower}</strong></span>
+                  {log.condition && (
+                    <span className="uppercase font-bold text-foreground shrink-0 ml-1">({log.condition})</span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
