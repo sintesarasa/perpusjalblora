@@ -153,17 +153,70 @@ export function BookSpineStickerSheet({
         </div>
       </div>
 
-      {/* 2. INSTRUCTION HINT BANNER (HIDDEN DURING PRINT) */}
-      <div className="w-full max-w-4xl bg-blue-50 border border-blue-200 text-blue-900 p-3 mb-6 font-mono text-xs flex items-start gap-2.5 print:hidden">
-        <Info className="w-4 h-4 shrink-0 text-blue-700 mt-0.5" />
-        <div className="space-y-1 font-sans text-xs">
-          <p className="font-semibold text-blue-950 font-mono">
-            Petunjuk Cetak Hemat Kertas:
-          </p>
-          <ul className="list-disc list-inside space-y-0.5 text-blue-800">
-            <li>Pada dialog cetak browser, pilih <strong>Ukuran Kertas: A4</strong>, <strong>Margin: None / Default</strong>, dan <strong>Skala: 100%</strong>.</li>
-            <li>Jika menggunakan kertas stiker sisa/bekas, ubah menu <em>"Mulai Slot"</em> di atas untuk melompati kotak yang sudah dipotong.</li>
-          </ul>
+      {/* 2. INTERACTIVE VISUAL MINI-GRID SLOT PICKER (HIDDEN DURING PRINT) */}
+      <div className="w-full max-w-4xl bg-surface border border-border-hairline p-4 mb-6 font-mono text-xs space-y-3 print:hidden">
+        <div className="flex items-center justify-between border-b border-border-hairline pb-2">
+          <div className="flex items-center gap-2 font-bold text-foreground">
+            <Grid className="w-4 h-4 text-foreground" />
+            <span>PILIH TITIK MULAI CETAK (DENAH KERTAS STIKER A4)</span>
+          </div>
+          <span className="text-[10px] text-muted">
+            Klik slot awal di bawah jika kertas Anda sudah terpotong sebagian
+          </span>
+        </div>
+
+        {/* 4 cols x 6 rows clickable visual slots */}
+        <div className="grid grid-cols-4 gap-1.5 p-2 bg-surface-muted/40 border border-border-hairline max-w-lg mx-auto">
+          {Array.from({ length: TOTAL_SLOTS_A4 }).map((_, i) => {
+            const isBeforeStart = i < startSlotIndex;
+            const isStartingSlot = i === startSlotIndex;
+            const isPrinting = i >= startSlotIndex && i < startSlotIndex + flatStickers.length;
+
+            return (
+              <button
+                key={i}
+                type="button"
+                onClick={() => setStartSlotIndex(i)}
+                className={`py-2 px-1 text-[10px] font-mono text-center border transition-all ${
+                  isStartingSlot
+                    ? 'border-foreground bg-foreground text-background font-bold shadow-xs'
+                    : isPrinting
+                    ? 'border-foreground/80 bg-surface text-foreground font-semibold'
+                    : isBeforeStart
+                    ? 'border-dashed border-border-hairline bg-surface-muted text-muted line-through opacity-60'
+                    : 'border-border-hairline bg-surface text-muted hover:border-foreground'
+                }`}
+                title={`Mulai cetak dari Slot #${i + 1}`}
+              >
+                #{i + 1}
+                {isStartingSlot ? ' (Mulai)' : isPrinting ? ' (Stiker)' : isBeforeStart ? ' (Lewat)' : ''}
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="flex items-center justify-between text-[10px] text-muted pt-1">
+          <div className="flex items-center gap-3">
+            <span className="inline-flex items-center gap-1">
+              <span className="w-2.5 h-2.5 border border-dashed border-border-hairline bg-surface-muted inline-block"></span>
+              Lewat / Terpakai
+            </span>
+            <span className="inline-flex items-center gap-1">
+              <span className="w-2.5 h-2.5 border border-foreground bg-foreground inline-block"></span>
+              Titik Mulai
+            </span>
+            <span className="inline-flex items-center gap-1">
+              <span className="w-2.5 h-2.5 border border-foreground bg-surface inline-block"></span>
+              Terisi Stiker
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setStartSlotIndex(0)}
+            className="text-foreground hover:underline font-bold"
+          >
+            Reset ke Slot #1 (Kertas Baru)
+          </button>
         </div>
       </div>
 

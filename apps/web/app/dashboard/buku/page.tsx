@@ -29,6 +29,9 @@ import {
   EyeOff,
   ShieldAlert,
   Tag,
+  Download,
+  CheckSquare,
+  Square,
 } from 'lucide-react';
 import { usePrintQueue } from '@/lib/print-queue-context';
 import { StickerPrintQueueDrawer } from '@/components/admin/sticker-print-queue-drawer';
@@ -88,6 +91,106 @@ export default function DashboardBookManagementPage() {
   // Custom Delete Modal State
   const [deleteTarget, setDeleteTarget] = React.useState<{ id: string; title: string } | null>(null);
   const [isDeleting, setIsDeleting] = React.useState(false);
+
+  // Bulk Selection State
+  const [selectedBookIds, setSelectedBookIds] = React.useState<string[]>([]);
+  const [isBulkAdding, setIsBulkAdding] = React.useState(false);
+
+  // CSV Export Handler
+  const handleExportCSV = () => {
+    if (books.length === 0) {
+      setActionError('Tidak ada data buku untuk diekspor.');
+      return;
+    }
+
+    const headers = [
+      'ID',
+      'Judul',
+      'Penulis',
+      'Kategori',
+      'ISBN',
+      'Tahun',
+      'Lokasi Rak',
+      'Total Eksemplar',
+      'Tersedia',
+      'Status Publikasi',
+    ];
+
+    const rows = books.map((b) => [
+      `"${b.id}"`,
+      `"${(b.title || '').replace(/"/g, '""')}"`,
+      `"${(b.author || '').replace(/"/g, '""')}"`,
+      `"${(b.category?.name || '').replace(/"/g, '""')}"`,
+      `"${b.isbn || ''}"`,
+      `"${b.publicationYear || ''}"`,
+      `"${b.shelfLocation || ''}"`,
+      b.totalCopies || 0,
+      b.availableCopies || 0,
+      b.isPublished ? '"Terbit"' : '"Draft"',
+    ]);
+
+    const csvContent = 'data:text/csv;charset=utf-8,\uFEFF' + [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `katalog_perpusjal_blora_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    setActionMessage(`Katalog (${books.length} buku) berhasil diekspor ke format CSV!`);
+  };
+
+  // Bulk Queue Sticker Handler
+  const handleBulkAddToQueue = async () => {
+    if (selectedBookIds.length === 0) return;
+    setIsBulkAdding(true);
+    setActionError(null);
+    let totalAdded = 0;
+
+    try {
+      const selectedBooks = books.filter((b) => selectedBookIds.includes(b.id));
+      for (const book of selectedBooks) {
+        try {
+          const res = await apiClient<{ data: any[] }>(`/books/${book.id}/copies`);
+          const raw = res.data;
+          const copies: any[] = Array.isArray(raw)
+            ? raw
+            : Array.isArray((raw as any)?.data)
+            ? (raw as any).data
+            : [];
+
+          if (copies.length > 0) {
+            addMultipleToQueue(
+              copies.map((c: any, idx: number) => ({
+                bookId: book.id,
+                bookTitle: book.title,
+                bookSlug: book.slug,
+                author: book.author,
+                categoryName: book.category?.name,
+                categorySlug: book.category?.slug,
+                shelfLocation: book.shelfLocation,
+                inventoryCode: c.inventoryCode,
+                copyNumber: idx + 1,
+                count: 1,
+              }))
+            );
+            totalAdded += copies.length;
+          }
+        } catch {
+          // Continue
+        }
+      }
+
+      setSelectedBookIds([]);
+      setActionMessage(`${totalAdded} stiker dari ${selectedBooks.length} buku terpilih berhasil ditambahkan ke antrean!`);
+      setIsQueueOpen(true);
+    } catch {
+      setActionError('Terjadi kendala saat menambahkan stiker terpilih.');
+    } finally {
+      setIsBulkAdding(false);
+    }
+  };
 
   // 1. Verify Role Access (Kurator, Petugas, Admin)
   React.useEffect(() => {
@@ -284,6 +387,17 @@ export default function DashboardBookManagementPage() {
         </div>
 
         <div className="flex items-center gap-3 shrink-0 flex-wrap">
+          {/* Ekspor CSV Button */}
+          <button
+            type="button"
+            onClick={handleExportCSV}
+            className="px-3.5 py-2.5 border border-border-hairline bg-surface hover:border-foreground text-foreground font-mono text-xs uppercase tracking-widest font-bold inline-flex items-center gap-2 shadow-sm transition-colors"
+            title="Unduh seluruh data katalog saat ini ke format CSV"
+          >
+            <Download className="w-4 h-4 text-muted" />
+            <span className="hidden sm:inline">Ekspor CSV</span>
+          </button>
+
           <button
             type="button"
             onClick={() => setIsQueueOpen(true)}
@@ -463,22 +577,93 @@ export default function DashboardBookManagementPage() {
         </div>
       ) : (
         <div className="space-y-4">
+          {/* BULK SELECTION ACTION BAR */}
+          <div className="p-3 bg-surface-muted border border-border-hairline flex items-center justify-between flex-wrap gap-3 font-mono text-xs">
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  if (selectedBookIds.length === books.length) {
+                    setSelectedBookIds([]);
+                  } else {
+                    setSelectedBookIds(books.map((b) => b.id));
+                  }
+                }}
+                className="flex items-center gap-1.5 text-foreground hover:underline font-semibold"
+              >
+                {selectedBookIds.length === books.length && books.length > 0 ? (
+                  <CheckSquare className="w-4 h-4 text-foreground" />
+                ) : (
+                  <Square className="w-4 h-4 text-muted" />
+                )}
+                <span>Pilih Semua ({books.length})</span>
+              </button>
+
+              {selectedBookIds.length > 0 && (
+                <span className="text-muted">
+                  Terpilih: <strong className="text-foreground">{selectedBookIds.length}</strong> judul buku
+                </span>
+              )}
+            </div>
+
+            {selectedBookIds.length > 0 && (
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  disabled={isBulkAdding}
+                  onClick={handleBulkAddToQueue}
+                  className="px-3 py-1.5 bg-foreground text-background font-bold text-xs uppercase tracking-wider hover:opacity-90 transition-opacity inline-flex items-center gap-1.5 disabled:opacity-50"
+                >
+                  <Tag className="w-3.5 h-3.5" />
+                  <span>{isBulkAdding ? 'Menambahkan...' : `+ Masukkan ${selectedBookIds.length} Buku ke Antrean Stiker`}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setSelectedBookIds([])}
+                  className="px-2 py-1.5 text-muted hover:text-foreground"
+                >
+                  Batal
+                </button>
+              </div>
+            )}
+          </div>
+
           <div className="border border-border-hairline bg-surface divide-y divide-border-hairline">
             {books.map((book) => {
               const available = book.availableCopies || 0;
               const total = book.totalCopies || 0;
               const isDraft = book.isPublished === false;
               const isToggling = togglingBookId === book.id;
+              const isSelected = selectedBookIds.includes(book.id);
 
               return (
                 <div
                   key={book.id}
                   className={`p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-surface-muted/20 transition-colors ${
                     isDraft ? 'bg-amber-500/[0.03]' : ''
-                  }`}
+                  } ${isSelected ? 'bg-foreground/[0.03] border-l-4 border-l-foreground' : ''}`}
                 >
-                  {/* Left: Thumbnail & Book Details */}
-                  <div className="flex items-start gap-4 min-w-0">
+                  {/* Left: Checkbox + Thumbnail & Book Details */}
+                  <div className="flex items-start gap-3 sm:gap-4 min-w-0">
+                    {/* Bulk Selection Checkbox */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedBookIds((prev) =>
+                          prev.includes(book.id) ? prev.filter((id) => id !== book.id) : [...prev, book.id]
+                        );
+                      }}
+                      className="mt-1 text-muted hover:text-foreground"
+                      title={isSelected ? 'Batalkan pilihan' : 'Pilih buku ini'}
+                    >
+                      {isSelected ? (
+                        <CheckSquare className="w-4 h-4 text-foreground" />
+                      ) : (
+                        <Square className="w-4 h-4 text-muted/60 hover:text-muted" />
+                      )}
+                    </button>
+
                     {/* Thumbnail */}
                     <div className="w-14 h-20 bg-surface-muted border border-border-hairline shrink-0 flex items-center justify-center overflow-hidden relative">
                       {book.coverImage ? (
