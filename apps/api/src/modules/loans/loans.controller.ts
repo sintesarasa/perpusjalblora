@@ -8,6 +8,7 @@ import {
   loanQuerySchema,
 } from '@perpusjal/types';
 import { loansService } from './loans.service.js';
+import { circulationSchedulerService } from './circulation-scheduler.service.js';
 
 export class LoansController {
   async requestLoan(req: Request, res: Response, next: NextFunction) {
@@ -120,6 +121,18 @@ export class LoansController {
       const code = (req.query.code as string) || '';
       const result = await loansService.lookupLoanByCode(code);
       res.status(200).json({ data: result });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async runMaintenance(req: Request, res: Response, next: NextFunction) {
+    try {
+      const result = await circulationSchedulerService.runMaintenance();
+      res.status(200).json({
+        message: 'Pemeliharaan sirkulasi berhasil dijalankan.',
+        data: result,
+      });
     } catch (error) {
       next(error);
     }

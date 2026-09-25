@@ -4,6 +4,7 @@ import * as React from 'react';
 import Link from 'next/link';
 import { CustomLoader } from '@/components/ui/custom-loader';
 import { apiClient } from '@/lib/api';
+import { cn } from '@/lib/utils';
 import {
   LoanItem,
   LoanPickupBoardItem,
@@ -120,6 +121,30 @@ export default function DashboardCirculationPage() {
       setBoardData(res.data.data);
     }
   }, []);
+
+  const [maintenanceLoading, setMaintenanceLoading] = React.useState(false);
+  const [maintenanceMessage, setMaintenanceMessage] = React.useState<string | null>(null);
+
+  const handleRunMaintenance = async () => {
+    setMaintenanceLoading(true);
+    const res = await apiClient<{ data: { expiredCount: number; overdueCount: number }; message: string }>(
+      '/loans/admin/maintenance',
+      { method: 'POST' }
+    );
+    setMaintenanceLoading(false);
+
+    if (res.error) {
+      alert(res.error.message);
+      return;
+    }
+
+    const { expiredCount, overdueCount } = res.data?.data || { expiredCount: 0, overdueCount: 0 };
+    setMaintenanceMessage(
+      `Pemeliharaan selesai: ${expiredCount} pinjaman kedaluwarsa dibatalkan, ${overdueCount} pinjaman terlambat diperbarui.`
+    );
+    loadBoard();
+    setTimeout(() => setMaintenanceMessage(null), 5000);
+  };
 
   React.useEffect(() => {
     if (activeTab === 'board') {
@@ -406,7 +431,18 @@ export default function DashboardCirculationPage() {
           </h1>
         </div>
 
-        <div className="flex items-center gap-2 font-mono text-xs">
+        <div className="flex flex-wrap items-center gap-2 font-mono text-xs">
+          <button
+            type="button"
+            onClick={handleRunMaintenance}
+            disabled={maintenanceLoading}
+            className="px-3 py-1.5 border border-border-hairline bg-surface hover:border-foreground transition-colors inline-flex items-center gap-1.5 text-muted hover:text-foreground"
+            title="Jalankan pemeriksaan sirkulasi kedaluwarsa & pengingat keterlambatan"
+          >
+            <RefreshCw className={cn('w-3.5 h-3.5', maintenanceLoading && 'animate-spin')} />
+            <span>{maintenanceLoading ? 'Memeriksa...' : 'Sinkronisasi Sirkulasi'}</span>
+          </button>
+
           <Link
             href="/dashboard/buku"
             className="px-3 py-1.5 border border-border-hairline bg-surface hover:border-foreground transition-colors inline-flex items-center gap-1.5"
@@ -420,6 +456,19 @@ export default function DashboardCirculationPage() {
           </span>
         </div>
       </div>
+
+      {/* Maintenance Notification Banner */}
+      {maintenanceMessage && (
+        <div className="p-3 bg-surface border border-foreground font-mono text-xs text-foreground flex items-center justify-between gap-2 shadow-sm animate-in fade-in">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+            <span>{maintenanceMessage}</span>
+          </div>
+          <button onClick={() => setMaintenanceMessage(null)} className="text-muted hover:text-foreground">
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
 
       {/* Tab switchers */}
       <div className="flex flex-wrap items-center gap-2 border-b border-border-hairline font-mono text-xs uppercase tracking-wider pb-px">
