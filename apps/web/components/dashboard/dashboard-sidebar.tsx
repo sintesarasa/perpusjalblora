@@ -16,6 +16,7 @@ import {
   LogOut,
   ExternalLink,
   ChevronRight,
+  UserCheck,
 } from 'lucide-react';
 import { Role } from '@perpusjal/types';
 import { cn } from '@/lib/utils';
@@ -153,12 +154,28 @@ export function DashboardSidebar({ user, onNavigate }: DashboardSidebarProps) {
         {user && (user.role === Role.KURATOR || user.role === Role.ADMIN) && (
           <div className="pt-4 border-t border-border-hairline">
             <div className="px-2 pb-2 text-[10px] uppercase tracking-widest text-muted font-bold flex items-center justify-between">
-              <span>Meja Kurasi</span>
+              <span>Meja Kurasi & Lapak</span>
               <span className="text-[9px] px-1 bg-surface-muted border border-border-hairline font-mono">
                 {user.role}
               </span>
             </div>
             <nav className="space-y-1">
+              <Link
+                href="/dashboard/sirkulasi"
+                onClick={onNavigate}
+                className={cn(
+                  'flex items-center justify-between px-3 py-2 transition-colors border-l-2',
+                  pathname.startsWith('/dashboard/sirkulasi') || pathname.startsWith('/admin/sirkulasi')
+                    ? 'border-foreground bg-foreground text-background font-bold'
+                    : 'border-transparent text-foreground/80 hover:bg-surface-muted hover:text-foreground'
+                )}
+              >
+                <div className="flex items-center gap-2.5">
+                  <UserCheck className="w-4 h-4 text-muted" />
+                  <span>Meja Sirkulasi Lapak</span>
+                </div>
+              </Link>
+
               <Link
                 href="/dashboard/buku"
                 onClick={onNavigate}
@@ -217,22 +234,6 @@ export function DashboardSidebar({ user, onNavigate }: DashboardSidebarProps) {
                 <div className="flex items-center gap-2.5">
                   <Layers className="w-4 h-4 text-muted" />
                   <span>Dasbor Operasional</span>
-                </div>
-              </Link>
-
-              <Link
-                href="/admin/sirkulasi"
-                onClick={onNavigate}
-                className={cn(
-                  'flex items-center justify-between px-3 py-2 transition-colors border-l-2',
-                  pathname.startsWith('/admin/sirkulasi')
-                    ? 'border-foreground bg-foreground text-background font-bold'
-                    : 'border-transparent text-foreground/80 hover:bg-surface-muted hover:text-foreground'
-                )}
-              >
-                <div className="flex items-center gap-2.5">
-                  <BookOpen className="w-4 h-4 text-muted" />
-                  <span>Mode Lapak Sirkulasi</span>
                 </div>
               </Link>
 

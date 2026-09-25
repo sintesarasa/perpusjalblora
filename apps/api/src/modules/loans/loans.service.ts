@@ -877,13 +877,33 @@ export class LoansService {
   }
 
   /**
-   * Mode Lapak: Fast lookup by pickupCode or loanCode
+   * Mode Lapak: Fast lookup by pickupCode, loanCode, memberCode (PJL-), username, or bookCopy inventoryCode (PJ-)
    */
   async lookupLoanByCode(code: string) {
-    const trimmed = code.trim();
-    const loan = await prisma.loan.findFirst({
+    let trimmed = code.trim();
+
+    // Strip full URL if scanned from web QR codes (e.g. https://domain.id/u/username or /buku/slug)
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+      try {
+        const url = new URL(trimmed);
+        const pathSegments = url.pathname.split('/').filter(Boolean);
+        if (pathSegments.length >= 2 && pathSegments[0] === 'u') {
+          trimmed = `@${pathSegments[1]}`;
+        }
+      } catch {
+        // keep as is
+      }
+    }
+
+    let loan: any = null;
+
+    // 1. Direct match by pickupCode or loanCode (exact or case-insensitive)
+    loan = await prisma.loan.findFirst({
       where: {
-        OR: [{ pickupCode: trimmed }, { loanCode: trimmed }],
+        OR: [
+          { pickupCode: trimmed },
+          { loanCode: { equals: trimmed, mode: 'insensitive' } },
+        ],
       },
       include: {
         book: {
@@ -900,13 +920,97 @@ export class LoansService {
       },
     });
 
+    // 2. Member code match (PJL-XXXXXX) or username (@username)
+    if (!loan && (trimmed.toUpperCase().startsWith('PJL-') || trimmed.startsWith('@'))) {
+      let matchedUser: any = null;
+      if (trimmed.startsWith('@')) {
+        matchedUser = await prisma.user.findUnique({
+          where: { username: trimmed.slice(1).toLowerCase() },
+        });
+      } else {
+        const suffix = trimmed.replace(/^PJL-/i, '').toLowerCase();
+        matchedUser = await prisma.user.findFirst({
+          where: {
+            id: { endsWith: suffix, mode: 'insensitive' },
+          },
+        });
+      }
+
+      if (matchedUser) {
+        // Look for approved loan first, then active borrowed/overdue
+        loan = await prisma.loan.findFirst({
+          where: {
+            userId: matchedUser.id,
+            status: {
+              in: [
+                LoanStatus.APPROVED,
+                LoanStatus.BORROWED,
+                LoanStatus.OVERDUE,
+              ] as unknown as any[],
+            },
+          },
+          orderBy: { createdAt: 'desc' },
+          include: {
+            book: {
+              include: {
+                copies: {
+                  where: {
+                    status: BookCopyStatus.AVAILABLE as unknown as any,
+                  },
+                },
+              },
+            },
+            bookCopy: true,
+            user: true,
+          },
+        });
+      }
+    }
+
+    // 3. Book copy inventory code match (e.g. PJ-2026-0001)
+    if (!loan) {
+      const copy = await prisma.bookCopy.findFirst({
+        where: {
+          inventoryCode: { equals: trimmed, mode: 'insensitive' },
+        },
+      });
+
+      if (copy) {
+        loan = await prisma.loan.findFirst({
+          where: {
+            bookCopyId: copy.id,
+            status: {
+              in: [
+                LoanStatus.BORROWED,
+                LoanStatus.OVERDUE,
+              ] as unknown as any[],
+            },
+          },
+          orderBy: { createdAt: 'desc' },
+          include: {
+            book: {
+              include: {
+                copies: {
+                  where: {
+                    status: BookCopyStatus.AVAILABLE as unknown as any,
+                  },
+                },
+              },
+            },
+            bookCopy: true,
+            user: true,
+          },
+        });
+      }
+    }
+
     if (!loan) {
       throw HttpError.notFound('Data peminjaman tidak ditemukan.');
     }
 
     return {
       loan: formatLoanItem(loan, true),
-      availableCopies: loan.book.copies.map((c) => ({
+      availableCopies: loan.book.copies.map((c: any) => ({
         id: c.id,
         inventoryCode: c.inventoryCode,
         condition: c.condition,
