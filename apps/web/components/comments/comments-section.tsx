@@ -148,19 +148,19 @@ export function CommentsSection({
     <section className="border-t-2 border-foreground pt-8 space-y-6">
       {/* Header with double rule */}
       <div className="border-b border-border-hairline pb-3 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <MessageSquare className="w-5 h-5 text-foreground" />
-          <h2 className="font-mono text-sm uppercase tracking-widest font-bold text-foreground">
+        <div className="flex items-center gap-2.5">
+          <MessageSquare className="w-4 h-4 text-foreground" />
+          <h2 className="font-mono text-xs uppercase tracking-widest font-bold text-foreground">
             DISKUSI & TANGGAPAN
           </h2>
         </div>
-        <span className="font-mono text-xs text-muted uppercase tracking-widest">
+        <span className="font-mono text-[11px] text-muted uppercase tracking-widest">
           // {total} TANGGAPAN
         </span>
       </div>
 
       {/* Gazette Editorial Code of Conduct Notice */}
-      <div className="p-3.5 bg-surface-muted border-l-2 border-foreground flex items-start gap-3 text-xs font-sans text-muted leading-relaxed">
+      <div className="p-3.5 bg-surface-muted/60 border-l-2 border-foreground flex items-start gap-3 text-xs font-sans text-muted leading-relaxed">
         <Info className="w-4 h-4 text-foreground shrink-0 mt-0.5" />
         <p>
           Ruang diskusi Perpusjal Blora mengedepankan dialektika yang bermartabat, kritis, dan berdasar.
@@ -170,15 +170,15 @@ export function CommentsSection({
 
       {/* Temporary feedback banner */}
       {notice && (
-        <div className="p-3 bg-surface border border-foreground font-mono text-xs text-foreground flex items-center gap-2">
-          <Check className="w-4 h-4 text-foreground" />
+        <div className="p-3 bg-surface border border-border-hairline font-mono text-xs text-foreground flex items-center gap-2">
+          <Check className="w-4 h-4 text-emerald-500 shrink-0" />
           <span>{notice}</span>
         </div>
       )}
 
       {/* Top comment submission box */}
       <div className="p-4 sm:p-5 bg-surface border border-border-hairline">
-        <span className="block font-mono text-xs uppercase tracking-wider font-bold text-foreground mb-3">
+        <span className="block font-mono text-[11px] uppercase tracking-wider font-bold text-foreground mb-3">
           Sampaikan Tanggapan Baru
         </span>
         <CommentForm

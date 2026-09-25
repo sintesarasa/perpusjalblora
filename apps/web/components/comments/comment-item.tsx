@@ -125,15 +125,23 @@ export function CommentItemComponent({
 
   return (
     <article
-      className={`border-b border-border-hairline py-4 last:border-b-0 font-sans ${
+      className={`border-b border-border-hairline py-4.5 last:border-b-0 font-sans ${
         comment.pendingModeration ? 'bg-surface-muted/60 p-4 border border-dashed border-foreground/40' : ''
       }`}
     >
       {/* Header: Author info & meta */}
       <div className="flex items-start justify-between gap-3 text-xs">
-        <div className="flex items-center gap-2.5 flex-wrap">
-          <div className="w-6 h-6 border border-foreground flex items-center justify-center font-mono text-[10px] font-bold bg-surface uppercase shrink-0">
-            {comment.author.name.charAt(0)}
+        <div className="flex items-center gap-2 flex-wrap">
+          <div className="w-6 h-6 border border-foreground/30 flex items-center justify-center font-mono text-[10px] font-bold bg-surface-muted text-foreground uppercase shrink-0 overflow-hidden">
+            {comment.author.avatarUrl ? (
+              <img
+                src={comment.author.avatarUrl}
+                alt={comment.author.name}
+                className="w-full h-full object-cover grayscale"
+              />
+            ) : (
+              comment.author.name.charAt(0)
+            )}
           </div>
 
           <span className="font-serif font-bold text-sm text-foreground">
@@ -146,27 +154,27 @@ export function CommentItemComponent({
 
           {/* Role / Trust Level Badge */}
           {comment.author.role === 'KURATOR' || comment.author.role === 'ADMIN' ? (
-            <span className="font-mono text-[10px] uppercase tracking-wider px-1.5 py-0.5 bg-foreground text-background font-bold inline-flex items-center gap-1">
-              <ShieldCheck className="w-3 h-3" />
+            <span className="font-mono text-[9px] uppercase tracking-wider px-1.5 py-0.5 bg-foreground text-background font-bold inline-flex items-center gap-1">
+              <ShieldCheck className="w-2.5 h-2.5" />
               {comment.author.role}
             </span>
           ) : (
-            <span className="font-mono text-[10px] uppercase tracking-wider px-1.5 py-0.2 border border-border-hairline text-muted">
+            <span className="font-mono text-[9px] uppercase tracking-wider px-1.5 py-0.5 border border-border-hairline text-muted">
               {comment.author.trustLevel}
             </span>
           )}
 
           {comment.pendingModeration && (
-            <span className="font-mono text-[10px] uppercase tracking-wider px-1.5 py-0.5 border border-foreground bg-surface text-foreground font-bold inline-flex items-center gap-1">
-              <Clock className="w-3 h-3" />
+            <span className="font-mono text-[9px] uppercase tracking-wider px-1.5 py-0.5 border border-foreground bg-surface text-foreground font-bold inline-flex items-center gap-1">
+              <Clock className="w-2.5 h-2.5" />
               MENUNGGU KURASI
             </span>
           )}
         </div>
 
-        <div className="font-mono text-[11px] text-muted shrink-0">
+        <div className="font-mono text-[10px] text-muted shrink-0 pt-0.5">
           {formattedDate}
-          {comment.editedAt && <span className="ml-1 italic text-[10px]">(disunting)</span>}
+          {comment.editedAt && <span className="ml-1 italic text-[9px]">(disunting)</span>}
         </div>
       </div>
 
@@ -178,7 +186,7 @@ export function CommentItemComponent({
               rows={3}
               value={editContent}
               onChange={(e) => setEditContent(e.target.value)}
-              className="w-full p-3 bg-surface border border-foreground focus:outline-none rounded-none text-sm text-foreground font-sans resize-y"
+              className="w-full p-3 bg-background border border-border focus:border-foreground focus:outline-none rounded-none text-sm text-foreground font-sans resize-y"
             />
             {actionError && (
               <p className="text-xs font-mono text-destructive">{actionError}</p>
@@ -187,14 +195,14 @@ export function CommentItemComponent({
               <button
                 type="button"
                 onClick={() => setIsEditing(false)}
-                className="px-3 py-1.5 border border-border-hairline text-muted hover:text-foreground uppercase tracking-wider"
+                className="h-7 px-3 border border-border-hairline text-muted hover:text-foreground uppercase tracking-wider text-[11px]"
               >
                 Batal
               </button>
               <button
                 type="submit"
                 disabled={actionLoading || !editContent.trim()}
-                className="px-3 py-1.5 bg-foreground text-background font-bold uppercase tracking-wider hover:bg-foreground/90 disabled:opacity-40"
+                className="h-7 px-3 bg-foreground text-background font-bold uppercase tracking-wider hover:bg-foreground/90 disabled:opacity-40 text-[11px]"
               >
                 {actionLoading ? 'Menyimpan...' : 'Simpan'}
               </button>
@@ -202,8 +210,8 @@ export function CommentItemComponent({
           </form>
         ) : (
           <p
-            className={`text-sm leading-relaxed ${
-              isDeletedByUser ? 'italic text-muted font-serif' : 'text-foreground font-sans'
+            className={`text-[14px] sm:text-[15px] leading-relaxed text-foreground/90 ${
+              isDeletedByUser ? 'italic text-muted font-serif' : 'font-sans'
             }`}
           >
             {comment.content}
@@ -213,7 +221,7 @@ export function CommentItemComponent({
 
       {/* Actions footer */}
       {!isDeletedByUser && !isEditing && (
-        <div className="mt-3 flex items-center gap-4 font-mono text-[11px] text-muted uppercase tracking-wider">
+        <div className="mt-3 flex items-center gap-3.5 font-mono text-[10px] sm:text-[11px] text-muted uppercase tracking-wider">
           {/* Depth constraint: only parent comments can receive replies (BR-COM-02) */}
           {!isReply && (
             <button
@@ -334,7 +342,7 @@ export function CommentItemComponent({
 
       {/* Inline Reply Form */}
       {isReplying && (
-        <div className="mt-3 pl-4 border-l-2 border-foreground">
+        <div className="mt-3 pl-3 sm:pl-4 border-l-2 border-foreground">
           <CommentForm
             articleId={articleId}
             letterId={letterId}
@@ -351,7 +359,7 @@ export function CommentItemComponent({
 
       {/* Nested Replies (Depth 1) */}
       {comment.replies && comment.replies.length > 0 && (
-        <div className="mt-3 pl-4 sm:pl-6 border-l-2 border-border-hairline space-y-2">
+        <div className="mt-3 pl-3 sm:pl-5 border-l border-border space-y-2">
           {comment.replies.map((reply) => (
             <CommentItemComponent
               key={reply.id}
