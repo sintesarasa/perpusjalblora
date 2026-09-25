@@ -241,6 +241,15 @@ export function UserMenu() {
               </div>
 
               <Link
+                href="/dashboard/buku"
+                onClick={() => setIsOpen(false)}
+                className="flex items-center gap-2 px-3 py-1.5 text-foreground hover:bg-surface-muted transition-colors"
+              >
+                <BookOpen className="w-3.5 h-3.5 text-muted" />
+                <span>Kelola Koleksi Buku</span>
+              </Link>
+
+              <Link
                 href="/admin/kurasi"
                 onClick={() => setIsOpen(false)}
                 className="flex items-center gap-2 px-3 py-1.5 text-foreground hover:bg-surface-muted transition-colors"

@@ -12,6 +12,7 @@ router.get('/:slug', (req, res, next) => booksController.getBookBySlug(req, res,
 
 // Curator & Admin management routes
 router.post('/', requireRole(Role.KURATOR), (req, res, next) => booksController.createBook(req, res, next));
+router.patch('/:id/publish', requireRole(Role.KURATOR), (req, res, next) => booksController.togglePublish(req, res, next));
 router.patch('/:id', requireRole(Role.KURATOR), (req, res, next) => booksController.updateBook(req, res, next));
 router.delete('/:id', requireRole(Role.KURATOR), (req, res, next) => booksController.deleteBook(req, res, next));
 

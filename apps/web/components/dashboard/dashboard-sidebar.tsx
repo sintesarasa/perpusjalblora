@@ -160,6 +160,22 @@ export function DashboardSidebar({ user, onNavigate }: DashboardSidebarProps) {
             </div>
             <nav className="space-y-1">
               <Link
+                href="/dashboard/buku"
+                onClick={onNavigate}
+                className={cn(
+                  'flex items-center justify-between px-3 py-2 transition-colors border-l-2',
+                  pathname.startsWith('/dashboard/buku') || pathname.startsWith('/admin/buku')
+                    ? 'border-foreground bg-foreground text-background font-bold'
+                    : 'border-transparent text-foreground/80 hover:bg-surface-muted hover:text-foreground'
+                )}
+              >
+                <div className="flex items-center gap-2.5">
+                  <BookOpen className="w-4 h-4 text-muted" />
+                  <span>Kelola Koleksi Buku</span>
+                </div>
+              </Link>
+
+              <Link
                 href="/admin/kurasi"
                 onClick={onNavigate}
                 className={cn(

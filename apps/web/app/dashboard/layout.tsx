@@ -11,6 +11,7 @@ import { CustomLoader } from '@/components/ui/custom-loader';
 import { apiClient } from '@/lib/api';
 import { Role } from '@perpusjal/types';
 import { Menu, X, ArrowLeft } from 'lucide-react';
+import { PrintQueueProvider } from '@/lib/print-queue-context';
 
 interface CurrentUser {
   id: string;
@@ -117,7 +118,9 @@ export default function DashboardLayout({
 
         {/* Right Content Area */}
         <main className="flex-1 min-w-0 bg-background overflow-x-hidden">
-          {children}
+          <PrintQueueProvider>
+            {children}
+          </PrintQueueProvider>
         </main>
       </div>
     </div>

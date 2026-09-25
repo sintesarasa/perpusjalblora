@@ -9,3 +9,5 @@ out
 .env.local
 .DS_Store
 coverage
+*.tsbuildinfo
+apps/web/public/uploads

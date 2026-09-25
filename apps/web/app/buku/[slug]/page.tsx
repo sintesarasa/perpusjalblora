@@ -327,37 +327,57 @@ export default function BookDetailPage() {
 
             {/* Eksemplar Status Table */}
             {book.copies && book.copies.length > 0 && (
-              <div className="space-y-3 pt-4">
-                <h3 className="font-mono text-xs uppercase tracking-widest font-bold text-foreground">
-                  DAFTAR EKSEMPLAR FISIK ({book.copies.length})
-                </h3>
+              <div className="space-y-3 pt-4 border-t border-border-hairline">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-mono text-xs uppercase tracking-widest font-bold text-foreground flex items-center gap-2">
+                    <Layers className="w-3.5 h-3.5 text-muted" />
+                    <span>INVENTARIS EKSEMPLAR FISIK LAPAK ({book.copies.length})</span>
+                  </h3>
+                  <span className="font-mono text-[10px] text-muted">
+                    Sinkron dengan label stiker QR buku fisik
+                  </span>
+                </div>
                 <div className="border border-border-hairline bg-surface overflow-x-auto">
                   <table className="w-full text-left font-mono text-xs">
-                    <thead className="bg-surface-muted border-b border-border-hairline text-muted uppercase text-[11px]">
+                    <thead className="bg-surface-muted border-b border-border-hairline text-muted uppercase text-[10px]">
                       <tr>
-                        <th className="p-3">Kode Inventaris</th>
-                        <th className="p-3">Kondisi Buku</th>
-                        <th className="p-3">Status</th>
-                        <th className="p-3">Catatan</th>
+                        <th className="p-3 font-bold">Kode Inventaris</th>
+                        <th className="p-3 font-bold">Kondisi Fisik</th>
+                        <th className="p-3 font-bold">Status Sirkulasi</th>
+                        <th className="p-3 font-bold">Catatan Lapak</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border-hairline">
                       {book.copies.map((copy) => (
                         <tr key={copy.id} className="hover:bg-surface-muted/30">
-                          <td className="p-3 font-bold text-foreground">{copy.inventoryCode}</td>
-                          <td className="p-3 text-muted">{copy.condition}</td>
-                          <td className="p-3">
-                            <span
-                              className={`px-1.5 py-0.5 text-[10px] uppercase font-bold ${
-                                copy.status === 'AVAILABLE'
-                                  ? 'bg-foreground text-background'
-                                  : 'border border-border-hairline text-muted'
-                              }`}
-                            >
-                              {copy.status}
+                          <td className="p-3 font-bold text-foreground tracking-wider">
+                            <span className="px-2 py-0.5 bg-surface-muted border border-border-hairline">
+                              {copy.inventoryCode}
                             </span>
                           </td>
-                          <td className="p-3 text-muted italic">{copy.note || '—'}</td>
+                          <td className="p-3 text-muted">
+                            <span className="px-1.5 py-0.5 border border-border-hairline text-[10px] uppercase font-semibold">
+                              {copy.condition}
+                            </span>
+                          </td>
+                          <td className="p-3">
+                            <span
+                              className={`px-2 py-0.5 text-[10px] uppercase font-bold inline-flex items-center gap-1 ${
+                                copy.status === 'AVAILABLE'
+                                  ? 'bg-emerald-50 text-emerald-800 border border-emerald-300'
+                                  : copy.status === 'BORROWED'
+                                  ? 'bg-surface-muted text-muted border border-border-hairline'
+                                  : 'border border-amber-500 bg-amber-50 text-amber-900'
+                              }`}
+                            >
+                              {copy.status === 'AVAILABLE'
+                                ? 'TERSEDIA DI LAPAK'
+                                : copy.status === 'BORROWED'
+                                ? 'SEDANG DIPINJAM'
+                                : copy.status}
+                            </span>
+                          </td>
+                          <td className="p-3 text-muted italic font-sans text-xs">{copy.note || '—'}</td>
                         </tr>
                       ))}
                     </tbody>

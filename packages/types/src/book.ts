@@ -13,6 +13,9 @@ export const bookQuerySchema = z.object({
   tahunMin: z.coerce.number().int().optional(),
   tahunMax: z.coerce.number().int().optional(),
   sort: z.enum(['terbaru', 'populer', 'judul']).default('terbaru'),
+  includeDraft: z
+    .union([z.boolean(), z.string().transform((v) => v === 'true' || v === '1')])
+    .optional(),
   page: z.coerce.number().int().positive().default(1),
   perPage: z.coerce.number().int().positive().max(50).default(24),
 });
@@ -74,6 +77,7 @@ export interface BookItem {
   availableCopies: number;
   isBorrowable: boolean;
   availability: BookAvailabilityStatus;
+  isPublished?: boolean;
   shelfLocation?: string | null;
   publicationYear?: number | null;
   isbn?: string | null;
