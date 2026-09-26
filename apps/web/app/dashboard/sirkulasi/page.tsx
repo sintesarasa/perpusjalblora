@@ -33,6 +33,8 @@ import {
   Calendar,
   Users,
   MessageCircle,
+  FileCheck2,
+  XCircle,
 } from 'lucide-react';
 import { CameraQrScannerModal } from '@/components/circulation/camera-qr-scanner-modal';
 
@@ -55,7 +57,20 @@ export default function DashboardCirculationPage() {
   const [currentUser, setCurrentUser] = React.useState<{ id: string; role: Role; name: string } | null>(null);
   const [authLoading, setAuthLoading] = React.useState(true);
 
-  const [activeTab, setActiveTab] = React.useState<'pickup' | 'return' | 'board'>('pickup');
+  const [activeTab, setActiveTab] = React.useState<'approvals' | 'pickup' | 'return' | 'board'>('approvals');
+
+  // Tab 0: Persetujuan Pinjaman (Pending Approvals)
+  const [pendingLoans, setPendingLoans] = React.useState<LoanItem[]>([]);
+  const [pendingLoading, setPendingLoading] = React.useState(false);
+  const [pendingError, setPendingError] = React.useState<string | null>(null);
+  const [pendingSuccess, setPendingSuccess] = React.useState<string | null>(null);
+  const [selectedCopiesForPending, setSelectedCopiesForPending] = React.useState<Record<string, string>>({});
+  const [actionLoanId, setActionLoanId] = React.useState<string | null>(null);
+
+  // Reject Modal
+  const [rejectModalLoan, setRejectModalLoan] = React.useState<LoanItem | null>(null);
+  const [rejectReason, setRejectReason] = React.useState('');
+  const [rejectLoading, setRejectLoading] = React.useState(false);
 
   // Session Logs (Riwayat transaksi lapak hari ini) — survive page refresh via sessionStorage
   const [sessionLogs, setSessionLogs] = React.useState<SessionLogItem[]>(() => {
@@ -189,6 +204,101 @@ export default function DashboardCirculationPage() {
     }
   }, [activeTab, loadBoard]);
 
+  // Load Pending Loans Callback
+  const loadPendingLoans = React.useCallback(async () => {
+    setPendingLoading(true);
+    setPendingError(null);
+    const res = await apiClient<{ data: LoanItem[] }>('/loans?status=PENDING&perPage=50');
+    setPendingLoading(false);
+    if (res.data) {
+      setPendingLoans(res.data.data);
+      const copyMap: Record<string, string> = {};
+      res.data.data.forEach((loan) => {
+        const copies = loan.book.copies || [];
+        if (copies.length > 0) {
+          copyMap[loan.id] = copies[0].id;
+        }
+      });
+      setSelectedCopiesForPending((prev) => ({ ...copyMap, ...prev }));
+    } else if (res.error) {
+      setPendingError(res.error.message);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    loadPendingLoans();
+  }, [loadPendingLoans]);
+
+  // Action: Approve only (issue 6-digit pickupCode, 3-day deadline)
+  const handleApproveOnly = async (loan: LoanItem) => {
+    setActionLoanId(loan.id);
+    setPendingError(null);
+    const res = await apiClient<{ data: LoanItem; message: string }>(`/loans/${loan.id}/approve`, {
+      method: 'POST',
+      body: JSON.stringify({ pickupDeadlineDays: 3 }),
+    });
+    setActionLoanId(null);
+    if (res.error) {
+      setPendingError(res.error.message);
+      return;
+    }
+    setPendingSuccess(
+      `Pengajuan "${loan.book.title}" berhasil disetujui! Kode Ambil: ${res.data?.data.pickupCode || '-'}`
+    );
+    loadPendingLoans();
+    loadBoard();
+  };
+
+  // Action: Approve & Pickup in one step (instant handover)
+  const handleApproveAndPickup = async (loan: LoanItem, bookCopyId?: string) => {
+    setActionLoanId(loan.id);
+    setPendingError(null);
+    const res = await apiClient<{ data: LoanItem; message: string }>(`/loans/${loan.id}/approve-and-pickup`, {
+      method: 'POST',
+      body: JSON.stringify({ bookCopyId: bookCopyId || undefined }),
+    });
+    setActionLoanId(null);
+    if (res.error) {
+      setPendingError(res.error.message);
+      return;
+    }
+    const borrowerName = loan.borrower?.name || 'Pembaca';
+    setPendingSuccess(`Buku "${loan.book.title}" berhasil disetujui dan diserahkan kepada ${borrowerName}!`);
+    setSessionLogs((prev) => [
+      {
+        id: Math.random().toString(),
+        type: 'pickup',
+        code: loan.loanCode,
+        title: loan.book.title,
+        borrower: borrowerName,
+        time: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+      },
+      ...prev.slice(0, 8),
+    ]);
+    loadPendingLoans();
+    loadBoard();
+  };
+
+  // Action: Confirm rejection with reason
+  const handleConfirmReject = async () => {
+    if (!rejectModalLoan || !rejectReason.trim()) return;
+    setRejectLoading(true);
+    const res = await apiClient<{ message: string }>(`/loans/${rejectModalLoan.id}/reject`, {
+      method: 'POST',
+      body: JSON.stringify({ reason: rejectReason.trim() }),
+    });
+    setRejectLoading(false);
+    if (res.error) {
+      alert(res.error.message);
+      return;
+    }
+    setPendingSuccess(`Pengajuan pinjaman "${rejectModalLoan.book.title}" telah ditolak.`);
+    setRejectModalLoan(null);
+    setRejectReason('');
+    loadPendingLoans();
+    loadBoard();
+  };
+
   // Lookup for Pickup (by 6-digit pickup code, member code PJL-, or loan code)
   const executePickupLookup = async (codeToSearch: string) => {
     const trimmed = codeToSearch.trim();
@@ -211,9 +321,9 @@ export default function DashboardCirculationPage() {
 
     if (res.data) {
       const data = res.data.data;
-      if (data.loan.status !== LoanStatus.APPROVED) {
+      if (data.loan.status !== LoanStatus.APPROVED && data.loan.status !== LoanStatus.PENDING) {
         setPickupError(
-          `Pinjaman ditemukan tetapi berstatus ${data.loan.status}. Hanya status APPROVED yang dapat diserahkan ke peminjam.`
+          `Pinjaman ditemukan tetapi berstatus ${data.loan.status}. Hanya status APPROVED atau PENDING yang dapat diproses di meja ini.`
         );
         return;
       }
@@ -550,6 +660,28 @@ export default function DashboardCirculationPage() {
         <button
           type="button"
           onClick={() => {
+            setActiveTab('approvals');
+            setPendingSuccess(null);
+            setPendingError(null);
+          }}
+          className={`px-5 py-2.5 border-b-2 transition-colors flex items-center gap-2 ${
+            activeTab === 'approvals'
+              ? 'border-foreground text-foreground font-bold'
+              : 'border-transparent text-muted hover:text-foreground'
+          }`}
+        >
+          <FileCheck2 className="w-4 h-4" />
+          <span>Persetujuan Pinjaman</span>
+          {pendingLoans.length > 0 && (
+            <span className="px-1.5 py-0.5 text-[10px] bg-foreground text-background font-bold leading-none">
+              {pendingLoans.length}
+            </span>
+          )}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
             setActiveTab('pickup');
             setPickupSuccess(null);
             setPickupError(null);
@@ -596,6 +728,206 @@ export default function DashboardCirculationPage() {
           <span>Papan Pantau Lapak</span>
         </button>
       </div>
+
+      {/* TAB 0: PERSETUJUAN PINJAMAN (APPROVALS) */}
+      {activeTab === 'approvals' && (
+        <div className="space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border-hairline pb-4">
+            <div>
+              <h2 className="font-serif text-xl font-bold text-foreground">
+                Antrean Persetujuan Pinjaman Buku
+              </h2>
+              <p className="font-sans text-xs text-muted mt-1">
+                Tinjau permohonan pinjaman warga yang masuk. Setujui untuk menerbitkan kode ambil atau langsung serahkan buku di lapak.
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={loadPendingLoans}
+                disabled={pendingLoading}
+                className="px-3 py-1.5 border border-border-hairline bg-surface hover:border-foreground font-mono text-xs uppercase tracking-wider transition-colors inline-flex items-center gap-1.5"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${pendingLoading ? 'animate-spin' : ''}`} />
+                <span>Segarkan Data</span>
+              </button>
+            </div>
+          </div>
+
+          {pendingSuccess && (
+            <div className="p-4 bg-surface-muted border border-foreground font-mono text-xs text-foreground flex items-start gap-2.5">
+              <CheckCircle2 className="w-4 h-4 shrink-0 text-foreground mt-0.5" />
+              <span>{pendingSuccess}</span>
+            </div>
+          )}
+
+          {pendingError && (
+            <div className="p-4 bg-surface-muted border border-destructive font-mono text-xs text-destructive flex items-start gap-2.5">
+              <AlertTriangle className="w-4 h-4 shrink-0 text-destructive mt-0.5" />
+              <span>{pendingError}</span>
+            </div>
+          )}
+
+          {pendingLoading ? (
+            <div className="py-20 flex justify-center">
+              <CustomLoader size="md" label="MEMUAT ANTREAN PERSETUJUAN..." />
+            </div>
+          ) : pendingLoans.length === 0 ? (
+            <div className="p-12 text-center border-2 border-border-hairline bg-surface space-y-3 font-mono text-xs">
+              <FileCheck2 className="w-8 h-8 text-muted mx-auto stroke-1" />
+              <p className="font-bold text-foreground uppercase tracking-widest">
+                TIDAK ADA PERMOHONAN MENUNGGU
+              </p>
+              <p className="font-sans text-muted max-w-md mx-auto">
+                Semua permohonan peminjaman buku dari warga telah selesai diproses. Pengajuan baru yang masuk akan otomatis tampil di sini.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-4">
+              {pendingLoans.map((loan) => {
+                const copies = loan.book.copies || [];
+                const selectedCopy = selectedCopiesForPending[loan.id] || (copies.length > 0 ? copies[0].id : '');
+
+                return (
+                  <div
+                    key={loan.id}
+                    className="p-5 border-2 border-foreground bg-surface space-y-4 font-mono text-xs"
+                  >
+                    {/* Header info */}
+                    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border-hairline pb-2 text-muted">
+                      <div className="flex items-center gap-2">
+                        <span className="px-2 py-0.5 bg-amber-500 text-black font-bold text-[10px]">
+                          PENDING
+                        </span>
+                        <span className="text-foreground font-bold tracking-wider">{loan.loanCode}</span>
+                      </div>
+                      <div className="flex items-center gap-3 text-[11px]">
+                        <span>Diajukan: <strong className="text-foreground">{new Date(loan.requestedAt).toLocaleString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</strong></span>
+                        <span>•</span>
+                        <span>Titik Ambil: <strong className="text-foreground">{loan.pickupPoint}</strong></span>
+                      </div>
+                    </div>
+
+                    {/* Book & Borrower columns */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Left: Book */}
+                      <div className="flex gap-3">
+                        <div className="w-16 h-22 shrink-0 bg-surface-muted border border-border-hairline overflow-hidden flex items-center justify-center">
+                          {loan.book.coverImage ? (
+                            <img src={loan.book.coverImage} alt={loan.book.title} className="w-full h-full object-cover grayscale" />
+                          ) : (
+                            <BookOpen className="w-6 h-6 text-muted" />
+                          )}
+                        </div>
+                        <div className="space-y-1 font-sans">
+                          <Link href={`/buku/${loan.book.slug}`} target="_blank" className="font-serif font-bold text-base text-foreground hover:underline block leading-snug">
+                            {loan.book.title}
+                          </Link>
+                          <p className="text-xs text-muted">Penulis: {loan.book.author}</p>
+                          <p className="text-[11px] font-mono text-muted pt-1">
+                            Sisa Stok Rak: <strong className="text-foreground">{loan.book.availableCopies ?? '-'}</strong> eksemplar
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Right: Borrower & Note */}
+                      <div className="p-3 bg-surface-muted border border-border-hairline space-y-2 font-sans text-xs">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <p className="font-bold text-foreground">{loan.borrower?.name}</p>
+                            <p className="text-muted text-[11px]">@{loan.borrower?.username} • {loan.borrower?.email}</p>
+                          </div>
+                          {loan.pickupDatePlan && (
+                            <span className="text-[10px] font-mono px-1.5 py-0.5 bg-surface border border-border-hairline text-muted">
+                              Rencana: {new Date(loan.pickupDatePlan).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}
+                            </span>
+                          )}
+                        </div>
+
+                        {loan.userNote ? (
+                          <div className="text-[11px] italic bg-surface p-2 border border-border-hairline text-foreground">
+                            &ldquo;{loan.userNote}&rdquo;
+                          </div>
+                        ) : (
+                          <p className="text-[11px] text-muted italic">Tidak ada catatan peminjam.</p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Footer Actions & Physical Copy Selection */}
+                    <div className="pt-3 border-t border-border-hairline flex flex-col md:flex-row md:items-center justify-between gap-3">
+                      {/* Physical Copy selector for instant handover */}
+                      <div className="flex items-center gap-2">
+                        <label className="text-[11px] text-muted uppercase font-bold shrink-0">
+                          PILIH EKSEMPLAR:
+                        </label>
+                        {copies.length > 0 ? (
+                          <select
+                            value={selectedCopy}
+                            onChange={(e) =>
+                              setSelectedCopiesForPending((prev) => ({
+                                ...prev,
+                                [loan.id]: e.target.value,
+                              }))
+                            }
+                            className="p-1.5 bg-surface border border-border-hairline text-xs font-mono text-foreground focus:outline-none focus:border-foreground"
+                          >
+                            {copies.map((c) => (
+                              <option key={c.id} value={c.id}>
+                                {c.inventoryCode} ({c.condition || 'BAIK'})
+                              </option>
+                            ))}
+                          </select>
+                        ) : (
+                          <span className="text-[11px] text-destructive italic">Tidak ada eksemplar tersedia di rak</span>
+                        )}
+                      </div>
+
+                      {/* Action buttons */}
+                      <div className="flex items-center justify-end gap-2 shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setRejectModalLoan(loan);
+                            setRejectReason('');
+                          }}
+                          disabled={actionLoanId === loan.id}
+                          className="px-3 py-1.5 border border-border-hairline text-muted hover:text-destructive hover:border-destructive uppercase font-bold tracking-wider transition-colors inline-flex items-center gap-1"
+                        >
+                          <XCircle className="w-3.5 h-3.5" />
+                          <span>Tolak</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleApproveOnly(loan)}
+                          disabled={actionLoanId === loan.id}
+                          className="px-3 py-1.5 border-2 border-foreground text-foreground hover:bg-surface-muted uppercase font-bold tracking-wider transition-colors inline-flex items-center gap-1.5"
+                          title="Setujui permohonan dan terbitkan kode ambil 6 digit untuk diambil dalam 3 hari"
+                        >
+                          {actionLoanId === loan.id ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Clock className="w-3.5 h-3.5" />}
+                          <span>Setujui (Kode Ambil)</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleApproveAndPickup(loan, selectedCopy)}
+                          disabled={actionLoanId === loan.id || !selectedCopy}
+                          className="px-4 py-1.5 bg-foreground text-background font-bold uppercase tracking-wider hover:bg-foreground/90 disabled:opacity-40 transition-colors inline-flex items-center gap-1.5"
+                          title="Setujui permohonan dan serahkan buku seketika kepada peminjam yang ada di lapak"
+                        >
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          <span>Setujui & Serahkan di Tempat</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* TAB 1: SERAH-TERIMA (PICKUP CEPAT) */}
       {activeTab === 'pickup' && (
@@ -682,8 +1014,12 @@ export default function DashboardCirculationPage() {
                 <div className="p-4 bg-surface-muted border border-border-hairline space-y-3">
                   <div className="flex justify-between items-center text-muted">
                     <span>KODE PINJAM: <strong className="text-foreground">{pickupLoan.loanCode}</strong></span>
-                    <span className="px-2 py-0.5 bg-foreground text-background font-bold text-[10px]">
-                      APPROVED
+                    <span className={`px-2 py-0.5 font-bold text-[10px] ${
+                      pickupLoan.status === LoanStatus.PENDING
+                        ? 'bg-amber-500 text-black'
+                        : 'bg-foreground text-background'
+                    }`}>
+                      {pickupLoan.status === LoanStatus.PENDING ? 'MENUNGGU PERSETUJUAN' : pickupLoan.status}
                     </span>
                   </div>
 
@@ -703,6 +1039,11 @@ export default function DashboardCirculationPage() {
                     <p className="font-mono text-[11px] text-muted">
                       Titik Pengambilan: <span className="text-foreground">{pickupLoan.pickupPoint}</span>
                     </p>
+                    {pickupLoan.userNote && (
+                      <p className="font-sans text-[11px] italic text-foreground pt-1 border-t border-border-hairline mt-1">
+                        Catatan: &ldquo;{pickupLoan.userNote}&rdquo;
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -753,28 +1094,133 @@ export default function DashboardCirculationPage() {
                   )}
                 </div>
 
-                <div className="flex gap-2 pt-1">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setPickupLoan(null);
-                      setPickupCodeInput('');
-                      setPickupError(null);
-                    }}
-                    className="px-4 py-3 border border-border-hairline bg-surface hover:border-foreground transition-colors font-bold text-xs uppercase tracking-wider text-muted hover:text-foreground"
-                  >
-                    Batal
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleExecutePickup}
-                    disabled={pickupLoading || !selectedCopyId}
-                    className="flex-1 py-3 bg-foreground text-background font-bold text-xs uppercase tracking-widest hover:bg-foreground/90 disabled:opacity-40 transition-colors flex items-center justify-center gap-2"
-                  >
-                    <Check className="w-4 h-4" />
-                    <span>SERAHKAN BUKU KE PEMINJAM</span>
-                  </button>
-                </div>
+                {/* Actions: Distinguish PENDING vs APPROVED */}
+                {pickupLoan.status === LoanStatus.PENDING ? (
+                  <div className="pt-2 border-t border-border-hairline space-y-3">
+                    <div className="p-3 bg-amber-500/10 border border-amber-500/30 font-sans text-xs text-foreground space-y-1">
+                      <p className="font-bold flex items-center gap-1.5 text-amber-600">
+                        <AlertTriangle className="w-3.5 h-3.5" />
+                        Status Pengajuan Masih PENDING (Menunggu Persetujuan)
+                      </p>
+                      <p className="text-muted text-[11px] leading-relaxed">
+                        Pengajuan pinjaman ini belum disetujui kurator. Anda dapat menyetujuinya sekarang untuk menerbitkan kode ambil 6 digit, atau langsung menyerahkan buku ke peminjam jika peminjam berada di meja lapak saat ini.
+                      </p>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2 pt-1 font-mono text-xs">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setPickupLoan(null);
+                          setPickupCodeInput('');
+                          setPickupError(null);
+                        }}
+                        className="px-3 py-2.5 border border-border-hairline bg-surface hover:border-foreground transition-colors font-bold uppercase tracking-wider text-muted hover:text-foreground"
+                      >
+                        Batal
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setRejectModalLoan(pickupLoan);
+                          setRejectReason('');
+                        }}
+                        className="px-3 py-2.5 border border-destructive text-destructive hover:bg-destructive hover:text-white uppercase font-bold tracking-wider transition-colors inline-flex items-center gap-1"
+                      >
+                        <XCircle className="w-3.5 h-3.5" />
+                        Tolak
+                      </button>
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          setPickupLoading(true);
+                          setPickupError(null);
+                          const res = await apiClient<{ data: LoanItem; message: string }>(`/loans/${pickupLoan.id}/approve`, {
+                            method: 'POST',
+                            body: JSON.stringify({ pickupDeadlineDays: 3 }),
+                          });
+                          setPickupLoading(false);
+                          if (res.error) {
+                            setPickupError(res.error.message);
+                            return;
+                          }
+                          if (res.data) {
+                            setPickupLoan(res.data.data);
+                            setPickupSuccess(res.data.message);
+                            loadPendingLoans();
+                            loadBoard();
+                          }
+                        }}
+                        disabled={pickupLoading}
+                        className="px-4 py-2.5 border-2 border-foreground text-foreground hover:bg-surface-muted uppercase font-bold tracking-wider transition-colors inline-flex items-center gap-1.5"
+                      >
+                        {pickupLoading ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Clock className="w-3.5 h-3.5" />}
+                        <span>Setujui (Kode Ambil)</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          setPickupLoading(true);
+                          setPickupError(null);
+                          const res = await apiClient<{ data: LoanItem; message: string }>(`/loans/${pickupLoan.id}/approve-and-pickup`, {
+                            method: 'POST',
+                            body: JSON.stringify({ bookCopyId: selectedCopyId || undefined }),
+                          });
+                          setPickupLoading(false);
+                          if (res.error) {
+                            setPickupError(res.error.message);
+                            return;
+                          }
+                          const borrowerName = pickupLoan.borrower?.name || 'Pembaca';
+                          setPickupSuccess(`Buku "${pickupLoan.book.title}" berhasil disetujui dan diserahkan kepada ${borrowerName}!`);
+                          setSessionLogs((prev) => [
+                            {
+                              id: Math.random().toString(),
+                              type: 'pickup',
+                              code: pickupLoan.loanCode,
+                              title: pickupLoan.book.title,
+                              borrower: borrowerName,
+                              time: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+                            },
+                            ...prev.slice(0, 8),
+                          ]);
+                          setPickupLoan(null);
+                          setPickupCodeInput('');
+                          loadPendingLoans();
+                          loadBoard();
+                        }}
+                        disabled={pickupLoading || !selectedCopyId}
+                        className="flex-1 py-2.5 bg-foreground text-background font-bold uppercase tracking-widest hover:bg-foreground/90 disabled:opacity-40 transition-colors flex items-center justify-center gap-2"
+                      >
+                        <CheckCircle2 className="w-4 h-4" />
+                        <span>SETUJUI & SERAHKAN BUKU</span>
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex gap-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPickupLoan(null);
+                        setPickupCodeInput('');
+                        setPickupError(null);
+                      }}
+                      className="px-4 py-3 border border-border-hairline bg-surface hover:border-foreground transition-colors font-bold text-xs uppercase tracking-wider text-muted hover:text-foreground"
+                    >
+                      Batal
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleExecutePickup}
+                      disabled={pickupLoading || !selectedCopyId}
+                      className="flex-1 py-3 bg-foreground text-background font-bold text-xs uppercase tracking-widest hover:bg-foreground/90 disabled:opacity-40 transition-colors flex items-center justify-center gap-2"
+                    >
+                      <Check className="w-4 h-4" />
+                      <span>SERAHKAN BUKU KE PEMINJAM</span>
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -1087,6 +1533,30 @@ export default function DashboardCirculationPage() {
             </button>
           </div>
 
+          {pendingLoans.length > 0 && (
+            <div className="p-4 border-2 border-foreground bg-surface flex flex-col sm:flex-row sm:items-center justify-between gap-3 font-mono text-xs">
+              <div className="flex items-center gap-2.5">
+                <FileCheck2 className="w-5 h-5 text-foreground shrink-0" />
+                <div>
+                  <span className="font-bold text-foreground uppercase tracking-wider block">
+                    ADA {pendingLoans.length} PENGAJUAN PINJAMAN MENUNGGU PERSETUJUAN
+                  </span>
+                  <span className="text-muted text-[11px] font-sans">
+                    Warga telah mengajukan pinjaman dan menunggu persetujuan kurator sebelum serah-terima di lapak.
+                  </span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setActiveTab('approvals')}
+                className="px-4 py-2 bg-foreground text-background font-bold uppercase tracking-wider hover:bg-foreground/90 transition-colors shrink-0 inline-flex items-center gap-1.5"
+              >
+                <span>Tinjau di Meja Persetujuan</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
+
           {boardLoading ? (
             <div className="py-20 flex justify-center">
               <CustomLoader size="md" label="MEMUAT PAPAN PANTAU LAPAK..." />
@@ -1320,6 +1790,67 @@ export default function DashboardCirculationPage() {
             : 'Arahkan kamera ponsel ke stiker punggung buku yang sedang dikembalikan oleh pembaca.'
         }
       />
+
+      {/* MODAL PENOLAKAN PENGAJUAN */}
+      {rejectModalLoan && (
+        <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4">
+          <div className="bg-surface border-2 border-foreground max-w-md w-full p-6 space-y-4 font-mono text-xs shadow-2xl">
+            <div className="flex items-center justify-between border-b border-border-hairline pb-2">
+              <h3 className="font-serif text-lg font-bold text-foreground">Tolak Pengajuan Pinjaman</h3>
+              <button
+                type="button"
+                onClick={() => {
+                  setRejectModalLoan(null);
+                  setRejectReason('');
+                }}
+                className="text-muted hover:text-foreground p-1"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <p className="font-sans text-xs text-muted leading-relaxed">
+              Anda akan menolak pengajuan pinjaman buku <strong className="text-foreground">&ldquo;{rejectModalLoan.book.title}&rdquo;</strong> oleh <strong className="text-foreground">{rejectModalLoan.borrower?.name}</strong>. Stok ketersediaan buku di rak akan dipulihkan secara otomatis.
+            </p>
+
+            <div className="space-y-1.5">
+              <label className="block text-[11px] font-bold uppercase tracking-wider text-foreground">
+                ALASAN PENOLAKAN (WAJIB):
+              </label>
+              <textarea
+                rows={3}
+                value={rejectReason}
+                onChange={(e) => setRejectReason(e.target.value)}
+                placeholder="Misal: Buku fisik sedang dalam perbaikan, batas kuota tercapai, dll."
+                className="w-full p-2.5 bg-surface-muted border border-border-hairline font-sans text-xs text-foreground focus:outline-none focus:border-foreground resize-none"
+              />
+            </div>
+
+            <div className="pt-2 flex items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setRejectModalLoan(null);
+                  setRejectReason('');
+                }}
+                disabled={rejectLoading}
+                className="px-4 py-2 border border-border-hairline text-muted hover:text-foreground uppercase tracking-wider font-bold transition-colors"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmReject}
+                disabled={rejectLoading || !rejectReason.trim()}
+                className="px-4 py-2 bg-destructive text-white uppercase tracking-wider font-bold hover:bg-destructive/90 transition-colors disabled:opacity-40 inline-flex items-center gap-1.5"
+              >
+                {rejectLoading ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <XCircle className="w-3.5 h-3.5" />}
+                Konfirmasi Tolak
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -48,6 +48,9 @@ router.get('/', requireRole(Role.KURATOR), (req, res, next) =>
 router.post('/:id/approve', requireRole(Role.KURATOR), (req, res, next) =>
   loansController.approveLoan(req, res, next)
 );
+router.post('/:id/approve-and-pickup', requireRole(Role.KURATOR), (req, res, next) =>
+  loansController.approveAndPickup(req, res, next)
+);
 router.post('/:id/reject', requireRole(Role.KURATOR), (req, res, next) =>
   loansController.rejectLoan(req, res, next)
 );

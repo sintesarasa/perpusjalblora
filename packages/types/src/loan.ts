@@ -72,6 +72,9 @@ export interface LoanItem {
     slug: string;
     author: string;
     coverImage: string | null;
+    availableCopies?: number;
+    totalCopies?: number;
+    copies?: Array<{ id: string; inventoryCode: string; condition?: string }>;
   };
   bookCopy?: {
     id: string;

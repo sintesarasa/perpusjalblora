@@ -95,6 +95,15 @@ function formatLoanItem(l: any, isBorrowerOrAdmin = false): LoanItem {
       slug: l.book.slug,
       author: l.book.author,
       coverImage: l.book.coverImage,
+      availableCopies: l.book.availableCopies,
+      totalCopies: l.book.totalCopies,
+      copies: l.book.copies
+        ? l.book.copies.map((c: any) => ({
+            id: c.id,
+            inventoryCode: c.inventoryCode,
+            condition: c.condition,
+          }))
+        : undefined,
     },
     bookCopy: l.bookCopy
       ? {
@@ -479,6 +488,18 @@ export class LoansService {
               slug: true,
               author: true,
               coverImage: true,
+              availableCopies: true,
+              totalCopies: true,
+              copies: {
+                where: {
+                  status: BookCopyStatus.AVAILABLE as unknown as any,
+                },
+                select: {
+                  id: true,
+                  inventoryCode: true,
+                  condition: true,
+                },
+              },
             },
           },
           bookCopy: {
@@ -766,6 +787,22 @@ export class LoansService {
     }
 
     return result;
+  }
+
+  /**
+   * Mode Lapak: Instant Approve & Handover in one step (for members physically present at the desk)
+   */
+  async approveAndPickup(loanId: string, input: { bookCopyId?: string }, user: UserSessionPayload) {
+    const approveRes = await this.approveLoan(loanId, { pickupDeadlineDays: 3 }, user);
+    const pickupCode = approveRes.data.pickupCode;
+    if (!pickupCode) {
+      throw HttpError.badRequest('Gagal menerbitkan kode pengambilan.');
+    }
+    const pickupRes = await this.pickupLoan({ pickupCode, bookCopyId: input.bookCopyId }, user);
+    return {
+      message: `Peminjaman disetujui dan buku "${pickupRes.data.book.title}" berhasil diserahkan kepada peminjam!`,
+      data: pickupRes.data,
+    };
   }
 
   /**
@@ -1058,6 +1095,7 @@ export class LoansService {
             status: {
               in: [
                 LoanStatus.APPROVED,
+                LoanStatus.PENDING,
                 LoanStatus.BORROWED,
                 LoanStatus.OVERDUE,
               ] as unknown as any[],

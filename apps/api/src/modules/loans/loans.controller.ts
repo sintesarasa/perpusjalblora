@@ -75,6 +75,17 @@ export class LoansController {
     }
   }
 
+  async approveAndPickup(req: Request, res: Response, next: NextFunction) {
+    try {
+      const id = req.params.id as string;
+      const { bookCopyId } = req.body || {};
+      const result = await loansService.approveAndPickup(id, { bookCopyId }, req.user!);
+      res.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async rejectLoan(req: Request, res: Response, next: NextFunction) {
     try {
       const id = req.params.id as string;
