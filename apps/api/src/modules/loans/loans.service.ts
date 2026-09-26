@@ -695,9 +695,9 @@ export class LoansService {
         data: { status: BookCopyStatus.BORROWED as unknown as any },
       });
 
-      // Update loan status to BORROWED with 7 days due date
+      // Update loan status to BORROWED with 14 days due date (BR-LOAN-02)
       const now = new Date();
-      const dueDate = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+      const dueDate = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
 
       const updated = await tx.loan.update({
         where: { id: loan.id },
@@ -751,7 +751,7 @@ export class LoansService {
               month: 'short',
               year: 'numeric',
             })
-          : '7 hari ke depan';
+          : '14 hari ke depan';
         await notificationsService.createNotification(borrowerId, {
           type: 'LOAN_ACTIVE',
           title: 'Buku Berhasil Diserah-terimakan!',
@@ -820,11 +820,13 @@ export class LoansService {
           },
         });
       } else if (condition === ReturnCondition.RUSAK) {
-        // availableCopies is not incremented because damaged
+        // Damaged book is pulled from active circulation:
+        // availableCopies NOT incremented, totalCopies decremented for inventory accuracy
         await tx.book.update({
           where: { id: loan.bookId },
           data: {
             borrowCount: { increment: 1 },
+            totalCopies: { decrement: 1 },
           },
         });
       } else if (condition === ReturnCondition.HILANG) {

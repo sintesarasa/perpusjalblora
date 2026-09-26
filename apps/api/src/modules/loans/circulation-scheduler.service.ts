@@ -120,12 +120,56 @@ export class CirculationSchedulerService {
   }
 
   /**
+   * 3. Send due-soon reminder notifications (~24h before due date)
+   * Uses a 1-hour sliding window so each loan receives exactly one reminder
+   * per scheduler cycle without needing a schema field.
+   */
+  async sendDueSoonReminders(): Promise<number> {
+    const now = new Date();
+    // Window: loans due between 23h and 24h from now (1-hour slot = 1 reminder per loan)
+    const windowStart = new Date(now.getTime() + 23 * 60 * 60 * 1000);
+    const windowEnd = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+
+    const loans = await prisma.loan.findMany({
+      where: {
+        status: LoanStatus.BORROWED as unknown as any,
+        dueDate: { gte: windowStart, lte: windowEnd },
+      },
+      include: { book: { select: { id: true, title: true } } },
+    });
+
+    let count = 0;
+    for (const loan of loans) {
+      try {
+        const dueStr = loan.dueDate
+          ? loan.dueDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+          : 'besok';
+
+        await notificationsService.createNotification(loan.userId, {
+          type: 'LOAN_DUE_SOON',
+          title: '⏰ Pengingat: Buku Hampir Jatuh Tempo',
+          body: `Buku "${loan.book.title}" akan jatuh tempo pada ${dueStr}. Segera kembalikan atau perpanjang pinjaman sebelum melewati batas waktu.`,
+          actionUrl: '/dashboard/pinjaman',
+          entityType: 'loan',
+          entityId: loan.id,
+        });
+        count++;
+      } catch {
+        // Ignored — non-critical
+      }
+    }
+
+    return count;
+  }
+
+  /**
    * Run full circulation maintenance job
    */
-  async runMaintenance(): Promise<{ expiredCount: number; overdueCount: number }> {
+  async runMaintenance(): Promise<{ expiredCount: number; overdueCount: number; reminderCount: number }> {
     const expiredCount = await this.expireUncollectedLoans();
     const overdueCount = await this.markOverdueLoans();
-    return { expiredCount, overdueCount };
+    const reminderCount = await this.sendDueSoonReminders();
+    return { expiredCount, overdueCount, reminderCount };
   }
 
   /**
@@ -136,9 +180,9 @@ export class CirculationSchedulerService {
     setTimeout(() => {
       this.runMaintenance()
         .then((res) => {
-          if (res.expiredCount > 0 || res.overdueCount > 0) {
+          if (res.expiredCount > 0 || res.overdueCount > 0 || res.reminderCount > 0) {
             console.log(
-              `⚡ [CirculationScheduler] Pemeliharaan awal selesai: ${res.expiredCount} kedaluwarsa, ${res.overdueCount} terlambat.`
+              `⚡ [CirculationScheduler] Pemeliharaan awal selesai: ${res.expiredCount} kedaluwarsa, ${res.overdueCount} terlambat, ${res.reminderCount} pengingat terkirim.`
             );
           }
         })
@@ -151,9 +195,9 @@ export class CirculationSchedulerService {
     const timer = setInterval(() => {
       this.runMaintenance()
         .then((res) => {
-          if (res.expiredCount > 0 || res.overdueCount > 0) {
+          if (res.expiredCount > 0 || res.overdueCount > 0 || res.reminderCount > 0) {
             console.log(
-              `⚡ [CirculationScheduler] Pemeliharaan rutin: ${res.expiredCount} kedaluwarsa, ${res.overdueCount} terlambat.`
+              `⚡ [CirculationScheduler] Pemeliharaan rutin: ${res.expiredCount} kedaluwarsa, ${res.overdueCount} terlambat, ${res.reminderCount} pengingat terkirim.`
             );
           }
         })

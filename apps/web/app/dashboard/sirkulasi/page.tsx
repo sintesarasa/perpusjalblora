@@ -55,8 +55,18 @@ export default function DashboardCirculationPage() {
 
   const [activeTab, setActiveTab] = React.useState<'pickup' | 'return' | 'board'>('pickup');
 
-  // Session Logs (Riwayat transaksi lapak hari ini)
-  const [sessionLogs, setSessionLogs] = React.useState<SessionLogItem[]>([]);
+  // Session Logs (Riwayat transaksi lapak hari ini) — survive page refresh via sessionStorage
+  const [sessionLogs, setSessionLogs] = React.useState<SessionLogItem[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = sessionStorage.getItem('lapak_session_logs');
+        return saved ? (JSON.parse(saved) as SessionLogItem[]) : [];
+      } catch {
+        return [];
+      }
+    }
+    return [];
+  });
 
   // Tab 1: Pickup
   const [pickupCodeInput, setPickupCodeInput] = React.useState('');
@@ -87,6 +97,18 @@ export default function DashboardCirculationPage() {
   // Camera QR Scanner Modal State
   const [scannerOpen, setScannerOpen] = React.useState(false);
   const [scannerContext, setScannerContext] = React.useState<'pickup' | 'pickupCopy' | 'return'>('pickup');
+
+  // GAP-07: Confirmation modal for HILANG condition (irreversible action)
+  const [showHilangConfirm, setShowHilangConfirm] = React.useState(false);
+
+  // GAP-09: Sync sessionLogs to sessionStorage on every change
+  React.useEffect(() => {
+    try {
+      sessionStorage.setItem('lapak_session_logs', JSON.stringify(sessionLogs));
+    } catch {
+      // sessionStorage might be full — ignore
+    }
+  }, [sessionLogs]);
 
   // Check user role
   React.useEffect(() => {
@@ -149,6 +171,11 @@ export default function DashboardCirculationPage() {
   React.useEffect(() => {
     if (activeTab === 'board') {
       loadBoard();
+      // GAP-06: Auto-refresh board every 60s while tab is active
+      const interval = setInterval(() => {
+        loadBoard();
+      }, 60 * 1000);
+      return () => clearInterval(interval);
     }
   }, [activeTab, loadBoard]);
 
@@ -318,6 +345,7 @@ export default function DashboardCirculationPage() {
     setReturnLoan(null);
     setReturnCodeInput('');
     setReturnNote('');
+    setShowHilangConfirm(false);
     loadBoard();
   };
 
@@ -863,7 +891,7 @@ export default function DashboardCirculationPage() {
                       <button
                         key={item.val}
                         type="button"
-                        onClick={() => setReturnCondition(item.val)}
+                        onClick={() => { setReturnCondition(item.val); setShowHilangConfirm(false); }}
                         className={`p-3 text-left border transition-colors ${
                           returnCondition === item.val
                             ? 'border-2 border-foreground bg-surface-muted font-bold'
@@ -897,6 +925,7 @@ export default function DashboardCirculationPage() {
                       setReturnCodeInput('');
                       setReturnNote('');
                       setReturnError(null);
+                      setShowHilangConfirm(false);
                     }}
                     className="px-4 py-3 border border-border-hairline bg-surface hover:border-foreground transition-colors font-bold text-xs uppercase tracking-wider text-muted hover:text-foreground"
                   >
@@ -904,14 +933,43 @@ export default function DashboardCirculationPage() {
                   </button>
                   <button
                     type="button"
-                    onClick={handleExecuteReturn}
+                    onClick={() => {
+                      if (returnCondition === ReturnCondition.HILANG && !showHilangConfirm) {
+                        // GAP-07: First click for HILANG → show confirmation step
+                        setShowHilangConfirm(true);
+                      } else {
+                        setShowHilangConfirm(false);
+                        handleExecuteReturn();
+                      }
+                    }}
                     disabled={returnLoading}
-                    className="flex-1 py-3 bg-foreground text-background font-bold text-xs uppercase tracking-widest hover:bg-foreground/90 disabled:opacity-40 transition-colors flex items-center justify-center gap-2"
+                    className={`flex-1 py-3 font-bold text-xs uppercase tracking-widest disabled:opacity-40 transition-colors flex items-center justify-center gap-2 ${
+                      showHilangConfirm
+                        ? 'bg-destructive text-destructive-foreground hover:bg-destructive/90'
+                        : 'bg-foreground text-background hover:bg-foreground/90'
+                    }`}
                   >
                     <CheckCircle2 className="w-4 h-4" />
-                    <span>CATAT PENGEMBALIAN BUKU</span>
+                    <span>
+                      {showHilangConfirm ? 'YA, KONFIRMASI BUKU HILANG' : 'CATAT PENGEMBALIAN BUKU'}
+                    </span>
                   </button>
                 </div>
+
+                {/* GAP-07: Inline HILANG confirmation warning */}
+                {showHilangConfirm && (
+                  <div className="p-3 bg-destructive/10 border-2 border-destructive font-mono text-xs text-destructive space-y-1">
+                    <div className="flex items-center gap-2 font-bold">
+                      <AlertTriangle className="w-4 h-4 shrink-0" />
+                      <span>KONFIRMASI BUKU HILANG</span>
+                    </div>
+                    <p className="font-sans text-foreground text-[11px]">
+                      Tindakan ini bersifat permanen: eksemplar fisik akan ditandai hilang dan jumlah koleksi akan berkurang. Pastikan buku benar-benar tidak dapat ditemukan sebelum melanjutkan.
+                    </p>
+                    <p className="text-[10px] text-muted">Klik tombol merah di atas untuk konfirmasi, atau klik "Batal" untuk membatalkan.</p>
+                  </div>
+                )}
+
               </div>
             )}
           </div>
