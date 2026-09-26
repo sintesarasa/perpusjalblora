@@ -199,6 +199,7 @@ model User {
   name                 String     @db.VarChar(60)
   username             String     @unique @db.VarChar(20)
   email                String     @unique @db.VarChar(120)
+  phoneNumber          String?    @db.VarChar(20)
   passwordHash         String?
   avatarUrl            String?
   bio                  String?    @db.VarChar(200)

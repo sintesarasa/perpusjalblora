@@ -1,5 +1,6 @@
 import { prisma } from '../../lib/prisma.js';
 import { HttpError } from '../../utils/errors.js';
+import { normalizePhoneNumber } from '../../utils/phone.js';
 import {
   LoanRequestInput,
   LoanApproveInput,
@@ -118,6 +119,7 @@ function formatLoanItem(l: any, isBorrowerOrAdmin = false): LoanItem {
           name: l.user.name,
           username: l.user.username,
           email: isBorrowerOrAdmin ? l.user.email : undefined,
+          phoneNumber: isBorrowerOrAdmin ? l.user.phoneNumber : undefined,
         }
       : undefined,
     canCancel,
@@ -131,17 +133,28 @@ export class LoansService {
    * Request a new book loan (7-step BR check & soft-hold transaction)
    */
   async requestLoan(input: LoanRequestInput, user: UserSessionPayload) {
-    const { bookId, pickupPoint, pickupDatePlan, note } = input;
+    const { bookId, pickupPoint, pickupDatePlan, note, phoneNumber } = input;
 
     return prisma.$transaction(async (tx) => {
       // 1. Check user status
       const userDb = await tx.user.findUnique({
         where: { id: user.userId },
-        select: { id: true, status: true, deletedAt: true },
+        select: { id: true, status: true, phoneNumber: true, deletedAt: true },
       });
 
       if (!userDb || userDb.deletedAt || userDb.status === 'SUSPENDED' || userDb.status === 'DEACTIVATED') {
         throw HttpError.forbidden('Akun Anda dalam status pembatasan dan tidak dapat meminjam buku.');
+      }
+
+      // Update phone number if provided or missing
+      if (phoneNumber && phoneNumber.trim()) {
+        const normalized = normalizePhoneNumber(phoneNumber.trim());
+        if (normalized) {
+          await tx.user.update({
+            where: { id: user.userId },
+            data: { phoneNumber: normalized },
+          });
+        }
       }
 
       // 2. Check overdue loans (BR-LOAN-06)
@@ -254,6 +267,7 @@ export class LoansService {
               name: true,
               username: true,
               email: true,
+              phoneNumber: true,
             },
           },
         },
@@ -515,6 +529,7 @@ export class LoansService {
               name: true,
               username: true,
               email: true,
+              phoneNumber: true,
             },
           },
         },
@@ -585,6 +600,7 @@ export class LoansService {
             name: true,
             username: true,
             email: true,
+            phoneNumber: true,
           },
         },
       },
@@ -752,6 +768,7 @@ export class LoansService {
               name: true,
               username: true,
               email: true,
+              phoneNumber: true,
             },
           },
         },
@@ -908,6 +925,7 @@ export class LoansService {
               name: true,
               username: true,
               email: true,
+              phoneNumber: true,
             },
           },
         },
@@ -970,7 +988,13 @@ export class LoansService {
     const todayEnd = new Date();
     todayEnd.setHours(23, 59, 59, 999);
 
-    const [ready, dueTodayRaw, overdueRaw, totalActiveLoans] = await Promise.all([
+    const tomorrowStart = new Date(todayStart);
+    tomorrowStart.setDate(tomorrowStart.getDate() + 1);
+
+    const tomorrowEnd = new Date(todayEnd);
+    tomorrowEnd.setDate(tomorrowEnd.getDate() + 1);
+
+    const [ready, dueTomorrowRaw, dueTodayRaw, overdueRaw, totalActiveLoans] = await Promise.all([
       prisma.loan.findMany({
         where: {
           status: LoanStatus.APPROVED as unknown as any,
@@ -978,6 +1002,15 @@ export class LoansService {
         },
         include: { user: true, book: true },
         orderBy: { pickupDeadline: 'asc' },
+        take: 20,
+      }),
+      prisma.loan.findMany({
+        where: {
+          status: LoanStatus.BORROWED as unknown as any,
+          dueDate: { gte: tomorrowStart, lte: tomorrowEnd },
+        },
+        include: { user: true, book: true },
+        orderBy: { dueDate: 'asc' },
         take: 20,
       }),
       prisma.loan.findMany({
@@ -1012,11 +1045,15 @@ export class LoansService {
       }),
     ]);
 
-    const toBoardItem = (l: any, type: 'READY_FOR_PICKUP' | 'DUE_TODAY' | 'OVERDUE'): LoanPickupBoardItem => ({
+    const toBoardItem = (
+      l: any,
+      type: 'READY_FOR_PICKUP' | 'DUE_TOMORROW' | 'DUE_TODAY' | 'OVERDUE'
+    ): LoanPickupBoardItem => ({
       id: l.id,
       loanCode: l.loanCode,
       pickupCode: l.pickupCode,
       borrowerName: l.user.name,
+      borrowerPhone: l.user.phoneNumber || null,
       bookTitle: l.book.title,
       status: l.status,
       pickupDeadline: l.pickupDeadline ? l.pickupDeadline.toISOString() : null,
@@ -1026,6 +1063,7 @@ export class LoansService {
 
     return {
       readyForPickup: ready.map((l) => toBoardItem(l, 'READY_FOR_PICKUP')),
+      dueTomorrow: dueTomorrowRaw.map((l) => toBoardItem(l, 'DUE_TOMORROW')),
       dueToday: dueTodayRaw.map((l) => toBoardItem(l, 'DUE_TODAY')),
       overdue: overdueRaw.map((l) => toBoardItem(l, 'OVERDUE')),
       totalActiveLoans,

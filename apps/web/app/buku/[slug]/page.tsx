@@ -41,10 +41,26 @@ export default function BookDetailPage() {
   const [modalOpen, setModalOpen] = React.useState(false);
   const [pickupPoint, setPickupPoint] = React.useState('BASECAMP');
   const [pickupDatePlan, setPickupDatePlan] = React.useState('');
+  const [phoneNumber, setPhoneNumber] = React.useState('');
   const [note, setNote] = React.useState('');
   const [submitting, setSubmitting] = React.useState(false);
   const [modalError, setModalError] = React.useState<string | null>(null);
   const [loanSuccess, setLoanSuccess] = React.useState<LoanItem | null>(null);
+
+  React.useEffect(() => {
+    async function checkUserPhone() {
+      try {
+        const res = await apiClient<{ data?: any; phoneNumber?: string }>('/auth/me');
+        const userData = (res.data as any)?.data || res.data;
+        if (userData?.phoneNumber) {
+          setPhoneNumber(userData.phoneNumber);
+        }
+      } catch {
+        // guest or error
+      }
+    }
+    checkUserPhone();
+  }, []);
 
   // Waitlist State
   const [waitlistLoading, setWaitlistLoading] = React.useState(false);
@@ -174,6 +190,7 @@ export default function BookDetailPage() {
         bookId: book.id,
         pickupPoint: pickupLabels[pickupPoint] || pickupPoint,
         pickupDatePlan: pickupDatePlan || undefined,
+        phoneNumber: phoneNumber.trim() || undefined,
         note: note.trim() || undefined,
       }),
     });
@@ -858,6 +875,23 @@ export default function BookDetailPage() {
                     onChange={(e) => setPickupDatePlan(e.target.value)}
                     className="w-full p-2.5 bg-surface-muted border border-border-hairline rounded-none text-xs text-foreground focus:outline-none focus:border-foreground font-mono"
                   />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block font-mono text-xs uppercase text-foreground">
+                    Nomor WhatsApp / HP:
+                  </label>
+                  <input
+                    type="tel"
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    placeholder="Contoh: 08123456789"
+                    maxLength={20}
+                    className="w-full p-2.5 bg-surface-muted border border-border-hairline rounded-none text-xs text-foreground focus:outline-none focus:border-foreground font-mono"
+                  />
+                  <span className="font-mono text-[10px] text-muted block">
+                    Diperlukan relawan untuk koordinasi saat buku disiapkan di meja lapak.
+                  </span>
                 </div>
 
                 <div className="space-y-2">

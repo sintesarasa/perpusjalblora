@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs';
 import { prisma } from '../../lib/prisma.js';
 import { HttpError } from '../../utils/errors.js';
+import { normalizePhoneNumber } from '../../utils/phone.js';
 import {
   PublicUserProfile,
   UpdateProfileInput,
@@ -88,6 +89,7 @@ export class UsersService {
       bio: user.bio,
       instagramUrl: user.instagramUrl,
       websiteUrl: user.websiteUrl,
+      phoneNumber: user.phoneNumber,
       role: user.role as Role,
       trustLevel: user.trustLevel as TrustLevel,
       createdAt: user.createdAt.toISOString(),
@@ -168,6 +170,7 @@ export class UsersService {
         instagramUrl: input.instagramUrl !== undefined ? input.instagramUrl.trim() : undefined,
         websiteUrl: input.websiteUrl !== undefined ? input.websiteUrl.trim() : undefined,
         avatarUrl: input.avatarUrl !== undefined ? input.avatarUrl : undefined,
+        phoneNumber: input.phoneNumber !== undefined ? normalizePhoneNumber(input.phoneNumber) : undefined,
         isProfilePublic: input.isProfilePublic !== undefined ? input.isProfilePublic : undefined,
         showBadges: input.showBadges !== undefined ? input.showBadges : undefined,
       },
@@ -178,6 +181,7 @@ export class UsersService {
       name: updated.name,
       username: updated.username,
       email: updated.email,
+      phoneNumber: updated.phoneNumber,
       bio: updated.bio,
       avatarUrl: updated.avatarUrl,
       instagramUrl: updated.instagramUrl,
