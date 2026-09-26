@@ -71,10 +71,10 @@ export function CommentForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-3 font-sans">
       {replyingToName && (
-        <div className="flex items-center justify-between p-2.5 bg-surface-muted border border-border-hairline font-mono text-xs">
+        <div className="flex items-center justify-between p-2 sm:p-2.5 bg-surface-muted border border-border-hairline font-mono text-[11px]">
           <div className="flex items-center gap-2 text-foreground">
-            <CornerDownRight className="w-3.5 h-3.5 text-muted" />
-            <span>
+            <CornerDownRight className="w-3.5 h-3.5 text-muted shrink-0" />
+            <span className="truncate">
               Membalas tanggapan dari <strong className="font-bold">{replyingToName}</strong>
             </span>
           </div>
@@ -82,7 +82,7 @@ export function CommentForm({
             <button
               type="button"
               onClick={onCancelReply}
-              className="inline-flex items-center gap-1 text-muted hover:text-foreground transition-colors uppercase tracking-wider"
+              className="inline-flex items-center gap-1 text-muted hover:text-foreground transition-colors uppercase tracking-wider ml-2 shrink-0"
             >
               <X className="w-3.5 h-3.5" />
               Batal
@@ -98,22 +98,23 @@ export function CommentForm({
           onChange={(e) => setContent(e.target.value)}
           placeholder="Tuliskan gagasan, tanggapan, atau kritik dengan santun dan berbobot..."
           disabled={submitting}
-          className="w-full p-3.5 bg-surface border border-foreground/30 focus:border-foreground focus:outline-none rounded-none text-sm leading-relaxed text-foreground placeholder:text-muted/60 resize-y transition-colors font-sans"
+          className="w-full p-3 sm:p-3.5 bg-background border border-border focus:border-foreground focus:outline-none rounded-none text-sm leading-relaxed text-foreground placeholder:text-muted/60 resize-y transition-colors font-sans"
         />
       </div>
 
       {error && (
-        <div className="p-3 border border-foreground bg-surface-muted flex items-start gap-2 text-xs font-mono text-foreground">
-          <AlertCircle className="w-4 h-4 shrink-0 text-foreground" />
+        <div className="p-3 border border-destructive/40 bg-destructive/5 flex items-start gap-2 text-xs font-mono text-destructive">
+          <AlertCircle className="w-4 h-4 shrink-0 text-destructive mt-0.5" />
           <span>{error}</span>
         </div>
       )}
 
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs font-mono text-muted">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-[11px] font-mono text-muted">
+        <div className="flex items-center gap-3">
           <span className={charLength > 1500 ? 'text-destructive font-bold' : ''}>
             {charLength}/1500 karakter
           </span>
+          <span>&bull;</span>
           <span className={isUrlOverLimit ? 'text-destructive font-bold' : ''}>
             {urlCount}/2 tautan URL
           </span>
@@ -122,10 +123,10 @@ export function CommentForm({
         <button
           type="submit"
           disabled={!canSubmit}
-          className="w-full sm:w-auto px-5 py-2 bg-foreground text-background font-mono text-xs uppercase tracking-widest font-bold hover:bg-foreground/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors rounded-none flex items-center justify-center gap-2"
+          className="w-full sm:w-auto h-8 px-4 bg-foreground text-background font-mono text-[11px] uppercase tracking-wider font-bold hover:bg-foreground/90 disabled:opacity-30 disabled:cursor-not-allowed transition-colors rounded-none flex items-center justify-center gap-1.5"
         >
-          <MessageSquare className="w-3.5 h-3.5" />
-          {submitting ? 'MENGIRIM...' : parentId ? 'KIRIM BALASAN' : 'KIRIM TANGGAPAN'}
+          <MessageSquare className="w-3 h-3" />
+          <span>{submitting ? 'MENGIRIM...' : parentId ? 'KIRIM BALASAN' : 'KIRIM TANGGAPAN'}</span>
         </button>
       </div>
     </form>

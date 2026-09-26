@@ -43,9 +43,9 @@ export function RichTextRenderer({
     // Plain text split by paragraphs
     const paragraphs = content.split('\n\n').filter(Boolean);
     return (
-      <div className={cn('editorial-prose font-serif text-lg leading-[1.8] space-y-6', className)}>
+      <div className={cn('editorial-prose font-serif text-[17px] sm:text-[18px] leading-[1.8] sm:leading-[1.85] text-foreground/90 space-y-6', className)}>
         {paragraphs.map((p, idx) => (
-          <p key={idx} className={idx === 0 && withDropCap ? 'first-letter:float-left first-letter:text-5xl first-letter:font-serif first-letter:pr-3 first-letter:pt-1 first-letter:font-bold' : ''}>
+          <p key={idx} className={idx === 0 && withDropCap ? 'first-letter:float-left first-letter:text-4xl sm:first-letter:text-5xl first-letter:leading-none first-letter:font-serif first-letter:pr-3 first-letter:pt-0.5 first-letter:font-bold first-letter:text-foreground' : ''}>
             {p}
           </p>
         ))}
@@ -84,7 +84,7 @@ export function RichTextRenderer({
           );
         } else if (mark.type === 'code') {
           element = (
-            <code key={key} className="font-mono text-sm bg-surface-muted px-1 py-0.5 border border-border-hairline">
+            <code key={key} className="font-mono text-xs bg-surface-muted px-1.5 py-0.5 border border-border-hairline">
               {element}
             </code>
           );
@@ -103,9 +103,9 @@ export function RichTextRenderer({
           <p
             key={index}
             className={cn(
-              'font-serif text-lg sm:text-[19px] leading-[1.8] text-foreground/90 font-normal',
+              'font-serif text-[17px] sm:text-[18px] leading-[1.8] sm:leading-[1.85] text-foreground/90 font-normal',
               isFirst && withDropCap
-                ? 'first-letter:float-left first-letter:text-5xl sm:first-letter:text-6xl first-letter:font-serif first-letter:pr-3.5 first-letter:pt-1 first-letter:font-bold first-letter:text-foreground'
+                ? 'first-letter:float-left first-letter:text-4xl sm:first-letter:text-5xl first-letter:leading-none first-letter:font-serif first-letter:pr-3 first-letter:pt-0.5 first-letter:font-bold first-letter:text-foreground'
                 : ''
             )}
           >
@@ -122,27 +122,27 @@ export function RichTextRenderer({
 
         if (level === 1) {
           return (
-            <h1 key={index} className="font-serif text-3xl sm:text-4xl font-normal tracking-tight text-foreground pt-8 pb-2">
+            <h1 key={index} className="font-serif text-2xl sm:text-3xl font-normal tracking-tight text-foreground pt-8 pb-2">
               {textContent}
             </h1>
           );
         }
         if (level === 2) {
           return (
-            <h2 key={index} className="font-serif text-2xl sm:text-3xl font-normal tracking-tight text-foreground pt-8 pb-2 border-b border-border-hairline">
+            <h2 key={index} className="font-serif text-xl sm:text-2xl font-normal tracking-tight text-foreground pt-8 pb-2 border-b border-border-hairline">
               {textContent}
             </h2>
           );
         }
         if (level === 3) {
           return (
-            <h3 key={index} className="font-serif text-xl sm:text-2xl font-normal text-foreground pt-6 pb-1">
+            <h3 key={index} className="font-serif text-lg sm:text-xl font-normal text-foreground pt-6 pb-1">
               {textContent}
             </h3>
           );
         }
         return (
-          <h4 key={index} className="font-mono text-sm uppercase tracking-wider font-semibold text-foreground pt-4">
+          <h4 key={index} className="font-mono text-xs uppercase tracking-wider font-semibold text-foreground pt-4">
             {textContent}
           </h4>
         );
@@ -152,7 +152,7 @@ export function RichTextRenderer({
         return (
           <blockquote
             key={index}
-            className="my-8 pl-6 border-l-2 border-foreground font-serif italic text-xl sm:text-2xl text-foreground/95 space-y-2 py-1"
+            className="my-8 pl-5 sm:pl-6 border-l-2 border-foreground font-serif italic text-lg sm:text-xl leading-relaxed text-foreground/90 space-y-2 py-1"
           >
             {node.content?.map((child, cIdx) => renderNode(child, cIdx))}
           </blockquote>
@@ -161,7 +161,7 @@ export function RichTextRenderer({
 
       case 'bulletList': {
         return (
-          <ul key={index} className="my-6 pl-6 list-square space-y-2 font-serif text-lg leading-relaxed text-foreground/90">
+          <ul key={index} className="my-6 pl-6 list-square space-y-2 font-serif text-[17px] sm:text-[18px] leading-relaxed text-foreground/90">
             {node.content?.map((child, cIdx) => renderNode(child, cIdx))}
           </ul>
         );
@@ -169,7 +169,7 @@ export function RichTextRenderer({
 
       case 'orderedList': {
         return (
-          <ol key={index} className="my-6 pl-6 list-decimal space-y-2 font-serif text-lg leading-relaxed text-foreground/90 font-mono-numbers">
+          <ol key={index} className="my-6 pl-6 list-decimal space-y-2 font-serif text-[17px] sm:text-[18px] leading-relaxed text-foreground/90 font-mono-numbers">
             {node.content?.map((child, cIdx) => renderNode(child, cIdx))}
           </ol>
         );

@@ -9,6 +9,7 @@ import { CustomLoader } from '@/components/ui/custom-loader';
 import { RichTextRenderer } from '@/components/articles/rich-text-renderer';
 import { apiClient } from '@/lib/api';
 import { EventDetail, EventRegistrationItem } from '@perpusjal/types';
+import QRCode from 'qrcode';
 import {
   Calendar,
   Clock,
@@ -23,6 +24,7 @@ import {
   Camera,
   FileText,
   AlertCircle,
+  QrCode as QrIcon,
 } from 'lucide-react';
 
 export default function EventDetailPage() {
@@ -30,6 +32,7 @@ export default function EventDetailPage() {
   const slug = params?.slug as string;
 
   const [event, setEvent] = React.useState<EventDetail | null>(null);
+  const [ticketQrSvg, setTicketQrSvg] = React.useState<string | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
 
@@ -58,6 +61,24 @@ export default function EventDetailPage() {
   React.useEffect(() => {
     loadEvent();
   }, [loadEvent]);
+
+  React.useEffect(() => {
+    if (event?.myRegistration?.attendanceCode) {
+      QRCode.toString(event.myRegistration.attendanceCode, {
+        type: 'svg',
+        margin: 1,
+        width: 140,
+        color: {
+          dark: '#000000',
+          light: '#ffffff',
+        },
+      })
+        .then((svg) => setTicketQrSvg(svg))
+        .catch(() => setTicketQrSvg(null));
+    } else {
+      setTicketQrSvg(null);
+    }
+  }, [event?.myRegistration?.attendanceCode]);
 
   const handleRegister = async () => {
     if (!event) return;
@@ -349,15 +370,27 @@ export default function EventDetailPage() {
               {/* Status 1: User Registered */}
               {myReg ? (
                 <div className="space-y-5">
-                  <div className="p-4 bg-surface-muted border-2 border-foreground text-center space-y-2">
+                  <div className="p-4 bg-surface-muted border-2 border-foreground text-center space-y-3">
                     <span className="font-mono text-[10px] uppercase tracking-widest text-muted block">
-                      KODE HADIR ANDA (CHECK-IN)
+                      TIKET & KODE HADIR (CHECK-IN)
                     </span>
-                    <div className="font-mono text-3xl font-extrabold tracking-widest text-foreground py-1">
+
+                    {/* QR Code SVG */}
+                    {ticketQrSvg && (
+                      <div className="flex justify-center py-1">
+                        <div
+                          className="bg-white p-2 border border-foreground inline-block shadow-xs"
+                          dangerouslySetInnerHTML={{ __html: ticketQrSvg }}
+                          title={`QR Code Hadir: ${myReg.attendanceCode}`}
+                        />
+                      </div>
+                    )}
+
+                    <div className="font-mono text-3xl font-extrabold tracking-widest text-foreground py-1 bg-surface border border-border-hairline">
                       {myReg.attendanceCode}
                     </div>
                     <p className="font-sans text-[11px] text-muted">
-                      Tunjukkan kode ini kepada relawan panitia saat tiba di lokasi kegiatan.
+                      Tunjukkan QR Code atau kode 6 digit ini kepada relawan panitia saat tiba di lokasi kegiatan.
                     </p>
                   </div>
 

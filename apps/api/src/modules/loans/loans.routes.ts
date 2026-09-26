@@ -43,5 +43,8 @@ router.post('/:id/approve', requireRole(Role.KURATOR), (req, res, next) =>
 router.post('/:id/reject', requireRole(Role.KURATOR), (req, res, next) =>
   loansController.rejectLoan(req, res, next)
 );
+router.post('/admin/maintenance', requireRole(Role.KURATOR), (req, res, next) =>
+  loansController.runMaintenance(req, res, next)
+);
 
 export const loansRoutes = router;

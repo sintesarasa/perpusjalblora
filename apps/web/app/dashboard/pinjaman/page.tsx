@@ -126,6 +126,30 @@ export default function MemberLoansDashboardPage() {
             SELESAI
           </span>
         );
+      case LoanStatus.RETURNED_LOST:
+        return (
+          <span className="font-mono text-[10px] uppercase tracking-wider px-2 py-0.5 border border-destructive text-destructive">
+            TERCATAT HILANG
+          </span>
+        );
+      case LoanStatus.CANCELLED:
+        return (
+          <span className="font-mono text-[10px] uppercase tracking-wider px-2 py-0.5 border border-border-hairline text-muted">
+            DIBATALKAN
+          </span>
+        );
+      case LoanStatus.REJECTED:
+        return (
+          <span className="font-mono text-[10px] uppercase tracking-wider px-2 py-0.5 border border-border-hairline text-muted">
+            DITOLAK
+          </span>
+        );
+      case LoanStatus.EXPIRED:
+        return (
+          <span className="font-mono text-[10px] uppercase tracking-wider px-2 py-0.5 border border-border-hairline text-muted">
+            KEDALUWARSA
+          </span>
+        );
       default:
         return (
           <span className="font-mono text-[10px] uppercase tracking-wider px-2 py-0.5 border border-border-hairline text-muted">
@@ -362,7 +386,7 @@ export default function MemberLoansDashboardPage() {
                       </button>
                     )}
 
-                    {loan.canExtend && (
+                    {loan.canExtend && loan.status === LoanStatus.BORROWED && (
                       <button
                         type="button"
                         onClick={() => handleExtend(loan.id)}

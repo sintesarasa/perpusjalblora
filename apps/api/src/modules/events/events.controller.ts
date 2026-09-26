@@ -102,6 +102,35 @@ export class EventsController {
     }
   }
 
+  async getEventById(req: Request, res: Response, next: NextFunction) {
+    try {
+      const id = req.params.id as string;
+      const result = await eventsService.getEventById(id, req.user);
+      res.status(200).json({ data: result });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async deleteEvent(req: Request, res: Response, next: NextFunction) {
+    try {
+      const id = req.params.id as string;
+      const result = await eventsService.deleteEvent(id, req.user!);
+      res.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getMyRegistrations(req: Request, res: Response, next: NextFunction) {
+    try {
+      const result = await eventsService.getMyRegistrations(req.user!);
+      res.status(200).json({ data: result });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async getIcsCalendar(req: Request, res: Response, next: NextFunction) {
     try {
       const id = req.params.id as string;

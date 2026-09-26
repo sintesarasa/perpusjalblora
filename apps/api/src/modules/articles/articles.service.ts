@@ -12,6 +12,7 @@ import {
   Role,
   UserSessionPayload,
 } from '@perpusjal/types';
+import { notificationsService } from '../notifications/notifications.service.js';
 
 export class ArticlesService {
   /**
@@ -160,19 +161,35 @@ export class ArticlesService {
 
     // Check preview permissions if not published
     let isPreview = false;
+    let previewToken = article.previewToken;
+
     if (!isPublished) {
+      if (!previewToken) {
+        previewToken = Math.random().toString(36).substring(2) + Math.random().toString(36).substring(2);
+        await prisma.article.update({
+          where: { id: article.id },
+          data: { previewToken },
+        });
+      }
+
       const isAuthor = options.user && options.user.userId === article.authorId;
       const isCuratorOrAdmin =
         options.user &&
         (options.user.role === Role.KURATOR || options.user.role === Role.ADMIN);
       const hasValidPreviewToken =
-        options.previewToken && options.previewToken === article.previewToken;
+        options.previewToken && options.previewToken === previewToken;
 
       if (!isAuthor && !isCuratorOrAdmin && !hasValidPreviewToken) {
         throw HttpError.notFound('Artikel ini belum diterbitkan atau tidak tersedia untuk publik.');
       }
       isPreview = true;
     }
+
+    const canSeePreviewToken =
+      options.user &&
+      (options.user.userId === article.authorId ||
+        options.user.role === Role.KURATOR ||
+        options.user.role === Role.ADMIN);
 
     return {
       id: article.id,
@@ -195,6 +212,7 @@ export class ArticlesService {
       author: article.author,
       category: article.category,
       tags: article.tags,
+      previewToken: canSeePreviewToken ? previewToken : undefined,
       ...(isPreview ? { preview: { status: article.status as unknown as ArticleStatus } } : {}),
     };
   }
@@ -743,6 +761,22 @@ export class ArticlesService {
       }),
     ]);
 
+    // Notify author
+    try {
+      await notificationsService.createNotification(article.authorId, {
+        type: 'ARTICLE_APPROVED',
+        title: isScheduled ? 'Naskah Dijadwalkan Terbit' : 'Naskah Berhasil Diterbitkan!',
+        body: isScheduled
+          ? `Naskah Anda "${article.title}" telah disetujui dan dijadwalkan terbit.`
+          : `Selamat! Naskah Anda "${article.title}" telah disetujui kurator dan terbit di Perpusjal Blora.`,
+        actionUrl: `/artikel/${article.slug}`,
+        entityType: 'ARTICLE',
+        entityId: article.id,
+      });
+    } catch (e) {
+      console.error('Failed to send article approved notification:', e);
+    }
+
     return { message: isScheduled ? 'Naskah dijadwalkan terbit.' : 'Naskah berhasil diterbitkan.' };
   }
 
@@ -776,6 +810,21 @@ export class ArticlesService {
         },
       }),
     ]);
+
+    // Notify author
+    try {
+      const previewNote = input.note.length > 80 ? input.note.slice(0, 80) + '...' : input.note;
+      await notificationsService.createNotification(article.authorId, {
+        type: 'ARTICLE_REVISION',
+        title: 'Catatan Revisi dari Redaksi',
+        body: `Kurator telah meninjau naskah "${article.title}": "${previewNote}". Silakan periksa catatan dan perbarui tulisan Anda.`,
+        actionUrl: '/dashboard/tulisan',
+        entityType: 'ARTICLE',
+        entityId: article.id,
+      });
+    } catch (e) {
+      console.error('Failed to send article revision notification:', e);
+    }
 
     return { message: 'Catatan revisi telah dikirimkan ke penulis.' };
   }
@@ -811,6 +860,21 @@ export class ArticlesService {
         },
       }),
     ]);
+
+    // Notify author
+    try {
+      const reasonText = input.note ? ` Catatan: ${input.note}` : '';
+      await notificationsService.createNotification(article.authorId, {
+        type: 'ARTICLE_REJECTED',
+        title: 'Status Naskah: Belum Dapat Diterbitkan',
+        body: `Naskah "${article.title}" belum dapat diterbitkan (${input.reason}).${reasonText}`,
+        actionUrl: '/dashboard/tulisan',
+        entityType: 'ARTICLE',
+        entityId: article.id,
+      });
+    } catch (e) {
+      console.error('Failed to send article rejection notification:', e);
+    }
 
     return { message: 'Naskah ditolak.' };
   }

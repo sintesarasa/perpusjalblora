@@ -22,6 +22,7 @@ import { notificationsRouter } from './modules/notifications/notifications.route
 import { badgesRouter } from './modules/badges/badges.routes.js';
 import { usersRouter } from './modules/users/users.routes.js';
 import { adminRouter } from './modules/admin/admin.routes.js';
+import { circulationSchedulerService } from './modules/loans/circulation-scheduler.service.js';
 import { prisma } from './lib/prisma.js';
 import { Role } from '@perpusjal/types';
 
@@ -123,6 +124,9 @@ if (process.env.NODE_ENV !== 'test') {
   app.listen(PORT, () => {
     console.log(`📖 Perpusjal API v3 running on port ${PORT}`);
     console.log(`📡 Health check: http://localhost:${PORT}/health`);
+
+    // Start background circulation maintenance scheduler (hourly checks)
+    circulationSchedulerService.startScheduler();
   });
 }
 
