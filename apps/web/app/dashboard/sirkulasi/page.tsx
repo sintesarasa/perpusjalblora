@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import {
   LoanItem,
   LoanPickupBoardItem,
+  LoanPickupBoardResponse,
   ReturnCondition,
   LoanStatus,
   Role,
@@ -35,6 +36,8 @@ import {
   MessageCircle,
   FileCheck2,
   XCircle,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
 import { CameraQrScannerModal } from '@/components/circulation/camera-qr-scanner-modal';
 
@@ -112,12 +115,14 @@ export default function DashboardCirculationPage() {
   const [allocateLoading, setAllocateLoading] = React.useState(false);
 
   // Tab 3: Board
-  const [boardData, setBoardData] = React.useState<{
-    readyForPickup: LoanPickupBoardItem[];
-    dueToday: LoanPickupBoardItem[];
-    overdue: LoanPickupBoardItem[];
-  } | null>(null);
+  const [boardData, setBoardData] = React.useState<LoanPickupBoardResponse | null>(null);
   const [boardLoading, setBoardLoading] = React.useState(false);
+
+  // Active Loans Drawer / Table (Pilihan A)
+  const [showActiveLoansDrawer, setShowActiveLoansDrawer] = React.useState(false);
+  const [activeLoansList, setActiveLoansList] = React.useState<LoanItem[]>([]);
+  const [activeLoansLoading, setActiveLoansLoading] = React.useState(false);
+  const [activeLoansSearch, setActiveLoansSearch] = React.useState('');
 
   // Camera QR Scanner Modal State
   const [scannerOpen, setScannerOpen] = React.useState(false);
@@ -156,18 +161,35 @@ export default function DashboardCirculationPage() {
   // Load Board Callback
   const loadBoard = React.useCallback(async () => {
     setBoardLoading(true);
-    const res = await apiClient<{
-      data: {
-        readyForPickup: LoanPickupBoardItem[];
-        dueToday: LoanPickupBoardItem[];
-        overdue: LoanPickupBoardItem[];
-      };
-    }>('/loans/pickup-board');
+    const res = await apiClient<{ data: LoanPickupBoardResponse }>('/loans/pickup-board');
     setBoardLoading(false);
     if (res.data) {
       setBoardData(res.data.data);
     }
   }, []);
+
+  // Load Active Loans List (BORROWED)
+  const loadActiveLoans = React.useCallback(async () => {
+    setActiveLoansLoading(true);
+    const res = await apiClient<{ data: LoanItem[] }>('/loans?status=BORROWED&perPage=50&sort=jatuhTempo');
+    setActiveLoansLoading(false);
+    if (res.data) {
+      setActiveLoansList(res.data.data);
+    }
+  }, []);
+
+  const filteredActiveLoans = React.useMemo(() => {
+    if (!activeLoansSearch.trim()) return activeLoansList;
+    const q = activeLoansSearch.toLowerCase();
+    return activeLoansList.filter(
+      (l) =>
+        l.book.title.toLowerCase().includes(q) ||
+        (l.borrower?.name && l.borrower.name.toLowerCase().includes(q)) ||
+        (l.borrower?.username && l.borrower.username.toLowerCase().includes(q)) ||
+        l.loanCode.toLowerCase().includes(q) ||
+        (l.bookCopy?.inventoryCode && l.bookCopy.inventoryCode.toLowerCase().includes(q))
+    );
+  }, [activeLoansList, activeLoansSearch]);
 
   const [maintenanceLoading, setMaintenanceLoading] = React.useState(false);
   const [maintenanceMessage, setMaintenanceMessage] = React.useState<string | null>(null);
@@ -1562,7 +1584,225 @@ export default function DashboardCirculationPage() {
               <CustomLoader size="md" label="MEMUAT PAPAN PANTAU LAPAK..." />
             </div>
           ) : boardData ? (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="space-y-6">
+              {/* UBIN RINGKASAN PINJAMAN BERJALAN (PILIHAN A) */}
+              <div className="border-2 border-foreground bg-surface font-mono text-xs">
+                <div className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-surface">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 border border-foreground flex items-center justify-center bg-foreground text-background shrink-0">
+                      <BookOpen className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-foreground uppercase tracking-wider text-sm">
+                          SEDANG DIPINJAM WARGA: {boardData.totalActiveLoans ?? 0} BUKU
+                        </span>
+                        <span className="px-1.5 py-0.5 text-[10px] bg-foreground/10 text-foreground font-bold">
+                          SIRKULASI AKTIF
+                        </span>
+                      </div>
+                      <p className="font-sans text-[11px] text-muted mt-0.5">
+                        Koleksi buku fisik yang sedang dibawa dan dibaca warga di luar lapak.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const next = !showActiveLoansDrawer;
+                        setShowActiveLoansDrawer(next);
+                        if (next) {
+                          loadActiveLoans();
+                        }
+                      }}
+                      className={`px-4 py-2 border-2 transition-colors font-bold uppercase tracking-wider inline-flex items-center gap-2 ${
+                        showActiveLoansDrawer
+                          ? 'border-foreground bg-foreground text-background'
+                          : 'border-foreground bg-surface text-foreground hover:bg-surface-muted'
+                      }`}
+                    >
+                      <span>{showActiveLoansDrawer ? 'Tutup Daftar' : 'Buka Daftar Sirkulasi'}</span>
+                      {showActiveLoansDrawer ? (
+                        <ChevronUp className="w-3.5 h-3.5" />
+                      ) : (
+                        <ChevronDown className="w-3.5 h-3.5" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {/* EXPANDABLE LIST OF ACTIVE LOANS */}
+                {showActiveLoansDrawer && (
+                  <div className="border-t-2 border-foreground p-5 bg-surface-muted space-y-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div className="relative flex-1 max-w-md">
+                        <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
+                        <input
+                          type="text"
+                          value={activeLoansSearch}
+                          onChange={(e) => setActiveLoansSearch(e.target.value)}
+                          placeholder="Cari judul buku, nama peminjam, atau kode eksemplar..."
+                          className="w-full pl-8 pr-3 py-2 bg-surface border border-border-hairline font-mono text-xs text-foreground focus:outline-none focus:border-foreground"
+                        />
+                      </div>
+                      <div className="flex items-center gap-2 text-muted text-[11px]">
+                        <span>Menampilkan: <strong className="text-foreground">{filteredActiveLoans.length}</strong> dari {activeLoansList.length} pinjaman</span>
+                        <button
+                          type="button"
+                          onClick={loadActiveLoans}
+                          disabled={activeLoansLoading}
+                          className="p-1.5 border border-border-hairline bg-surface hover:border-foreground text-foreground transition-colors"
+                          title="Segarkan daftar"
+                        >
+                          <RefreshCw className={`w-3 h-3 ${activeLoansLoading ? 'animate-spin' : ''}`} />
+                        </button>
+                      </div>
+                    </div>
+
+                    {activeLoansLoading ? (
+                      <div className="py-12 flex justify-center">
+                        <CustomLoader size="sm" label="MEMUAT PINJAMAN BERJALAN..." />
+                      </div>
+                    ) : filteredActiveLoans.length === 0 ? (
+                      <div className="p-8 text-center border border-border-hairline bg-surface font-sans text-xs text-muted">
+                        {activeLoansSearch ? (
+                          <p>Tidak ada pinjaman berjalan yang cocok dengan kata kunci &ldquo;{activeLoansSearch}&rdquo;.</p>
+                        ) : (
+                          <p>Saat ini tidak ada buku yang sedang dipinjam warga.</p>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="overflow-x-auto border border-border-hairline bg-surface">
+                        <table className="w-full text-left font-mono text-xs">
+                          <thead>
+                            <tr className="border-b border-border-hairline bg-surface-muted text-muted uppercase text-[10px] tracking-wider">
+                              <th className="p-3">Buku & Eksemplar</th>
+                              <th className="p-3">Peminjam</th>
+                              <th className="p-3">Tgl Pinjam</th>
+                              <th className="p-3">Tenggat Kembali</th>
+                              <th className="p-3">Sisa Waktu</th>
+                              <th className="p-3 text-right">Aksi Cepat</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-border-hairline font-sans">
+                            {filteredActiveLoans.map((loan) => {
+                              const now = new Date();
+                              const dueDate = loan.dueDate ? new Date(loan.dueDate) : null;
+                              const diffDays = dueDate
+                                ? Math.ceil((dueDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+                                : null;
+
+                              let badgeClass = 'bg-surface-muted text-muted border-border-hairline';
+                              let badgeText = `${diffDays} hari lagi`;
+
+                              if (diffDays !== null) {
+                                if (diffDays < 0) {
+                                  badgeClass = 'bg-destructive/10 text-destructive border-destructive font-bold';
+                                  badgeText = `Terlambat ${Math.abs(diffDays)} hari`;
+                                } else if (diffDays === 0) {
+                                  badgeClass = 'bg-amber-500/20 text-amber-600 border-amber-500 font-bold';
+                                  badgeText = 'Hari ini!';
+                                } else if (diffDays <= 3) {
+                                  badgeClass = 'bg-amber-500/10 text-amber-600 border-amber-500/40';
+                                  badgeText = `${diffDays} hari lagi`;
+                                } else {
+                                  badgeClass = 'bg-surface-muted text-foreground border-border-hairline';
+                                  badgeText = `${diffDays} hari lagi`;
+                                }
+                              }
+
+                              return (
+                                <tr key={loan.id} className="hover:bg-surface-muted/50 transition-colors">
+                                  <td className="p-3">
+                                    <div className="space-y-0.5">
+                                      <Link
+                                        href={`/buku/${loan.book.slug}`}
+                                        target="_blank"
+                                        className="font-serif font-bold text-xs text-foreground hover:underline line-clamp-1"
+                                      >
+                                        {loan.book.title}
+                                      </Link>
+                                      <div className="font-mono text-[10px] text-muted flex items-center gap-1.5">
+                                        <span>{loan.book.author}</span>
+                                        {loan.bookCopy && (
+                                          <>
+                                            <span>•</span>
+                                            <span className="font-bold text-foreground">
+                                              {loan.bookCopy.inventoryCode}
+                                            </span>
+                                          </>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </td>
+
+                                  <td className="p-3 font-sans text-xs">
+                                    <div className="font-medium text-foreground">{loan.borrower?.name}</div>
+                                    <div className="font-mono text-[10px] text-muted">@{loan.borrower?.username}</div>
+                                  </td>
+
+                                  <td className="p-3 font-mono text-xs text-muted">
+                                    {loan.borrowedAt
+                                      ? new Date(loan.borrowedAt).toLocaleDateString('id-ID', {
+                                          day: 'numeric',
+                                          month: 'short',
+                                        })
+                                      : '-'}
+                                  </td>
+
+                                  <td className="p-3 font-mono text-xs text-foreground font-medium">
+                                    {dueDate
+                                      ? dueDate.toLocaleDateString('id-ID', {
+                                          day: 'numeric',
+                                          month: 'short',
+                                          year: 'numeric',
+                                        })
+                                      : '-'}
+                                  </td>
+
+                                  <td className="p-3">
+                                    <span className={`inline-block px-2 py-0.5 text-[10px] font-mono border ${badgeClass}`}>
+                                      {badgeText}
+                                    </span>
+                                  </td>
+
+                                  <td className="p-3 text-right">
+                                    {loan.borrower?.name && (
+                                      <a
+                                        href={`https://wa.me/?text=${encodeURIComponent(
+                                          `Halo ${loan.borrower.name}, salam literasi dari Perpusjal Blora! Sekadar menyapa mengenai buku "${loan.book.title}" yang sedang Anda pinjam (Tenggat: ${
+                                            dueDate
+                                              ? dueDate.toLocaleDateString('id-ID', {
+                                                  day: 'numeric',
+                                                  month: 'short',
+                                                })
+                                              : '-'
+                                          }). Selamat membaca!`
+                                        )}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="px-2.5 py-1 border border-border-hairline text-foreground hover:bg-foreground hover:text-background font-mono text-[10px] uppercase font-bold tracking-wider transition-colors inline-flex items-center gap-1"
+                                        title="Sapa peminjam lewat WhatsApp"
+                                      >
+                                        <MessageCircle className="w-3 h-3" />
+                                        <span>Chat WA</span>
+                                      </a>
+                                    )}
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* Column 1: Siap Diambil */}
               <div className="border-2 border-foreground bg-surface p-5 space-y-4">
                 <div className="border-b border-border-hairline pb-2 flex items-center justify-between font-mono text-xs">
@@ -1718,6 +1958,7 @@ export default function DashboardCirculationPage() {
                 )}
               </div>
             </div>
+          </div>
           ) : null}
         </div>
       )}

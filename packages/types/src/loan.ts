@@ -102,3 +102,11 @@ export interface LoanPickupBoardItem {
   dueDate: string | null;
   type: 'READY_FOR_PICKUP' | 'DUE_TODAY' | 'OVERDUE';
 }
+
+export interface LoanPickupBoardResponse {
+  readyForPickup: LoanPickupBoardItem[];
+  dueToday: LoanPickupBoardItem[];
+  overdue: LoanPickupBoardItem[];
+  totalActiveLoans: number;
+}
+

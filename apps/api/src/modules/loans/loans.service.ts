@@ -8,6 +8,7 @@ import {
   LoanQueryInput,
   LoanItem,
   LoanPickupBoardItem,
+  LoanPickupBoardResponse,
   LoanStatus,
   ReturnCondition,
   BookCopyStatus,
@@ -962,18 +963,14 @@ export class LoansService {
   /**
    * Mode Lapak: Fast Pickup Board ("Siap Diambil", "Jatuh Tempo Hari Ini", "Terlambat")
    */
-  async getPickupBoard(): Promise<{
-    readyForPickup: LoanPickupBoardItem[];
-    dueToday: LoanPickupBoardItem[];
-    overdue: LoanPickupBoardItem[];
-  }> {
+  async getPickupBoard(): Promise<LoanPickupBoardResponse> {
     const todayStart = new Date();
     todayStart.setHours(0, 0, 0, 0);
 
     const todayEnd = new Date();
     todayEnd.setHours(23, 59, 59, 999);
 
-    const [ready, dueTodayRaw, overdueRaw] = await Promise.all([
+    const [ready, dueTodayRaw, overdueRaw, totalActiveLoans] = await Promise.all([
       prisma.loan.findMany({
         where: {
           status: LoanStatus.APPROVED as unknown as any,
@@ -1006,6 +1003,13 @@ export class LoansService {
         orderBy: { dueDate: 'asc' },
         take: 20,
       }),
+      prisma.loan.count({
+        where: {
+          status: {
+            in: [LoanStatus.BORROWED, LoanStatus.OVERDUE] as unknown as any[],
+          },
+        },
+      }),
     ]);
 
     const toBoardItem = (l: any, type: 'READY_FOR_PICKUP' | 'DUE_TODAY' | 'OVERDUE'): LoanPickupBoardItem => ({
@@ -1024,6 +1028,7 @@ export class LoansService {
       readyForPickup: ready.map((l) => toBoardItem(l, 'READY_FOR_PICKUP')),
       dueToday: dueTodayRaw.map((l) => toBoardItem(l, 'DUE_TODAY')),
       overdue: overdueRaw.map((l) => toBoardItem(l, 'OVERDUE')),
+      totalActiveLoans,
     };
   }
 
