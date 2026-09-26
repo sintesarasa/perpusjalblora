@@ -33,6 +33,14 @@ router.post('/:id/return', requireRole(Role.KURATOR), (req, res, next) =>
   loansController.returnLoan(req, res, next)
 );
 
+// Reports & Analytics (Protected: KURATOR or ADMIN)
+router.get('/reports/overview', requireRole(Role.KURATOR), (req, res, next) =>
+  loansController.getCirculationReport(req, res, next)
+);
+router.get('/reports/export', requireRole(Role.KURATOR), (req, res, next) =>
+  loansController.exportCirculationReportCsv(req, res, next)
+);
+
 // Admin & Curator listing & review
 router.get('/', requireRole(Role.KURATOR), (req, res, next) =>
   loansController.getAdminLoans(req, res, next)

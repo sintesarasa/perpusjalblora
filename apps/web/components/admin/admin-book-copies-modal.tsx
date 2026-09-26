@@ -660,6 +660,46 @@ export function AdminBookCopiesModal({
 
                     {/* Actions */}
                     <div className="flex items-center gap-2 self-end sm:self-center">
+                      {copy.status === BookCopyStatus.DAMAGED && (
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            if (!window.confirm(`Pulihkan/Rehabilitasi buku ${copy.inventoryCode} agar siap dipinjam kembali?`)) return;
+                            setActionLoading(true);
+                            try {
+                              const res = await apiClient<{ data: BookCopyItem; message: string }>(
+                                `/books/copies/${copy.id}`,
+                                {
+                                  method: 'PATCH',
+                                  body: JSON.stringify({
+                                    condition: BookCondition.BAIK,
+                                    status: BookCopyStatus.AVAILABLE,
+                                    note: `[Rehabilitasi]: Buku telah diperbaiki/disampul ulang pada ${new Date().toLocaleDateString('id-ID')}`,
+                                  }),
+                                }
+                              );
+                              if (res.error) {
+                                setError(res.error.message);
+                              } else {
+                                setSuccessMessage(`Eksemplar ${copy.inventoryCode} berhasil dipulihkan ke status AVAILABLE!`);
+                                fetchCopies();
+                                onCopiesUpdated?.();
+                              }
+                            } catch {
+                              setError('Gagal memulihkan eksemplar.');
+                            } finally {
+                              setActionLoading(false);
+                            }
+                          }}
+                          disabled={actionLoading}
+                          className="px-2.5 py-1 bg-emerald-600 text-white text-[11px] uppercase tracking-wider font-bold inline-flex items-center gap-1 hover:bg-emerald-700 transition-colors"
+                          title="Buku telah diperbaiki/dilem dan siap dikembalikan ke rak koleksi"
+                        >
+                          <Wrench className="w-3 h-3" />
+                          <span>Pulihkan Buku</span>
+                        </button>
+                      )}
+
                       <button
                         type="button"
                         onClick={() => {

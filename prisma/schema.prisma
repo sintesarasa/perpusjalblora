@@ -248,6 +248,7 @@ model User {
   badges               UserBadge[]
   readingLogs          ReadingLog[]
   uploads              Media[]
+  bookReviews          BookReview[]
   auditLogs            AuditLog[]
 
   @@index([role])
@@ -478,10 +479,11 @@ model Book {
   updatedAt       DateTime   @updatedAt
   deletedAt       DateTime?
 
-  category  Category   @relation(fields: [categoryId], references: [id])
+  category  Category     @relation(fields: [categoryId], references: [id])
   copies    BookCopy[]
   loans     Loan[]
   waitlists Waitlist[]
+  reviews   BookReview[]
 
   @@index([isPublished, createdAt(sort: Desc)])
   @@index([categoryId, isPublished])
@@ -506,6 +508,23 @@ model BookCopy {
 
   @@index([bookId, status])
   @@index([status])
+}
+
+model BookReview {
+  id                 String   @id @default(cuid())
+  bookId             String
+  userId             String
+  rating             Int      @default(5)
+  content            String   @db.VarChar(1000)
+  isVerifiedBorrower Boolean  @default(false)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([bookId, userId])
+  @@index([bookId, createdAt(sort: Desc)])
 }
 
 model Loan {

@@ -22,6 +22,7 @@ import { notificationsRouter } from './modules/notifications/notifications.route
 import { badgesRouter } from './modules/badges/badges.routes.js';
 import { usersRouter } from './modules/users/users.routes.js';
 import { adminRouter } from './modules/admin/admin.routes.js';
+import { waitlistRoutes } from './modules/waitlist/waitlist.routes.js';
 import { circulationSchedulerService } from './modules/loans/circulation-scheduler.service.js';
 import { prisma } from './lib/prisma.js';
 import { Role } from '@perpusjal/types';
@@ -62,6 +63,7 @@ app.use('/api/v1/comments', commentsRoutes);
 app.use('/api/v1/search', searchRoutes);
 app.use('/api/v1/books', booksRoutes);
 app.use('/api/v1/loans', loansRoutes);
+app.use('/api/v1/waitlist', waitlistRoutes);
 app.use('/api/v1/events', eventsRoutes);
 app.use('/api/v1/letters', lettersRoutes);
 app.use('/api/v1/notifications', notificationsRouter);

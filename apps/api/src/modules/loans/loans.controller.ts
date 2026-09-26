@@ -137,6 +137,29 @@ export class LoansController {
       next(error);
     }
   }
+
+  async getCirculationReport(req: Request, res: Response, next: NextFunction) {
+    try {
+      const result = await loansService.getCirculationReport();
+      res.status(200).json({ data: result });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async exportCirculationReportCsv(req: Request, res: Response, next: NextFunction) {
+    try {
+      const csv = await loansService.exportCirculationReportCsv();
+      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+      res.setHeader(
+        'Content-Disposition',
+        `attachment; filename="laporan-sirkulasi-perpusjal-${new Date().toISOString().slice(0, 10)}.csv"`
+      );
+      res.status(200).send(csv);
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 export const loansController = new LoansController();

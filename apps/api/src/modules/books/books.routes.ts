@@ -8,6 +8,8 @@ const router = Router();
 // Public routes
 router.get('/', (req, res, next) => booksController.getBooks(req, res, next));
 router.get('/:slug/availability', (req, res, next) => booksController.getBookAvailability(req, res, next));
+router.get('/:id/reviews', (req, res, next) => booksController.getBookReviews(req, res, next));
+router.post('/:id/reviews', requireAuth, (req, res, next) => booksController.createReview(req, res, next));
 router.get('/:slug', (req, res, next) => booksController.getBookBySlug(req, res, next));
 
 // Curator & Admin management routes

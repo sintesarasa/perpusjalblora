@@ -898,7 +898,28 @@ export class LoansService {
       console.error('Failed to send loan return notification:', e);
     }
 
-    return result;
+    let pendingWaitlist: any = null;
+    if (condition === ReturnCondition.BAIK) {
+      pendingWaitlist = await prisma.waitlist.findFirst({
+        where: {
+          bookId: result.data.book.id,
+          status: { in: ['WAITING', 'NOTIFIED'] as any[] },
+        },
+        orderBy: { position: 'asc' },
+        include: { user: { select: { id: true, name: true, username: true } } },
+      });
+    }
+
+    return {
+      ...result,
+      pendingWaitlist: pendingWaitlist
+        ? {
+            id: pendingWaitlist.id,
+            position: pendingWaitlist.position,
+            user: pendingWaitlist.user,
+          }
+        : null,
+    };
   }
 
   /**
@@ -1109,6 +1130,131 @@ export class LoansService {
         condition: c.condition,
       })),
     };
+  }
+
+  /**
+   * Reports & Analytics: Circulation Overview
+   */
+  async getCirculationReport() {
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    const [
+      totalLoans,
+      monthLoans,
+      activeLoans,
+      returnedLoans,
+      overdueLoans,
+      returnedLostLoans,
+      bookStats,
+      topBooks,
+      conditionStats,
+    ] = await Promise.all([
+      prisma.loan.count(),
+      prisma.loan.count({ where: { createdAt: { gte: startOfMonth } } }),
+      prisma.loan.count({
+        where: {
+          status: {
+            in: [LoanStatus.BORROWED, LoanStatus.OVERDUE] as unknown as any[],
+          },
+        },
+      }),
+      prisma.loan.count({ where: { status: LoanStatus.RETURNED as unknown as any } }),
+      prisma.loan.count({ where: { status: LoanStatus.OVERDUE as unknown as any } }),
+      prisma.loan.count({ where: { status: LoanStatus.RETURNED_LOST as unknown as any } }),
+      prisma.book.aggregate({
+        _sum: { totalCopies: true, availableCopies: true, borrowCount: true },
+        where: { deletedAt: null },
+      }),
+      prisma.book.findMany({
+        where: { deletedAt: null, borrowCount: { gt: 0 } },
+        orderBy: { borrowCount: 'desc' },
+        take: 10,
+        select: {
+          id: true,
+          title: true,
+          author: true,
+          slug: true,
+          borrowCount: true,
+          totalCopies: true,
+          availableCopies: true,
+        },
+      }),
+      prisma.bookCopy.groupBy({
+        by: ['condition'],
+        _count: { id: true },
+      }),
+    ]);
+
+    const onTimeRate =
+      returnedLoans > 0
+        ? Math.round(((returnedLoans - overdueLoans) / returnedLoans) * 100)
+        : 100;
+
+    return {
+      metrics: {
+        totalLoans,
+        monthLoans,
+        activeLoans,
+        returnedLoans,
+        overdueLoans,
+        returnedLostLoans,
+        totalCopies: bookStats._sum.totalCopies || 0,
+        availableCopies: bookStats._sum.availableCopies || 0,
+        totalBorrows: bookStats._sum.borrowCount || 0,
+        onTimeRate: Math.max(0, Math.min(100, onTimeRate)),
+      },
+      topBooks,
+      conditionStats: conditionStats.map((c) => ({
+        condition: c.condition,
+        count: c._count.id,
+      })),
+    };
+  }
+
+  /**
+   * Reports & Analytics: Export CSV of recent loans
+   */
+  async exportCirculationReportCsv() {
+    const loans = await prisma.loan.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: 500,
+      include: {
+        book: { select: { title: true } },
+        bookCopy: { select: { inventoryCode: true } },
+        user: { select: { name: true, username: true, email: true } },
+      },
+    });
+
+    const headers = [
+      'Kode Pinjam',
+      'Judul Buku',
+      'Eksemplar',
+      'Nama Peminjam',
+      'Username',
+      'Email',
+      'Status',
+      'Tgl Pinjam',
+      'Tenggat Waktu',
+      'Tgl Kembali',
+      'Kondisi Kembali',
+    ];
+
+    const rows = loans.map((l) => [
+      `"${l.loanCode}"`,
+      `"${(l.book.title || '').replace(/"/g, '""')}"`,
+      `"${l.bookCopy?.inventoryCode || '-'}"`,
+      `"${(l.user.name || '').replace(/"/g, '""')}"`,
+      `"${l.user.username}"`,
+      `"${l.user.email || ''}"`,
+      `"${l.status}"`,
+      `"${l.borrowedAt ? l.borrowedAt.toISOString().slice(0, 10) : ''}"`,
+      `"${l.dueDate ? l.dueDate.toISOString().slice(0, 10) : ''}"`,
+      `"${l.returnedAt ? l.returnedAt.toISOString().slice(0, 10) : ''}"`,
+      `"${l.returnCondition || '-'}"`,
+    ]);
+
+    return [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
   }
 }
 

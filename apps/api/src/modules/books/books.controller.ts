@@ -5,6 +5,7 @@ import {
   bookUpdateSchema,
   bookCopyCreateSchema,
   bookCopyUpdateSchema,
+  createBookReviewSchema,
 } from '@perpusjal/types';
 import { booksService } from './books.service.js';
 
@@ -117,6 +118,30 @@ export class BooksController {
       const id = req.params.id as string;
       const result = await booksService.deleteCopy(id);
       res.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async createReview(req: Request, res: Response, next: NextFunction) {
+    try {
+      const bookSlugOrId = req.params.id as string;
+      const input = createBookReviewSchema.parse(req.body);
+      const result = await booksService.createReview(bookSlugOrId, input, req.user!);
+      res.status(201).json({
+        data: result,
+        message: 'Resensi buku berhasil disimpan.',
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getBookReviews(req: Request, res: Response, next: NextFunction) {
+    try {
+      const bookSlugOrId = req.params.id as string;
+      const result = await booksService.getBookReviews(bookSlugOrId);
+      res.status(200).json({ data: result });
     } catch (error) {
       next(error);
     }

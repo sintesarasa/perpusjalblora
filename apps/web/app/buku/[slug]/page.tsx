@@ -7,7 +7,7 @@ import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { CustomLoader } from '@/components/ui/custom-loader';
 import { apiClient } from '@/lib/api';
-import { BookDetail, BookAvailabilityResponse, LoanItem } from '@perpusjal/types';
+import { BookDetail, BookAvailabilityResponse, LoanItem, WaitlistItem, BookReviewItem } from '@perpusjal/types';
 import {
   BookOpen,
   ArrowLeft,
@@ -22,6 +22,9 @@ import {
   X,
   ShieldAlert,
   ArrowRight,
+  Users,
+  Star,
+  MessageSquare,
 } from 'lucide-react';
 
 export default function BookDetailPage() {
@@ -42,6 +45,86 @@ export default function BookDetailPage() {
   const [submitting, setSubmitting] = React.useState(false);
   const [modalError, setModalError] = React.useState<string | null>(null);
   const [loanSuccess, setLoanSuccess] = React.useState<LoanItem | null>(null);
+
+  // Waitlist State
+  const [waitlistLoading, setWaitlistLoading] = React.useState(false);
+  const [waitlistSuccess, setWaitlistSuccess] = React.useState<WaitlistItem | null>(null);
+  const [waitlistError, setWaitlistError] = React.useState<string | null>(null);
+
+  const handleJoinWaitlist = async () => {
+    if (!book) return;
+    setWaitlistLoading(true);
+    setWaitlistError(null);
+    setWaitlistSuccess(null);
+
+    const res = await apiClient<{ data: WaitlistItem; message: string }>('/waitlist', {
+      method: 'POST',
+      body: JSON.stringify({ bookId: book.id }),
+    });
+
+    setWaitlistLoading(false);
+
+    if (res.error) {
+      setWaitlistError(res.error.message);
+      return;
+    }
+
+    if (res.data?.data) {
+      setWaitlistSuccess(res.data.data);
+    }
+  };
+
+  // Reviews state
+  const [reviews, setReviews] = React.useState<BookReviewItem[]>([]);
+  const [reviewStats, setReviewStats] = React.useState<{ averageRating: number; totalReviews: number }>({
+    averageRating: 0,
+    totalReviews: 0,
+  });
+  const [reviewRating, setReviewRating] = React.useState(5);
+  const [reviewContent, setReviewContent] = React.useState('');
+  const [reviewSubmitting, setReviewSubmitting] = React.useState(false);
+  const [reviewSuccess, setReviewSuccess] = React.useState<string | null>(null);
+  const [reviewError, setReviewError] = React.useState<string | null>(null);
+
+  const fetchReviews = React.useCallback(async () => {
+    const res = await apiClient<{
+      data: { items: BookReviewItem[]; averageRating: number; totalReviews: number };
+    }>(`/books/${slug}/reviews`);
+    if (res.data?.data) {
+      setReviews(res.data.data.items || []);
+      setReviewStats({
+        averageRating: res.data.data.averageRating || 0,
+        totalReviews: res.data.data.totalReviews || 0,
+      });
+    }
+  }, [slug]);
+
+  const handleReviewSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!reviewContent.trim()) return;
+    setReviewSubmitting(true);
+    setReviewError(null);
+    setReviewSuccess(null);
+
+    const res = await apiClient<{ data: BookReviewItem; message: string }>(`/books/${slug}/reviews`, {
+      method: 'POST',
+      body: JSON.stringify({
+        rating: reviewRating,
+        content: reviewContent.trim(),
+      }),
+    });
+
+    setReviewSubmitting(false);
+
+    if (res.error) {
+      setReviewError(res.error.message);
+      return;
+    }
+
+    setReviewSuccess('Resensi Anda berhasil disimpan! Terima kasih telah berbagi kesan baca.');
+    setReviewContent('');
+    fetchReviews();
+  };
 
   const loadData = React.useCallback(async () => {
     setLoading(true);
@@ -65,7 +148,8 @@ export default function BookDetailPage() {
     if (availRes.data) {
       setAvailability(availRes.data.data);
     }
-  }, [slug]);
+    fetchReviews();
+  }, [slug, fetchReviews]);
 
   React.useEffect(() => {
     loadData();
@@ -243,6 +327,54 @@ export default function BookDetailPage() {
                         </p>
                       )}
                     </div>
+
+                    {/* Waitlist Status / Action */}
+                    {waitlistSuccess ? (
+                      <div className="p-3 bg-surface border-2 border-foreground space-y-2 text-center">
+                        <div className="font-mono text-xs font-bold text-foreground flex items-center justify-center gap-1.5">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                          <span>TERDAFTAR DALAM ANTREAN</span>
+                        </div>
+                        <p className="font-sans text-[11px] text-muted">
+                          Nomor Urut Antrean Anda:{' '}
+                          <strong className="font-mono text-sm text-foreground">
+                            #{waitlistSuccess.position}
+                          </strong>
+                        </p>
+                        <p className="font-sans text-[10px] text-muted">
+                          Kurator akan mengalokasikan buku untuk Anda begitu eksemplar dikembalikan ke lapak.
+                        </p>
+                        <div className="pt-1">
+                          <Link
+                            href="/dashboard/pinjaman"
+                            className="inline-flex items-center gap-1 font-mono text-[10px] uppercase tracking-wider text-foreground underline underline-offset-2 hover:opacity-80"
+                          >
+                            <span>Pantau di Dasbor Pinjaman</span>
+                            <ArrowRight className="w-3 h-3" />
+                          </Link>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        {waitlistError && (
+                          <div className="p-2.5 bg-surface border border-destructive text-destructive font-sans text-[11px]">
+                            {waitlistError}
+                          </div>
+                        )}
+                        <button
+                          type="button"
+                          onClick={handleJoinWaitlist}
+                          disabled={waitlistLoading}
+                          className="w-full py-2.5 border-2 border-foreground bg-surface hover:bg-foreground hover:text-background font-mono text-xs uppercase tracking-widest font-bold transition-colors flex items-center justify-center gap-2 text-foreground disabled:opacity-50"
+                        >
+                          <Users className="w-3.5 h-3.5" />
+                          <span>{waitlistLoading ? 'MENDAFTAR...' : 'DAFTAR ANTREAN PEMBACA'}</span>
+                        </button>
+                        <p className="text-[10px] font-sans text-muted text-center leading-tight">
+                          Dapatkan prioritas hak pinjam berikutnya saat pembaca lain mengembalikan buku ini.
+                        </p>
+                      </div>
+                    )}
                   </div>
                 )
               ) : (
@@ -278,6 +410,28 @@ export default function BookDetailPage() {
                 Karya {book.author}
               </p>
             </div>
+
+            {/* Donator Dedication Banner */}
+            {book.donatedBy && (
+              <div className="p-4 border-2 border-foreground bg-surface font-mono text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-2 border border-foreground bg-surface-muted">
+                    <HeartHandshake className="w-5 h-5 text-foreground" />
+                  </div>
+                  <div>
+                    <span className="text-[10px] uppercase text-muted tracking-widest block font-bold">
+                      KOLEKSI SUMBANGAN WARGA // DONATUR BUKU
+                    </span>
+                    <span className="font-serif font-bold text-base text-foreground">
+                      Disumbangkan oleh {book.donatedBy}
+                    </span>
+                  </div>
+                </div>
+                <span className="text-[10px] text-muted uppercase tracking-wider font-semibold border border-border-hairline px-2.5 py-1 bg-surface-muted self-start sm:self-auto">
+                  Perpustakaan Jalanan Blora
+                </span>
+              </div>
+            )}
 
             {/* Bibliographic Specs Grid */}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 p-5 bg-surface border border-border-hairline font-mono text-xs">
@@ -387,6 +541,189 @@ export default function BookDetailPage() {
             )}
           </div>
         </div>
+
+        {/* REVIEWS & RESENSI PEMBACA SECTION */}
+        <section id="resensi" className="border-t-2 border-foreground pt-8 space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-border-hairline pb-3 gap-2">
+            <div className="flex items-center gap-2.5 font-mono text-xs uppercase tracking-widest text-muted">
+              <span className="font-bold text-foreground flex items-center gap-1.5">
+                <MessageSquare className="w-4 h-4 text-foreground" />
+                RESENSI & KESAN PEMBACA ({reviewStats.totalReviews})
+              </span>
+              <span>// OPINI WARGA</span>
+            </div>
+
+            {reviewStats.totalReviews > 0 && (
+              <div className="flex items-center gap-2 font-mono text-xs">
+                <div className="flex items-center text-amber-500">
+                  {[1, 2, 3, 4, 5].map((s) => (
+                    <Star
+                      key={s}
+                      className={`w-3.5 h-3.5 ${
+                        s <= Math.round(reviewStats.averageRating)
+                          ? 'fill-amber-500 text-amber-500'
+                          : 'text-muted'
+                      }`}
+                    />
+                  ))}
+                </div>
+                <span className="font-bold text-foreground">{reviewStats.averageRating} / 5.0</span>
+                <span className="text-muted">({reviewStats.totalReviews} ulasan)</span>
+              </div>
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            {/* LEFT: Write Review Form (5 cols) */}
+            <div className="lg:col-span-5 p-5 border-2 border-foreground bg-surface space-y-4 font-mono text-xs">
+              <div className="border-b border-border-hairline pb-2">
+                <h3 className="font-serif font-bold text-base text-foreground font-sans">
+                  Tuliskan Resensi Bacaan
+                </h3>
+                <p className="font-sans text-[11px] text-muted mt-0.5">
+                  Bagikan catatan pinggir, kutipan, atau refleksi buku ini kepada sesama warga Blora.
+                </p>
+              </div>
+
+              {reviewSuccess && (
+                <div className="p-3 bg-surface-muted border border-foreground font-sans text-xs text-foreground flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>{reviewSuccess}</span>
+                </div>
+              )}
+
+              {reviewError && (
+                <div className="p-3 bg-surface-muted border border-destructive font-sans text-xs text-destructive flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>{reviewError}</span>
+                </div>
+              )}
+
+              <form onSubmit={handleReviewSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-[10px] uppercase text-muted font-bold mb-1.5">
+                    Penilaian Bintang
+                  </label>
+                  <div className="flex items-center gap-1">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        type="button"
+                        onClick={() => setReviewRating(star)}
+                        className="p-1 hover:scale-110 transition-transform"
+                        title={`${star} Bintang`}
+                      >
+                        <Star
+                          className={`w-5 h-5 ${
+                            star <= reviewRating
+                              ? 'fill-amber-500 text-amber-500'
+                              : 'text-border-hairline hover:text-amber-400'
+                          }`}
+                        />
+                      </button>
+                    ))}
+                    <span className="ml-2 font-bold text-foreground text-xs">{reviewRating} dari 5</span>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] uppercase text-muted font-bold mb-1.5">
+                    Catatan Resensi / Refleksi Baca
+                  </label>
+                  <textarea
+                    rows={4}
+                    value={reviewContent}
+                    onChange={(e) => setReviewContent(e.target.value)}
+                    placeholder="Bagikan apa yang menarik, kutipan favorit, atau mengapa warga lain wajib membaca buku ini..."
+                    className="w-full p-2.5 bg-surface-muted border border-border-hairline rounded-none text-xs font-sans text-foreground focus:outline-none focus:border-foreground resize-none"
+                    maxLength={1000}
+                    required
+                  />
+                  <div className="flex justify-between text-[10px] text-muted pt-1">
+                    <span>Minimal 5 karakter</span>
+                    <span>{reviewContent.length}/1000</span>
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={reviewSubmitting || !reviewContent.trim()}
+                  className="w-full py-2.5 bg-foreground text-background font-bold text-xs uppercase tracking-widest hover:bg-foreground/90 disabled:opacity-40 transition-colors flex items-center justify-center gap-2"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                  <span>{reviewSubmitting ? 'Menyimpan...' : 'KIRIM RESENSI'}</span>
+                </button>
+              </form>
+            </div>
+
+            {/* RIGHT: Reviews List (7 cols) */}
+            <div className="lg:col-span-7 space-y-4">
+              {reviews.length === 0 ? (
+                <div className="p-8 text-center border border-border-hairline bg-surface-muted/30 font-mono text-xs space-y-2">
+                  <p className="text-muted italic">Belum ada resensi untuk buku ini.</p>
+                  <p className="font-sans text-[11px] text-muted">
+                    Jadilah pembaca pertama yang membagikan kesan membaca!
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3 font-sans">
+                  {reviews.map((rev) => (
+                    <div
+                      key={rev.id}
+                      className="p-4 border border-border-hairline bg-surface hover:border-foreground transition-colors space-y-2.5"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-7 h-7 border border-foreground bg-surface-muted flex items-center justify-center font-mono text-xs font-bold uppercase shrink-0">
+                            {rev.user.name.charAt(0)}
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="font-bold text-xs text-foreground font-mono">
+                                {rev.user.name}
+                              </span>
+                              {rev.isVerifiedBorrower && (
+                                <span className="font-mono text-[9px] uppercase tracking-wider px-1.5 py-0.5 bg-foreground text-background font-bold inline-flex items-center gap-1">
+                                  <CheckCircle2 className="w-2.5 h-2.5" />
+                                  Peminjam Terverifikasi
+                                </span>
+                              )}
+                            </div>
+                            <span className="text-[10px] text-muted font-mono">@{rev.user.username}</span>
+                          </div>
+                        </div>
+
+                        {/* Stars */}
+                        <div className="flex items-center text-amber-500 shrink-0">
+                          {[1, 2, 3, 4, 5].map((s) => (
+                            <Star
+                              key={s}
+                              className={`w-3 h-3 ${
+                                s <= rev.rating ? 'fill-amber-500 text-amber-500' : 'text-border-hairline'
+                              }`}
+                            />
+                          ))}
+                        </div>
+                      </div>
+
+                      <p className="text-xs text-foreground/90 leading-relaxed whitespace-pre-line pl-9">
+                        {rev.content}
+                      </p>
+
+                      <div className="pl-9 text-[10px] font-mono text-muted">
+                        {new Date(rev.createdAt).toLocaleDateString('id-ID', {
+                          day: 'numeric',
+                          month: 'long',
+                          year: 'numeric',
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
 
         {/* Similar Books Section */}
         {book.similarBooks && book.similarBooks.length > 0 && (

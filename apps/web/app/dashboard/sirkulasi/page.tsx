@@ -31,6 +31,8 @@ import {
   X,
   History,
   Calendar,
+  Users,
+  MessageCircle,
 } from 'lucide-react';
 import { CameraQrScannerModal } from '@/components/circulation/camera-qr-scanner-modal';
 
@@ -85,6 +87,14 @@ export default function DashboardCirculationPage() {
   const [returnLoading, setReturnLoading] = React.useState(false);
   const [returnError, setReturnError] = React.useState<string | null>(null);
   const [returnSuccess, setReturnSuccess] = React.useState<string | null>(null);
+
+  // Waitlist Recommendation state for Return Handover
+  const [recommendedWaitlist, setRecommendedWaitlist] = React.useState<{
+    id: string;
+    position: number;
+    user: { id: string; name: string; username: string };
+  } | null>(null);
+  const [allocateLoading, setAllocateLoading] = React.useState(false);
 
   // Tab 3: Board
   const [boardData, setBoardData] = React.useState<{
@@ -307,7 +317,15 @@ export default function DashboardCirculationPage() {
     setReturnLoading(true);
     setReturnError(null);
 
-    const res = await apiClient<{ data: LoanItem; message: string }>(
+    const res = await apiClient<{
+      data: LoanItem;
+      message: string;
+      pendingWaitlist?: {
+        id: string;
+        position: number;
+        user: { id: string; name: string; username: string };
+      } | null;
+    }>(
       `/loans/${returnLoan.id}/return`,
       {
         method: 'POST',
@@ -330,6 +348,12 @@ export default function DashboardCirculationPage() {
     const loanCode = returnLoan.loanCode;
 
     setReturnSuccess(`Pengembalian buku "${bookTitle}" berhasil dicatat (Kondisi: ${returnCondition}).`);
+    if (res.data?.pendingWaitlist) {
+      setRecommendedWaitlist(res.data.pendingWaitlist);
+    } else {
+      setRecommendedWaitlist(null);
+    }
+
     setSessionLogs((prev) => [
       {
         id: Math.random().toString(),
@@ -346,6 +370,29 @@ export default function DashboardCirculationPage() {
     setReturnCodeInput('');
     setReturnNote('');
     setShowHilangConfirm(false);
+    loadBoard();
+  };
+
+  const handleAllocateWaitlist = async (waitlistId: string) => {
+    setAllocateLoading(true);
+    const res = await apiClient<{ message: string; loan?: any }>(
+      `/waitlist/${waitlistId}/allocate`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ pickupDeadlineDays: 3 }),
+      }
+    );
+    setAllocateLoading(false);
+
+    if (res.error) {
+      alert(res.error.message);
+      return;
+    }
+
+    setRecommendedWaitlist(null);
+    setReturnSuccess(
+      res.data?.message || 'Buku berhasil dialokasikan kepada antrean pembaca!'
+    );
     loadBoard();
   };
 
@@ -754,6 +801,52 @@ export default function DashboardCirculationPage() {
               </div>
             )}
 
+            {recommendedWaitlist && (
+              <div className="p-4 bg-surface border-2 border-foreground space-y-3 font-mono text-xs">
+                <div className="flex items-center justify-between border-b border-border-hairline pb-2">
+                  <span className="font-bold text-foreground flex items-center gap-1.5 uppercase tracking-wider">
+                    <Users className="w-4 h-4" />
+                    REKOMENDASI ALOKASI ANTREAN (ANTREAN #{recommendedWaitlist.position})
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setRecommendedWaitlist(null)}
+                    className="text-muted hover:text-foreground transition-colors p-1"
+                    aria-label="Tutup rekomendasi"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+                <p className="font-sans text-xs text-foreground leading-relaxed">
+                  Buku yang baru dikembalikan memiliki antrean aktif atas nama{' '}
+                  <strong>{recommendedWaitlist.user.name}</strong> (@{recommendedWaitlist.user.username}).
+                  Apakah Anda ingin langsung menyetujui dan mengalokasikan hak pinjam buku ini untuk beliau?
+                </p>
+                <div className="flex flex-wrap gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => handleAllocateWaitlist(recommendedWaitlist.id)}
+                    disabled={allocateLoading}
+                    className="px-4 py-2 bg-foreground text-background font-bold text-xs uppercase tracking-wider hover:bg-foreground/90 disabled:opacity-40 transition-colors flex items-center gap-2"
+                  >
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    <span>
+                      {allocateLoading
+                        ? 'Mengalokasikan...'
+                        : `ALOKASIKAN KE ${recommendedWaitlist.user.name.toUpperCase()}`}
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setRecommendedWaitlist(null)}
+                    className="px-3 py-2 border border-border-hairline hover:border-foreground text-muted hover:text-foreground uppercase text-xs"
+                  >
+                    Lewati (Kembalikan ke Rak Umum)
+                  </button>
+                </div>
+              </div>
+            )}
+
             {returnError && (
               <div className="p-4 bg-surface-muted border border-destructive font-mono text-xs text-destructive flex items-start gap-2.5">
                 <AlertTriangle className="w-4 h-4 shrink-0 text-destructive mt-0.5" />
@@ -1026,14 +1119,27 @@ export default function DashboardCirculationPage() {
                           </span>
                         </div>
                         <p className="font-sans text-xs text-muted line-clamp-1">{item.bookTitle}</p>
-                        <button
-                          type="button"
-                          onClick={() => handleBoardQuickPickup(item.pickupCode || '')}
-                          className="w-full mt-1 py-1.5 border border-foreground bg-surface text-foreground font-mono text-[10px] uppercase font-bold hover:bg-foreground hover:text-background transition-colors flex items-center justify-center gap-1"
-                        >
-                          <span>Proses Ambil</span>
-                          <ArrowRight className="w-3 h-3" />
-                        </button>
+                        <div className="flex gap-1.5 mt-1">
+                          <button
+                            type="button"
+                            onClick={() => handleBoardQuickPickup(item.pickupCode || '')}
+                            className="flex-1 py-1.5 border border-foreground bg-surface text-foreground font-mono text-[10px] uppercase font-bold hover:bg-foreground hover:text-background transition-colors flex items-center justify-center gap-1"
+                          >
+                            <span>Proses Ambil</span>
+                            <ArrowRight className="w-3 h-3" />
+                          </button>
+                          <a
+                            href={`https://api.whatsapp.com/send?text=${encodeURIComponent(
+                              `Halo Kak ${item.borrowerName}, buku "${item.bookTitle}" yang diajukan sudah siap diambil di Meja Lapak Perpusjal Blora (Kode Ambil: ${item.pickupCode}). Ditunggu kedatangannya ya!`
+                            )}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-2.5 py-1.5 border border-border-hairline bg-surface hover:border-emerald-600 text-emerald-700 hover:bg-emerald-50 transition-colors flex items-center justify-center"
+                            title="Kirim pesan WhatsApp siap ambil"
+                          >
+                            <MessageCircle className="w-3.5 h-3.5" />
+                          </a>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -1064,14 +1170,27 @@ export default function DashboardCirculationPage() {
                           <span className="text-xs text-muted">{item.loanCode}</span>
                         </div>
                         <p className="font-sans text-xs text-muted line-clamp-1">{item.bookTitle}</p>
-                        <button
-                          type="button"
-                          onClick={() => handleBoardQuickReturn(item.loanCode)}
-                          className="w-full mt-1 py-1.5 border border-border-hairline bg-surface text-foreground font-mono text-[10px] uppercase font-bold hover:border-foreground hover:bg-foreground hover:text-background transition-colors flex items-center justify-center gap-1"
-                        >
-                          <span>Proses Kembali</span>
-                          <ArrowRight className="w-3 h-3" />
-                        </button>
+                        <div className="flex gap-1.5 mt-1">
+                          <button
+                            type="button"
+                            onClick={() => handleBoardQuickReturn(item.loanCode)}
+                            className="flex-1 py-1.5 border border-border-hairline bg-surface text-foreground font-mono text-[10px] uppercase font-bold hover:border-foreground hover:bg-foreground hover:text-background transition-colors flex items-center justify-center gap-1"
+                          >
+                            <span>Proses Kembali</span>
+                            <ArrowRight className="w-3 h-3" />
+                          </button>
+                          <a
+                            href={`https://api.whatsapp.com/send?text=${encodeURIComponent(
+                              `Halo Kak ${item.borrowerName}, kami dari relawan Perpusjal Blora mengingatkan bahwa peminjaman buku "${item.bookTitle}" jatuh tempo hari ini. Mohon dikembalikan ke lapak terdekat ya Kak. Terima kasih!`
+                            )}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-2.5 py-1.5 border border-border-hairline bg-surface hover:border-emerald-600 text-emerald-700 hover:bg-emerald-50 transition-colors flex items-center justify-center"
+                            title="Kirim pengingat WhatsApp jatuh tempo"
+                          >
+                            <MessageCircle className="w-3.5 h-3.5" />
+                          </a>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -1102,14 +1221,27 @@ export default function DashboardCirculationPage() {
                           <span>{item.loanCode}</span>
                         </div>
                         <p className="font-sans text-xs text-muted line-clamp-1">{item.bookTitle}</p>
-                        <button
-                          type="button"
-                          onClick={() => handleBoardQuickReturn(item.loanCode)}
-                          className="w-full mt-1 py-1.5 border border-destructive bg-destructive/10 text-destructive font-mono text-[10px] uppercase font-bold hover:bg-destructive hover:text-white transition-colors flex items-center justify-center gap-1"
-                        >
-                          <span>Terima Pengembalian</span>
-                          <ArrowRight className="w-3 h-3" />
-                        </button>
+                        <div className="flex gap-1.5 mt-1">
+                          <button
+                            type="button"
+                            onClick={() => handleBoardQuickReturn(item.loanCode)}
+                            className="flex-1 py-1.5 border border-destructive bg-destructive/10 text-destructive font-mono text-[10px] uppercase font-bold hover:bg-destructive hover:text-white transition-colors flex items-center justify-center gap-1"
+                          >
+                            <span>Terima Kembali</span>
+                            <ArrowRight className="w-3 h-3" />
+                          </button>
+                          <a
+                            href={`https://api.whatsapp.com/send?text=${encodeURIComponent(
+                              `Halo Kak ${item.borrowerName}, kami dari relawan Perpusjal Blora. Buku "${item.bookTitle}" yang Kakak pinjam telah melewati jatuh tempo pengembalian. Mohon segera dikembalikan ke lapak demi kenyamanan pembaca lain ya Kak. Terima kasih!`
+                            )}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-2.5 py-1.5 border border-destructive/40 bg-surface hover:border-emerald-600 text-emerald-700 hover:bg-emerald-50 transition-colors flex items-center justify-center"
+                            title="Kirim teguran WhatsApp keterlambatan"
+                          >
+                            <MessageCircle className="w-3.5 h-3.5" />
+                          </a>
+                        </div>
                       </div>
                     ))}
                   </div>

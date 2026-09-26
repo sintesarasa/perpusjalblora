@@ -116,3 +116,26 @@ export interface BookAvailabilityResponse {
     canJoinWaitlist: boolean;
   };
 }
+
+export const createBookReviewSchema = z.object({
+  rating: z.number().int().min(1).max(5).default(5),
+  content: z.string().min(5, 'Resensi minimal 5 karakter.').max(1000, 'Maksimal 1000 karakter.'),
+});
+export type CreateBookReviewInput = z.infer<typeof createBookReviewSchema>;
+
+export interface BookReviewItem {
+  id: string;
+  bookId: string;
+  userId: string;
+  rating: number;
+  content: string;
+  isVerifiedBorrower: boolean;
+  createdAt: string;
+  user: {
+    id: string;
+    name: string;
+    username: string;
+    avatarUrl?: string | null;
+  };
+}
+

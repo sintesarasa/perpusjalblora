@@ -15,6 +15,7 @@ import {
   Language,
   LoanStatus,
   UserSessionPayload,
+  CreateBookReviewInput,
 } from '@perpusjal/types';
 
 function computeAvailability(availableCopies: number, isBorrowable: boolean): BookAvailabilityStatus {
@@ -680,6 +681,24 @@ export class BooksService {
         },
       });
 
+      const oldIsOffCirculation = oldStatus === BookCopyStatus.DAMAGED || oldStatus === BookCopyStatus.LOST;
+      const newIsOffCirculation = newStatus === BookCopyStatus.DAMAGED || newStatus === BookCopyStatus.LOST;
+
+      // Adjust totalCopies if copy moves in or out of active circulation (rehabilitation vs pull)
+      if (oldIsOffCirculation && !newIsOffCirculation) {
+        // Restored/rehabilitated back into active collection
+        await tx.book.update({
+          where: { id: copy.bookId },
+          data: { totalCopies: { increment: 1 } },
+        });
+      } else if (!oldIsOffCirculation && newIsOffCirculation) {
+        // Pulled from active circulation
+        await tx.book.update({
+          where: { id: copy.bookId },
+          data: { totalCopies: { decrement: 1 } },
+        });
+      }
+
       // Adjust availableCopies if availability changed
       if (oldStatus !== BookCopyStatus.AVAILABLE && newStatus === BookCopyStatus.AVAILABLE) {
         await tx.book.update({
@@ -721,6 +740,116 @@ export class BooksService {
     });
 
     return { message: 'Eksemplar berhasil dihapus.' };
+  }
+
+  /**
+   * Post or update a book review
+   */
+  async createReview(bookSlugOrId: string, input: CreateBookReviewInput, user: UserSessionPayload) {
+    const book = await prisma.book.findFirst({
+      where: {
+        OR: [{ id: bookSlugOrId }, { slug: bookSlugOrId }],
+        deletedAt: null,
+      },
+    });
+
+    if (!book) {
+      throw HttpError.notFound('Buku tidak ditemukan.');
+    }
+
+    // Check if user is a verified borrower of this book
+    const isVerifiedBorrower =
+      (await prisma.loan.count({
+        where: {
+          bookId: book.id,
+          userId: user.userId,
+          status: LoanStatus.RETURNED as unknown as any,
+        },
+      })) > 0;
+
+    const review = await prisma.bookReview.upsert({
+      where: {
+        bookId_userId: {
+          bookId: book.id,
+          userId: user.userId,
+        },
+      },
+      create: {
+        bookId: book.id,
+        userId: user.userId,
+        rating: input.rating,
+        content: input.content,
+        isVerifiedBorrower,
+      },
+      update: {
+        rating: input.rating,
+        content: input.content,
+        isVerifiedBorrower,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            username: true,
+            avatarUrl: true,
+          },
+        },
+      },
+    });
+
+    return {
+      ...review,
+      createdAt: review.createdAt.toISOString(),
+      updatedAt: review.updatedAt.toISOString(),
+    };
+  }
+
+  /**
+   * Get reviews for a specific book
+   */
+  async getBookReviews(bookSlugOrId: string) {
+    const book = await prisma.book.findFirst({
+      where: {
+        OR: [{ id: bookSlugOrId }, { slug: bookSlugOrId }],
+        deletedAt: null,
+      },
+    });
+
+    if (!book) {
+      throw HttpError.notFound('Buku tidak ditemukan.');
+    }
+
+    const reviews = await prisma.bookReview.findMany({
+      where: { bookId: book.id },
+      orderBy: { createdAt: 'desc' },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            username: true,
+            avatarUrl: true,
+          },
+        },
+      },
+    });
+
+    const totalReviews = reviews.length;
+    const averageRating =
+      totalReviews > 0
+        ? Number((reviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews).toFixed(1))
+        : 0;
+
+    return {
+      totalReviews,
+      averageRating,
+      items: reviews.map((r) => ({
+        ...r,
+        createdAt: r.createdAt.toISOString(),
+        updatedAt: r.updatedAt.toISOString(),
+      })),
+    };
   }
 }
 

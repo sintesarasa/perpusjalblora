@@ -4,7 +4,7 @@ import * as React from 'react';
 import Link from 'next/link';
 import { CustomLoader } from '@/components/ui/custom-loader';
 import { apiClient } from '@/lib/api';
-import { LoanItem, LoanStatus } from '@perpusjal/types';
+import { LoanItem, LoanStatus, WaitlistItem } from '@perpusjal/types';
 import {
   BookOpen,
   Calendar,
@@ -17,37 +17,66 @@ import {
   CreditCard,
   MapPin,
   ExternalLink,
+  Users,
+  Star,
 } from 'lucide-react';
 
 export default function MemberLoansDashboardPage() {
-  const [activeTab, setActiveTab] = React.useState<'aktif' | 'riwayat'>('aktif');
+  const [activeTab, setActiveTab] = React.useState<'aktif' | 'riwayat' | 'antrean'>('aktif');
   const [loans, setLoans] = React.useState<LoanItem[]>([]);
+  const [waitlists, setWaitlists] = React.useState<WaitlistItem[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
   const [actionMessage, setActionMessage] = React.useState<string | null>(null);
   const [actionLoading, setActionLoading] = React.useState(false);
 
-  const fetchLoans = React.useCallback(async () => {
+  const fetchData = React.useCallback(async () => {
     setLoading(true);
     setError(null);
 
-    const res = await apiClient<{ data: LoanItem[] }>(`/loans/me?status=${activeTab}`);
-
-    setLoading(false);
-
-    if (res.error) {
-      setError(res.error.message);
-      return;
-    }
-
-    if (res.data) {
-      setLoans(res.data.data || []);
+    if (activeTab === 'antrean') {
+      const res = await apiClient<{ data: WaitlistItem[] }>('/waitlist/me');
+      setLoading(false);
+      if (res.error) {
+        setError(res.error.message);
+        return;
+      }
+      setWaitlists(res.data?.data || []);
+    } else {
+      const res = await apiClient<{ data: LoanItem[] }>(`/loans/me?status=${activeTab}`);
+      setLoading(false);
+      if (res.error) {
+        setError(res.error.message);
+        return;
+      }
+      setLoans(res.data?.data || []);
     }
   }, [activeTab]);
 
   React.useEffect(() => {
-    fetchLoans();
-  }, [fetchLoans]);
+    fetchData();
+  }, [fetchData]);
+
+  const handleLeaveWaitlist = async (waitlistId: string) => {
+    if (!window.confirm('Batalkan dan keluar dari daftar antrean buku ini?')) return;
+
+    setActionLoading(true);
+    setActionMessage(null);
+
+    const res = await apiClient<{ message: string }>(`/waitlist/${waitlistId}`, {
+      method: 'DELETE',
+    });
+
+    setActionLoading(false);
+
+    if (res.error) {
+      alert(res.error.message);
+      return;
+    }
+
+    setActionMessage(res.data?.message || 'Berhasil keluar dari antrean.');
+    fetchData();
+  };
 
   const handleExtend = async (loanId: string) => {
     if (!window.confirm('Perpanjang durasi peminjaman ini selama 7 hari?')) return;
@@ -67,7 +96,7 @@ export default function MemberLoansDashboardPage() {
     }
 
     setActionMessage(res.data?.message || 'Peminjaman berhasil diperpanjang.');
-    fetchLoans();
+    fetchData();
   };
 
   const handleCancel = async (loanId: string) => {
@@ -88,7 +117,7 @@ export default function MemberLoansDashboardPage() {
     }
 
     setActionMessage(res.data?.message || 'Pengajuan berhasil dibatalkan.');
-    fetchLoans();
+    fetchData();
   };
 
   const getStatusBadge = (status: LoanStatus) => {
@@ -215,6 +244,23 @@ export default function MemberLoansDashboardPage() {
           >
             Riwayat Selesai
           </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('antrean')}
+            className={`px-4 py-2 border-b-2 transition-colors inline-flex items-center gap-1.5 ${
+              activeTab === 'antrean'
+                ? 'border-foreground text-foreground font-bold'
+                : 'border-transparent text-muted hover:text-foreground'
+            }`}
+          >
+            <Users className="w-3.5 h-3.5" />
+            <span>Antrean Pembaca</span>
+            {waitlists.length > 0 && (
+              <span className="px-1.5 py-0.5 bg-foreground text-background text-[10px] font-bold">
+                {waitlists.length}
+              </span>
+            )}
+          </button>
         </div>
 
         {/* Action feedback notice */}
@@ -239,12 +285,118 @@ export default function MemberLoansDashboardPage() {
           <div className="p-8 border border-foreground bg-surface-muted text-center space-y-3 font-mono text-xs">
             <p className="text-foreground">{error}</p>
             <button
-              onClick={fetchLoans}
+              onClick={fetchData}
               className="px-4 py-1.5 bg-foreground text-background font-bold uppercase tracking-wider"
             >
               Coba Lagi
             </button>
           </div>
+        ) : activeTab === 'antrean' ? (
+          waitlists.length === 0 ? (
+            <div className="py-16 text-center border border-border-hairline bg-surface p-8 space-y-3">
+              <span className="font-mono text-xs text-muted uppercase tracking-widest">
+                [ BELUM ADA ANTREAN ]
+              </span>
+              <h2 className="font-serif text-2xl font-normal text-foreground">
+                Anda Belum Terdaftar di Antrean Buku Mana Pun
+              </h2>
+              <p className="font-sans text-xs text-muted max-w-md mx-auto">
+                Jika buku bacaan yang Anda inginkan sedang dipinjam oleh pembaca lain, Anda dapat mendaftar antrean melalui halaman detail buku di katalog.
+              </p>
+              <div className="pt-2">
+                <Link
+                  href="/buku"
+                  className="px-5 py-2.5 bg-foreground text-background font-mono text-xs uppercase tracking-widest font-bold inline-block hover:bg-foreground/90 transition-colors"
+                >
+                  Jelajahi Katalog Buku &rarr;
+                </Link>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {waitlists.map((w) => (
+                <div
+                  key={w.id}
+                  className="border-2 border-foreground bg-surface p-6 space-y-6 shadow-sm"
+                >
+                  {/* Top row */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border-hairline pb-4 font-mono text-xs">
+                    <div className="flex items-center gap-3">
+                      <span className="px-2.5 py-1 bg-foreground text-background font-mono font-bold text-xs uppercase tracking-widest flex items-center gap-1.5">
+                        <Users className="w-3.5 h-3.5" />
+                        ANTREAN POSISI #{w.position}
+                      </span>
+                      <span className="border border-border-hairline px-2 py-0.5 text-muted uppercase text-[10px]">
+                        {w.status === 'NOTIFIED' ? 'SIAP DIALOKASIKAN' : 'MENUNGGU DIKEMBALIKAN'}
+                      </span>
+                    </div>
+                    <span className="text-muted">
+                      Terdaftar pada{' '}
+                      {new Date(w.createdAt).toLocaleDateString('id-ID', {
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric',
+                      })}
+                    </span>
+                  </div>
+
+                  {/* Body grid */}
+                  <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+                    <div className="md:col-span-8 flex gap-4">
+                      <div className="w-16 h-22 sm:w-20 sm:h-28 bg-surface-muted border border-border-hairline shrink-0 flex items-center justify-center p-2 text-center overflow-hidden">
+                        {w.book.coverImage ? (
+                          <img
+                            src={w.book.coverImage}
+                            alt={w.book.title}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <BookOpen className="w-6 h-6 text-muted" />
+                        )}
+                      </div>
+                      <div className="space-y-1">
+                        <Link
+                          href={`/buku/${w.book.slug}`}
+                          className="font-serif font-bold text-lg sm:text-xl text-foreground hover:underline line-clamp-2"
+                        >
+                          {w.book.title}
+                        </Link>
+                        <p className="font-sans text-xs text-muted">Karya {w.book.author}</p>
+                        <p className="font-mono text-[11px] text-muted pt-1">
+                          Ketersediaan Lapak saat ini:{' '}
+                          <strong className="text-foreground">{w.book.availableCopies} eksemplar</strong>
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="md:col-span-4 bg-surface-muted p-4 border border-border-hairline space-y-2 font-mono text-xs">
+                      <span className="text-[10px] uppercase text-muted tracking-widest block font-bold">
+                        STATUS ALOKASI
+                      </span>
+                      <p className="font-sans text-xs text-muted leading-relaxed">
+                        {w.status === 'NOTIFIED'
+                          ? 'Buku telah tersedia! Kurator lapak sedang memproses alokasi pinjaman untuk Anda.'
+                          : 'Buku sedang dibaca peminjam lain. Anda akan otomatis mendapat prioritas pertama saat buku kembali ke lapak.'}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Footer action */}
+                  <div className="pt-3 border-t border-border-hairline flex items-center justify-end font-mono text-xs">
+                    <button
+                      type="button"
+                      onClick={() => handleLeaveWaitlist(w.id)}
+                      disabled={actionLoading}
+                      className="px-3 py-1.5 border border-border-hairline text-muted hover:text-foreground hover:border-foreground uppercase tracking-wider transition-colors inline-flex items-center gap-1.5"
+                    >
+                      <XCircle className="w-3.5 h-3.5" />
+                      <span>Keluar dari Antrean</span>
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )
         ) : loans.length === 0 ? (
           <div className="py-16 text-center border border-border-hairline bg-surface p-8 space-y-3">
             <span className="font-mono text-xs text-muted uppercase tracking-widest">
@@ -372,8 +524,18 @@ export default function MemberLoansDashboardPage() {
                 </div>
 
                 {/* Footer action buttons */}
-                {(loan.canCancel || loan.canExtend) && (
+                {(loan.canCancel || loan.canExtend || loan.status === LoanStatus.RETURNED) && (
                   <div className="pt-3 border-t border-border-hairline flex items-center justify-end gap-3 font-mono text-xs">
+                    {loan.status === LoanStatus.RETURNED && (
+                      <Link
+                        href={`/buku/${loan.book.slug}#resensi`}
+                        className="px-3 py-1.5 border border-border-hairline text-foreground hover:bg-muted-bg transition-colors inline-flex items-center gap-1.5 uppercase font-medium tracking-wider"
+                      >
+                        <Star className="w-3.5 h-3.5 fill-foreground/20 text-foreground" />
+                        Tulis Resensi
+                      </Link>
+                    )}
+
                     {loan.canCancel && (
                       <button
                         type="button"

@@ -11,3 +11,4 @@ export * from './badge.js';
 export * from './notification.js';
 export * from './profile.js';
 export * from './admin.js';
+export * from './waitlist.js';
