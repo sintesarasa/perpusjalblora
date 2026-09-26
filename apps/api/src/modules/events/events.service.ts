@@ -1,5 +1,6 @@
 import { prisma } from '../../lib/prisma.js';
 import { HttpError } from '../../utils/errors.js';
+import { notificationsService } from '../notifications/notifications.service.js';
 import {
   EventQueryInput,
   EventCreateInput,
@@ -35,10 +36,10 @@ function generateAttendanceCode(): string {
 
 export class EventsService {
   /**
-   * List events with filter (upcoming vs completed)
+   * List events with filter (upcoming vs completed vs all vs draft)
    */
   async getEvents(query: EventQueryInput) {
-    const { status = 'mendatang', type, page = 1, perPage = 12 } = query;
+    const { status = 'mendatang', type, search, page = 1, perPage = 12 } = query;
     const skip = (page - 1) * perPage;
     const now = new Date();
 
@@ -53,18 +54,35 @@ export class EventsService {
           EventStatus.FULL,
         ] as unknown as any[],
       };
-    } else if (status === 'selesai') {
+    } else if (status === 'selesai' || status === 'completed') {
       where.OR = [
         { startAt: { lt: now } },
         { status: EventStatus.COMPLETED as unknown as any },
       ];
+    } else if (status === 'draft') {
+      where.status = EventStatus.DRAFT as unknown as any;
+    } else if (status === 'open') {
+      where.status = EventStatus.OPEN as unknown as any;
     }
 
     if (type) {
       where.type = type as unknown as any;
     }
 
-    const orderBy: any = status === 'selesai' ? { startAt: 'desc' } : { startAt: 'asc' };
+    if (search && search.trim()) {
+      const q = search.trim();
+      where.AND = [
+        ...(where.AND || []),
+        {
+          OR: [
+            { title: { contains: q, mode: 'insensitive' } },
+            { locationName: { contains: q, mode: 'insensitive' } },
+          ],
+        },
+      ];
+    }
+
+    const orderBy: any = status === 'selesai' || status === 'completed' ? { startAt: 'desc' } : { startAt: 'asc' };
 
     const [total, events] = await Promise.all([
       prisma.event.count({ where }),
@@ -77,39 +95,42 @@ export class EventsService {
           organizer: {
             select: { id: true, name: true },
           },
-          _count: {
+          registrations: {
             select: {
-              registrations: {
-                where: {
-                  status: {
-                    in: [
-                      RegistrationStatus.REGISTERED,
-                      RegistrationStatus.ATTENDED,
-                    ] as unknown as any[],
-                  },
-                },
-              },
+              status: true,
             },
           },
         },
       }),
     ]);
 
-    const items: EventItem[] = events.map((e) => ({
-      id: e.id,
-      title: e.title,
-      slug: e.slug,
-      type: e.type as unknown as EventType,
-      coverImage: e.coverImage,
-      startAt: e.startAt.toISOString(),
-      endAt: e.endAt.toISOString(),
-      locationName: e.locationName,
-      isOnline: e.isOnline,
-      quota: e.quota,
-      registeredCount: e._count.registrations,
-      status: e.status as unknown as EventStatus,
-      organizer: e.organizer,
-    }));
+    const items: EventItem[] = events.map((e) => {
+      const registeredCount = e.registrations.filter(
+        (r) =>
+          r.status === (RegistrationStatus.REGISTERED as unknown as any) ||
+          r.status === (RegistrationStatus.ATTENDED as unknown as any)
+      ).length;
+      const attendedCount = e.registrations.filter(
+        (r) => r.status === (RegistrationStatus.ATTENDED as unknown as any)
+      ).length;
+
+      return {
+        id: e.id,
+        title: e.title,
+        slug: e.slug,
+        type: e.type as unknown as EventType,
+        coverImage: e.coverImage,
+        startAt: e.startAt.toISOString(),
+        endAt: e.endAt.toISOString(),
+        locationName: e.locationName,
+        isOnline: e.isOnline,
+        quota: e.quota,
+        registeredCount,
+        attendedCount,
+        status: e.status as unknown as EventStatus,
+        organizer: e.organizer,
+      };
+    });
 
     return {
       data: items,
@@ -284,6 +305,20 @@ export class EventsService {
   }
 
   /**
+   * Get Event detail by ID
+   */
+  async getEventById(id: string, user?: UserSessionPayload): Promise<EventDetail> {
+    const event = await prisma.event.findUnique({
+      where: { id },
+      select: { slug: true },
+    });
+    if (!event) {
+      throw HttpError.notFound('Kegiatan tidak ditemukan.');
+    }
+    return this.getEventBySlug(event.slug, user);
+  }
+
+  /**
    * Update Event
    */
   async updateEvent(id: string, input: EventUpdateInput, user: UserSessionPayload) {
@@ -292,8 +327,8 @@ export class EventsService {
       throw HttpError.notFound('Kegiatan tidak ditemukan.');
     }
 
-    if (user.role !== Role.ADMIN && event.organizerId !== user.userId) {
-      throw HttpError.forbidden('Hanya penyelenggara kegiatan atau admin yang berhak menyunting kegiatan ini.');
+    if (user.role !== Role.ADMIN && user.role !== Role.KURATOR && event.organizerId !== user.userId) {
+      throw HttpError.forbidden('Hanya kurator/penyelenggara kegiatan atau admin yang berhak menyunting kegiatan ini.');
     }
 
     const updated = await prisma.event.update({
@@ -452,8 +487,8 @@ export class EventsService {
       throw HttpError.notFound('Kegiatan tidak ditemukan.');
     }
 
-    if (user.role !== Role.ADMIN && event.organizerId !== user.userId) {
-      throw HttpError.forbidden('Hanya panitia penyelenggara yang berhak mengakses daftar peserta.');
+    if (user.role !== Role.ADMIN && user.role !== Role.KURATOR && event.organizerId !== user.userId) {
+      throw HttpError.forbidden('Hanya kurator/panitia penyelenggara yang berhak mengakses daftar peserta.');
     }
 
     const registrations = await prisma.eventRegistration.findMany({
@@ -488,6 +523,15 @@ export class EventsService {
    * Panitia: Check-in attendee with attendanceCode or userId (FR-EVT-04)
    */
   async checkin(id: string, input: EventCheckinInput, user: UserSessionPayload) {
+    const event = await prisma.event.findUnique({ where: { id } });
+    if (!event) {
+      throw HttpError.notFound('Kegiatan tidak ditemukan.');
+    }
+
+    if (user.role !== Role.ADMIN && user.role !== Role.KURATOR && event.organizerId !== user.userId) {
+      throw HttpError.forbidden('Hanya kurator/panitia penyelenggara yang berhak melakukan presensi peserta.');
+    }
+
     const { attendanceCode, userId } = input;
     if (!attendanceCode && !userId) {
       throw HttpError.badRequest('attendanceCode atau userId harus disertakan.');
@@ -506,7 +550,19 @@ export class EventsService {
     });
 
     if (!reg) {
-      throw HttpError.notFound('Peserta dengan kode atau ID tersebut tidak terdaftar.');
+      throw HttpError.notFound('Peserta dengan kode atau ID tersebut tidak terdaftar dalam kegiatan ini.');
+    }
+
+    if (reg.status === (RegistrationStatus.ATTENDED as unknown as any)) {
+      const checkinTime = reg.checkedInAt
+        ? new Date(reg.checkedInAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
+        : '';
+      return {
+        message: `Peserta ${reg.user.name} sudah tercatat presensi sebelumnya${checkinTime ? ` (pukul ${checkinTime})` : ''}.`,
+        attendeeName: reg.user.name,
+        alreadyAttended: true,
+        data: reg,
+      };
     }
 
     const updated = await prisma.eventRegistration.update({
@@ -515,11 +571,33 @@ export class EventsService {
         status: RegistrationStatus.ATTENDED as unknown as any,
         checkedInAt: new Date(),
       },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            username: true,
+            email: true,
+          },
+        },
+      },
     });
+
+    // Send in-app notification
+    await notificationsService.createNotification(reg.userId, {
+      type: 'EVENT_ATTENDED',
+      title: 'Presensi Kehadiran Terkonfirmasi',
+      body: `Kehadiranmu pada kegiatan "${event.title}" telah dicatat panitia lapak. Selamat mengikuti kegiatan!`,
+      actionUrl: `/kegiatan/${event.slug}`,
+      entityType: 'EVENT',
+      entityId: id,
+    }).catch(() => null);
 
     return {
       message: `Presensi berhasil! Selamat datang, ${reg.user.name}.`,
       attendeeName: reg.user.name,
+      alreadyAttended: false,
+      data: updated,
     };
   }
 
@@ -532,8 +610,8 @@ export class EventsService {
       throw HttpError.notFound('Kegiatan tidak ditemukan.');
     }
 
-    if (user.role !== Role.ADMIN && event.organizerId !== user.userId) {
-      throw HttpError.forbidden('Hanya panitia penyelenggara yang berhak mengunggah dokumentasi.');
+    if (user.role !== Role.ADMIN && user.role !== Role.KURATOR && event.organizerId !== user.userId) {
+      throw HttpError.forbidden('Hanya kurator/panitia penyelenggara atau admin yang berhak mengunggah dokumentasi.');
     }
 
     const updated = await prisma.event.update({
@@ -549,6 +627,82 @@ export class EventsService {
       message: 'Dokumentasi kegiatan berhasil disimpan.',
       event: updated,
     };
+  }
+
+  /**
+   * Panitia: Delete event (if not attended yet)
+   */
+  async deleteEvent(id: string, user: UserSessionPayload) {
+    const event = await prisma.event.findUnique({
+      where: { id },
+      include: {
+        registrations: {
+          where: { status: RegistrationStatus.ATTENDED as unknown as any },
+        },
+      },
+    });
+
+    if (!event) {
+      throw HttpError.notFound('Kegiatan tidak ditemukan.');
+    }
+
+    if (user.role !== Role.ADMIN && user.role !== Role.KURATOR && event.organizerId !== user.userId) {
+      throw HttpError.forbidden('Hanya kurator/panitia penyelenggara atau admin yang berhak menghapus kegiatan ini.');
+    }
+
+    if (event.registrations.length > 0) {
+      throw HttpError.badRequest(
+        'Kegiatan yang sudah memiliki presensi kehadiran peserta tidak dapat dihapus. Silakan tandai sebagai selesai atau batalkan.'
+      );
+    }
+
+    await prisma.event.delete({ where: { id } });
+    return { message: 'Kegiatan berhasil dihapus.' };
+  }
+
+  /**
+   * Get my registered events
+   */
+  async getMyRegistrations(user: UserSessionPayload) {
+    const registrations = await prisma.eventRegistration.findMany({
+      where: { userId: user.userId },
+      orderBy: { registeredAt: 'desc' },
+      include: {
+        event: {
+          include: {
+            organizer: { select: { id: true, name: true } },
+          },
+        },
+      },
+    });
+
+    return registrations.map((r) => ({
+      id: r.id,
+      status: r.status as unknown as RegistrationStatus,
+      attendanceCode: r.attendanceCode,
+      note: r.note,
+      registeredAt: r.registeredAt.toISOString(),
+      checkedInAt: r.checkedInAt ? r.checkedInAt.toISOString() : null,
+      canCancel:
+        r.status === (RegistrationStatus.REGISTERED as unknown as any) &&
+        new Date(r.event.startAt).getTime() - Date.now() >= 24 * 60 * 60 * 1000,
+      calendarUrl: `/api/v1/events/${r.eventId}/calendar.ics`,
+      event: {
+        id: r.event.id,
+        title: r.event.title,
+        slug: r.event.slug,
+        type: r.event.type as unknown as EventType,
+        coverImage: r.event.coverImage,
+        startAt: r.event.startAt.toISOString(),
+        endAt: r.event.endAt.toISOString(),
+        locationName: r.event.locationName,
+        isOnline: r.event.isOnline,
+        quota: r.event.quota,
+        registeredCount: 0,
+        status: r.event.status as unknown as EventStatus,
+        organizer: r.event.organizer,
+      },
+    }));
   }
 
   /**

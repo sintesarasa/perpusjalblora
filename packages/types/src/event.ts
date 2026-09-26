@@ -2,8 +2,9 @@ import { z } from 'zod';
 import { EventStatus, EventType, RegistrationStatus } from './enums.js';
 
 export const eventQuerySchema = z.object({
-  status: z.enum(['mendatang', 'selesai', 'all']).default('mendatang'),
+  status: z.enum(['mendatang', 'selesai', 'all', 'draft', 'open', 'completed']).default('mendatang').optional(),
   type: z.nativeEnum(EventType).optional(),
+  search: z.string().optional(),
   page: z.coerce.number().int().positive().default(1),
   perPage: z.coerce.number().int().positive().max(50).default(12),
 });
@@ -60,6 +61,7 @@ export interface EventItem {
   isOnline: boolean;
   quota: number | null;
   registeredCount: number;
+  attendedCount?: number;
   status: EventStatus;
   organizer: {
     id: string;
@@ -82,6 +84,7 @@ export interface EventRegistrationItem {
     username: string;
     email?: string;
   };
+  event?: EventItem;
 }
 
 export interface EventDetail extends EventItem {
