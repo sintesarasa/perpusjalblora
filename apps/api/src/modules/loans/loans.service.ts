@@ -481,20 +481,48 @@ export class LoansService {
    */
   async createWalkInLoan(input: WalkInLoanInput, volunteer: UserSessionPayload) {
     const { memberIdentifier, bookCopyIdentifier, pickupPoint, note } = input;
-    const trimmedMember = memberIdentifier.trim();
-    const cleanMember = trimmedMember.startsWith('@') ? trimmedMember.slice(1) : trimmedMember;
+    let rawMember = memberIdentifier.trim();
+
+    // 1. Strip URL if scanned from member profile QR
+    if (rawMember.startsWith('http://') || rawMember.startsWith('https://')) {
+      try {
+        const url = new URL(rawMember);
+        const parts = url.pathname.split('/').filter(Boolean);
+        if (parts.length >= 2 && parts[0] === 'u') {
+          rawMember = `@${parts[1]}`;
+        }
+      } catch {
+        // keep as is
+      }
+    }
+
+    const trimmedMember = rawMember.trim();
+    const cleanUsername = trimmedMember.startsWith('@') ? trimmedMember.slice(1) : trimmedMember;
     const phoneDigits = trimmedMember.replace(/\D/g, '');
+    const isPjlMemberCode = trimmedMember.toUpperCase().startsWith('PJL-');
+    const memberCodeSuffix = isPjlMemberCode ? trimmedMember.replace(/^PJL-/i, '').trim() : null;
 
     return prisma.$transaction(async (tx) => {
-      // 1. Find Member by username, email, phone, or ID
+      // 1. Find Member by memberCode (PJL-), username, email, phone, or ID
+      const memberOrConditions: any[] = [
+        { username: { equals: cleanUsername, mode: 'insensitive' } },
+        { email: { equals: trimmedMember, mode: 'insensitive' } },
+        { id: trimmedMember },
+      ];
+
+      if (memberCodeSuffix) {
+        memberOrConditions.push({ id: { endsWith: memberCodeSuffix, mode: 'insensitive' } });
+      } else if (trimmedMember.length >= 5 && trimmedMember.length <= 10 && /^[a-zA-Z0-9]+$/.test(trimmedMember)) {
+        memberOrConditions.push({ id: { endsWith: trimmedMember, mode: 'insensitive' } });
+      }
+
+      if (phoneDigits.length >= 8) {
+        memberOrConditions.push({ phoneNumber: { contains: phoneDigits } });
+      }
+
       const member = await tx.user.findFirst({
         where: {
-          OR: [
-            { username: { equals: cleanMember, mode: 'insensitive' } },
-            { email: { equals: trimmedMember, mode: 'insensitive' } },
-            ...(phoneDigits.length >= 8 ? [{ phoneNumber: { contains: phoneDigits } }] : []),
-            { id: trimmedMember },
-          ],
+          OR: memberOrConditions,
           deletedAt: null,
         },
       });
@@ -540,7 +568,24 @@ export class LoansService {
       }
 
       // 2. Find Book & BookCopy by inventoryCode (PJ-xxxx), ID, or title
-      const trimmedBook = bookCopyIdentifier.trim();
+      let rawBook = bookCopyIdentifier.trim();
+      if (rawBook.startsWith('http://') || rawBook.startsWith('https://')) {
+        try {
+          const url = new URL(rawBook);
+          const searchCopy = url.searchParams.get('copy');
+          if (searchCopy) {
+            rawBook = searchCopy;
+          } else {
+            const parts = url.pathname.split('/').filter(Boolean);
+            if (parts.length >= 2 && parts[0] === 'buku') {
+              rawBook = parts[1];
+            }
+          }
+        } catch {
+          // keep as is
+        }
+      }
+      const trimmedBook = rawBook.trim();
       const copy = await tx.bookCopy.findFirst({
         where: {
           inventoryCode: { equals: trimmedBook, mode: 'insensitive' },
