@@ -105,3 +105,36 @@
   line-height: 0.98;
   letter-spacing: -0.03em;
 }
+
+/* ── Editorial Editor — Inline Image Styles ─────────────────────────────── */
+.editorial-editor-content .editor-inline-image {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 1.5rem auto;
+  border: 1px solid hsl(var(--border));
+}
+
+.editorial-editor-content .editor-image-figure {
+  margin: 1.5rem 0;
+  text-align: center;
+}
+
+.editorial-editor-content .editor-image-figure figcaption {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: hsl(var(--muted-foreground));
+  margin-top: 0.5rem;
+}
+
+/* ── Focus Mode — hide dashboard sidebar ─────────────────────────────────── */
+body.editor-focus-mode aside,
+body.editor-focus-mode nav {
+  display: none !important;
+}
+
+/* ── No scrollbar (tabs, toolbar) ─────────────────────────────────────────── */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }

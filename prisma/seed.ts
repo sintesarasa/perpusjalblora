@@ -58,7 +58,35 @@ async function main() {
       },
     });
   }
-  console.log(`✅ ${categories.length} Categories seeded.`);
+  console.log(`✅ ${categories.length} General Categories seeded.`);
+
+  // 2b. Article-Specific Categories (type = ARTICLE)
+  const articleCategories = [
+    { name: 'Opini & Kolom', slug: 'opini', description: 'Kolom opini, pendapat, dan gagasan personal warga.' },
+    { name: 'Esai & Refleksi', slug: 'esai', description: 'Esai panjang, refleksi pengalaman, dan pemikiran mendalam.' },
+    { name: 'Resensi & Ulasan Buku', slug: 'resensi', description: 'Ulasan buku, film, dan karya budaya lainnya.' },
+    { name: 'Laporan & Warta', slug: 'laporan', description: 'Laporan jurnalistik, warta kegiatan, dan catatan peristiwa.' },
+    { name: 'Cerita Pendek', slug: 'cerpen', description: 'Fiksi pendek, prosa, dan cerita sastra.' },
+    { name: 'Puisi & Sajak', slug: 'puisi', description: 'Puisi, sajak, dan karya sastra rima.' },
+    { name: 'Humaniora', slug: 'humaniora', description: 'Filsafat, sejarah ide, dan kajian kemanusiaan.' },
+    { name: 'Teknologi & Digital', slug: 'teknologi', description: 'Teknologi, literasi digital, dan inovasi.' },
+  ];
+  for (let i = 0; i < articleCategories.length; i++) {
+    const cat = articleCategories[i];
+    await prisma.category.upsert({
+      where: { slug: cat.slug },
+      update: {},
+      create: {
+        name: cat.name,
+        slug: cat.slug,
+        description: cat.description,
+        type: CategoryType.ARTICLE,
+        order: 100 + i + 1,
+        isActive: true,
+      },
+    });
+  }
+  console.log(`✅ ${articleCategories.length} Article-Specific Categories seeded.`);
 
   // 3. 12 Badges (PRD §17.1)
   const badges = [

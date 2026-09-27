@@ -160,7 +160,7 @@ export default function DashboardOverviewPage() {
           </Link>
 
           <Link
-            href="/tulis"
+            href="/dashboard/tulis"
             className="p-4 border border-border-hairline bg-surface hover:border-foreground transition-colors flex flex-col justify-between group"
           >
             <Feather className="w-5 h-5 text-muted group-hover:text-foreground mb-3" />
@@ -350,7 +350,7 @@ export default function DashboardOverviewPage() {
                   Belum ada naskah tulisan yang kamu buat.
                 </p>
                 <Link
-                  href="/tulis"
+                  href="/dashboard/tulis"
                   className="px-3 py-1.5 border border-foreground bg-foreground text-background font-mono text-xs font-bold uppercase inline-flex items-center gap-1"
                 >
                   <Plus className="w-3.5 h-3.5" /> Mulai Menulis
