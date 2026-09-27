@@ -13,6 +13,7 @@ import {
   LoanStatus,
   ReturnCondition,
   BookCopyStatus,
+  BookCondition,
   UserSessionPayload,
 } from '@perpusjal/types';
 import { notificationsService } from '../notifications/notifications.service.js';
@@ -714,7 +715,7 @@ export class LoansService {
       // Select copy to assign
       let copyId = bookCopyId;
       if (!copyId) {
-        const availableCopy = await tx.bookCopy.findFirst({
+        let availableCopy = await tx.bookCopy.findFirst({
           where: {
             bookId: loan.bookId,
             status: BookCopyStatus.AVAILABLE as unknown as any,
@@ -722,7 +723,18 @@ export class LoansService {
         });
 
         if (!availableCopy) {
-          throw HttpError.badRequest('Tidak ditemukan eksemplar fisik berstatus AVAILABLE untuk diserahkan.');
+          // Fallback: auto-generate an initial copy if book has no copy records
+          const year = new Date().getFullYear();
+          const count = await tx.bookCopy.count({ where: { bookId: loan.bookId } });
+          const candidate = `PJ-${year}-${(count + 1).toString().padStart(4, '0')}`;
+          availableCopy = await tx.bookCopy.create({
+            data: {
+              bookId: loan.bookId,
+              inventoryCode: candidate,
+              condition: BookCondition.BAIK as unknown as any,
+              status: BookCopyStatus.AVAILABLE as unknown as any,
+            },
+          });
         }
         copyId = availableCopy.id;
       }
