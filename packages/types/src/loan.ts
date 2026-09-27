@@ -37,6 +37,15 @@ export const loanReturnSchema = z.object({
 
 export type LoanReturnInput = z.infer<typeof loanReturnSchema>;
 
+export const walkInLoanSchema = z.object({
+  memberIdentifier: z.string().min(1, 'Identitas member wajib diisi (username, email, nomor WA, atau kode anggota).'),
+  bookCopyIdentifier: z.string().min(1, 'Kode eksemplar buku wajib diisi (misal: PJ-2026-0001).'),
+  pickupPoint: z.string().max(60).optional().default('Meja Lapak Fisik'),
+  note: z.string().max(300).optional().nullable(),
+});
+
+export type WalkInLoanInput = z.infer<typeof walkInLoanSchema>;
+
 export const loanQuerySchema = z.object({
   status: z.nativeEnum(LoanStatus).optional(),
   q: z.string().optional(),
