@@ -246,7 +246,7 @@ export function EditorialEditor({
   onAutosave,
   placeholder = 'Mulai menuangkan gagasan, esai, atau catatan kritis di sini...',
   className,
-  stickyTopOffset = 'relative sm:sticky sm:top-[7rem]',
+  stickyTopOffset = 'relative sm:sticky sm:top-[100px]',
 }: EditorialEditorProps) {
   const editorRef = React.useRef<HTMLDivElement>(null);
   const [wordCount, setWordCount] = React.useState(0);

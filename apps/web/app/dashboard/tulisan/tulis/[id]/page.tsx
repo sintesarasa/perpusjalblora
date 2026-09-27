@@ -193,13 +193,13 @@ export default function DashboardEditArticlePage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground pb-20">
-      {/* ── 1. Top Action Bar (Sticky beneath Dashboard Navbar at top-14) ── */}
-      <div className="sticky top-14 z-30 h-14 bg-background/95 backdrop-blur-md border-b border-border flex items-center justify-between px-3 sm:px-6 transition-all">
+      {/* ── 1. Top Action Bar (Sleek Utility Bar, h-11 = 44px, sticky beneath Dashboard Navbar at top-14) ── */}
+      <div className="sticky top-14 z-30 h-11 bg-background/95 backdrop-blur-md border-b border-border flex items-center justify-between px-3 sm:px-6 transition-all">
         {/* Left: Back button & status pill */}
         <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           <Link
             href="/dashboard/tulisan"
-            className="inline-flex items-center gap-1.5 font-mono text-xs text-muted hover:text-foreground transition-colors py-1.5 pr-2.5 sm:pr-3 border-r border-border shrink-0 min-h-[38px]"
+            className="inline-flex items-center gap-1.5 font-mono text-[11px] text-muted hover:text-foreground transition-colors py-1 pr-2.5 sm:pr-3 border-r border-border shrink-0"
             title="Kembali ke Ruang Tulisan"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
@@ -222,7 +222,7 @@ export default function DashboardEditArticlePage() {
                 <span className="sm:hidden">Tersimpan</span>
               </span>
             ) : (
-              <span className="text-muted border border-border px-1.5 py-0.5 rounded-xs">
+              <span className="text-muted border border-border-hairline px-1.5 py-0.5 rounded-xs">
                 [ EDITING ]
               </span>
             )}
@@ -242,7 +242,7 @@ export default function DashboardEditArticlePage() {
               href={`/artikel/${article.slug}?preview=${article.previewToken}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="min-h-[38px] px-2.5 sm:px-3 border border-border text-muted hover:text-foreground hover:border-foreground font-mono text-xs uppercase tracking-wider inline-flex items-center gap-1.5 transition-colors"
+              className="h-8 px-2.5 sm:px-3 border border-border text-muted hover:text-foreground hover:border-foreground font-mono text-[10px] sm:text-[11px] uppercase tracking-wider inline-flex items-center gap-1.5 transition-colors"
               title="Buka pratinjau publik"
             >
               <Eye className="w-3.5 h-3.5" />
@@ -256,7 +256,7 @@ export default function DashboardEditArticlePage() {
             size="sm"
             onClick={() => handleUpdate(false)}
             isLoading={isSubmitting}
-            className="min-h-[38px] px-3 font-mono text-xs"
+            className="h-8 px-3 font-mono text-[10px] sm:text-[11px]"
           >
             <Save className="w-3.5 h-3.5 sm:mr-1.5" />
             <span className="hidden sm:inline">Simpan</span>
@@ -268,7 +268,7 @@ export default function DashboardEditArticlePage() {
             size="sm"
             onClick={() => handleUpdate(true)}
             isLoading={isSubmitting}
-            className="min-h-[38px] px-3.5 font-mono text-xs font-semibold"
+            className="h-8 px-3.5 font-mono text-[10px] sm:text-[11px] font-semibold"
           >
             <Send className="w-3.5 h-3.5 sm:mr-1.5" />
             <span>Ajukan</span>
@@ -278,7 +278,7 @@ export default function DashboardEditArticlePage() {
       </div>
 
       {/* ── 2. Main Writing Canvas Area ── */}
-      <div className="max-w-4xl mx-auto px-4 sm:px-8 pt-8 sm:pt-12 space-y-6 sm:space-y-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-8 pt-6 sm:pt-8 space-y-6 sm:space-y-8">
         {/* Error Alert */}
         {errorMessage && (
           <div className="p-4 border-2 border-foreground bg-surface flex items-start gap-3 shadow-xs">

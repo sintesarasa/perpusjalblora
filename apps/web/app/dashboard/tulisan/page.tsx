@@ -160,11 +160,12 @@ export default function MyArticlesDashboardPage() {
           </p>
         </div>
 
-        <Link href="/dashboard/tulisan/tulis">
-          <Button variant="solid" size="md" className="w-full sm:w-auto shrink-0">
-            <Plus className="w-4 h-4 mr-2" />
-            Tulis Naskah Baru
-          </Button>
+        <Link
+          href="/dashboard/tulisan/tulis"
+          className="inline-flex items-center justify-center font-mono uppercase tracking-widest text-[11px] font-semibold bg-foreground text-background border border-foreground hover:bg-background hover:text-foreground h-10 px-5 transition-colors w-full sm:w-auto shrink-0 select-none"
+        >
+          <Plus className="w-4 h-4 mr-2" />
+          Tulis Naskah Baru
         </Link>
       </div>
 
@@ -262,11 +263,12 @@ export default function MyArticlesDashboardPage() {
                 <div className="flex flex-wrap items-center gap-2 border-t md:border-t-0 pt-3 md:pt-0 font-mono text-xs shrink-0">
                   {/* Edit: DRAFT or REVISION */}
                   {(item.status === ArticleStatus.DRAFT || item.status === ArticleStatus.REVISION) && (
-                    <Link href={`/dashboard/tulisan/tulis/${item.id}`}>
-                      <Button variant="outline" size="sm">
-                        <Edit3 className="w-3.5 h-3.5 mr-1.5" />
-                        Sunting
-                      </Button>
+                    <Link
+                      href={`/dashboard/tulisan/tulis/${item.id}`}
+                      className="inline-flex items-center justify-center font-mono uppercase tracking-widest text-[10px] font-semibold bg-transparent text-foreground border border-foreground hover:bg-foreground hover:text-background h-8 px-3.5 transition-colors select-none"
+                    >
+                      <Edit3 className="w-3.5 h-3.5 mr-1.5" />
+                      Sunting
                     </Link>
                   )}
 
@@ -285,11 +287,13 @@ export default function MyArticlesDashboardPage() {
 
                   {/* View published article */}
                   {item.status === ArticleStatus.PUBLISHED && (
-                    <Link href={`/artikel/${item.slug}`} target="_blank">
-                      <Button variant="outline" size="sm">
-                        <ExternalLink className="w-3.5 h-3.5 mr-1.5" />
-                        Lihat Terbit
-                      </Button>
+                    <Link
+                      href={`/artikel/${item.slug}`}
+                      target="_blank"
+                      className="inline-flex items-center justify-center font-mono uppercase tracking-widest text-[10px] font-semibold bg-transparent text-foreground border border-foreground hover:bg-foreground hover:text-background h-8 px-3.5 transition-colors select-none"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5 mr-1.5" />
+                      Lihat Terbit
                     </Link>
                   )}
 
