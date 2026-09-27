@@ -1,4 +1,3 @@
-// Redirect old /tulis/[id] route to /dashboard/tulis/[id]
 import { redirect } from 'next/navigation';
 
 interface Props {
@@ -6,5 +5,5 @@ interface Props {
 }
 
 export default function TulisIdRedirectPage({ params }: Props) {
-  redirect(`/dashboard/tulis/${params.id}`);
+  redirect(`/dashboard/tulisan/tulis/${params.id}`);
 }

@@ -20,6 +20,7 @@ interface EditorialEditorProps {
   onAutosave?: () => void;
   placeholder?: string;
   className?: string;
+  stickyTopOffset?: string;
 }
 
 // ─── INLINE IMAGE UPLOAD MODAL ────────────────────────────────────────────────
@@ -245,6 +246,7 @@ export function EditorialEditor({
   onAutosave,
   placeholder = 'Mulai menuangkan gagasan, esai, atau catatan kritis di sini...',
   className,
+  stickyTopOffset = 'relative sm:sticky sm:top-[7rem]',
 }: EditorialEditorProps) {
   const editorRef = React.useRef<HTMLDivElement>(null);
   const [wordCount, setWordCount] = React.useState(0);
@@ -521,7 +523,7 @@ export function EditorialEditor({
         <div
           className={cn(
             'z-20 bg-background/95 backdrop-blur-sm border-b border-border select-none',
-            isFocusMode ? 'sticky top-0' : 'sticky top-14 sm:top-16'
+            isFocusMode ? 'sticky top-0' : stickyTopOffset
           )}
         >
           {/* Main toolbar row — horizontally scrollable on mobile */}

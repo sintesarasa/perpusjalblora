@@ -160,7 +160,7 @@ export default function MyArticlesDashboardPage() {
           </p>
         </div>
 
-        <Link href="/dashboard/tulis">
+        <Link href="/dashboard/tulisan/tulis">
           <Button variant="solid" size="md" className="w-full sm:w-auto shrink-0">
             <Plus className="w-4 h-4 mr-2" />
             Tulis Naskah Baru
@@ -262,7 +262,7 @@ export default function MyArticlesDashboardPage() {
                 <div className="flex flex-wrap items-center gap-2 border-t md:border-t-0 pt-3 md:pt-0 font-mono text-xs shrink-0">
                   {/* Edit: DRAFT or REVISION */}
                   {(item.status === ArticleStatus.DRAFT || item.status === ArticleStatus.REVISION) && (
-                    <Link href={`/dashboard/tulis/${item.id}`}>
+                    <Link href={`/dashboard/tulisan/tulis/${item.id}`}>
                       <Button variant="outline" size="sm">
                         <Edit3 className="w-3.5 h-3.5 mr-1.5" />
                         Sunting
@@ -343,7 +343,7 @@ export default function MyArticlesDashboardPage() {
           title="Belum Ada Naskah Tulisan"
           description="Kamu belum memiliki naskah tulisan dalam kategori ini. Mulai bagikan gagasan dan catatan literasimu."
           actionLabel="Tulis Naskah Pertama"
-          onAction={() => router.push('/dashboard/tulis')}
+          onAction={() => router.push('/dashboard/tulisan/tulis')}
         />
       )}
 
