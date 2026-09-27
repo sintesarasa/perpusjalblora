@@ -30,63 +30,106 @@ async function main() {
   });
   console.log(`✅ Admin user seeded: ${admin.email} (${admin.username})`);
 
-  // 2. 9 Categories
-  const categories = [
-    { name: 'Sastra', slug: 'sastra', description: 'Karya sastra, puisi, cerpen, novel, dan kritik sastra.' },
-    { name: 'Pendidikan', slug: 'pendidikan', description: 'Dunia pendidikan, pedagogi, dan pengembangan ilmu.' },
-    { name: 'Sosial', slug: 'sosial', description: 'Isu sosial kemasyarakatan, dinamika warga, dan opini publik.' },
-    { name: 'Budaya', slug: 'budaya', description: 'Kekayaan budaya lokal Blora, tradisi Nusantara, dan seni.' },
-    { name: 'Lingkungan', slug: 'lingkungan', description: 'Ekologi, kelestarian alam hutan jati, dan bumi.' },
-    { name: 'Sejarah', slug: 'sejarah', description: 'Sejarah lokal Blora, tokoh Samin, Pramoedya, dan sejarah umum.' },
-    { name: 'Anak', slug: 'anak', description: 'Bacaan ramah anak, dongeng, dan literasi usia dini.' },
-    { name: 'Fiksi', slug: 'fiksi', description: 'Koleksi cerita imajinatif, fiksi ilmiah, roman, dan misteri.' },
-    { name: 'Non-Fiksi', slug: 'non-fiksi', description: 'Biografi, esai pemikiran, sains populer, dan sejarah.' },
+  // 2. Book Categories (type = BOOK)
+  const bookCategories = [
+    { name: 'Sastra', slug: 'sastra', description: 'Karya sastra, puisi, cerpen, novel, dan kritik sastra.', type: CategoryType.BOOK, order: 10 },
+    { name: 'Pendidikan', slug: 'pendidikan', description: 'Dunia pendidikan, pedagogi, dan pengembangan ilmu.', type: CategoryType.BOOK, order: 11 },
+    { name: 'Sosial', slug: 'sosial', description: 'Isu sosial kemasyarakatan, dinamika warga, dan opini publik.', type: CategoryType.BOOK, order: 12 },
+    { name: 'Budaya', slug: 'budaya', description: 'Kekayaan budaya lokal Blora, tradisi Nusantara, dan seni.', type: CategoryType.BOOK, order: 13 },
+    { name: 'Anak', slug: 'anak', description: 'Bacaan ramah anak, dongeng, dan literasi usia dini.', type: CategoryType.BOOK, order: 14 },
+    { name: 'Fiksi', slug: 'fiksi', description: 'Koleksi cerita imajinatif, fiksi ilmiah, roman, dan misteri.', type: CategoryType.BOOK, order: 15 },
+    { name: 'Non-Fiksi', slug: 'non-fiksi', description: 'Biografi, esai pemikiran, sains populer, dan sejarah.', type: CategoryType.BOOK, order: 16 },
   ];
 
-  for (let i = 0; i < categories.length; i++) {
-    const cat = categories[i];
+  for (const cat of bookCategories) {
     await prisma.category.upsert({
       where: { slug: cat.slug },
-      update: {},
+      update: { type: cat.type, order: cat.order },
       create: {
         name: cat.name,
         slug: cat.slug,
         description: cat.description,
-        type: CategoryType.BOTH,
-        order: i + 1,
+        type: cat.type,
+        order: cat.order,
         isActive: true,
       },
     });
   }
-  console.log(`✅ ${categories.length} General Categories seeded.`);
+  console.log(`✅ ${bookCategories.length} Book Categories seeded.`);
 
-  // 2b. Article-Specific Categories (type = ARTICLE)
+  // 2b. 7 Official Article Categories (Rubrik Tulisan Warga)
   const articleCategories = [
-    { name: 'Opini & Kolom', slug: 'opini', description: 'Kolom opini, pendapat, dan gagasan personal warga.' },
-    { name: 'Esai & Refleksi', slug: 'esai', description: 'Esai panjang, refleksi pengalaman, dan pemikiran mendalam.' },
-    { name: 'Resensi & Ulasan Buku', slug: 'resensi', description: 'Ulasan buku, film, dan karya budaya lainnya.' },
-    { name: 'Laporan & Warta', slug: 'laporan', description: 'Laporan jurnalistik, warta kegiatan, dan catatan peristiwa.' },
-    { name: 'Cerita Pendek', slug: 'cerpen', description: 'Fiksi pendek, prosa, dan cerita sastra.' },
-    { name: 'Puisi & Sajak', slug: 'puisi', description: 'Puisi, sajak, dan karya sastra rima.' },
-    { name: 'Humaniora', slug: 'humaniora', description: 'Filsafat, sejarah ide, dan kajian kemanusiaan.' },
-    { name: 'Teknologi & Digital', slug: 'teknologi', description: 'Teknologi, literasi digital, dan inovasi.' },
+    {
+      name: 'Suara Lapak',
+      slug: 'suara-lapak',
+      description: 'Catatan dari jalanan & perjumpaan buku di ruang terbuka.',
+      type: CategoryType.ARTICLE,
+      order: 1,
+    },
+    {
+      name: 'Pojok Blora',
+      slug: 'pojok-blora',
+      description: 'Sketsa sosial, tradisi, & denyut kehidupan lokal Blora.',
+      type: CategoryType.ARTICLE,
+      order: 2,
+    },
+    {
+      name: 'Opini Warga',
+      slug: 'opini-warga',
+      description: 'Pikiran kritis, suara aspirasi, & gagasan perbaikan daerah.',
+      type: CategoryType.ARTICLE,
+      order: 3,
+    },
+    {
+      name: 'Lingkungan',
+      slug: 'lingkungan',
+      description: 'Hutan jati, ekologi bumi, krisis air, & kelestarian alam.',
+      type: CategoryType.BOTH,
+      order: 4,
+    },
+    {
+      name: 'Sejarah',
+      slug: 'sejarah',
+      description: 'Memori masa lalu, arsip lisan, falsafah Samin, & jejak Pramoedya.',
+      type: CategoryType.BOTH,
+      order: 5,
+    },
+    {
+      name: 'Puisi',
+      slug: 'puisi',
+      description: 'Bait sastra, sajak liris, karya puisi, & ekspresi rasa.',
+      type: CategoryType.ARTICLE,
+      order: 6,
+    },
+    {
+      name: 'Refleksi Diri',
+      slug: 'refleksi-diri',
+      description: 'Kontemplasi batin, renungan personal, & pencarian makna hidup.',
+      type: CategoryType.ARTICLE,
+      order: 7,
+    },
   ];
-  for (let i = 0; i < articleCategories.length; i++) {
-    const cat = articleCategories[i];
+
+  for (const cat of articleCategories) {
     await prisma.category.upsert({
       where: { slug: cat.slug },
-      update: {},
+      update: {
+        name: cat.name,
+        description: cat.description,
+        type: cat.type,
+        order: cat.order,
+      },
       create: {
         name: cat.name,
         slug: cat.slug,
         description: cat.description,
-        type: CategoryType.ARTICLE,
-        order: 100 + i + 1,
+        type: cat.type,
+        order: cat.order,
         isActive: true,
       },
     });
   }
-  console.log(`✅ ${articleCategories.length} Article-Specific Categories seeded.`);
+  console.log(`✅ ${articleCategories.length} Official Article Categories seeded.`);
 
   // 3. 12 Badges (PRD §17.1)
   const badges = [

@@ -8,6 +8,10 @@ import { EditorialEditor } from '@/components/editor/editorial-editor';
 import { ArticleCoverUploader } from '@/components/articles/article-cover-uploader';
 import { TagPicker } from '@/components/articles/tag-picker';
 import { SeoAnalysisPanel } from '@/components/articles/seo-analysis-panel';
+import {
+  CategoryPickerModal,
+  OFFICIAL_CATEGORY_GUIDES,
+} from '@/components/articles/category-picker-modal';
 import { apiClient } from '@/lib/api';
 import { ArticleCategory, ArticleTag } from '@perpusjal/types';
 import {
@@ -26,13 +30,23 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
+const FALLBACK_ARTICLE_CATEGORIES: ArticleCategory[] = [
+  { id: 'suara-lapak', name: 'Suara Lapak', slug: 'suara-lapak' },
+  { id: 'pojok-blora', name: 'Pojok Blora', slug: 'pojok-blora' },
+  { id: 'opini-warga', name: 'Opini Warga', slug: 'opini-warga' },
+  { id: 'lingkungan', name: 'Lingkungan', slug: 'lingkungan' },
+  { id: 'sejarah', name: 'Sejarah', slug: 'sejarah' },
+  { id: 'puisi', name: 'Puisi', slug: 'puisi' },
+  { id: 'refleksi-diri', name: 'Refleksi Diri', slug: 'refleksi-diri' },
+];
+
 export default function DashboardWriteArticlePage() {
   const router = useRouter();
 
   // Core state
   const [title, setTitle] = React.useState('');
   const [subtitle, setSubtitle] = React.useState('');
-  const [categoryId, setCategoryId] = React.useState('');
+  const [categoryId, setCategoryId] = React.useState('suara-lapak');
   const [coverImage, setCoverImage] = React.useState('');
   const [coverCredit, setCoverCredit] = React.useState('');
   const [tagIds, setTagIds] = React.useState<string[]>([]);
@@ -41,7 +55,7 @@ export default function DashboardWriteArticlePage() {
   const [agreeOriginality, setAgreeOriginality] = React.useState(false);
 
   // Metadata
-  const [categories, setCategories] = React.useState<ArticleCategory[]>([]);
+  const [categories, setCategories] = React.useState<ArticleCategory[]>(FALLBACK_ARTICLE_CATEGORIES);
   const [tags, setTags] = React.useState<ArticleTag[]>([]);
 
   // UI state
@@ -51,6 +65,7 @@ export default function DashboardWriteArticlePage() {
   const [autosaveState, setAutosaveState] = React.useState<'idle' | 'saving' | 'saved'>('idle');
   const [lastSavedAt, setLastSavedAt] = React.useState<string | null>(null);
   const [metaAccordionOpen, setMetaAccordionOpen] = React.useState(false);
+  const [categoryModalOpen, setCategoryModalOpen] = React.useState(false);
   const [savedDraftId, setSavedDraftId] = React.useState<string | null>(null);
 
   const autosaveTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -188,6 +203,7 @@ export default function DashboardWriteArticlePage() {
   const wordCount = plainText.split(/\s+/).filter(Boolean).length;
   const tagNames = tags.filter((t) => tagIds.includes(t.id)).map((t) => t.name);
   const selectedCategory = categories.find((c) => c.id === categoryId);
+  const selectedCategoryGuide = selectedCategory ? OFFICIAL_CATEGORY_GUIDES[selectedCategory.slug] : null;
 
   return (
     <div className="min-h-screen bg-background text-foreground pb-20">
@@ -298,9 +314,21 @@ export default function DashboardWriteArticlePage() {
           {/* Folio / Section Marker & Headline Character Counter */}
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border-hairline pb-2.5">
             <div className="flex items-center gap-2">
-              <span className="font-mono text-[10px] tracking-widest uppercase font-bold text-foreground bg-surface-muted/60 px-2.5 py-0.5 border border-border-hairline">
-                {selectedCategory?.name || 'PILIH RUBRIK'}
-              </span>
+              <button
+                type="button"
+                onClick={() => setCategoryModalOpen(true)}
+                className="inline-flex items-center gap-1.5 font-mono text-[10px] tracking-widest uppercase font-bold text-foreground bg-surface-muted/60 hover:bg-surface-muted px-2.5 py-1 border border-border hover:border-foreground transition-colors group cursor-pointer"
+                title="Klik untuk panduan lengkap & memilih rubrik"
+              >
+                <span className="w-1.5 h-1.5 bg-foreground rounded-full inline-block group-hover:scale-125 transition-transform" />
+                <span>
+                  {selectedCategory
+                    ? `${selectedCategoryGuide?.number || '•'} // ${selectedCategory.name}`
+                    : 'PILIH RUBRIK'}
+                </span>
+                <ChevronDown className="w-3 h-3 text-muted group-hover:text-foreground ml-0.5" />
+              </button>
+
               <span className="text-muted/40 font-mono text-[10px] hidden xs:inline">•</span>
               <span className="font-mono text-[10px] tracking-wider uppercase text-muted hidden xs:inline">
                 Ruang Penulis Warga
@@ -410,23 +438,48 @@ export default function DashboardWriteArticlePage() {
               {/* Category & Tags in a responsive 2-col grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div className="space-y-2">
-                  <label className="font-mono text-[10px] uppercase tracking-wider text-muted font-bold block">
-                    Kategori Tulisan
-                  </label>
-                  <select
-                    value={categoryId}
-                    onChange={(e) => setCategoryId(e.target.value)}
-                    className="w-full h-11 px-3 bg-background border border-border text-sm font-sans focus:outline-none focus:border-foreground cursor-pointer rounded-none"
+                  <div className="flex items-center justify-between">
+                    <label className="font-mono text-[10px] uppercase tracking-wider text-muted font-bold block">
+                      Rubrik Tulisan
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setCategoryModalOpen(true)}
+                      className="font-mono text-[10px] uppercase text-muted hover:text-foreground underline cursor-pointer"
+                    >
+                      Buka Panduan ↗
+                    </button>
+                  </div>
+
+                  <div
+                    onClick={() => setCategoryModalOpen(true)}
+                    className="p-3 border border-border bg-background hover:border-foreground transition-colors cursor-pointer group flex items-start justify-between gap-3 select-none"
+                    title="Klik untuk membuka panduan & memilih rubrik"
                   >
-                    {categories.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.name}
-                      </option>
-                    ))}
-                  </select>
-                  <p className="font-sans text-[11px] text-muted leading-tight">
-                    Pilih rubrik yang paling sesuai agar pembaca mudah menemukan karya Anda.
-                  </p>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-[10px] font-bold px-1.5 py-0.5 border bg-foreground text-background border-foreground">
+                          {selectedCategoryGuide?.number || '•'}
+                        </span>
+                        <span className="font-serif text-sm font-bold text-foreground">
+                          {selectedCategory?.name || 'Belum Dipilih'}
+                        </span>
+                      </div>
+                      <p className="font-serif italic text-xs text-muted mt-1 truncate">
+                        &ldquo;{selectedCategoryGuide?.tagline || selectedCategory?.description || 'Pilih rubrik yang sesuai'}&rdquo;
+                      </p>
+                    </div>
+                    <span className="h-7 px-2.5 bg-surface-muted border border-border font-mono text-[10px] uppercase tracking-wider text-foreground inline-flex items-center shrink-0 group-hover:bg-foreground group-hover:text-background transition-colors">
+                      Ganti
+                    </span>
+                  </div>
+
+                  {selectedCategoryGuide?.avoidFor && (
+                    <p className="font-sans text-[11px] text-amber-700 dark:text-amber-300 leading-tight flex items-start gap-1">
+                      <span>⚠</span>
+                      <span><strong>Catatan Redaksi:</strong> Hindari {selectedCategoryGuide.avoidFor.toLowerCase()}</span>
+                    </p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
@@ -535,6 +588,17 @@ export default function DashboardWriteArticlePage() {
           </div>
         </div>
       </div>
+
+      {/* ── Category Picker Guided Modal ── */}
+      <CategoryPickerModal
+        isOpen={categoryModalOpen}
+        onClose={() => setCategoryModalOpen(false)}
+        categories={categories}
+        selectedId={categoryId}
+        onSelect={(cat) => setCategoryId(cat.id)}
+        currentTitle={title}
+        currentWordCount={wordCount}
+      />
     </div>
   );
 }
