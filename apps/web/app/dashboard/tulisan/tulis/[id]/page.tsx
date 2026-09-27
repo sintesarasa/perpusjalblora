@@ -54,6 +54,7 @@ export default function DashboardEditArticlePage() {
   const [metaAccordionOpen, setMetaAccordionOpen] = React.useState(false);
 
   const isSavingRef = React.useRef(false);
+  const titleTextareaRef = React.useRef<HTMLTextAreaElement>(null);
 
   React.useEffect(() => {
     async function loadData() {
@@ -278,7 +279,7 @@ export default function DashboardEditArticlePage() {
       </div>
 
       {/* ── 2. Main Writing Canvas Area ── */}
-      <div className="max-w-4xl mx-auto px-4 sm:px-8 pt-6 sm:pt-8 space-y-6 sm:space-y-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-8 pt-10 sm:pt-16 lg:pt-20 space-y-8 sm:space-y-10">
         {/* Error Alert */}
         {errorMessage && (
           <div className="p-4 border-2 border-foreground bg-surface flex items-start gap-3 shadow-xs">
@@ -308,33 +309,70 @@ export default function DashboardEditArticlePage() {
           </div>
         )}
 
-        {/* ── Section A: Title & Subtitle ── */}
-        <div className="space-y-4 pt-2">
-          <div className="space-y-1.5">
-            <label className="font-mono text-[10px] uppercase tracking-widest text-muted block">
-              // JUDUL NASKAH
-            </label>
+        {/* ── Section A: Editorial Headline & Lede Area ── */}
+        <div className="space-y-6">
+          {/* Folio / Section Marker & Headline Character Counter */}
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border-hairline pb-2.5">
+            <div className="flex items-center gap-2">
+              <span className="font-mono text-[10px] tracking-widest uppercase font-bold text-foreground bg-surface-muted/60 px-2.5 py-0.5 border border-border-hairline">
+                {selectedCategory?.name || 'PILIH RUBRIK'}
+              </span>
+              <span className="text-muted/40 font-mono text-[10px] hidden xs:inline">•</span>
+              <span className="font-mono text-[10px] tracking-wider uppercase text-muted hidden xs:inline">
+                Menyunting Naskah
+              </span>
+            </div>
+
+            {/* Character counter & quality hint */}
+            <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-wider text-muted">
+              <span>{title.trim().length}/70 Kar</span>
+              {title.trim().length >= 40 && title.trim().length <= 70 && (
+                <span className="text-emerald-600 dark:text-emerald-400 font-semibold">[Panjang Ideal]</span>
+              )}
+              {title.trim().length > 70 && (
+                <span className="text-amber-600 dark:text-amber-400 font-semibold">[Cukup Panjang]</span>
+              )}
+            </div>
+          </div>
+
+          {/* Main Title Textarea (Auto-resizing & Distinct Headline Typography) */}
+          <div className="space-y-2">
             <textarea
-              rows={2}
-              placeholder="Tulis Judul Naskah..."
+              ref={titleTextareaRef}
+              rows={1}
+              placeholder="Tuliskan Gagasan atau Judul Utama Naskah Anda..."
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="w-full bg-transparent font-serif font-normal leading-[1.25] tracking-tight text-foreground placeholder:text-muted/30 focus:outline-none resize-none border-b-2 border-border focus:border-foreground transition-colors pb-3"
-              style={{ fontSize: 'clamp(1.5rem, 4.5vw, 2.75rem)' }}
+              onChange={(e) => {
+                setTitle(e.target.value);
+                e.target.style.height = 'auto';
+                e.target.style.height = `${e.target.scrollHeight}px`;
+              }}
+              className="w-full bg-transparent font-serif font-normal leading-[1.2] tracking-[-0.02em] text-foreground placeholder:text-muted/25 focus:outline-none resize-none border-b-2 border-border focus:border-foreground transition-all duration-150 pb-3 overflow-hidden"
+              style={{ fontSize: 'clamp(1.75rem, 5vw, 3.25rem)' }}
             />
           </div>
 
+          {/* Subtitle / Deck (Journalistic Lede) */}
           <div className="space-y-1.5">
             <label className="font-mono text-[10px] uppercase tracking-widest text-muted block">
-              // SUBJUDUL ATAU PENGANTAR GAGASAN (OPSIONAL)
+              // SUBJUDUL ATAU INTISARI PENGANTAR (DECK)
             </label>
             <input
               type="text"
-              placeholder="Kalimat pengantar gagasan naskah..."
+              placeholder="Satu atau dua kalimat pengantar untuk menarik minat pembaca..."
               value={subtitle}
               onChange={(e) => setSubtitle(e.target.value)}
-              className="w-full bg-transparent font-serif italic text-base sm:text-lg text-foreground placeholder:text-muted/30 focus:outline-none border-b border-border focus:border-foreground transition-colors pb-2"
+              className="w-full bg-transparent font-serif italic text-base sm:text-xl text-foreground/80 placeholder:text-muted/30 focus:outline-none border-b border-border-hairline focus:border-foreground transition-colors pb-2"
             />
+          </div>
+
+          {/* Byline & Estimate Strip */}
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[10px] sm:text-[11px] uppercase tracking-wider text-muted pt-1">
+            <span className="text-foreground">Oleh Penulis Warga</span>
+            <span>•</span>
+            <span>{wordCount} Kata</span>
+            <span>•</span>
+            <span>~{Math.max(1, Math.ceil(wordCount / 200))} Mnt Baca</span>
           </div>
         </div>
 
