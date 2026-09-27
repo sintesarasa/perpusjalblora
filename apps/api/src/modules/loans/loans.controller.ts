@@ -6,11 +6,22 @@ import {
   loanPickupSchema,
   loanReturnSchema,
   loanQuerySchema,
+  walkInLoanSchema,
 } from '@perpusjal/types';
 import { loansService } from './loans.service.js';
 import { circulationSchedulerService } from './circulation-scheduler.service.js';
 
 export class LoansController {
+  async createWalkInLoan(req: Request, res: Response, next: NextFunction) {
+    try {
+      const input = walkInLoanSchema.parse(req.body);
+      const result = await loansService.createWalkInLoan(input, req.user!);
+      res.status(201).json(result);
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async requestLoan(req: Request, res: Response, next: NextFunction) {
     try {
       const input = loanRequestSchema.parse(req.body);

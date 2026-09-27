@@ -12,6 +12,7 @@ export default function RegisterPage() {
     name: '',
     username: '',
     email: '',
+    phoneNumber: '',
     password: '',
     passwordConfirm: '',
     agreeTerms: false,
@@ -224,6 +225,19 @@ export default function RegisterPage() {
           onChange={handleChange}
           error={fieldErrors.email}
           required
+          disabled={isLoading}
+        />
+
+        <Input
+          label="Nomor WhatsApp / HP"
+          name="phoneNumber"
+          type="tel"
+          autoComplete="tel"
+          placeholder="08123456789"
+          value={formData.phoneNumber}
+          onChange={handleChange}
+          error={fieldErrors.phoneNumber}
+          hint="Digunakan relawan untuk koordinasi serah terima lapak & pengingat buku"
           disabled={isLoading}
         />
 

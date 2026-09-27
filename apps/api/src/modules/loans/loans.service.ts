@@ -1,17 +1,20 @@
 import { prisma } from '../../lib/prisma.js';
 import { HttpError } from '../../utils/errors.js';
+import { normalizePhoneNumber } from '../../utils/phone.js';
 import {
   LoanRequestInput,
   LoanApproveInput,
   LoanPickupInput,
   LoanReturnInput,
   LoanQueryInput,
+  WalkInLoanInput,
   LoanItem,
   LoanPickupBoardItem,
   LoanPickupBoardResponse,
   LoanStatus,
   ReturnCondition,
   BookCopyStatus,
+  BookCondition,
   UserSessionPayload,
 } from '@perpusjal/types';
 import { notificationsService } from '../notifications/notifications.service.js';
@@ -118,6 +121,7 @@ function formatLoanItem(l: any, isBorrowerOrAdmin = false): LoanItem {
           name: l.user.name,
           username: l.user.username,
           email: isBorrowerOrAdmin ? l.user.email : undefined,
+          phoneNumber: isBorrowerOrAdmin ? l.user.phoneNumber : undefined,
         }
       : undefined,
     canCancel,
@@ -131,17 +135,28 @@ export class LoansService {
    * Request a new book loan (7-step BR check & soft-hold transaction)
    */
   async requestLoan(input: LoanRequestInput, user: UserSessionPayload) {
-    const { bookId, pickupPoint, pickupDatePlan, note } = input;
+    const { bookId, pickupPoint, pickupDatePlan, note, phoneNumber } = input;
 
     return prisma.$transaction(async (tx) => {
       // 1. Check user status
       const userDb = await tx.user.findUnique({
         where: { id: user.userId },
-        select: { id: true, status: true, deletedAt: true },
+        select: { id: true, status: true, phoneNumber: true, deletedAt: true },
       });
 
       if (!userDb || userDb.deletedAt || userDb.status === 'SUSPENDED' || userDb.status === 'DEACTIVATED') {
         throw HttpError.forbidden('Akun Anda dalam status pembatasan dan tidak dapat meminjam buku.');
+      }
+
+      // Update phone number if provided or missing
+      if (phoneNumber && phoneNumber.trim()) {
+        const normalized = normalizePhoneNumber(phoneNumber.trim());
+        if (normalized) {
+          await tx.user.update({
+            where: { id: user.userId },
+            data: { phoneNumber: normalized },
+          });
+        }
       }
 
       // 2. Check overdue loans (BR-LOAN-06)
@@ -254,6 +269,7 @@ export class LoansService {
               name: true,
               username: true,
               email: true,
+              phoneNumber: true,
             },
           },
         },
@@ -362,20 +378,19 @@ export class LoansService {
   }
 
   /**
-   * Extend loan duration 1x (+7 days) (BR-LOAN-03 & BR-LOAN-04)
+   * Mode Lapak: Extend loan duration (+7 days) oleh pengurus/relawan lapak
    */
   async extendLoan(loanId: string, user: UserSessionPayload) {
     const loan = await prisma.loan.findUnique({
       where: { id: loanId },
-      include: { book: true },
+      include: {
+        book: { select: { id: true, title: true } },
+        user: { select: { id: true, name: true } },
+      },
     });
 
     if (!loan) {
       throw HttpError.notFound('Pinjaman tidak ditemukan.');
-    }
-
-    if (loan.userId !== user.userId) {
-      throw HttpError.forbidden('Hanya peminjam yang dapat memperpanjang durasi pinjaman.');
     }
 
     if (loan.status !== (LoanStatus.BORROWED as unknown as any)) {
@@ -384,11 +399,6 @@ export class LoansService {
 
     if (loan.extensionCount >= 1) {
       throw HttpError.unprocessable('Perpanjangan hanya dapat dilakukan satu kali.', 'EXTENSION_NOT_ALLOWED');
-    }
-
-    // Check overdue
-    if (loan.dueDate && new Date(loan.dueDate) < new Date()) {
-      throw HttpError.badRequest('Pinjaman yang sudah melewati batas tenggat tidak dapat diperpanjang.');
     }
 
     // Check waitlist
@@ -400,7 +410,9 @@ export class LoansService {
     });
 
     if (waitlistCount > 0) {
-      throw HttpError.badRequest('Buku memiliki antrean daftar tunggu pembaca lain dan tidak dapat diperpanjang.');
+      throw HttpError.badRequest(
+        `Buku "${loan.book.title}" memiliki ${waitlistCount} pembaca di antrean daftar tunggu (Waitlist). Perpanjangan tidak diperkenankan demi keadilan sirkulasi.`
+      );
     }
 
     const currentDue = loan.dueDate || new Date();
@@ -432,10 +444,331 @@ export class LoansService {
       },
     });
 
+    // Notify borrower
+    try {
+      const newDueStr = newDue.toLocaleDateString('id-ID', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      });
+      await notificationsService.createNotification(loan.userId, {
+        type: 'LOAN_EXTENDED',
+        title: 'Masa Pinjam Berhasil Diperpanjang',
+        body: `Relawan lapak telah memperpanjang masa pinjam buku "${loan.book.title}" selama 7 hari. Batas pengembalian baru: ${newDueStr}.`,
+        actionUrl: '/dashboard/pinjaman',
+        entityType: 'LOAN',
+        entityId: loan.id,
+      });
+    } catch {
+      // Ignored
+    }
+
+    const newDueFormatted = newDue.toLocaleDateString('id-ID', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    });
+
     return {
       data: formatLoanItem(updated, true),
-      message: 'Peminjaman berhasil diperpanjang 7 hari ke depan.',
+      message: `Peminjaman berhasil diperpanjang 7 hari (s.d. ${newDueFormatted}).`,
     };
+  }
+
+  /**
+   * Mode Lapak: Walk-in Loan (Peminjaman Langsung di Lapak Fisik)
+   * Member datang langsung membawa buku -> langsung status BORROWED (+14 hari)
+   */
+  async createWalkInLoan(input: WalkInLoanInput, volunteer: UserSessionPayload) {
+    const { memberIdentifier, bookCopyIdentifier, pickupPoint, note } = input;
+    let rawMember = memberIdentifier.trim();
+
+    // 1. Strip URL if scanned from member profile QR
+    if (rawMember.startsWith('http://') || rawMember.startsWith('https://')) {
+      try {
+        const url = new URL(rawMember);
+        const parts = url.pathname.split('/').filter(Boolean);
+        if (parts.length >= 2 && parts[0] === 'u') {
+          rawMember = `@${parts[1]}`;
+        }
+      } catch {
+        // keep as is
+      }
+    }
+
+    const trimmedMember = rawMember.trim();
+    const cleanUsername = trimmedMember.startsWith('@') ? trimmedMember.slice(1) : trimmedMember;
+    const phoneDigits = trimmedMember.replace(/\D/g, '');
+    const isPjlMemberCode = trimmedMember.toUpperCase().startsWith('PJL-');
+    const memberCodeSuffix = isPjlMemberCode ? trimmedMember.replace(/^PJL-/i, '').trim() : null;
+
+    return prisma.$transaction(async (tx) => {
+      // 1. Find Member by memberCode (PJL-), username, email, phone, or ID
+      const memberOrConditions: any[] = [
+        { username: { equals: cleanUsername, mode: 'insensitive' } },
+        { email: { equals: trimmedMember, mode: 'insensitive' } },
+        { id: trimmedMember },
+      ];
+
+      if (memberCodeSuffix) {
+        memberOrConditions.push({ id: { endsWith: memberCodeSuffix, mode: 'insensitive' } });
+      } else if (trimmedMember.length >= 5 && trimmedMember.length <= 10 && /^[a-zA-Z0-9]+$/.test(trimmedMember)) {
+        memberOrConditions.push({ id: { endsWith: trimmedMember, mode: 'insensitive' } });
+      }
+
+      if (phoneDigits.length >= 8) {
+        memberOrConditions.push({ phoneNumber: { contains: phoneDigits } });
+      }
+
+      const member = await tx.user.findFirst({
+        where: {
+          OR: memberOrConditions,
+          deletedAt: null,
+        },
+      });
+
+      if (!member) {
+        throw HttpError.notFound(
+          `Member dengan identitas "${trimmedMember}" tidak ditemukan. Pastikan pembaca telah mendaftar akun terlebih dahulu.`
+        );
+      }
+
+      if (member.status === 'SUSPENDED' || member.status === 'DEACTIVATED') {
+        throw HttpError.forbidden(`Akun member ${member.name} sedang dalam status pembatasan.`);
+      }
+
+      // Check overdue loans
+      const overdueCount = await tx.loan.count({
+        where: {
+          userId: member.id,
+          status: LoanStatus.OVERDUE as unknown as any,
+        },
+      });
+
+      if (overdueCount > 0) {
+        throw HttpError.forbidden(
+          `Member ${member.name} memiliki pinjaman yang melewati batas tenggat. Kembalikan buku terlebih dahulu.`
+        );
+      }
+
+      // Check active loan limit (max 2)
+      const activeCount = await tx.loan.count({
+        where: {
+          userId: member.id,
+          status: {
+            in: [LoanStatus.PENDING, LoanStatus.APPROVED, LoanStatus.BORROWED, LoanStatus.OVERDUE] as any[],
+          },
+        },
+      });
+
+      if (activeCount >= 2) {
+        throw HttpError.badRequest(
+          `Member ${member.name} sudah mencapai batas maksimal 2 judul pinjaman aktif.`
+        );
+      }
+
+      // 2. Find Book & BookCopy by inventoryCode (PJ-xxxx), ID, or title
+      let rawBook = bookCopyIdentifier.trim();
+      if (rawBook.startsWith('http://') || rawBook.startsWith('https://')) {
+        try {
+          const url = new URL(rawBook);
+          const searchCopy = url.searchParams.get('copy');
+          if (searchCopy) {
+            rawBook = searchCopy;
+          } else {
+            const parts = url.pathname.split('/').filter(Boolean);
+            if (parts.length >= 2 && parts[0] === 'buku') {
+              rawBook = parts[1];
+            }
+          }
+        } catch {
+          // keep as is
+        }
+      }
+      const trimmedBook = rawBook.trim();
+      const copy = await tx.bookCopy.findFirst({
+        where: {
+          inventoryCode: { equals: trimmedBook, mode: 'insensitive' },
+        },
+        include: { book: true },
+      });
+
+      let bookId: string;
+      let copyId: string;
+      let bookTitle: string;
+
+      if (copy) {
+        if (copy.status !== (BookCopyStatus.AVAILABLE as unknown as any)) {
+          throw HttpError.badRequest(
+            `Eksemplar ${copy.inventoryCode} tidak berstatus AVAILABLE (saat ini ${copy.status}).`
+          );
+        }
+        bookId = copy.bookId;
+        copyId = copy.id;
+        bookTitle = copy.book.title;
+
+        if (!copy.book.isBorrowable) {
+          throw HttpError.badRequest(`Buku "${copy.book.title}" adalah koleksi baca di tempat.`);
+        }
+      } else {
+        // Try finding book directly
+        const book = await tx.book.findFirst({
+          where: {
+            OR: [
+              { id: trimmedBook },
+              { slug: trimmedBook.toLowerCase() },
+              { title: { equals: trimmedBook, mode: 'insensitive' } },
+            ],
+            deletedAt: null,
+            isPublished: true,
+          },
+        });
+
+        if (!book) {
+          throw HttpError.notFound(`Eksemplar fisik atau buku "${trimmedBook}" tidak ditemukan.`);
+        }
+
+        if (!book.isBorrowable) {
+          throw HttpError.badRequest(`Buku "${book.title}" adalah koleksi baca di tempat.`);
+        }
+
+        if (book.availableCopies <= 0) {
+          throw HttpError.badRequest(`Semua eksemplar buku "${book.title}" sedang dipinjam.`);
+        }
+
+        // Find or auto-create available copy
+        let availableCopy = await tx.bookCopy.findFirst({
+          where: {
+            bookId: book.id,
+            status: BookCopyStatus.AVAILABLE as unknown as any,
+          },
+        });
+
+        if (!availableCopy) {
+          const year = new Date().getFullYear();
+          const count = await tx.bookCopy.count({ where: { bookId: book.id } });
+          const candidate = `PJ-${year}-${(count + 1).toString().padStart(4, '0')}`;
+          availableCopy = await tx.bookCopy.create({
+            data: {
+              bookId: book.id,
+              inventoryCode: candidate,
+              condition: BookCondition.BAIK as unknown as any,
+              status: BookCopyStatus.AVAILABLE as unknown as any,
+            },
+          });
+        }
+
+        bookId = book.id;
+        copyId = availableCopy.id;
+        bookTitle = book.title;
+      }
+
+      // Check duplicate loan for this book by this member
+      const duplicate = await tx.loan.findFirst({
+        where: {
+          userId: member.id,
+          bookId,
+          status: {
+            in: [LoanStatus.PENDING, LoanStatus.APPROVED, LoanStatus.BORROWED] as any[],
+          },
+        },
+      });
+
+      if (duplicate) {
+        throw HttpError.conflict(`Member ${member.name} sudah memiliki pinjaman aktif untuk judul buku ini.`);
+      }
+
+      // 3. Update copy status & decrement book availability
+      await tx.bookCopy.update({
+        where: { id: copyId },
+        data: { status: BookCopyStatus.BORROWED as unknown as any },
+      });
+
+      await tx.book.update({
+        where: { id: bookId },
+        data: { availableCopies: { decrement: 1 } },
+      });
+
+      // 4. Create Loan with status BORROWED (14 days duration)
+      let loanCode = generateLoanCode();
+      while (await tx.loan.findUnique({ where: { loanCode } })) {
+        loanCode = generateLoanCode();
+      }
+
+      const now = new Date();
+      const dueDate = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
+
+      const created = await tx.loan.create({
+        data: {
+          loanCode,
+          userId: member.id,
+          bookId,
+          bookCopyId: copyId,
+          status: LoanStatus.BORROWED as unknown as any,
+          pickupPoint: pickupPoint?.trim() || 'Meja Lapak Fisik',
+          borrowedAt: now,
+          dueDate,
+          handedOverById: volunteer.userId,
+          userNote: note ? note.trim() : 'Peminjaman langsung di tempat (Walk-in)',
+        },
+        include: {
+          book: {
+            select: {
+              id: true,
+              title: true,
+              slug: true,
+              author: true,
+              coverImage: true,
+            },
+          },
+          bookCopy: {
+            select: {
+              id: true,
+              inventoryCode: true,
+            },
+          },
+          user: {
+            select: {
+              id: true,
+              name: true,
+              username: true,
+              email: true,
+              phoneNumber: true,
+            },
+          },
+        },
+      });
+
+      // Send in-app notification to member
+      try {
+        const dueStr = dueDate.toLocaleDateString('id-ID', {
+          day: 'numeric',
+          month: 'short',
+          year: 'numeric',
+        });
+        await notificationsService.createNotification(member.id, {
+          type: 'LOAN_ACTIVE',
+          title: '📖 Peminjaman Buku di Lapak Berhasil',
+          body: `Buku "${bookTitle}" telah dicatat dipinjam langsung di Meja Lapak. Batas pengembalian: ${dueStr}. Selamat membaca!`,
+          actionUrl: '/dashboard/pinjaman',
+          entityType: 'LOAN',
+          entityId: created.id,
+        });
+      } catch {
+        // Ignored
+      }
+
+      const dueFormatted = dueDate.toLocaleDateString('id-ID', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      });
+
+      return {
+        message: `Buku "${bookTitle}" berhasil dipinjamkan langsung kepada ${member.name}! Batas kembali: ${dueFormatted}.`,
+        data: formatLoanItem(created, true),
+      };
+    });
   }
 
   /**
@@ -515,6 +848,7 @@ export class LoansService {
               name: true,
               username: true,
               email: true,
+              phoneNumber: true,
             },
           },
         },
@@ -585,6 +919,7 @@ export class LoansService {
             name: true,
             username: true,
             email: true,
+            phoneNumber: true,
           },
         },
       },
@@ -698,7 +1033,7 @@ export class LoansService {
       // Select copy to assign
       let copyId = bookCopyId;
       if (!copyId) {
-        const availableCopy = await tx.bookCopy.findFirst({
+        let availableCopy = await tx.bookCopy.findFirst({
           where: {
             bookId: loan.bookId,
             status: BookCopyStatus.AVAILABLE as unknown as any,
@@ -706,7 +1041,18 @@ export class LoansService {
         });
 
         if (!availableCopy) {
-          throw HttpError.badRequest('Tidak ditemukan eksemplar fisik berstatus AVAILABLE untuk diserahkan.');
+          // Fallback: auto-generate an initial copy if book has no copy records
+          const year = new Date().getFullYear();
+          const count = await tx.bookCopy.count({ where: { bookId: loan.bookId } });
+          const candidate = `PJ-${year}-${(count + 1).toString().padStart(4, '0')}`;
+          availableCopy = await tx.bookCopy.create({
+            data: {
+              bookId: loan.bookId,
+              inventoryCode: candidate,
+              condition: BookCondition.BAIK as unknown as any,
+              status: BookCopyStatus.AVAILABLE as unknown as any,
+            },
+          });
         }
         copyId = availableCopy.id;
       }
@@ -752,6 +1098,7 @@ export class LoansService {
               name: true,
               username: true,
               email: true,
+              phoneNumber: true,
             },
           },
         },
@@ -908,6 +1255,7 @@ export class LoansService {
               name: true,
               username: true,
               email: true,
+              phoneNumber: true,
             },
           },
         },
@@ -970,7 +1318,13 @@ export class LoansService {
     const todayEnd = new Date();
     todayEnd.setHours(23, 59, 59, 999);
 
-    const [ready, dueTodayRaw, overdueRaw, totalActiveLoans] = await Promise.all([
+    const tomorrowStart = new Date(todayStart);
+    tomorrowStart.setDate(tomorrowStart.getDate() + 1);
+
+    const tomorrowEnd = new Date(todayEnd);
+    tomorrowEnd.setDate(tomorrowEnd.getDate() + 1);
+
+    const [ready, dueTomorrowRaw, dueTodayRaw, overdueRaw, totalActiveLoans] = await Promise.all([
       prisma.loan.findMany({
         where: {
           status: LoanStatus.APPROVED as unknown as any,
@@ -978,6 +1332,15 @@ export class LoansService {
         },
         include: { user: true, book: true },
         orderBy: { pickupDeadline: 'asc' },
+        take: 20,
+      }),
+      prisma.loan.findMany({
+        where: {
+          status: LoanStatus.BORROWED as unknown as any,
+          dueDate: { gte: tomorrowStart, lte: tomorrowEnd },
+        },
+        include: { user: true, book: true },
+        orderBy: { dueDate: 'asc' },
         take: 20,
       }),
       prisma.loan.findMany({
@@ -1012,11 +1375,15 @@ export class LoansService {
       }),
     ]);
 
-    const toBoardItem = (l: any, type: 'READY_FOR_PICKUP' | 'DUE_TODAY' | 'OVERDUE'): LoanPickupBoardItem => ({
+    const toBoardItem = (
+      l: any,
+      type: 'READY_FOR_PICKUP' | 'DUE_TOMORROW' | 'DUE_TODAY' | 'OVERDUE'
+    ): LoanPickupBoardItem => ({
       id: l.id,
       loanCode: l.loanCode,
       pickupCode: l.pickupCode,
       borrowerName: l.user.name,
+      borrowerPhone: l.user.phoneNumber || null,
       bookTitle: l.book.title,
       status: l.status,
       pickupDeadline: l.pickupDeadline ? l.pickupDeadline.toISOString() : null,
@@ -1026,6 +1393,7 @@ export class LoansService {
 
     return {
       readyForPickup: ready.map((l) => toBoardItem(l, 'READY_FOR_PICKUP')),
+      dueTomorrow: dueTomorrowRaw.map((l) => toBoardItem(l, 'DUE_TOMORROW')),
       dueToday: dueTodayRaw.map((l) => toBoardItem(l, 'DUE_TODAY')),
       overdue: overdueRaw.map((l) => toBoardItem(l, 'OVERDUE')),
       totalActiveLoans,

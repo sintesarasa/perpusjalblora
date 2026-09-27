@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { prisma } from '../../lib/prisma.js';
 import { HttpError } from '../../utils/errors.js';
+import { normalizePhoneNumber } from '../../utils/phone.js';
 import {
   RegisterInput,
   LoginInput,
@@ -42,12 +43,14 @@ export class AuthService {
     }
 
     const passwordHash = await bcrypt.hash(input.password, BCRYPT_SALT_ROUNDS);
+    const phoneNumber = normalizePhoneNumber(input.phoneNumber);
 
     const user = await prisma.user.create({
       data: {
         name: input.name,
         username: input.username,
         email: input.email,
+        phoneNumber,
         passwordHash,
         role: Role.USER,
         status: UserStatus.PENDING_VERIFICATION,
@@ -572,6 +575,7 @@ export class AuthService {
       name: user.name,
       username: user.username,
       email: user.email,
+      phoneNumber: user.phoneNumber,
       role: user.role,
       status: user.status,
       trustLevel: user.trustLevel,

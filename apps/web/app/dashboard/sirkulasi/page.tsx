@@ -38,6 +38,7 @@ import {
   XCircle,
   ChevronDown,
   ChevronUp,
+  Zap,
 } from 'lucide-react';
 import { CameraQrScannerModal } from '@/components/circulation/camera-qr-scanner-modal';
 
@@ -60,7 +61,7 @@ export default function DashboardCirculationPage() {
   const [currentUser, setCurrentUser] = React.useState<{ id: string; role: Role; name: string } | null>(null);
   const [authLoading, setAuthLoading] = React.useState(true);
 
-  const [activeTab, setActiveTab] = React.useState<'approvals' | 'pickup' | 'return' | 'board'>('approvals');
+  const [activeTab, setActiveTab] = React.useState<'board' | 'approvals'>('board');
 
   // Tab 0: Persetujuan Pinjaman (Pending Approvals)
   const [pendingLoans, setPendingLoans] = React.useState<LoanItem[]>([]);
@@ -88,7 +89,7 @@ export default function DashboardCirculationPage() {
     return [];
   });
 
-  // Tab 1: Pickup
+  // Modal Serah-Terima (Pickup)
   const [pickupCodeInput, setPickupCodeInput] = React.useState('');
   const [pickupLoan, setPickupLoan] = React.useState<LoanItem | null>(null);
   const [availableCopies, setAvailableCopies] = React.useState<Array<{ id: string; inventoryCode: string; condition?: string }>>([]);
@@ -97,7 +98,7 @@ export default function DashboardCirculationPage() {
   const [pickupError, setPickupError] = React.useState<string | null>(null);
   const [pickupSuccess, setPickupSuccess] = React.useState<string | null>(null);
 
-  // Tab 2: Return
+  // Modal Pengembalian (Return)
   const [returnCodeInput, setReturnCodeInput] = React.useState('');
   const [returnLoan, setReturnLoan] = React.useState<LoanItem | null>(null);
   const [returnCondition, setReturnCondition] = React.useState<ReturnCondition>(ReturnCondition.BAIK);
@@ -114,7 +115,26 @@ export default function DashboardCirculationPage() {
   } | null>(null);
   const [allocateLoading, setAllocateLoading] = React.useState(false);
 
-  // Tab 3: Board
+  // Modal Peminjaman Langsung di Lapak (Walk-in Loan)
+  const [walkInModalOpen, setWalkInModalOpen] = React.useState(false);
+  const [walkInMemberInput, setWalkInMemberInput] = React.useState('');
+  const [walkInBookInput, setWalkInBookInput] = React.useState('');
+  const [walkInPickupPoint, setWalkInPickupPoint] = React.useState('Lapak Perpusjal Blora');
+  const [walkInNote, setWalkInNote] = React.useState('');
+  const [walkInLoading, setWalkInLoading] = React.useState(false);
+  const [walkInError, setWalkInError] = React.useState<string | null>(null);
+  const [walkInSuccess, setWalkInSuccess] = React.useState<string | null>(null);
+
+  // Universal Quick Scan / Search Bar
+  const [universalSearchInput, setUniversalSearchInput] = React.useState('');
+  const [universalSearchLoading, setUniversalSearchLoading] = React.useState(false);
+  const [universalSearchMessage, setUniversalSearchMessage] = React.useState<string | null>(null);
+
+  // Volunteer Extension states
+  const [extendLoadingId, setExtendLoadingId] = React.useState<string | null>(null);
+  const [actionBanner, setActionBanner] = React.useState<{ type: 'success' | 'error'; message: string } | null>(null);
+
+  // Board
   const [boardData, setBoardData] = React.useState<LoanPickupBoardResponse | null>(null);
   const [boardLoading, setBoardLoading] = React.useState(false);
 
@@ -126,7 +146,9 @@ export default function DashboardCirculationPage() {
 
   // Camera QR Scanner Modal State
   const [scannerOpen, setScannerOpen] = React.useState(false);
-  const [scannerContext, setScannerContext] = React.useState<'pickup' | 'pickupCopy' | 'return'>('pickup');
+  const [scannerContext, setScannerContext] = React.useState<
+    'pickup' | 'pickupCopy' | 'return' | 'universal' | 'walkInMember' | 'walkInBook'
+  >('universal');
 
   // GAP-07: Confirmation modal for HILANG condition (irreversible action)
   const [showHilangConfirm, setShowHilangConfirm] = React.useState(false);
@@ -531,7 +553,6 @@ export default function DashboardCirculationPage() {
   // Quick process from Board items
   const handleBoardQuickPickup = (pickupCode: string) => {
     setPickupCodeInput(pickupCode);
-    setActiveTab('pickup');
     setPickupSuccess(null);
     setPickupError(null);
     executePickupLookup(pickupCode);
@@ -539,10 +560,151 @@ export default function DashboardCirculationPage() {
 
   const handleBoardQuickReturn = (loanCode: string) => {
     setReturnCodeInput(loanCode);
-    setActiveTab('return');
     setReturnSuccess(null);
     setReturnError(null);
     executeReturnLookup(loanCode);
+  };
+
+  // Volunteer Action: Extend active loan by 7 days
+  const handleVolunteerExtend = async (loanId: string, bookTitle: string) => {
+    if (!window.confirm(`Perpanjang masa pinjam buku "${bookTitle}" selama 7 hari?`)) return;
+
+    setExtendLoadingId(loanId);
+    setActionBanner(null);
+
+    const res = await apiClient<{ data: LoanItem; message: string }>(`/loans/${loanId}/extend`, {
+      method: 'POST',
+    });
+
+    setExtendLoadingId(null);
+
+    if (res.error) {
+      setActionBanner({ type: 'error', message: res.error.message });
+      return;
+    }
+
+    const newDueDate = res.data?.data.dueDate
+      ? new Date(res.data.data.dueDate).toLocaleDateString('id-ID', {
+          day: 'numeric',
+          month: 'short',
+          year: 'numeric',
+        })
+      : '7 hari ke depan';
+
+    setActionBanner({
+      type: 'success',
+      message: `Masa pinjam "${bookTitle}" berhasil diperpanjang oleh relawan hingga ${newDueDate}.`,
+    });
+
+    loadBoard();
+    if (showActiveLoansDrawer) {
+      loadActiveLoans();
+    }
+  };
+
+  // Walk-in Loan submission
+  const handleWalkInSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!walkInMemberInput.trim() || !walkInBookInput.trim()) {
+      setWalkInError('Identitas member dan kode stiker buku wajib diisi.');
+      return;
+    }
+
+    setWalkInLoading(true);
+    setWalkInError(null);
+    setWalkInSuccess(null);
+
+    const res = await apiClient<{ data: LoanItem; message: string }>('/loans/walk-in', {
+      method: 'POST',
+      body: JSON.stringify({
+        memberIdentifier: walkInMemberInput.trim(),
+        bookCopyIdentifier: walkInBookInput.trim(),
+        pickupPoint: walkInPickupPoint.trim() || 'Lapak Perpusjal Blora',
+        note: walkInNote.trim() || undefined,
+      }),
+    });
+
+    setWalkInLoading(false);
+
+    if (res.error) {
+      setWalkInError(res.error.message);
+      return;
+    }
+
+    const loan = res.data?.data;
+    const borrowerName = loan?.borrower?.name || walkInMemberInput;
+    const bookTitle = loan?.book?.title || walkInBookInput;
+
+    setWalkInSuccess(`Pinjaman langsung "${bookTitle}" untuk ${borrowerName} berhasil diterbitkan (Tenggat: 14 hari).`);
+    setSessionLogs((prev) => [
+      {
+        id: Math.random().toString(),
+        type: 'pickup',
+        title: bookTitle,
+        borrower: borrowerName,
+        code: loan?.loanCode || 'WALK-IN',
+        time: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+      },
+      ...prev.slice(0, 8),
+    ]);
+
+    // Reset form fields
+    setWalkInMemberInput('');
+    setWalkInBookInput('');
+    setWalkInNote('');
+    loadBoard();
+    if (showActiveLoansDrawer) {
+      loadActiveLoans();
+    }
+  };
+
+  // Universal Lookup Handler
+  const executeUniversalLookup = async (query: string) => {
+    const trimmed = query.trim();
+    if (!trimmed) return;
+
+    setUniversalSearchLoading(true);
+    setUniversalSearchMessage(null);
+
+    const res = await apiClient<{ data: LookupResponse }>(
+      `/loans/lookup?code=${encodeURIComponent(trimmed)}`
+    );
+
+    setUniversalSearchLoading(false);
+
+    if (res.error) {
+      setUniversalSearchMessage(
+        `Kode "${trimmed}" tidak cocok dengan pinjaman aktif (${res.error.message}). Gunakan tombol "⚡ Pinjam Langsung" jika ingin meminjamkan di tempat.`
+      );
+      return;
+    }
+
+    if (res.data?.data) {
+      const data = res.data.data;
+      if (data.loan.status === LoanStatus.APPROVED) {
+        setPickupLoan(data.loan);
+        setAvailableCopies(data.availableCopies || []);
+        if (data.availableCopies && data.availableCopies.length > 0) {
+          setSelectedCopyId(data.availableCopies[0].id);
+        }
+      } else if (
+        data.loan.status === LoanStatus.BORROWED ||
+        data.loan.status === LoanStatus.OVERDUE
+      ) {
+        setReturnLoan(data.loan);
+        setReturnCondition(ReturnCondition.BAIK);
+        setReturnNote('');
+      } else if (data.loan.status === LoanStatus.PENDING) {
+        setActiveTab('approvals');
+        setUniversalSearchMessage(
+          `Pengajuan untuk buku "${data.loan.book.title}" masih berstatus MENUNGGU PERSETUJUAN (PENDING). Beralih ke meja persetujuan.`
+        );
+      } else {
+        setUniversalSearchMessage(
+          `Pinjaman buku "${data.loan.book.title}" ditemukan tetapi berstatus ${data.loan.status} (bukan pinjaman aktif).`
+        );
+      }
+    }
   };
 
   // Handle scan result from CameraQrScannerModal
@@ -567,7 +729,14 @@ export default function DashboardCirculationPage() {
       }
     }
 
-    if (scannerContext === 'pickup') {
+    if (scannerContext === 'universal') {
+      setUniversalSearchInput(cleanText);
+      executeUniversalLookup(cleanText);
+    } else if (scannerContext === 'walkInMember') {
+      setWalkInMemberInput(cleanText);
+    } else if (scannerContext === 'walkInBook') {
+      setWalkInBookInput(cleanText);
+    } else if (scannerContext === 'pickup') {
       setPickupCodeInput(cleanText);
       setPickupSuccess(null);
       setPickupError(null);
@@ -641,13 +810,26 @@ export default function DashboardCirculationPage() {
         <div className="flex flex-wrap items-center gap-2 font-mono text-xs">
           <button
             type="button"
+            onClick={() => {
+              setWalkInError(null);
+              setWalkInSuccess(null);
+              setWalkInModalOpen(true);
+            }}
+            className="px-3.5 py-1.5 bg-foreground text-background font-bold uppercase tracking-wider inline-flex items-center gap-1.5 hover:bg-foreground/90 transition-colors shadow-sm"
+          >
+            <Zap className="w-3.5 h-3.5 fill-amber-300 text-amber-300" />
+            <span>⚡ Pinjam Langsung (Walk-in)</span>
+          </button>
+
+          <button
+            type="button"
             onClick={handleRunMaintenance}
             disabled={maintenanceLoading}
             className="px-3 py-1.5 border border-border-hairline bg-surface hover:border-foreground transition-colors inline-flex items-center gap-1.5 text-muted hover:text-foreground"
             title="Jalankan pemeriksaan sirkulasi kedaluwarsa & pengingat keterlambatan"
           >
             <RefreshCw className={cn('w-3.5 h-3.5', maintenanceLoading && 'animate-spin')} />
-            <span>{maintenanceLoading ? 'Memeriksa...' : 'Sinkronisasi Sirkulasi'}</span>
+            <span>{maintenanceLoading ? 'Memeriksa...' : 'Sinkronisasi'}</span>
           </button>
 
           <Link
@@ -655,7 +837,7 @@ export default function DashboardCirculationPage() {
             className="px-3 py-1.5 border border-border-hairline bg-surface hover:border-foreground transition-colors inline-flex items-center gap-1.5"
           >
             <BookOpen className="w-3.5 h-3.5" />
-            <span>Kelola Buku & Stiker</span>
+            <span>Katalog</span>
           </Link>
           <span className="px-2.5 py-1.5 bg-foreground text-background font-bold uppercase tracking-wider inline-flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
@@ -682,6 +864,21 @@ export default function DashboardCirculationPage() {
         <button
           type="button"
           onClick={() => {
+            setActiveTab('board');
+          }}
+          className={`px-5 py-2.5 border-b-2 transition-colors flex items-center gap-2 ${
+            activeTab === 'board'
+              ? 'border-foreground text-foreground font-bold'
+              : 'border-transparent text-muted hover:text-foreground'
+          }`}
+        >
+          <Clock className="w-4 h-4" />
+          <span>Papan Pantau Lapak</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
             setActiveTab('approvals');
             setPendingSuccess(null);
             setPendingError(null);
@@ -693,61 +890,12 @@ export default function DashboardCirculationPage() {
           }`}
         >
           <FileCheck2 className="w-4 h-4" />
-          <span>Persetujuan Pinjaman</span>
+          <span>Antrean Persetujuan Online</span>
           {pendingLoans.length > 0 && (
             <span className="px-1.5 py-0.5 text-[10px] bg-foreground text-background font-bold leading-none">
               {pendingLoans.length}
             </span>
           )}
-        </button>
-
-        <button
-          type="button"
-          onClick={() => {
-            setActiveTab('pickup');
-            setPickupSuccess(null);
-            setPickupError(null);
-          }}
-          className={`px-5 py-2.5 border-b-2 transition-colors flex items-center gap-2 ${
-            activeTab === 'pickup'
-              ? 'border-foreground text-foreground font-bold'
-              : 'border-transparent text-muted hover:text-foreground'
-          }`}
-        >
-          <UserCheck className="w-4 h-4" />
-          <span>Serah-Terima (Ambil Cepat)</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => {
-            setActiveTab('return');
-            setReturnSuccess(null);
-            setReturnError(null);
-          }}
-          className={`px-5 py-2.5 border-b-2 transition-colors flex items-center gap-2 ${
-            activeTab === 'return'
-              ? 'border-foreground text-foreground font-bold'
-              : 'border-transparent text-muted hover:text-foreground'
-          }`}
-        >
-          <RotateCcw className="w-4 h-4" />
-          <span>Pengembalian Buku</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => {
-            setActiveTab('board');
-          }}
-          className={`px-5 py-2.5 border-b-2 transition-colors flex items-center gap-2 ${
-            activeTab === 'board'
-              ? 'border-foreground text-foreground font-bold'
-              : 'border-transparent text-muted hover:text-foreground'
-          }`}
-        >
-          <Clock className="w-4 h-4" />
-          <span>Papan Pantau Lapak</span>
         </button>
       </div>
 
@@ -951,592 +1099,6 @@ export default function DashboardCirculationPage() {
         </div>
       )}
 
-      {/* TAB 1: SERAH-TERIMA (PICKUP CEPAT) */}
-      {activeTab === 'pickup' && (
-        <div className="max-w-2xl mx-auto space-y-6">
-          <div className="p-6 bg-surface border-2 border-foreground space-y-5">
-            <div className="border-b border-border-hairline pb-3">
-              <h2 className="font-serif text-xl font-bold text-foreground">
-                Serah-Terima Buku ke Pembaca
-              </h2>
-              <p className="font-sans text-xs text-muted mt-1">
-                Masukkan Kode Ambil (6 digit), scan QR Kartu Anggota (<strong className="font-mono text-foreground">PJL-XXXXXX</strong>), atau Kode Pinjam.
-              </p>
-            </div>
-
-            {pickupSuccess && (
-              <div className="p-4 bg-surface-muted border border-foreground font-mono text-xs text-foreground flex items-start gap-2.5">
-                <CheckCircle2 className="w-4 h-4 shrink-0 text-foreground mt-0.5" />
-                <span>{pickupSuccess}</span>
-              </div>
-            )}
-
-            {pickupError && (
-              <div className="p-4 bg-surface-muted border border-destructive font-mono text-xs text-destructive flex items-start gap-2.5">
-                <AlertTriangle className="w-4 h-4 shrink-0 text-destructive mt-0.5" />
-                <span>{pickupError}</span>
-              </div>
-            )}
-
-            <form onSubmit={handlePickupLookup} className="space-y-4">
-              <div className="space-y-2">
-                <label className="block font-mono text-xs uppercase tracking-widest text-foreground font-bold">
-                  KODE AMBIL (6 DIGIT) ATAU QR ANGGOTA:
-                </label>
-                <div className="flex flex-col sm:flex-row gap-2">
-                  <div className="relative flex-1">
-                    <input
-                      type="text"
-                      value={pickupCodeInput}
-                      onChange={(e) => setPickupCodeInput(e.target.value)}
-                      placeholder="Contoh: 482913 atau PJL-A1B2C3"
-                      className="w-full p-3 pr-8 text-center sm:text-left font-mono text-lg tracking-wider font-bold bg-surface-muted border-2 border-foreground focus:outline-none rounded-none text-foreground uppercase placeholder:normal-case placeholder:font-normal placeholder:tracking-normal placeholder:text-muted"
-                    />
-                    {pickupCodeInput && (
-                      <button
-                        type="button"
-                        onClick={() => setPickupCodeInput('')}
-                        className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-muted hover:text-foreground transition-colors"
-                        aria-label="Bersihkan input"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    )}
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      type="submit"
-                      disabled={pickupLoading || !pickupCodeInput.trim()}
-                      className="flex-1 sm:flex-none px-6 py-3 bg-foreground text-background font-mono text-xs uppercase tracking-widest font-bold hover:bg-foreground/90 disabled:opacity-40 transition-colors inline-flex items-center justify-center gap-2"
-                    >
-                      {pickupLoading ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Search className="w-3.5 h-3.5" />}
-                      <span>{pickupLoading ? 'Mencari...' : 'Periksa'}</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setScannerContext('pickup');
-                        setScannerOpen(true);
-                      }}
-                      className="px-4 py-3 border-2 border-foreground bg-surface hover:bg-surface-muted transition-colors inline-flex items-center justify-center gap-1.5 font-mono text-xs uppercase tracking-wider font-bold text-foreground"
-                      title="Pindai QR Kartu Anggota atau Kode Ambil menggunakan Kamera HP"
-                    >
-                      <Camera className="w-4 h-4 text-foreground" />
-                      <span className="hidden sm:inline">Scan Kamera HP</span>
-                      <span className="sm:hidden">Scan</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </form>
-
-            {/* Found Loan Verification Card */}
-            {pickupLoan && (
-              <div className="pt-4 border-t-2 border-foreground space-y-4 font-mono text-xs">
-                <div className="p-4 bg-surface-muted border border-border-hairline space-y-3">
-                  <div className="flex justify-between items-center text-muted">
-                    <span>KODE PINJAM: <strong className="text-foreground">{pickupLoan.loanCode}</strong></span>
-                    <span className={`px-2 py-0.5 font-bold text-[10px] ${
-                      pickupLoan.status === LoanStatus.PENDING
-                        ? 'bg-amber-500 text-black'
-                        : 'bg-foreground text-background'
-                    }`}>
-                      {pickupLoan.status === LoanStatus.PENDING ? 'MENUNGGU PERSETUJUAN' : pickupLoan.status}
-                    </span>
-                  </div>
-
-                  <div>
-                    <h3 className="font-serif font-bold text-lg text-foreground font-sans">
-                      {pickupLoan.book.title}
-                    </h3>
-                    <p className="font-sans text-xs text-muted">
-                      Penulis: {pickupLoan.book.author}
-                    </p>
-                  </div>
-
-                  <div className="p-2.5 bg-surface border border-border-hairline space-y-1">
-                    <p className="font-sans text-xs text-muted">
-                      Peminjam: <strong className="text-foreground">{pickupLoan.borrower?.name}</strong> (@{pickupLoan.borrower?.username})
-                    </p>
-                    <p className="font-mono text-[11px] text-muted">
-                      Titik Pengambilan: <span className="text-foreground">{pickupLoan.pickupPoint}</span>
-                    </p>
-                    {pickupLoan.userNote && (
-                      <p className="font-sans text-[11px] italic text-foreground pt-1 border-t border-border-hairline mt-1">
-                        Catatan: &ldquo;{pickupLoan.userNote}&rdquo;
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                {/* Physical Copy Selector */}
-                <div className="space-y-2">
-                  <label className="block text-[11px] text-foreground uppercase font-bold flex items-center justify-between">
-                    <span>PILIH EKSEMPLAR FISIK YANG DISERAHKAN:</span>
-                    <span className="text-[10px] text-muted font-normal">
-                      Cocokkan kode stiker punggung buku
-                    </span>
-                  </label>
-                  {availableCopies.length > 0 ? (
-                    <div className="flex gap-2">
-                      <select
-                        value={selectedCopyId}
-                        onChange={(e) => setSelectedCopyId(e.target.value)}
-                        className="flex-1 p-2.5 bg-surface border-2 border-foreground rounded-none text-xs text-foreground focus:outline-none font-mono"
-                      >
-                        {availableCopies.map((c) => (
-                          <option key={c.id} value={c.id}>
-                            {c.inventoryCode} — Kondisi: {c.condition}
-                          </option>
-                        ))}
-                      </select>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setScannerContext('pickupCopy');
-                          setScannerOpen(true);
-                        }}
-                        className="px-3 py-2 border-2 border-foreground bg-surface hover:bg-surface-muted transition-colors inline-flex items-center gap-1.5 font-mono text-xs uppercase tracking-wider font-bold text-foreground shrink-0"
-                        title="Scan stiker punggung buku yang diambil"
-                      >
-                        <Camera className="w-3.5 h-3.5 text-foreground" />
-                        <span>Scan Stiker</span>
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="p-3 text-xs text-destructive bg-destructive/10 border border-destructive space-y-1">
-                      <p>Tidak ada eksemplar fisik berstatus AVAILABLE untuk buku ini.</p>
-                      <Link
-                        href={`/dashboard/buku?q=${encodeURIComponent(pickupLoan.book.title)}`}
-                        className="inline-block underline font-bold hover:text-foreground"
-                      >
-                        Buka Meja Koleksi Buku untuk menambah eksemplar &rarr;
-                      </Link>
-                    </div>
-                  )}
-                </div>
-
-                {/* Actions: Distinguish PENDING vs APPROVED */}
-                {pickupLoan.status === LoanStatus.PENDING ? (
-                  <div className="pt-2 border-t border-border-hairline space-y-3">
-                    <div className="p-3 bg-amber-500/10 border border-amber-500/30 font-sans text-xs text-foreground space-y-1">
-                      <p className="font-bold flex items-center gap-1.5 text-amber-600">
-                        <AlertTriangle className="w-3.5 h-3.5" />
-                        Status Pengajuan Masih PENDING (Menunggu Persetujuan)
-                      </p>
-                      <p className="text-muted text-[11px] leading-relaxed">
-                        Pengajuan pinjaman ini belum disetujui kurator. Anda dapat menyetujuinya sekarang untuk menerbitkan kode ambil 6 digit, atau langsung menyerahkan buku ke peminjam jika peminjam berada di meja lapak saat ini.
-                      </p>
-                    </div>
-
-                    <div className="flex flex-wrap gap-2 pt-1 font-mono text-xs">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setPickupLoan(null);
-                          setPickupCodeInput('');
-                          setPickupError(null);
-                        }}
-                        className="px-3 py-2.5 border border-border-hairline bg-surface hover:border-foreground transition-colors font-bold uppercase tracking-wider text-muted hover:text-foreground"
-                      >
-                        Batal
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setRejectModalLoan(pickupLoan);
-                          setRejectReason('');
-                        }}
-                        className="px-3 py-2.5 border border-destructive text-destructive hover:bg-destructive hover:text-white uppercase font-bold tracking-wider transition-colors inline-flex items-center gap-1"
-                      >
-                        <XCircle className="w-3.5 h-3.5" />
-                        Tolak
-                      </button>
-                      <button
-                        type="button"
-                        onClick={async () => {
-                          setPickupLoading(true);
-                          setPickupError(null);
-                          const res = await apiClient<{ data: LoanItem; message: string }>(`/loans/${pickupLoan.id}/approve`, {
-                            method: 'POST',
-                            body: JSON.stringify({ pickupDeadlineDays: 3 }),
-                          });
-                          setPickupLoading(false);
-                          if (res.error) {
-                            setPickupError(res.error.message);
-                            return;
-                          }
-                          if (res.data) {
-                            setPickupLoan(res.data.data);
-                            setPickupSuccess(res.data.message);
-                            loadPendingLoans();
-                            loadBoard();
-                          }
-                        }}
-                        disabled={pickupLoading}
-                        className="px-4 py-2.5 border-2 border-foreground text-foreground hover:bg-surface-muted uppercase font-bold tracking-wider transition-colors inline-flex items-center gap-1.5"
-                      >
-                        {pickupLoading ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Clock className="w-3.5 h-3.5" />}
-                        <span>Setujui (Kode Ambil)</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={async () => {
-                          setPickupLoading(true);
-                          setPickupError(null);
-                          const res = await apiClient<{ data: LoanItem; message: string }>(`/loans/${pickupLoan.id}/approve-and-pickup`, {
-                            method: 'POST',
-                            body: JSON.stringify({ bookCopyId: selectedCopyId || undefined }),
-                          });
-                          setPickupLoading(false);
-                          if (res.error) {
-                            setPickupError(res.error.message);
-                            return;
-                          }
-                          const borrowerName = pickupLoan.borrower?.name || 'Pembaca';
-                          setPickupSuccess(`Buku "${pickupLoan.book.title}" berhasil disetujui dan diserahkan kepada ${borrowerName}!`);
-                          setSessionLogs((prev) => [
-                            {
-                              id: Math.random().toString(),
-                              type: 'pickup',
-                              code: pickupLoan.loanCode,
-                              title: pickupLoan.book.title,
-                              borrower: borrowerName,
-                              time: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
-                            },
-                            ...prev.slice(0, 8),
-                          ]);
-                          setPickupLoan(null);
-                          setPickupCodeInput('');
-                          loadPendingLoans();
-                          loadBoard();
-                        }}
-                        disabled={pickupLoading || !selectedCopyId}
-                        className="flex-1 py-2.5 bg-foreground text-background font-bold uppercase tracking-widest hover:bg-foreground/90 disabled:opacity-40 transition-colors flex items-center justify-center gap-2"
-                      >
-                        <CheckCircle2 className="w-4 h-4" />
-                        <span>SETUJUI & SERAHKAN BUKU</span>
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex gap-2 pt-1">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setPickupLoan(null);
-                        setPickupCodeInput('');
-                        setPickupError(null);
-                      }}
-                      className="px-4 py-3 border border-border-hairline bg-surface hover:border-foreground transition-colors font-bold text-xs uppercase tracking-wider text-muted hover:text-foreground"
-                    >
-                      Batal
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleExecutePickup}
-                      disabled={pickupLoading || !selectedCopyId}
-                      className="flex-1 py-3 bg-foreground text-background font-bold text-xs uppercase tracking-widest hover:bg-foreground/90 disabled:opacity-40 transition-colors flex items-center justify-center gap-2"
-                    >
-                      <Check className="w-4 h-4" />
-                      <span>SERAHKAN BUKU KE PEMINJAM</span>
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* TAB 2: PENGEMBALIAN BUKU */}
-      {activeTab === 'return' && (
-        <div className="max-w-2xl mx-auto space-y-6">
-          <div className="p-6 bg-surface border-2 border-foreground space-y-5">
-            <div className="border-b border-border-hairline pb-3">
-              <h2 className="font-serif text-xl font-bold text-foreground">
-                Penerimaan Pengembalian Buku
-              </h2>
-              <p className="font-sans text-xs text-muted mt-1">
-                Scan kode stiker buku (<strong className="font-mono text-foreground">PJ-XXXX-XXXX</strong>), Kode Pinjam, atau Kode Anggota.
-              </p>
-            </div>
-
-            {returnSuccess && (
-              <div className="p-4 bg-surface-muted border border-foreground font-mono text-xs text-foreground flex items-start gap-2.5">
-                <CheckCircle2 className="w-4 h-4 shrink-0 text-foreground mt-0.5" />
-                <span>{returnSuccess}</span>
-              </div>
-            )}
-
-            {recommendedWaitlist && (
-              <div className="p-4 bg-surface border-2 border-foreground space-y-3 font-mono text-xs">
-                <div className="flex items-center justify-between border-b border-border-hairline pb-2">
-                  <span className="font-bold text-foreground flex items-center gap-1.5 uppercase tracking-wider">
-                    <Users className="w-4 h-4" />
-                    REKOMENDASI ALOKASI ANTREAN (ANTREAN #{recommendedWaitlist.position})
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setRecommendedWaitlist(null)}
-                    className="text-muted hover:text-foreground transition-colors p-1"
-                    aria-label="Tutup rekomendasi"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-                <p className="font-sans text-xs text-foreground leading-relaxed">
-                  Buku yang baru dikembalikan memiliki antrean aktif atas nama{' '}
-                  <strong>{recommendedWaitlist.user.name}</strong> (@{recommendedWaitlist.user.username}).
-                  Apakah Anda ingin langsung menyetujui dan mengalokasikan hak pinjam buku ini untuk beliau?
-                </p>
-                <div className="flex flex-wrap gap-2 pt-1">
-                  <button
-                    type="button"
-                    onClick={() => handleAllocateWaitlist(recommendedWaitlist.id)}
-                    disabled={allocateLoading}
-                    className="px-4 py-2 bg-foreground text-background font-bold text-xs uppercase tracking-wider hover:bg-foreground/90 disabled:opacity-40 transition-colors flex items-center gap-2"
-                  >
-                    <CheckCircle2 className="w-3.5 h-3.5" />
-                    <span>
-                      {allocateLoading
-                        ? 'Mengalokasikan...'
-                        : `ALOKASIKAN KE ${recommendedWaitlist.user.name.toUpperCase()}`}
-                    </span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setRecommendedWaitlist(null)}
-                    className="px-3 py-2 border border-border-hairline hover:border-foreground text-muted hover:text-foreground uppercase text-xs"
-                  >
-                    Lewati (Kembalikan ke Rak Umum)
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {returnError && (
-              <div className="p-4 bg-surface-muted border border-destructive font-mono text-xs text-destructive flex items-start gap-2.5">
-                <AlertTriangle className="w-4 h-4 shrink-0 text-destructive mt-0.5" />
-                <span>{returnError}</span>
-              </div>
-            )}
-
-            <form onSubmit={handleReturnLookup} className="space-y-4">
-              <div className="space-y-2">
-                <label className="block font-mono text-xs uppercase tracking-widest text-foreground font-bold">
-                  KODE STIKER BUKU / KODE PINJAM:
-                </label>
-                <div className="flex flex-col sm:flex-row gap-2">
-                  <div className="relative flex-1">
-                    <input
-                      type="text"
-                      value={returnCodeInput}
-                      onChange={(e) => setReturnCodeInput(e.target.value)}
-                      placeholder="Contoh: PJ-2026-0001 atau LN-XXXXXX"
-                      className="w-full p-3 pr-8 font-mono text-sm bg-surface-muted border-2 border-foreground focus:outline-none rounded-none text-foreground uppercase placeholder:normal-case placeholder:text-muted"
-                    />
-                    {returnCodeInput && (
-                      <button
-                        type="button"
-                        onClick={() => setReturnCodeInput('')}
-                        className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-muted hover:text-foreground transition-colors"
-                        aria-label="Bersihkan input"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    )}
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      type="submit"
-                      disabled={returnLoading || !returnCodeInput.trim()}
-                      className="flex-1 sm:flex-none px-6 py-3 bg-foreground text-background font-mono text-xs uppercase tracking-widest font-bold hover:bg-foreground/90 disabled:opacity-40 transition-colors inline-flex items-center justify-center gap-2"
-                    >
-                      {returnLoading ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Search className="w-3.5 h-3.5" />}
-                      <span>{returnLoading ? 'Mencari...' : 'Cari Data'}</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setScannerContext('return');
-                        setScannerOpen(true);
-                      }}
-                      className="px-4 py-3 border-2 border-foreground bg-surface hover:bg-surface-muted transition-colors inline-flex items-center justify-center gap-1.5 font-mono text-xs uppercase tracking-wider font-bold text-foreground"
-                      title="Pindai Stiker Punggung Buku menggunakan Kamera HP"
-                    >
-                      <Camera className="w-4 h-4 text-foreground" />
-                      <span className="hidden sm:inline">Scan Kamera HP</span>
-                      <span className="sm:hidden">Scan</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </form>
-
-            {/* Found Return Verification Card */}
-            {returnLoan && (
-              <div className="pt-4 border-t-2 border-foreground space-y-5 font-mono text-xs">
-                <div className="p-4 bg-surface-muted border border-border-hairline space-y-2.5">
-                  <div className="flex justify-between items-center text-muted">
-                    <span>KODE: <strong className="text-foreground">{returnLoan.loanCode}</strong></span>
-                    <span className="font-bold px-2 py-0.5 bg-foreground text-background text-[10px]">
-                      {returnLoan.status}
-                    </span>
-                  </div>
-
-                  <div>
-                    <h3 className="font-serif font-bold text-lg text-foreground font-sans">
-                      {returnLoan.book.title}
-                    </h3>
-                    <p className="font-sans text-xs text-muted">
-                      Penulis: {returnLoan.book.author}
-                    </p>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border-hairline text-[11px]">
-                    <div>
-                      <span className="text-muted block">PEMINJAM:</span>
-                      <strong className="text-foreground">{returnLoan.borrower?.name}</strong> (@{returnLoan.borrower?.username})
-                    </div>
-                    <div>
-                      <span className="text-muted block">EKSEMPLAR FISIK:</span>
-                      <strong className="text-foreground">
-                        {returnLoan.bookCopy?.inventoryCode || 'Belum Terikat'}
-                      </strong>
-                    </div>
-                  </div>
-
-                  {/* Overdue / Due Date Context Banner */}
-                  {returnLoan.dueDate && (() => {
-                    const isOverdue = new Date(returnLoan.dueDate) < new Date();
-                    const overdueDays = isOverdue
-                      ? Math.max(1, Math.ceil((Date.now() - new Date(returnLoan.dueDate).getTime()) / (1000 * 60 * 60 * 24)))
-                      : 0;
-
-                    return isOverdue ? (
-                      <div className="p-3 bg-destructive/10 border-2 border-destructive flex items-center justify-between text-xs font-mono">
-                        <div className="flex items-center gap-2 font-bold text-destructive">
-                          <AlertTriangle className="w-4 h-4 shrink-0 text-destructive" />
-                          <span>TERLAMBAT {overdueDays} HARI</span>
-                        </div>
-                        <span className="text-[10px] text-destructive uppercase tracking-wider">
-                          Tenggat: {new Date(returnLoan.dueDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
-                        </span>
-                      </div>
-                    ) : (
-                      <div className="p-2.5 bg-surface border border-border-hairline flex items-center justify-between text-xs font-mono text-muted">
-                        <div className="flex items-center gap-1.5 text-foreground font-medium">
-                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                          <span>Tepat Waktu (Dalam Masa Pinjam)</span>
-                        </div>
-                        <span className="text-[10px]">
-                          Tenggat: {new Date(returnLoan.dueDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
-                        </span>
-                      </div>
-                    );
-                  })()}
-                </div>
-
-                {/* Physical condition selection */}
-                <div className="space-y-2">
-                  <label className="block text-[11px] text-foreground uppercase font-bold">
-                    KONDISI FISIK BUKU SAAT DIKEMBALIKAN:
-                  </label>
-                  <div className="grid grid-cols-3 gap-3">
-                    {[
-                      { val: ReturnCondition.BAIK, label: 'BAIK', desc: 'Buku utuh & terawat' },
-                      { val: ReturnCondition.RUSAK, label: 'RUSAK', desc: 'Robek / basah / cacat' },
-                      { val: ReturnCondition.HILANG, label: 'HILANG', desc: 'Buku hilang' },
-                    ].map((item) => (
-                      <button
-                        key={item.val}
-                        type="button"
-                        onClick={() => { setReturnCondition(item.val); setShowHilangConfirm(false); }}
-                        className={`p-3 text-left border transition-colors ${
-                          returnCondition === item.val
-                            ? 'border-2 border-foreground bg-surface-muted font-bold'
-                            : 'border-border-hairline hover:border-foreground bg-surface'
-                        }`}
-                      >
-                        <span className="block text-xs uppercase text-foreground">{item.label}</span>
-                        <span className="block text-[10px] text-muted mt-0.5">{item.desc}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Optional Curator Note */}
-                <div className="space-y-1">
-                  <label className="block text-[11px] text-muted uppercase">Catatan Kurator / Relawan (Opsional):</label>
-                  <input
-                    type="text"
-                    value={returnNote}
-                    onChange={(e) => setReturnNote(e.target.value)}
-                    placeholder="Keterangan kondisi halaman, keterlambatan, atau catatan lapak..."
-                    className="w-full p-2.5 bg-surface-muted border border-border-hairline rounded-none text-xs focus:outline-none focus:border-foreground text-foreground"
-                  />
-                </div>
-
-                <div className="flex gap-2 pt-1">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setReturnLoan(null);
-                      setReturnCodeInput('');
-                      setReturnNote('');
-                      setReturnError(null);
-                      setShowHilangConfirm(false);
-                    }}
-                    className="px-4 py-3 border border-border-hairline bg-surface hover:border-foreground transition-colors font-bold text-xs uppercase tracking-wider text-muted hover:text-foreground"
-                  >
-                    Batal
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (returnCondition === ReturnCondition.HILANG && !showHilangConfirm) {
-                        // GAP-07: First click for HILANG → show confirmation step
-                        setShowHilangConfirm(true);
-                      } else {
-                        setShowHilangConfirm(false);
-                        handleExecuteReturn();
-                      }
-                    }}
-                    disabled={returnLoading}
-                    className={`flex-1 py-3 font-bold text-xs uppercase tracking-widest disabled:opacity-40 transition-colors flex items-center justify-center gap-2 ${
-                      showHilangConfirm
-                        ? 'bg-destructive text-destructive-foreground hover:bg-destructive/90'
-                        : 'bg-foreground text-background hover:bg-foreground/90'
-                    }`}
-                  >
-                    <CheckCircle2 className="w-4 h-4" />
-                    <span>
-                      {showHilangConfirm ? 'YA, KONFIRMASI BUKU HILANG' : 'CATAT PENGEMBALIAN BUKU'}
-                    </span>
-                  </button>
-                </div>
-
-                {/* GAP-07: Inline HILANG confirmation warning */}
-                {showHilangConfirm && (
-                  <div className="p-3 bg-destructive/10 border-2 border-destructive font-mono text-xs text-destructive space-y-1">
-                    <div className="flex items-center gap-2 font-bold">
-                      <AlertTriangle className="w-4 h-4 shrink-0" />
-                      <span>KONFIRMASI BUKU HILANG</span>
-                    </div>
-                    <p className="font-sans text-foreground text-[11px]">
-                      Tindakan ini bersifat permanen: eksemplar fisik akan ditandai hilang dan jumlah koleksi akan berkurang. Pastikan buku benar-benar tidak dapat ditemukan sebelum melanjutkan.
-                    </p>
-                    <p className="text-[10px] text-muted">Klik tombol merah di atas untuk konfirmasi, atau klik "Batal" untuk membatalkan.</p>
-                  </div>
-                )}
-
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
       {/* TAB 3: PAPAN PANTAU LAPAK (REALTIME MONITOR) */}
       {activeTab === 'board' && (
         <div className="space-y-6 font-sans">
@@ -1553,6 +1115,121 @@ export default function DashboardCirculationPage() {
               <RefreshCw className={`w-3.5 h-3.5 ${boardLoading ? 'animate-spin' : ''}`} />
               <span>Muat Ulang</span>
             </button>
+          </div>
+
+          {/* Volunteer Action Feedback Banner */}
+          {actionBanner && (
+            <div
+              className={`p-3 border font-mono text-xs flex items-center justify-between gap-2 shadow-sm ${
+                actionBanner.type === 'success'
+                  ? 'bg-surface border-foreground text-foreground'
+                  : 'bg-destructive/10 border-destructive text-destructive'
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                {actionBanner.type === 'success' ? (
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                ) : (
+                  <AlertTriangle className="w-4 h-4 text-destructive shrink-0" />
+                )}
+                <span>{actionBanner.message}</span>
+              </div>
+              <button onClick={() => setActionBanner(null)} className="text-muted hover:text-foreground">
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
+
+          {/* Quick Circulation Bar: Universal Scanner & Walk-in Button */}
+          <div className="p-4 bg-surface border-2 border-foreground space-y-3">
+            <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
+              {/* Universal Search / Scanner Input */}
+              <div className="flex-1 flex flex-col sm:flex-row gap-2">
+                <div className="relative flex-1">
+                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
+                  <input
+                    type="text"
+                    value={universalSearchInput}
+                    onChange={(e) => setUniversalSearchInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        executeUniversalLookup(universalSearchInput);
+                      }
+                    }}
+                    placeholder="Scan stiker buku (PJ-xxxx), QR Member, kode ambil (6 digit), atau kode pinjam..."
+                    className="w-full pl-9 pr-8 py-2.5 bg-surface-muted border-2 border-foreground font-mono text-xs text-foreground placeholder:text-muted placeholder:font-sans focus:outline-none"
+                  />
+                  {universalSearchInput && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setUniversalSearchInput('');
+                        setUniversalSearchMessage(null);
+                      }}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted hover:text-foreground p-1"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => executeUniversalLookup(universalSearchInput)}
+                    disabled={universalSearchLoading || !universalSearchInput.trim()}
+                    className="px-4 py-2.5 bg-foreground text-background font-mono text-xs uppercase font-bold tracking-wider hover:bg-foreground/90 disabled:opacity-40 transition-colors inline-flex items-center justify-center gap-1.5"
+                  >
+                    {universalSearchLoading ? (
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <Search className="w-3.5 h-3.5" />
+                    )}
+                    <span>Periksa</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setScannerContext('universal');
+                      setScannerOpen(true);
+                    }}
+                    className="px-3.5 py-2.5 border-2 border-foreground bg-surface hover:bg-surface-muted font-mono text-xs uppercase font-bold tracking-wider transition-colors inline-flex items-center justify-center gap-1.5 text-foreground"
+                    title="Pindai QR / Barcode menggunakan Kamera HP"
+                  >
+                    <Camera className="w-4 h-4" />
+                    <span className="hidden sm:inline">Scan Kamera</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Walk-in Button */}
+              <button
+                type="button"
+                onClick={() => {
+                  setWalkInError(null);
+                  setWalkInSuccess(null);
+                  setWalkInModalOpen(true);
+                }}
+                className="px-5 py-2.5 bg-foreground text-background font-mono text-xs uppercase font-bold tracking-wider hover:bg-foreground/90 transition-colors inline-flex items-center justify-center gap-2 border-2 border-foreground shadow-sm shrink-0"
+              >
+                <Zap className="w-4 h-4 fill-amber-300 text-amber-300" />
+                <span>⚡ Pinjam Langsung (Walk-in)</span>
+              </button>
+            </div>
+
+            {/* Universal Search Message / Prompt */}
+            {universalSearchMessage && (
+              <div className="p-3 bg-surface-muted border border-border-hairline font-mono text-xs flex items-center justify-between gap-2">
+                <span className="text-foreground">{universalSearchMessage}</span>
+                <button
+                  type="button"
+                  onClick={() => setUniversalSearchMessage(null)}
+                  className="text-muted hover:text-foreground text-[10px] uppercase font-bold"
+                >
+                  Tutup
+                </button>
+              </div>
+            )}
           </div>
 
           {pendingLoans.length > 0 && (
@@ -1769,27 +1446,58 @@ export default function DashboardCirculationPage() {
                                   </td>
 
                                   <td className="p-3 text-right">
-                                    {loan.borrower?.name && (
-                                      <a
-                                        href={`https://wa.me/?text=${encodeURIComponent(
-                                          `Halo ${loan.borrower.name}, salam literasi dari Perpusjal Blora! Sekadar menyapa mengenai buku "${loan.book.title}" yang sedang Anda pinjam (Tenggat: ${
-                                            dueDate
-                                              ? dueDate.toLocaleDateString('id-ID', {
-                                                  day: 'numeric',
-                                                  month: 'short',
-                                                })
-                                              : '-'
-                                          }). Selamat membaca!`
-                                        )}`}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="px-2.5 py-1 border border-border-hairline text-foreground hover:bg-foreground hover:text-background font-mono text-[10px] uppercase font-bold tracking-wider transition-colors inline-flex items-center gap-1"
-                                        title="Sapa peminjam lewat WhatsApp"
+                                    <div className="flex items-center justify-end gap-1.5 flex-wrap">
+                                      <button
+                                        type="button"
+                                        onClick={() => handleBoardQuickReturn(loan.loanCode)}
+                                        className="px-2 py-1 border border-border-hairline text-foreground hover:border-foreground font-mono text-[10px] uppercase font-bold tracking-wider transition-colors inline-flex items-center gap-1 bg-surface"
+                                        title="Catat pengembalian buku"
                                       >
-                                        <MessageCircle className="w-3 h-3" />
-                                        <span>Chat WA</span>
-                                      </a>
-                                    )}
+                                        <RotateCcw className="w-3 h-3" />
+                                        <span>Kembali</span>
+                                      </button>
+
+                                      {loan.status === LoanStatus.BORROWED && loan.extensionCount === 0 && (
+                                        <button
+                                          type="button"
+                                          onClick={() => handleVolunteerExtend(loan.id, loan.book.title)}
+                                          disabled={extendLoadingId === loan.id}
+                                          className="px-2 py-1 border border-border-hairline text-foreground hover:border-foreground font-mono text-[10px] uppercase font-bold tracking-wider transition-colors inline-flex items-center gap-1 bg-surface"
+                                          title="Perpanjang masa pinjam (+7 Hari) oleh relawan"
+                                        >
+                                          <RefreshCw className={cn('w-3 h-3', extendLoadingId === loan.id && 'animate-spin')} />
+                                          <span>+7 Hari</span>
+                                        </button>
+                                      )}
+
+                                      {loan.borrower?.name && (() => {
+                                        const cleanPhone = loan.borrower.phoneNumber ? loan.borrower.phoneNumber.replace(/\D/g, '') : '';
+                                        const waText = `Halo ${loan.borrower.name}, salam literasi dari Perpusjal Blora! Sekadar menyapa mengenai buku "${loan.book.title}" yang sedang Anda pinjam (Tenggat: ${
+                                          dueDate
+                                            ? dueDate.toLocaleDateString('id-ID', {
+                                                day: 'numeric',
+                                                month: 'short',
+                                              })
+                                            : '-'
+                                        }). Selamat membaca!`;
+                                        const waHref = cleanPhone
+                                          ? `https://wa.me/${cleanPhone}?text=${encodeURIComponent(waText)}`
+                                          : `https://wa.me/?text=${encodeURIComponent(waText)}`;
+
+                                        return (
+                                          <a
+                                            href={waHref}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="px-2.5 py-1 border border-border-hairline text-foreground hover:bg-foreground hover:text-background font-mono text-[10px] uppercase font-bold tracking-wider transition-colors inline-flex items-center gap-1"
+                                            title={`Chat WhatsApp ${loan.borrower.name}`}
+                                          >
+                                            <MessageCircle className="w-3 h-3" />
+                                            <span>Chat WA</span>
+                                          </a>
+                                        );
+                                      })()}
+                                    </div>
                                   </td>
                                 </tr>
                               );
@@ -1802,9 +1510,9 @@ export default function DashboardCirculationPage() {
                 )}
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
               {/* Column 1: Siap Diambil */}
-              <div className="border-2 border-foreground bg-surface p-5 space-y-4">
+              <div className="border-2 border-foreground bg-surface p-4 space-y-4">
                 <div className="border-b border-border-hairline pb-2 flex items-center justify-between font-mono text-xs">
                   <span className="font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
                     <UserCheck className="w-3.5 h-3.5 text-foreground" />
@@ -1817,47 +1525,129 @@ export default function DashboardCirculationPage() {
                   <p className="text-xs text-muted italic font-mono py-4 text-center">Tidak ada antrean ambil.</p>
                 ) : (
                   <div className="space-y-3">
-                    {boardData.readyForPickup.map((item) => (
-                      <div
-                        key={item.id}
-                        className="p-3 bg-surface-muted border border-border-hairline text-xs font-mono space-y-2 hover:border-foreground transition-colors"
-                      >
-                        <div className="flex justify-between font-bold items-center">
-                          <span className="text-foreground truncate">{item.borrowerName}</span>
-                          <span className="text-base tracking-wider bg-surface px-1.5 border border-border-hairline font-bold">
-                            {item.pickupCode}
-                          </span>
+                    {boardData.readyForPickup.map((item) => {
+                      const cleanPhone = item.borrowerPhone ? item.borrowerPhone.replace(/\D/g, '') : '';
+                      const waText = `Halo Kak ${item.borrowerName}, buku "${item.bookTitle}" yang diajukan sudah siap diambil di Meja Lapak Perpusjal Blora (Kode Ambil: ${item.pickupCode}). Ditunggu kedatangannya ya!`;
+                      const waHref = cleanPhone
+                        ? `https://wa.me/${cleanPhone}?text=${encodeURIComponent(waText)}`
+                        : `https://api.whatsapp.com/send?text=${encodeURIComponent(waText)}`;
+
+                      return (
+                        <div
+                          key={item.id}
+                          className="p-3 bg-surface-muted border border-border-hairline text-xs font-mono space-y-2 hover:border-foreground transition-colors"
+                        >
+                          <div className="flex justify-between font-bold items-center">
+                            <span className="text-foreground truncate">{item.borrowerName}</span>
+                            <span className="text-base tracking-wider bg-surface px-1.5 border border-border-hairline font-bold">
+                              {item.pickupCode}
+                            </span>
+                          </div>
+                          <p className="font-sans text-xs text-muted line-clamp-1">{item.bookTitle}</p>
+                          {item.borrowerPhone && (
+                            <p className="text-[10px] text-muted font-mono">{item.borrowerPhone}</p>
+                          )}
+                          <div className="flex gap-1.5 mt-1">
+                            <button
+                              type="button"
+                              onClick={() => handleBoardQuickPickup(item.pickupCode || '')}
+                              className="flex-1 py-1.5 border border-foreground bg-surface text-foreground font-mono text-[10px] uppercase font-bold hover:bg-foreground hover:text-background transition-colors flex items-center justify-center gap-1"
+                            >
+                              <span>Proses Ambil</span>
+                              <ArrowRight className="w-3 h-3" />
+                            </button>
+                            <a
+                              href={waHref}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="px-2.5 py-1.5 border border-border-hairline bg-surface hover:border-emerald-600 text-emerald-700 hover:bg-emerald-50 transition-colors flex items-center justify-center"
+                              title="Kirim WhatsApp siap ambil"
+                            >
+                              <MessageCircle className="w-3.5 h-3.5" />
+                            </a>
+                          </div>
                         </div>
-                        <p className="font-sans text-xs text-muted line-clamp-1">{item.bookTitle}</p>
-                        <div className="flex gap-1.5 mt-1">
-                          <button
-                            type="button"
-                            onClick={() => handleBoardQuickPickup(item.pickupCode || '')}
-                            className="flex-1 py-1.5 border border-foreground bg-surface text-foreground font-mono text-[10px] uppercase font-bold hover:bg-foreground hover:text-background transition-colors flex items-center justify-center gap-1"
-                          >
-                            <span>Proses Ambil</span>
-                            <ArrowRight className="w-3 h-3" />
-                          </button>
-                          <a
-                            href={`https://api.whatsapp.com/send?text=${encodeURIComponent(
-                              `Halo Kak ${item.borrowerName}, buku "${item.bookTitle}" yang diajukan sudah siap diambil di Meja Lapak Perpusjal Blora (Kode Ambil: ${item.pickupCode}). Ditunggu kedatangannya ya!`
-                            )}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="px-2.5 py-1.5 border border-border-hairline bg-surface hover:border-emerald-600 text-emerald-700 hover:bg-emerald-50 transition-colors flex items-center justify-center"
-                            title="Kirim pesan WhatsApp siap ambil"
-                          >
-                            <MessageCircle className="w-3.5 h-3.5" />
-                          </a>
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>
 
-              {/* Column 2: Jatuh Tempo Hari Ini */}
-              <div className="border border-border-hairline bg-surface p-5 space-y-4">
+              {/* Column 2: Jatuh Tempo Besok (H-1) */}
+              <div className="border border-border-hairline bg-surface p-4 space-y-4">
+                <div className="border-b border-border-hairline pb-2 flex items-center justify-between font-mono text-xs">
+                  <span className="font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
+                    <Calendar className="w-3.5 h-3.5 text-foreground" />
+                    Jatuh Tempo Besok ({boardData.dueTomorrow?.length || 0})
+                  </span>
+                  <span className="text-[10px] font-bold text-amber-600">H-1</span>
+                </div>
+
+                {(!boardData.dueTomorrow || boardData.dueTomorrow.length === 0) ? (
+                  <p className="text-xs text-muted italic font-mono py-4 text-center">Nihil jatuh tempo besok.</p>
+                ) : (
+                  <div className="space-y-3">
+                    {boardData.dueTomorrow.map((item) => {
+                      const cleanPhone = item.borrowerPhone ? item.borrowerPhone.replace(/\D/g, '') : '';
+                      const dueDateFormatted = item.dueDate
+                        ? new Date(item.dueDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })
+                        : 'besok';
+                      const waText = `Halo Kak ${item.borrowerName}, salam hangat dari relawan Perpusjal Blora! Sekadar mengingatkan bahwa peminjaman buku "${item.bookTitle}" akan jatuh tempo besok (${dueDateFormatted}). Jika ingin memperpanjang masa pinjam (+7 hari), Kakak bisa konfirmasi ke relawan lapak ya. Terima kasih!`;
+                      const waHref = cleanPhone
+                        ? `https://wa.me/${cleanPhone}?text=${encodeURIComponent(waText)}`
+                        : `https://api.whatsapp.com/send?text=${encodeURIComponent(waText)}`;
+
+                      return (
+                        <div
+                          key={item.id}
+                          className="p-3 bg-surface-muted border border-border-hairline text-xs font-mono space-y-2 hover:border-foreground transition-colors"
+                        >
+                          <div className="flex justify-between font-bold">
+                            <span className="text-foreground truncate">{item.borrowerName}</span>
+                            <span className="text-xs text-muted">{item.loanCode}</span>
+                          </div>
+                          <p className="font-sans text-xs text-muted line-clamp-1">{item.bookTitle}</p>
+                          {item.borrowerPhone && (
+                            <p className="text-[10px] text-muted font-mono">{item.borrowerPhone}</p>
+                          )}
+                          <div className="flex gap-1.5 mt-1">
+                            <button
+                              type="button"
+                              onClick={() => handleBoardQuickReturn(item.loanCode)}
+                              className="flex-1 py-1.5 border border-border-hairline bg-surface text-foreground font-mono text-[10px] uppercase font-bold hover:border-foreground hover:bg-foreground hover:text-background transition-colors flex items-center justify-center gap-1"
+                            >
+                              <span>Proses Kembali</span>
+                              <ArrowRight className="w-3 h-3" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleVolunteerExtend(item.id, item.bookTitle)}
+                              disabled={extendLoadingId === item.id}
+                              className="px-2 py-1.5 border border-border-hairline bg-surface hover:border-foreground text-foreground font-mono text-[10px] uppercase font-bold transition-colors flex items-center justify-center gap-1"
+                              title="Perpanjang masa pinjam (+7 Hari) oleh relawan"
+                            >
+                              <RefreshCw className={cn('w-3 h-3', extendLoadingId === item.id && 'animate-spin')} />
+                              <span className="hidden xl:inline">+7h</span>
+                            </button>
+                            <a
+                              href={waHref}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="px-2.5 py-1.5 border border-border-hairline bg-surface hover:border-amber-600 text-amber-700 hover:bg-amber-50 transition-colors flex items-center justify-center"
+                              title="Kirim pengingat WhatsApp H-1"
+                            >
+                              <MessageCircle className="w-3.5 h-3.5" />
+                            </a>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* Column 3: Jatuh Tempo Hari Ini */}
+              <div className="border border-border-hairline bg-surface p-4 space-y-4">
                 <div className="border-b border-border-hairline pb-2 flex items-center justify-between font-mono text-xs">
                   <span className="font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
                     <Clock className="w-3.5 h-3.5 text-foreground" />
@@ -1870,45 +1660,64 @@ export default function DashboardCirculationPage() {
                   <p className="text-xs text-muted italic font-mono py-4 text-center">Nihil hari ini.</p>
                 ) : (
                   <div className="space-y-3">
-                    {boardData.dueToday.map((item) => (
-                      <div
-                        key={item.id}
-                        className="p-3 bg-surface-muted border border-border-hairline text-xs font-mono space-y-2 hover:border-foreground transition-colors"
-                      >
-                        <div className="flex justify-between font-bold">
-                          <span className="text-foreground truncate">{item.borrowerName}</span>
-                          <span className="text-xs text-muted">{item.loanCode}</span>
+                    {boardData.dueToday.map((item) => {
+                      const cleanPhone = item.borrowerPhone ? item.borrowerPhone.replace(/\D/g, '') : '';
+                      const waText = `Halo Kak ${item.borrowerName}, kami dari relawan Perpusjal Blora mengingatkan bahwa peminjaman buku "${item.bookTitle}" jatuh tempo hari ini. Mohon dikembalikan ke lapak terdekat ya Kak. Terima kasih!`;
+                      const waHref = cleanPhone
+                        ? `https://wa.me/${cleanPhone}?text=${encodeURIComponent(waText)}`
+                        : `https://api.whatsapp.com/send?text=${encodeURIComponent(waText)}`;
+
+                      return (
+                        <div
+                          key={item.id}
+                          className="p-3 bg-surface-muted border border-border-hairline text-xs font-mono space-y-2 hover:border-foreground transition-colors"
+                        >
+                          <div className="flex justify-between font-bold">
+                            <span className="text-foreground truncate">{item.borrowerName}</span>
+                            <span className="text-xs text-muted">{item.loanCode}</span>
+                          </div>
+                          <p className="font-sans text-xs text-muted line-clamp-1">{item.bookTitle}</p>
+                          {item.borrowerPhone && (
+                            <p className="text-[10px] text-muted font-mono">{item.borrowerPhone}</p>
+                          )}
+                          <div className="flex gap-1.5 mt-1">
+                            <button
+                              type="button"
+                              onClick={() => handleBoardQuickReturn(item.loanCode)}
+                              className="flex-1 py-1.5 border border-border-hairline bg-surface text-foreground font-mono text-[10px] uppercase font-bold hover:border-foreground hover:bg-foreground hover:text-background transition-colors flex items-center justify-center gap-1"
+                            >
+                              <span>Proses Kembali</span>
+                              <ArrowRight className="w-3 h-3" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleVolunteerExtend(item.id, item.bookTitle)}
+                              disabled={extendLoadingId === item.id}
+                              className="px-2 py-1.5 border border-border-hairline bg-surface hover:border-foreground text-foreground font-mono text-[10px] uppercase font-bold transition-colors flex items-center justify-center gap-1"
+                              title="Perpanjang masa pinjam (+7 Hari) oleh relawan"
+                            >
+                              <RefreshCw className={cn('w-3 h-3', extendLoadingId === item.id && 'animate-spin')} />
+                              <span className="hidden xl:inline">+7h</span>
+                            </button>
+                            <a
+                              href={waHref}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="px-2.5 py-1.5 border border-border-hairline bg-surface hover:border-emerald-600 text-emerald-700 hover:bg-emerald-50 transition-colors flex items-center justify-center"
+                              title="Kirim pengingat WhatsApp jatuh tempo hari ini"
+                            >
+                              <MessageCircle className="w-3.5 h-3.5" />
+                            </a>
+                          </div>
                         </div>
-                        <p className="font-sans text-xs text-muted line-clamp-1">{item.bookTitle}</p>
-                        <div className="flex gap-1.5 mt-1">
-                          <button
-                            type="button"
-                            onClick={() => handleBoardQuickReturn(item.loanCode)}
-                            className="flex-1 py-1.5 border border-border-hairline bg-surface text-foreground font-mono text-[10px] uppercase font-bold hover:border-foreground hover:bg-foreground hover:text-background transition-colors flex items-center justify-center gap-1"
-                          >
-                            <span>Proses Kembali</span>
-                            <ArrowRight className="w-3 h-3" />
-                          </button>
-                          <a
-                            href={`https://api.whatsapp.com/send?text=${encodeURIComponent(
-                              `Halo Kak ${item.borrowerName}, kami dari relawan Perpusjal Blora mengingatkan bahwa peminjaman buku "${item.bookTitle}" jatuh tempo hari ini. Mohon dikembalikan ke lapak terdekat ya Kak. Terima kasih!`
-                            )}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="px-2.5 py-1.5 border border-border-hairline bg-surface hover:border-emerald-600 text-emerald-700 hover:bg-emerald-50 transition-colors flex items-center justify-center"
-                            title="Kirim pengingat WhatsApp jatuh tempo"
-                          >
-                            <MessageCircle className="w-3.5 h-3.5" />
-                          </a>
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>
 
-              {/* Column 3: Terlambat / Overdue */}
-              <div className="border-2 border-destructive/60 bg-surface p-5 space-y-4">
+              {/* Column 4: Terlambat / Overdue */}
+              <div className="border-2 border-destructive/60 bg-surface p-4 space-y-4">
                 <div className="border-b border-destructive/30 pb-2 flex items-center justify-between font-mono text-xs">
                   <span className="font-bold text-destructive uppercase tracking-wider flex items-center gap-1.5">
                     <AlertTriangle className="w-3.5 h-3.5 text-destructive" />
@@ -1921,39 +1730,48 @@ export default function DashboardCirculationPage() {
                   <p className="text-xs text-muted italic font-mono py-4 text-center">Tidak ada pinjaman terlambat.</p>
                 ) : (
                   <div className="space-y-3">
-                    {boardData.overdue.map((item) => (
-                      <div
-                        key={item.id}
-                        className="p-3 bg-surface-muted border border-destructive/40 text-xs font-mono space-y-2"
-                      >
-                        <div className="flex justify-between font-bold text-destructive">
-                          <span className="truncate">{item.borrowerName}</span>
-                          <span>{item.loanCode}</span>
+                    {boardData.overdue.map((item) => {
+                      const cleanPhone = item.borrowerPhone ? item.borrowerPhone.replace(/\D/g, '') : '';
+                      const waText = `Halo Kak ${item.borrowerName}, kami dari relawan Perpusjal Blora. Buku "${item.bookTitle}" yang Kakak pinjam telah melewati jatuh tempo pengembalian. Mohon segera dikembalikan ke lapak demi kenyamanan pembaca lain ya Kak. Terima kasih!`;
+                      const waHref = cleanPhone
+                        ? `https://wa.me/${cleanPhone}?text=${encodeURIComponent(waText)}`
+                        : `https://api.whatsapp.com/send?text=${encodeURIComponent(waText)}`;
+
+                      return (
+                        <div
+                          key={item.id}
+                          className="p-3 bg-surface-muted border border-destructive/40 text-xs font-mono space-y-2"
+                        >
+                          <div className="flex justify-between font-bold text-destructive">
+                            <span className="truncate">{item.borrowerName}</span>
+                            <span>{item.loanCode}</span>
+                          </div>
+                          <p className="font-sans text-xs text-muted line-clamp-1">{item.bookTitle}</p>
+                          {item.borrowerPhone && (
+                            <p className="text-[10px] text-destructive font-mono">{item.borrowerPhone}</p>
+                          )}
+                          <div className="flex gap-1.5 mt-1">
+                            <button
+                              type="button"
+                              onClick={() => handleBoardQuickReturn(item.loanCode)}
+                              className="flex-1 py-1.5 border border-destructive bg-destructive/10 text-destructive font-mono text-[10px] uppercase font-bold hover:bg-destructive hover:text-white transition-colors flex items-center justify-center gap-1"
+                            >
+                              <span>Terima Kembali</span>
+                              <ArrowRight className="w-3 h-3" />
+                            </button>
+                            <a
+                              href={waHref}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="px-2.5 py-1.5 border border-destructive/40 bg-surface hover:border-emerald-600 text-emerald-700 hover:bg-emerald-50 transition-colors flex items-center justify-center"
+                              title="Kirim teguran WhatsApp keterlambatan"
+                            >
+                              <MessageCircle className="w-3.5 h-3.5" />
+                            </a>
+                          </div>
                         </div>
-                        <p className="font-sans text-xs text-muted line-clamp-1">{item.bookTitle}</p>
-                        <div className="flex gap-1.5 mt-1">
-                          <button
-                            type="button"
-                            onClick={() => handleBoardQuickReturn(item.loanCode)}
-                            className="flex-1 py-1.5 border border-destructive bg-destructive/10 text-destructive font-mono text-[10px] uppercase font-bold hover:bg-destructive hover:text-white transition-colors flex items-center justify-center gap-1"
-                          >
-                            <span>Terima Kembali</span>
-                            <ArrowRight className="w-3 h-3" />
-                          </button>
-                          <a
-                            href={`https://api.whatsapp.com/send?text=${encodeURIComponent(
-                              `Halo Kak ${item.borrowerName}, kami dari relawan Perpusjal Blora. Buku "${item.bookTitle}" yang Kakak pinjam telah melewati jatuh tempo pengembalian. Mohon segera dikembalikan ke lapak demi kenyamanan pembaca lain ya Kak. Terima kasih!`
-                            )}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="px-2.5 py-1.5 border border-destructive/40 bg-surface hover:border-emerald-600 text-emerald-700 hover:bg-emerald-50 transition-colors flex items-center justify-center"
-                            title="Kirim teguran WhatsApp keterlambatan"
-                          >
-                            <MessageCircle className="w-3.5 h-3.5" />
-                          </a>
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -2017,20 +1835,504 @@ export default function DashboardCirculationPage() {
         onClose={() => setScannerOpen(false)}
         onScan={handleScanResult}
         title={
-          scannerContext === 'pickup'
-            ? 'Scan QR Kartu Anggota / Kode Ambil'
+          scannerContext === 'walkInMember'
+            ? 'Scan QR Kartu Anggota (Walk-in)'
+            : scannerContext === 'walkInBook'
+            ? 'Scan Stiker Punggung Buku (Walk-in)'
             : scannerContext === 'pickupCopy'
             ? 'Scan Stiker Punggung Eksemplar Buku'
-            : 'Scan Stiker Buku / Kode Pinjam'
+            : scannerContext === 'pickup'
+            ? 'Scan QR Kartu Anggota / Kode Ambil'
+            : scannerContext === 'return'
+            ? 'Scan Stiker Buku / Kode Pinjam'
+            : 'Pindai Kode Stiker / QR Member / Kode Pinjam'
         }
         instruction={
-          scannerContext === 'pickup'
-            ? 'Arahkan kamera ponsel ke QR Kartu Anggota digital pembaca atau kode ambil 6-digit.'
+          scannerContext === 'walkInMember'
+            ? 'Arahkan kamera ponsel ke QR Kartu Anggota digital pembaca.'
+            : scannerContext === 'walkInBook'
+            ? 'Arahkan kamera ponsel ke stiker di punggung buku yang ingin dipinjamkan langsung.'
             : scannerContext === 'pickupCopy'
             ? 'Arahkan kamera ponsel ke stiker di punggung buku fisik yang akan diserahkan.'
-            : 'Arahkan kamera ponsel ke stiker punggung buku yang sedang dikembalikan oleh pembaca.'
+            : scannerContext === 'pickup'
+            ? 'Arahkan kamera ponsel ke QR Kartu Anggota digital pembaca atau kode ambil 6-digit.'
+            : scannerContext === 'return'
+            ? 'Arahkan kamera ponsel ke stiker punggung buku yang sedang dikembalikan oleh pembaca.'
+            : 'Arahkan kamera ke barcode stiker buku, kartu anggota, atau kode pinjaman.'
         }
       />
+
+      {/* MODAL PINJAM LANGSUNG (WALK-IN LOAN) */}
+      {walkInModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-surface border-2 border-foreground max-w-lg w-full p-6 space-y-4 font-mono text-xs shadow-2xl my-8">
+            <div className="flex items-center justify-between border-b border-border-hairline pb-2">
+              <div className="flex items-center gap-2">
+                <Zap className="w-4 h-4 text-amber-500 fill-amber-500" />
+                <h3 className="font-serif text-lg font-bold text-foreground">
+                  Pinjam Langsung di Lapak (Walk-in)
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setWalkInModalOpen(false);
+                  setWalkInError(null);
+                }}
+                className="text-muted hover:text-foreground p-1"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <p className="font-sans text-xs text-muted leading-relaxed">
+              Layanan peminjaman instan di tempat tanpa reservasi daring. Buku langsung diserahkan dengan tenggat 14 hari ke depan.
+            </p>
+
+            {walkInSuccess && (
+              <div className="p-3 bg-surface-muted border border-foreground font-mono text-xs text-foreground flex items-start gap-2">
+                <CheckCircle2 className="w-4 h-4 shrink-0 text-foreground mt-0.5" />
+                <span>{walkInSuccess}</span>
+              </div>
+            )}
+
+            {walkInError && (
+              <div className="p-3 bg-surface-muted border border-destructive font-mono text-xs text-destructive flex items-start gap-2">
+                <AlertTriangle className="w-4 h-4 shrink-0 text-destructive mt-0.5" />
+                <span>{walkInError}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleWalkInSubmit} className="space-y-4">
+              {/* Member input */}
+              <div className="space-y-1.5">
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-foreground">
+                  IDENTITAS MEMBER / PEMINJAM (WAJIB):
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    required
+                    value={walkInMemberInput}
+                    onChange={(e) => setWalkInMemberInput(e.target.value)}
+                    placeholder="Username, Email, No. HP, atau ID Member..."
+                    className="flex-1 p-2.5 bg-surface-muted border border-border-hairline font-mono text-xs text-foreground focus:outline-none focus:border-foreground"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setScannerContext('walkInMember');
+                      setScannerOpen(true);
+                    }}
+                    className="px-3 py-2 border border-border-hairline bg-surface hover:border-foreground text-foreground flex items-center gap-1 font-mono text-xs"
+                    title="Scan QR Kartu Anggota Digital"
+                  >
+                    <Camera className="w-4 h-4" />
+                    <span className="hidden sm:inline">Scan QR</span>
+                  </button>
+                </div>
+                <span className="text-[10px] text-muted block font-sans">
+                  Ketik username (tanpa @), no. WhatsApp terdaftar, atau scan QR kartu anggota.
+                </span>
+              </div>
+
+              {/* Book input */}
+              <div className="space-y-1.5">
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-foreground">
+                  STIKER EKSEMPLAR BUKU (WAJIB):
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    required
+                    value={walkInBookInput}
+                    onChange={(e) => setWalkInBookInput(e.target.value)}
+                    placeholder="Contoh: PJ-2026-0001, judul buku, atau slug..."
+                    className="flex-1 p-2.5 bg-surface-muted border border-border-hairline font-mono text-xs text-foreground focus:outline-none focus:border-foreground uppercase font-bold"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setScannerContext('walkInBook');
+                      setScannerOpen(true);
+                    }}
+                    className="px-3 py-2 border border-border-hairline bg-surface hover:border-foreground text-foreground flex items-center gap-1 font-mono text-xs"
+                    title="Scan barcode/stiker di punggung buku"
+                  >
+                    <Camera className="w-4 h-4" />
+                    <span className="hidden sm:inline">Scan Stiker</span>
+                  </button>
+                </div>
+                <span className="text-[10px] text-muted block font-sans">
+                  Arahkan scanner ke stiker punggung buku atau ketik kode inventaris PJ-2026-xxxx.
+                </span>
+              </div>
+
+              {/* Pickup point */}
+              <div className="space-y-1.5">
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-foreground">
+                  TITIK LAPAK / LOKASI:
+                </label>
+                <input
+                  type="text"
+                  value={walkInPickupPoint}
+                  onChange={(e) => setWalkInPickupPoint(e.target.value)}
+                  placeholder="Lapak Perpusjal Blora"
+                  className="w-full p-2.5 bg-surface-muted border border-border-hairline font-mono text-xs text-foreground focus:outline-none focus:border-foreground"
+                />
+              </div>
+
+              {/* Note */}
+              <div className="space-y-1.5">
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-foreground">
+                  CATATAN (OPSIONAL):
+                </label>
+                <input
+                  type="text"
+                  value={walkInNote}
+                  onChange={(e) => setWalkInNote(e.target.value)}
+                  placeholder="Catatan relawan..."
+                  className="w-full p-2.5 bg-surface-muted border border-border-hairline font-mono text-xs text-foreground focus:outline-none focus:border-foreground"
+                />
+              </div>
+
+              <div className="pt-2 flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setWalkInModalOpen(false);
+                    setWalkInError(null);
+                  }}
+                  disabled={walkInLoading}
+                  className="px-4 py-2 border border-border-hairline text-muted hover:text-foreground uppercase tracking-wider font-bold transition-colors"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  disabled={walkInLoading || !walkInMemberInput.trim() || !walkInBookInput.trim()}
+                  className="px-5 py-2 bg-foreground text-background uppercase tracking-wider font-bold hover:bg-foreground/90 transition-colors disabled:opacity-40 inline-flex items-center gap-1.5"
+                >
+                  {walkInLoading ? (
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                  )}
+                  <span>Terbitkan Pinjaman Langsung</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL SERAH-TERIMA BUKU (PICKUP) */}
+      {pickupLoan && (
+        <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-surface border-2 border-foreground max-w-lg w-full p-6 space-y-4 font-mono text-xs shadow-2xl my-8">
+            <div className="flex items-center justify-between border-b border-border-hairline pb-2">
+              <div className="flex items-center gap-2">
+                <UserCheck className="w-4 h-4 text-foreground" />
+                <h3 className="font-serif text-lg font-bold text-foreground">
+                  Serah-Terima Buku ke Pembaca
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setPickupLoan(null);
+                  setPickupError(null);
+                }}
+                className="text-muted hover:text-foreground p-1"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {pickupSuccess && (
+              <div className="p-3 bg-surface-muted border border-foreground font-mono text-xs text-foreground flex items-start gap-2">
+                <CheckCircle2 className="w-4 h-4 shrink-0 text-foreground mt-0.5" />
+                <span>{pickupSuccess}</span>
+              </div>
+            )}
+
+            {pickupError && (
+              <div className="p-3 bg-surface-muted border border-destructive font-mono text-xs text-destructive flex items-start gap-2">
+                <AlertTriangle className="w-4 h-4 shrink-0 text-destructive mt-0.5" />
+                <span>{pickupError}</span>
+              </div>
+            )}
+
+            <div className="p-3 bg-surface-muted border border-border-hairline space-y-2">
+              <div className="flex justify-between items-center text-muted">
+                <span>KODE PINJAM: <strong className="text-foreground">{pickupLoan.loanCode}</strong></span>
+                {pickupLoan.pickupCode && (
+                  <span className="px-2 py-0.5 bg-foreground text-background font-bold text-[10px]">
+                    KODE AMBIL: {pickupLoan.pickupCode}
+                  </span>
+                )}
+              </div>
+              <div>
+                <h4 className="font-serif font-bold text-base text-foreground font-sans">{pickupLoan.book.title}</h4>
+                <p className="font-sans text-xs text-muted">Penulis: {pickupLoan.book.author}</p>
+              </div>
+              <div className="pt-1 text-[11px] text-muted space-y-0.5 border-t border-border-hairline">
+                <div>Peminjam: <strong className="text-foreground">{pickupLoan.borrower?.name}</strong> (@{pickupLoan.borrower?.username})</div>
+                <div>Titik Ambil: <span className="text-foreground">{pickupLoan.pickupPoint}</span></div>
+                {pickupLoan.userNote && (
+                  <div className="italic text-foreground">Catatan: &ldquo;{pickupLoan.userNote}&rdquo;</div>
+                )}
+              </div>
+            </div>
+
+            {/* Physical Copy Selector */}
+            <div className="space-y-1.5">
+              <label className="block text-[11px] text-foreground uppercase font-bold flex items-center justify-between">
+                <span>PILIH EKSEMPLAR FISIK:</span>
+                <span className="text-[10px] text-muted font-normal">Cocokkan stiker buku</span>
+              </label>
+              {availableCopies.length > 0 ? (
+                <div className="flex gap-2">
+                  <select
+                    value={selectedCopyId}
+                    onChange={(e) => setSelectedCopyId(e.target.value)}
+                    className="flex-1 p-2 bg-surface border-2 border-foreground rounded-none text-xs text-foreground focus:outline-none font-mono"
+                  >
+                    {availableCopies.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.inventoryCode} — Kondisi: {c.condition}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setScannerContext('pickupCopy');
+                      setScannerOpen(true);
+                    }}
+                    className="px-3 py-2 border-2 border-foreground bg-surface hover:bg-surface-muted transition-colors inline-flex items-center gap-1 font-mono text-xs uppercase font-bold text-foreground shrink-0"
+                    title="Scan stiker punggung buku yang diambil"
+                  >
+                    <Camera className="w-3.5 h-3.5" />
+                    <span>Scan</span>
+                  </button>
+                </div>
+              ) : (
+                <p className="text-[11px] text-muted italic">
+                  Eksemplar fisik akan otomatis dialokasikan / dibuat oleh sistem.
+                </p>
+              )}
+            </div>
+
+            <div className="pt-2 flex items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setPickupLoan(null);
+                  setPickupError(null);
+                }}
+                disabled={pickupLoading}
+                className="px-4 py-2 border border-border-hairline text-muted hover:text-foreground uppercase tracking-wider font-bold transition-colors"
+              >
+                Tutup
+              </button>
+              <button
+                type="button"
+                onClick={handleExecutePickup}
+                disabled={pickupLoading}
+                className="px-5 py-2 bg-foreground text-background uppercase tracking-wider font-bold hover:bg-foreground/90 transition-colors disabled:opacity-40 inline-flex items-center gap-1.5"
+              >
+                {pickupLoading ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-4 h-4" />}
+                <span>Serahkan Buku ke Peminjam</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL PENGEMBALIAN BUKU (RETURN) */}
+      {returnLoan && (
+        <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-surface border-2 border-foreground max-w-lg w-full p-6 space-y-4 font-mono text-xs shadow-2xl my-8">
+            <div className="flex items-center justify-between border-b border-border-hairline pb-2">
+              <div className="flex items-center gap-2">
+                <RotateCcw className="w-4 h-4 text-foreground" />
+                <h3 className="font-serif text-lg font-bold text-foreground">
+                  Penerimaan Pengembalian Buku
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setReturnLoan(null);
+                  setReturnError(null);
+                  setRecommendedWaitlist(null);
+                  setShowHilangConfirm(false);
+                }}
+                className="text-muted hover:text-foreground p-1"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {returnSuccess && (
+              <div className="p-3 bg-surface-muted border border-foreground font-mono text-xs text-foreground flex items-start gap-2">
+                <CheckCircle2 className="w-4 h-4 shrink-0 text-foreground mt-0.5" />
+                <span>{returnSuccess}</span>
+              </div>
+            )}
+
+            {returnError && (
+              <div className="p-3 bg-surface-muted border border-destructive font-mono text-xs text-destructive flex items-start gap-2">
+                <AlertTriangle className="w-4 h-4 shrink-0 text-destructive mt-0.5" />
+                <span>{returnError}</span>
+              </div>
+            )}
+
+            {/* Waitlist recommendation card */}
+            {recommendedWaitlist && (
+              <div className="p-3 bg-foreground text-background space-y-2">
+                <div className="flex items-center gap-1.5 font-bold uppercase tracking-wider text-[11px]">
+                  <Users className="w-4 h-4 text-background" />
+                  <span>Ada Pembaca Menunggu di Waitlist!</span>
+                </div>
+                <p className="font-sans text-xs opacity-90">
+                  Buku ini telah dinanti oleh <strong>{recommendedWaitlist.user.name}</strong> (@{recommendedWaitlist.user.username}). Alokasikan segera agar buku dapat langsung dipinjamkan kembali.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => handleAllocateWaitlist(recommendedWaitlist.id)}
+                  disabled={allocateLoading}
+                  className="w-full py-2 bg-background text-foreground font-mono text-xs uppercase font-bold tracking-wider hover:bg-surface-muted transition-colors flex items-center justify-center gap-1.5"
+                >
+                  {allocateLoading ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <ArrowRight className="w-3.5 h-3.5" />}
+                  <span>Alokasikan ke Antrean Pembaca Ini</span>
+                </button>
+              </div>
+            )}
+
+            <div className="p-3 bg-surface-muted border border-border-hairline space-y-2">
+              <div className="flex justify-between items-center text-muted">
+                <span>KODE PINJAM: <strong className="text-foreground">{returnLoan.loanCode}</strong></span>
+                <span className={`px-2 py-0.5 font-bold text-[10px] ${
+                  returnLoan.status === LoanStatus.OVERDUE
+                    ? 'bg-destructive text-destructive-foreground'
+                    : 'bg-foreground text-background'
+                }`}>
+                  {returnLoan.status === LoanStatus.OVERDUE ? 'TERLAMBAT' : returnLoan.status}
+                </span>
+              </div>
+              <div>
+                <h4 className="font-serif font-bold text-base text-foreground font-sans">{returnLoan.book.title}</h4>
+                <p className="font-sans text-xs text-muted">Penulis: {returnLoan.book.author}</p>
+              </div>
+              <div className="pt-1 text-[11px] text-muted space-y-0.5 border-t border-border-hairline">
+                <div>Peminjam: <strong className="text-foreground">{returnLoan.borrower?.name}</strong> (@{returnLoan.borrower?.username})</div>
+                <div>Eksemplar: <strong className="text-foreground">{returnLoan.bookCopy?.inventoryCode || '-'}</strong></div>
+                <div>Tenggat: <span className="text-foreground">{returnLoan.dueDate ? new Date(returnLoan.dueDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'}</span></div>
+              </div>
+            </div>
+
+            {/* Condition options */}
+            <div className="space-y-1.5">
+              <label className="block text-[11px] text-foreground uppercase font-bold">
+                KONDISI FISIK BUKU SAAT KEMBALI:
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { value: ReturnCondition.BAIK, label: 'BAIK', desc: 'Mulus, utuh, rapi' },
+                  { value: ReturnCondition.RUSAK, label: 'RUSAK', desc: 'Coretan, halaman lepas, atau basah' },
+                  { value: ReturnCondition.HILANG, label: 'HILANG', desc: 'Buku hilang / tidak dapat ditemukan' },
+                ].map((opt) => (
+                  <label
+                    key={opt.value}
+                    className={`p-2.5 border-2 cursor-pointer transition-colors block ${
+                      returnCondition === opt.value
+                        ? 'border-foreground bg-foreground text-background'
+                        : 'border-border-hairline hover:border-foreground bg-surface text-foreground'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="returnCondition"
+                      value={opt.value}
+                      checked={returnCondition === opt.value}
+                      onChange={() => {
+                        setReturnCondition(opt.value);
+                        if (opt.value === ReturnCondition.HILANG) {
+                          setShowHilangConfirm(true);
+                        } else {
+                          setShowHilangConfirm(false);
+                        }
+                      }}
+                      className="sr-only"
+                    />
+                    <div className="font-bold text-xs uppercase">{opt.label}</div>
+                    <div className={`text-[10px] mt-0.5 ${returnCondition === opt.value ? 'opacity-80' : 'text-muted'}`}>
+                      {opt.desc}
+                    </div>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {showHilangConfirm && (
+              <div className="p-3 bg-destructive/10 border-2 border-destructive font-mono text-xs text-destructive space-y-1">
+                <div className="flex items-center gap-2 font-bold">
+                  <AlertTriangle className="w-4 h-4 shrink-0" />
+                  <span>KONFIRMASI BUKU HILANG</span>
+                </div>
+                <p className="font-sans text-foreground text-[11px]">
+                  Tindakan ini permanen: eksemplar fisik akan ditandai HILANG dan jumlah stok berkurang.
+                </p>
+              </div>
+            )}
+
+            {/* Note input */}
+            <div className="space-y-1.5">
+              <label className="block text-[11px] text-foreground uppercase font-bold">
+                CATATAN RELAWAN (OPSIONAL):
+              </label>
+              <input
+                type="text"
+                value={returnNote}
+                onChange={(e) => setReturnNote(e.target.value)}
+                placeholder="Catatan kondisi buku saat diterima..."
+                className="w-full p-2.5 bg-surface-muted border border-border-hairline font-mono text-xs text-foreground focus:outline-none focus:border-foreground"
+              />
+            </div>
+
+            <div className="pt-2 flex items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setReturnLoan(null);
+                  setReturnError(null);
+                  setRecommendedWaitlist(null);
+                  setShowHilangConfirm(false);
+                }}
+                disabled={returnLoading}
+                className="px-4 py-2 border border-border-hairline text-muted hover:text-foreground uppercase tracking-wider font-bold transition-colors"
+              >
+                Tutup
+              </button>
+              <button
+                type="button"
+                onClick={handleExecuteReturn}
+                disabled={returnLoading}
+                className={`px-5 py-2 uppercase tracking-wider font-bold transition-colors disabled:opacity-40 inline-flex items-center gap-1.5 ${
+                  returnCondition === ReturnCondition.HILANG
+                    ? 'bg-destructive text-white hover:bg-destructive/90'
+                    : 'bg-foreground text-background hover:bg-foreground/90'
+                }`}
+              >
+                {returnLoading ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <RotateCcw className="w-4 h-4" />}
+                <span>Konfirmasi Buku Diterima</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* MODAL PENOLAKAN PENGAJUAN */}
       {rejectModalLoan && (

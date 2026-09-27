@@ -8,6 +8,7 @@ export default function DashboardProfileSettingsPage() {
     name: '',
     username: '',
     email: '',
+    phoneNumber: '',
     bio: '',
     instagramUrl: '',
     websiteUrl: '',
@@ -39,6 +40,7 @@ export default function DashboardProfileSettingsPage() {
               name: u.name || '',
               username: u.username || '',
               email: u.email || '',
+              phoneNumber: u.phoneNumber || '',
               bio: u.bio || '',
               instagramUrl: u.instagramUrl || '',
               websiteUrl: u.websiteUrl || '',
@@ -69,6 +71,7 @@ export default function DashboardProfileSettingsPage() {
         body: JSON.stringify({
           name: profile.name,
           bio: profile.bio,
+          phoneNumber: profile.phoneNumber,
           instagramUrl: profile.instagramUrl,
           websiteUrl: profile.websiteUrl,
           isProfilePublic: profile.isProfilePublic,
@@ -214,6 +217,39 @@ export default function DashboardProfileSettingsPage() {
                 />
                 <span className="font-mono text-[10px] text-muted block mt-1">
                   Username bersifat permanen untuk catatan kearsipan.
+                </span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div>
+                <label className="block font-mono text-xs uppercase tracking-wider text-muted mb-1.5">
+                  Alamat Email Akun
+                </label>
+                <input
+                  type="email"
+                  disabled
+                  value={profile.email}
+                  className="w-full px-3 py-2 border border-border-hairline bg-surface-muted/50 text-muted font-mono text-xs cursor-not-allowed"
+                />
+                <span className="font-mono text-[10px] text-muted block mt-1">
+                  Email terverifikasi untuk pemberitahuan sistem.
+                </span>
+              </div>
+
+              <div>
+                <label className="block font-mono text-xs uppercase tracking-wider text-muted mb-1.5">
+                  Nomor WhatsApp / HP
+                </label>
+                <input
+                  type="tel"
+                  placeholder="08123456789"
+                  value={profile.phoneNumber}
+                  onChange={(e) => setProfile({ ...profile, phoneNumber: e.target.value })}
+                  className="w-full px-3 py-2 border border-border-hairline bg-background text-foreground font-mono text-xs focus:outline-none focus:border-foreground"
+                />
+                <span className="font-mono text-[10px] text-muted block mt-1">
+                  Untuk koordinasi lapak & pengingat ramah saat pinjaman jatuh tempo.
                 </span>
               </div>
             </div>

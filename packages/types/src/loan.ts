@@ -5,6 +5,7 @@ export const loanRequestSchema = z.object({
   bookId: z.string().min(1, 'bookId wajib diisi.'),
   pickupPoint: z.string().min(2, 'Titik pengambilan wajib diisi.').max(60),
   pickupDatePlan: z.string().optional().nullable(),
+  phoneNumber: z.string().max(20, 'Nomor HP/WA maksimal 20 karakter.').optional().nullable(),
   note: z.string().max(300, 'Catatan maksimal 300 karakter.').optional().nullable(),
 });
 
@@ -35,6 +36,15 @@ export const loanReturnSchema = z.object({
 });
 
 export type LoanReturnInput = z.infer<typeof loanReturnSchema>;
+
+export const walkInLoanSchema = z.object({
+  memberIdentifier: z.string().min(1, 'Identitas member wajib diisi (username, email, nomor WA, atau kode anggota).'),
+  bookCopyIdentifier: z.string().min(1, 'Kode eksemplar buku wajib diisi (misal: PJ-2026-0001).'),
+  pickupPoint: z.string().max(60).optional().default('Meja Lapak Fisik'),
+  note: z.string().max(300).optional().nullable(),
+});
+
+export type WalkInLoanInput = z.infer<typeof walkInLoanSchema>;
 
 export const loanQuerySchema = z.object({
   status: z.nativeEnum(LoanStatus).optional(),
@@ -85,6 +95,7 @@ export interface LoanItem {
     name: string;
     username: string;
     email?: string;
+    phoneNumber?: string | null;
   };
   canCancel: boolean;
   canExtend: boolean;
@@ -96,15 +107,17 @@ export interface LoanPickupBoardItem {
   loanCode: string;
   pickupCode: string | null;
   borrowerName: string;
+  borrowerPhone?: string | null;
   bookTitle: string;
   status: LoanStatus;
   pickupDeadline: string | null;
   dueDate: string | null;
-  type: 'READY_FOR_PICKUP' | 'DUE_TODAY' | 'OVERDUE';
+  type: 'READY_FOR_PICKUP' | 'DUE_TOMORROW' | 'DUE_TODAY' | 'OVERDUE';
 }
 
 export interface LoanPickupBoardResponse {
   readyForPickup: LoanPickupBoardItem[];
+  dueTomorrow: LoanPickupBoardItem[];
   dueToday: LoanPickupBoardItem[];
   overdue: LoanPickupBoardItem[];
   totalActiveLoans: number;

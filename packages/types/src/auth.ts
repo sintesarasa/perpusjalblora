@@ -21,6 +21,7 @@ export const registerSchema = z
       .email('Format email tidak valid.')
       .max(120, 'Email terlalu panjang.')
       .toLowerCase(),
+    phoneNumber: z.string().max(20, 'Nomor telepon maksimal 20 karakter.').optional().nullable(),
     password: z
       .string()
       .min(8, 'Password minimal 8 karakter.')

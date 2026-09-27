@@ -15,11 +15,14 @@ router.get('/me', requireAuth, (req, res, next) =>
 router.post('/:id/cancel', requireAuth, (req, res, next) =>
   loansController.cancelLoan(req, res, next)
 );
-router.post('/:id/extend', requireAuth, (req, res, next) =>
-  loansController.extendLoan(req, res, next)
-);
 
 // Kurator & Relawan Mode Lapak routes (Protected: KURATOR or ADMIN)
+router.post('/walk-in', requireRole(Role.KURATOR), (req, res, next) =>
+  loansController.createWalkInLoan(req, res, next)
+);
+router.post('/:id/extend', requireRole(Role.KURATOR), (req, res, next) =>
+  loansController.extendLoan(req, res, next)
+);
 router.get('/pickup-board', requireRole(Role.KURATOR), (req, res, next) =>
   loansController.getPickupBoard(req, res, next)
 );

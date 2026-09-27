@@ -12,7 +12,6 @@ import {
   CheckCircle2,
   AlertTriangle,
   ArrowRight,
-  RefreshCw,
   XCircle,
   CreditCard,
   MapPin,
@@ -75,27 +74,6 @@ export default function MemberLoansDashboardPage() {
     }
 
     setActionMessage(res.data?.message || 'Berhasil keluar dari antrean.');
-    fetchData();
-  };
-
-  const handleExtend = async (loanId: string) => {
-    if (!window.confirm('Perpanjang durasi peminjaman ini selama 7 hari?')) return;
-
-    setActionLoading(true);
-    setActionMessage(null);
-
-    const res = await apiClient<{ message: string }>(`/loans/${loanId}/extend`, {
-      method: 'POST',
-    });
-
-    setActionLoading(false);
-
-    if (res.error) {
-      alert(res.error.message);
-      return;
-    }
-
-    setActionMessage(res.data?.message || 'Peminjaman berhasil diperpanjang.');
     fetchData();
   };
 
@@ -523,42 +501,40 @@ export default function MemberLoansDashboardPage() {
                   </div>
                 </div>
 
-                {/* Footer action buttons */}
-                {(loan.canCancel || loan.canExtend || loan.status === LoanStatus.RETURNED) && (
-                  <div className="pt-3 border-t border-border-hairline flex items-center justify-end gap-3 font-mono text-xs">
-                    {loan.status === LoanStatus.RETURNED && (
-                      <Link
-                        href={`/buku/${loan.book.slug}#resensi`}
-                        className="px-3 py-1.5 border border-border-hairline text-foreground hover:bg-muted-bg transition-colors inline-flex items-center gap-1.5 uppercase font-medium tracking-wider"
-                      >
-                        <Star className="w-3.5 h-3.5 fill-foreground/20 text-foreground" />
-                        Tulis Resensi
-                      </Link>
+                {/* Footer action buttons & volunteer info */}
+                {(loan.canCancel || loan.status === LoanStatus.BORROWED || loan.status === LoanStatus.RETURNED) && (
+                  <div className="pt-3 border-t border-border-hairline flex flex-col sm:flex-row sm:items-center justify-between gap-3 font-mono text-xs">
+                    {loan.status === LoanStatus.BORROWED ? (
+                      <div className="text-[11px] text-muted font-sans italic bg-surface-muted p-2 border border-border-hairline">
+                        * Perpanjangan masa pinjam (+7 hari) dilakukan oleh relawan di lapak atau hubungi relawan via WhatsApp.
+                      </div>
+                    ) : (
+                      <div />
                     )}
 
-                    {loan.canCancel && (
-                      <button
-                        type="button"
-                        onClick={() => handleCancel(loan.id)}
-                        disabled={actionLoading}
-                        className="px-3 py-1.5 border border-border-hairline text-muted hover:text-foreground uppercase tracking-wider transition-colors inline-flex items-center gap-1"
-                      >
-                        <XCircle className="w-3.5 h-3.5" />
-                        Batalkan Pengajuan
-                      </button>
-                    )}
+                    <div className="flex items-center gap-3 self-end shrink-0">
+                      {loan.status === LoanStatus.RETURNED && (
+                        <Link
+                          href={`/buku/${loan.book.slug}#resensi`}
+                          className="px-3 py-1.5 border border-border-hairline text-foreground hover:bg-muted-bg transition-colors inline-flex items-center gap-1.5 uppercase font-medium tracking-wider"
+                        >
+                          <Star className="w-3.5 h-3.5 fill-foreground/20 text-foreground" />
+                          Tulis Resensi
+                        </Link>
+                      )}
 
-                    {loan.canExtend && loan.status === LoanStatus.BORROWED && (
-                      <button
-                        type="button"
-                        onClick={() => handleExtend(loan.id)}
-                        disabled={actionLoading}
-                        className="px-4 py-1.5 bg-foreground text-background font-bold uppercase tracking-wider hover:bg-foreground/90 transition-colors inline-flex items-center gap-1.5"
-                      >
-                        <RefreshCw className="w-3.5 h-3.5" />
-                        Perpanjang Pinjaman (+7 Hari)
-                      </button>
-                    )}
+                      {loan.canCancel && (
+                        <button
+                          type="button"
+                          onClick={() => handleCancel(loan.id)}
+                          disabled={actionLoading}
+                          className="px-3 py-1.5 border border-border-hairline text-muted hover:text-foreground uppercase tracking-wider transition-colors inline-flex items-center gap-1"
+                        >
+                          <XCircle className="w-3.5 h-3.5" />
+                          Batalkan Pengajuan
+                        </button>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>

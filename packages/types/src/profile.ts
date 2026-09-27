@@ -9,6 +9,7 @@ export interface PublicUserProfile {
   bio: string | null;
   instagramUrl: string | null;
   websiteUrl: string | null;
+  phoneNumber?: string | null;
   role: Role;
   trustLevel: TrustLevel;
   createdAt: string;
@@ -36,6 +37,7 @@ export interface PublicUserProfile {
 export interface UpdateProfileInput {
   name?: string;
   bio?: string;
+  phoneNumber?: string;
   instagramUrl?: string;
   websiteUrl?: string;
   avatarUrl?: string;
