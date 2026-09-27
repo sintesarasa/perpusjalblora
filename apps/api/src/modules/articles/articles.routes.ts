@@ -9,6 +9,7 @@ const router = Router();
 router.get('/', (req, res, next) => articlesController.getArticles(req, res, next));
 router.get('/categories', (req, res, next) => articlesController.getCategories(req, res, next));
 router.get('/tags', (req, res, next) => articlesController.getTags(req, res, next));
+router.post('/tags', requireAuth, (req, res, next) => articlesController.createTag(req, res, next));
 
 // Author routes (Protected)
 router.get('/me/list', requireAuth, (req, res, next) => articlesController.getMyArticles(req, res, next));

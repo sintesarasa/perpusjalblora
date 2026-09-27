@@ -156,6 +156,47 @@ async function main() {
   }
   console.log(`✅ ${badges.length} Badges seeded.`);
 
+  // 3b. 24 Curated Initial Article Tags
+  const initialTags = [
+    // Lapak & Gerakan
+    { name: 'alun-alun', slug: 'alun-alun' },
+    { name: 'lapak-buku', slug: 'lapak-buku' },
+    { name: 'relawan', slug: 'relawan' },
+    { name: 'baca-gratis', slug: 'baca-gratis' },
+    { name: 'anak-anak', slug: 'anak-anak' },
+    // Lokalitas & Sejarah Blora
+    { name: 'pramoedya', slug: 'pramoedya' },
+    { name: 'sedulur-sikep', slug: 'sedulur-sikep' },
+    { name: 'samin', slug: 'samin' },
+    { name: 'hutan-jati', slug: 'hutan-jati' },
+    { name: 'barongan', slug: 'barongan' },
+    { name: 'sedekah-bumi', slug: 'sedekah-bumi' },
+    { name: 'kentrung', slug: 'kentrung' },
+    { name: 'desa-pelosok', slug: 'desa-pelosok' },
+    // Isu Sosial & Ekologi
+    { name: 'lingkungan', slug: 'lingkungan' },
+    { name: 'krisis-air', slug: 'krisis-air' },
+    { name: 'ruang-terbuka', slug: 'ruang-terbuka' },
+    { name: 'pendidikan', slug: 'pendidikan' },
+    { name: 'kebijakan-publik', slug: 'kebijakan-publik' },
+    { name: 'fasilitas-umum', slug: 'fasilitas-umum' },
+    // Sastra & Refleksi
+    { name: 'sajak-bebas', slug: 'sajak-bebas' },
+    { name: 'catatan-harian', slug: 'catatan-harian' },
+    { name: 'kegelisahan', slug: 'kegelisahan' },
+    { name: 'makna-hidup', slug: 'makna-hidup' },
+    { name: 'kenangan', slug: 'kenangan' },
+  ];
+
+  for (const t of initialTags) {
+    await prisma.tag.upsert({
+      where: { slug: t.slug },
+      update: {},
+      create: t,
+    });
+  }
+  console.log(`✅ ${initialTags.length} Curated Tags seeded.`);
+
   // 4. CMS Pages
   const pages = [
     { title: 'Tentang Perpusjal', slug: 'tentang', showInFooter: true, showInNav: true, isSystem: true },

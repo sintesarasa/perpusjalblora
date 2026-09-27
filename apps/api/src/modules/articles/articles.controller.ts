@@ -235,6 +235,16 @@ export class ArticlesController {
     }
   }
 
+  async createTag(req: Request, res: Response, next: NextFunction) {
+    try {
+      const name = req.body.name as string;
+      const tag = await articlesService.createOrFindTag(name);
+      res.status(201).json({ data: tag });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async getArticleRevisions(req: Request, res: Response, next: NextFunction) {
     try {
       const articleId = req.params.id as string;

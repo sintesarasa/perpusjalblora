@@ -917,6 +917,44 @@ export class ArticlesService {
   }
 
   /**
+   * Create or find an existing tag (auto-normalized name and slug)
+   */
+  async createOrFindTag(rawName: string) {
+    const cleanName = rawName.trim().replace(/^#+/, '').slice(0, 40);
+    if (!cleanName) {
+      throw HttpError.badRequest('Nama tag tidak boleh kosong.');
+    }
+
+    const slug = cleanName
+      .toLowerCase()
+      .replace(/[^\w\s-]/g, '')
+      .replace(/[\s_-]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 40);
+
+    if (!slug) {
+      throw HttpError.badRequest('Format tag tidak valid.');
+    }
+
+    let tag = await prisma.tag.findUnique({
+      where: { slug },
+      select: { id: true, name: true, slug: true },
+    });
+
+    if (!tag) {
+      tag = await prisma.tag.create({
+        data: {
+          name: cleanName,
+          slug,
+        },
+        select: { id: true, name: true, slug: true },
+      });
+    }
+
+    return tag;
+  }
+
+  /**
    * Get revision/curation history for an article.
    * Accessible by: article author, KURATOR, ADMIN.
    */
