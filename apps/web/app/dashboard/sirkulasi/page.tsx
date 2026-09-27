@@ -1487,37 +1487,45 @@ export default function DashboardCirculationPage() {
                               </div>
 
                               {/* Card Action Buttons (Thumb Accessible) */}
-                              <div className="grid grid-cols-2 gap-2 pt-1">
+                              <div className="space-y-2 pt-1.5 border-t border-border-hairline">
                                 <button
                                   type="button"
                                   onClick={() => handleBoardQuickReturn(loan.loanCode)}
-                                  className="h-10 border border-foreground bg-surface text-foreground font-mono text-xs uppercase font-bold hover:bg-foreground hover:text-background transition-colors flex items-center justify-center gap-1"
+                                  className="w-full h-10 border-2 border-foreground bg-surface text-foreground font-mono text-xs uppercase font-bold hover:bg-foreground hover:text-background transition-colors flex items-center justify-center gap-1.5 shadow-sm"
                                 >
-                                  <RotateCcw className="w-3.5 h-3.5" />
-                                  <span>Kembali</span>
+                                  <RotateCcw className="w-4 h-4" />
+                                  <span>Catat Pengembalian Buku</span>
                                 </button>
 
-                                {loan.status === LoanStatus.BORROWED && loan.extensionCount === 0 ? (
-                                  <button
-                                    type="button"
-                                    onClick={() => handleVolunteerExtend(loan.id, loan.book.title)}
-                                    disabled={extendLoadingId === loan.id}
-                                    className="h-10 border border-border-hairline bg-surface hover:border-foreground text-foreground font-mono text-xs uppercase font-bold transition-colors flex items-center justify-center gap-1"
-                                  >
-                                    <RefreshCw className={cn('w-3.5 h-3.5', extendLoadingId === loan.id && 'animate-spin')} />
-                                    <span>+7 Hari</span>
-                                  </button>
-                                ) : (
+                                <div className="grid grid-cols-2 gap-2">
+                                  {loan.status === LoanStatus.BORROWED && loan.extensionCount === 0 ? (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleVolunteerExtend(loan.id, loan.book.title)}
+                                      disabled={extendLoadingId === loan.id}
+                                      className="h-10 border border-border-hairline bg-surface hover:border-foreground text-foreground font-mono text-xs uppercase font-bold transition-colors flex items-center justify-center gap-1.5"
+                                      title="Perpanjang masa pinjam (+7 Hari) oleh relawan"
+                                    >
+                                      <RefreshCw className={cn('w-3.5 h-3.5', extendLoadingId === loan.id && 'animate-spin')} />
+                                      <span>+7 Hari</span>
+                                    </button>
+                                  ) : (
+                                    <div className="h-10 border border-border-hairline bg-surface-muted text-muted font-mono text-[10px] uppercase font-bold flex items-center justify-center text-center px-1">
+                                      Perpanjangan Habis
+                                    </div>
+                                  )}
+
                                   <a
                                     href={waHref}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="h-10 border border-border-hairline bg-surface hover:border-emerald-600 text-emerald-700 hover:bg-emerald-50 font-mono text-xs uppercase font-bold transition-colors flex items-center justify-center gap-1.5"
+                                    className="h-10 border-2 border-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 font-mono text-xs uppercase font-bold hover:bg-emerald-600 hover:text-white transition-colors flex items-center justify-center gap-1.5 shadow-sm"
+                                    title={`Chat WhatsApp ${loan.borrower?.name || 'Peminjam'}`}
                                   >
-                                    <MessageCircle className="w-4 h-4" />
+                                    <MessageCircle className="w-4 h-4 fill-emerald-600 text-white dark:fill-emerald-400 dark:text-emerald-950" />
                                     <span>Chat WA</span>
                                   </a>
-                                )}
+                                </div>
                               </div>
                             </div>
                           );
@@ -1715,7 +1723,7 @@ export default function DashboardCirculationPage() {
                               <p className="text-[10px] text-muted font-mono">{item.borrowerPhone}</p>
                             )}
 
-                            {/* 2-Tier Action Layout */}
+                              {/* 2-Tier Action Layout */}
                             <div className="space-y-1.5 pt-1">
                               {/* Tier 1: Primary Action Button */}
                               <button
@@ -1728,18 +1736,16 @@ export default function DashboardCirculationPage() {
                               </button>
 
                               {/* Tier 2: WhatsApp Notification Button */}
-                              {item.borrowerPhone && (
-                                <a
-                                  href={waHref}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="w-full h-8 border border-border-hairline bg-surface hover:border-emerald-600 text-emerald-700 hover:bg-emerald-50 transition-colors flex items-center justify-center gap-1.5 font-mono text-[10px] uppercase font-bold"
-                                  title="Kirim pesan WhatsApp buku siap diambil"
-                                >
-                                  <MessageCircle className="w-3.5 h-3.5" />
-                                  <span>Chat WA Siap Ambil</span>
-                                </a>
-                              )}
+                              <a
+                                href={waHref}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="w-full h-9 border-2 border-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-600 hover:text-white transition-colors flex items-center justify-center gap-1.5 font-mono text-[11px] uppercase font-bold shadow-sm"
+                                title="Kirim pesan WhatsApp buku siap diambil"
+                              >
+                                <MessageCircle className="w-4 h-4 fill-emerald-600 text-white dark:fill-emerald-400 dark:text-emerald-950" />
+                                <span>Chat WA Siap Ambil</span>
+                              </a>
                             </div>
                           </div>
                         );
@@ -1804,7 +1810,7 @@ export default function DashboardCirculationPage() {
                                   type="button"
                                   onClick={() => handleVolunteerExtend(item.id, item.bookTitle)}
                                   disabled={extendLoadingId === item.id}
-                                  className="h-8 border border-border-hairline bg-surface hover:border-foreground text-foreground font-mono text-[10px] uppercase font-bold transition-colors flex items-center justify-center gap-1"
+                                  className="h-9 border border-border-hairline bg-surface hover:border-foreground text-foreground font-mono text-[10px] uppercase font-bold transition-colors flex items-center justify-center gap-1"
                                   title="Perpanjang masa pinjam (+7 Hari) oleh relawan"
                                 >
                                   <RefreshCw className={cn('w-3 h-3', extendLoadingId === item.id && 'animate-spin')} />
@@ -1815,10 +1821,10 @@ export default function DashboardCirculationPage() {
                                   href={waHref}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="h-8 border border-border-hairline bg-surface hover:border-amber-600 text-amber-700 hover:bg-amber-50 transition-colors flex items-center justify-center gap-1 font-mono text-[10px] uppercase font-bold"
+                                  className="h-9 border-2 border-amber-600 bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 hover:bg-amber-600 hover:text-white transition-colors flex items-center justify-center gap-1 font-mono text-[10px] uppercase font-bold shadow-sm"
                                   title="Kirim pengingat WhatsApp H-1"
                                 >
-                                  <MessageCircle className="w-3.5 h-3.5" />
+                                  <MessageCircle className="w-3.5 h-3.5 fill-amber-600 text-white dark:fill-amber-400 dark:text-amber-950" />
                                   <span>Chat WA</span>
                                 </a>
                               </div>
@@ -1883,7 +1889,7 @@ export default function DashboardCirculationPage() {
                                   type="button"
                                   onClick={() => handleVolunteerExtend(item.id, item.bookTitle)}
                                   disabled={extendLoadingId === item.id}
-                                  className="h-8 border border-border-hairline bg-surface hover:border-foreground text-foreground font-mono text-[10px] uppercase font-bold transition-colors flex items-center justify-center gap-1"
+                                  className="h-9 border border-border-hairline bg-surface hover:border-foreground text-foreground font-mono text-[10px] uppercase font-bold transition-colors flex items-center justify-center gap-1"
                                   title="Perpanjang masa pinjam (+7 Hari) oleh relawan"
                                 >
                                   <RefreshCw className={cn('w-3 h-3', extendLoadingId === item.id && 'animate-spin')} />
@@ -1894,10 +1900,10 @@ export default function DashboardCirculationPage() {
                                   href={waHref}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="h-8 border border-border-hairline bg-surface hover:border-emerald-600 text-emerald-700 hover:bg-emerald-50 transition-colors flex items-center justify-center gap-1 font-mono text-[10px] uppercase font-bold"
+                                  className="h-9 border-2 border-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-600 hover:text-white transition-colors flex items-center justify-center gap-1 font-mono text-[10px] uppercase font-bold shadow-sm"
                                   title="Kirim pengingat WhatsApp jatuh tempo hari ini"
                                 >
-                                  <MessageCircle className="w-3.5 h-3.5" />
+                                  <MessageCircle className="w-3.5 h-3.5 fill-emerald-600 text-white dark:fill-emerald-400 dark:text-emerald-950" />
                                   <span>Chat WA</span>
                                 </a>
                               </div>
@@ -1961,7 +1967,7 @@ export default function DashboardCirculationPage() {
                                 href={waHref}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="w-full h-8 border border-destructive/40 bg-surface hover:border-destructive text-destructive hover:bg-destructive/5 transition-colors flex items-center justify-center gap-1.5 font-mono text-[10px] uppercase font-bold"
+                                className="w-full h-9 border-2 border-destructive bg-destructive/10 text-destructive hover:bg-destructive hover:text-white transition-colors flex items-center justify-center gap-1.5 font-mono text-[11px] uppercase font-bold shadow-sm"
                                 title="Kirim teguran WhatsApp keterlambatan"
                               >
                                 <MessageCircle className="w-3.5 h-3.5" />
