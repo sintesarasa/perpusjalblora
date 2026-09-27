@@ -225,6 +225,27 @@ export class ArticlesController {
       next(error);
     }
   }
+
+  async getTags(req: Request, res: Response, next: NextFunction) {
+    try {
+      const tags = await articlesService.getTags();
+      res.status(200).json({ data: tags });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getArticleRevisions(req: Request, res: Response, next: NextFunction) {
+    try {
+      const articleId = req.params.id as string;
+      const userId = req.user!.userId;
+      const userRole = req.user!.role;
+      const revisions = await articlesService.getArticleRevisions(articleId, userId, userRole);
+      res.status(200).json({ data: revisions });
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 export const articlesController = new ArticlesController();

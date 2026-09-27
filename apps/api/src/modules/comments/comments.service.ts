@@ -11,6 +11,7 @@ import {
   TrustLevel,
   UserSessionPayload,
 } from '@perpusjal/types';
+import { notificationsService } from '../notifications/notifications.service.js';
 
 export class CommentsService {
   /**
@@ -229,10 +230,32 @@ export class CommentsService {
 
     // 6. If published immediately and attached to an article, increment commentCount
     if (initialStatus === CommentStatus.PUBLISHED && articleId) {
-      await prisma.article.update({
+      // Increment comment count
+      const articleRecord = await prisma.article.update({
         where: { id: articleId },
         data: { commentCount: { increment: 1 } },
+        select: { authorId: true, title: true, slug: true },
       });
+
+      // Notify article author (only if commenter !== author)
+      if (articleRecord && articleRecord.authorId !== user.userId) {
+        const preview =
+          created.content.length > 80
+            ? created.content.slice(0, 80) + '...'
+            : created.content;
+        try {
+          await notificationsService.createNotification(articleRecord.authorId, {
+            type: 'NEW_COMMENT',
+            title: 'Komentar Baru pada Tulisanmu',
+            body: `${created.author.name} mengomentari "${articleRecord.title}": "${preview}"`,
+            actionUrl: `/artikel/${articleRecord.slug}#komentar`,
+            entityType: 'ARTICLE',
+            entityId: articleId,
+          });
+        } catch (e) {
+          console.error('[CommentsService] Failed to send NEW_COMMENT notification:', e);
+        }
+      }
     }
 
     const commentItem: CommentItem = {

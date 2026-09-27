@@ -20,6 +20,12 @@ export async function POST(req: NextRequest) {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
+    // Determine upload folder (books or articles)
+    const folderParam = (formData.get('folder') as string) || 'books';
+    const allowedFolders = ['books', 'articles'];
+    const uploadFolder = `perpusjal/${allowedFolders.includes(folderParam) ? folderParam : 'books'}`;
+    const localSubfolder = allowedFolders.includes(folderParam) ? folderParam : 'books';
+
     let cloudName = process.env.CLOUDINARY_CLOUD_NAME || process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
     let apiKey = process.env.CLOUDINARY_API_KEY;
     let apiSecret = process.env.CLOUDINARY_API_SECRET;
@@ -56,8 +62,7 @@ export async function POST(req: NextRequest) {
     if (cloudName && cloudName !== 'perpusjal' && apiKey && apiSecret && apiKey !== 'mock-key') {
       try {
         const timestamp = Math.round(Date.now() / 1000);
-        const folder = 'perpusjal/books';
-        const strToSign = `folder=${folder}&timestamp=${timestamp}${apiSecret}`;
+        const strToSign = `folder=${uploadFolder}&timestamp=${timestamp}${apiSecret}`;
         const signature = crypto.createHash('sha1').update(strToSign).digest('hex');
 
         const mime = file.type || 'image/jpeg';
@@ -68,7 +73,7 @@ export async function POST(req: NextRequest) {
         cFormData.append('api_key', apiKey);
         cFormData.append('timestamp', timestamp.toString());
         cFormData.append('signature', signature);
-        cFormData.append('folder', folder);
+        cFormData.append('folder', uploadFolder);
 
         const cRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
           method: 'POST',
@@ -93,8 +98,8 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 2. FALLBACK: LOCAL STORAGE IN public/uploads/books/
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'books');
+    // 2. FALLBACK: LOCAL STORAGE
+    const uploadDir = path.join(process.cwd(), 'public', 'uploads', localSubfolder);
     await fs.mkdir(uploadDir, { recursive: true });
 
     const safeBaseName = file.name
@@ -103,18 +108,19 @@ export async function POST(req: NextRequest) {
       .replace(/-+/g, '-')
       .slice(0, 30);
     const ext = file.type === 'image/webp' ? '.webp' : '.jpg';
-    const filename = `book-${Date.now()}-${safeBaseName}${ext}`;
+    const filename = `${localSubfolder}-${Date.now()}-${safeBaseName}${ext}`;
     const filePath = path.join(uploadDir, filename);
 
     await fs.writeFile(filePath, buffer);
 
-    const publicUrl = `/uploads/books/${filename}`;
+    const publicUrl = `/uploads/${localSubfolder}/${filename}`;
 
     return NextResponse.json({
       url: publicUrl,
       storage: 'local',
       bytes: buffer.length,
     });
+
   } catch (error: any) {
     console.error('[Upload Handler Error]:', error);
     return NextResponse.json(

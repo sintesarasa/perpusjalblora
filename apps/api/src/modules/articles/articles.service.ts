@@ -904,6 +904,54 @@ export class ArticlesService {
 
     return updated;
   }
+
+  /**
+   * Get all tags for article editor (tag picker)
+   */
+  async getTags() {
+    const tags = await prisma.tag.findMany({
+      orderBy: { name: 'asc' },
+      select: { id: true, name: true, slug: true },
+    });
+    return tags;
+  }
+
+  /**
+   * Get revision/curation history for an article.
+   * Accessible by: article author, KURATOR, ADMIN.
+   */
+  async getArticleRevisions(articleId: string, userId: string, userRole: Role) {
+    const article = await prisma.article.findUnique({
+      where: { id: articleId },
+      select: { authorId: true, deletedAt: true },
+    });
+    if (!article || article.deletedAt !== null) {
+      throw HttpError.notFound('Artikel tidak ditemukan.');
+    }
+    const isAuthor = article.authorId === userId;
+    const isCuratorOrAdmin = userRole === Role.KURATOR || userRole === Role.ADMIN;
+    if (!isAuthor && !isCuratorOrAdmin) {
+      throw HttpError.forbidden('Hanya penulis atau kurator yang dapat melihat riwayat kurasi.');
+    }
+
+    const revisions = await prisma.articleRevision.findMany({
+      where: { articleId },
+      orderBy: { createdAt: 'desc' },
+      include: {
+        editor: { select: { id: true, name: true, avatarUrl: true } },
+      },
+    });
+
+    return revisions.map((r) => ({
+      id: r.id,
+      statusFrom: r.statusFrom,
+      statusTo: r.statusTo,
+      note: r.note,
+      rejectionReason: r.rejectionReason,
+      createdAt: r.createdAt.toISOString(),
+      editor: r.editor,
+    }));
+  }
 }
 
 function slugify(text: string): string {

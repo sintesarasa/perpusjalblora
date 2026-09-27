@@ -24,6 +24,7 @@ import { usersRouter } from './modules/users/users.routes.js';
 import { adminRouter } from './modules/admin/admin.routes.js';
 import { waitlistRoutes } from './modules/waitlist/waitlist.routes.js';
 import { circulationSchedulerService } from './modules/loans/circulation-scheduler.service.js';
+import { articleSchedulerService } from './modules/articles/article-scheduler.service.js';
 import { prisma } from './lib/prisma.js';
 import { Role } from '@perpusjal/types';
 
@@ -129,6 +130,9 @@ if (process.env.NODE_ENV !== 'test') {
 
     // Start background circulation maintenance scheduler (hourly checks)
     circulationSchedulerService.startScheduler();
+
+    // Start article publish scheduler (every 5 minutes — auto-publish SCHEDULED articles)
+    articleSchedulerService.startScheduler();
   });
 }
 
