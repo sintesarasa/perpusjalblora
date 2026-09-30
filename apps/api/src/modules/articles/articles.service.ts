@@ -124,7 +124,7 @@ export class ArticlesService {
     slug: string,
     options: { user?: UserSessionPayload; previewToken?: string } = {}
   ) {
-    const article = await prisma.article.findUnique({
+    let article = await prisma.article.findUnique({
       where: { slug },
       include: {
         author: {
@@ -152,6 +152,38 @@ export class ArticlesService {
         },
       },
     });
+
+    // Fallback: If not found by slug, attempt lookup by primary key ID
+    if (!article) {
+      article = await prisma.article.findUnique({
+        where: { id: slug },
+        include: {
+          author: {
+            select: {
+              id: true,
+              name: true,
+              username: true,
+              avatarUrl: true,
+              bio: true,
+            },
+          },
+          category: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+            },
+          },
+          tags: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+            },
+          },
+        },
+      });
+    }
 
     if (!article || article.deletedAt !== null) {
       throw HttpError.notFound('Artikel tidak ditemukan.');
@@ -214,6 +246,83 @@ export class ArticlesService {
       tags: article.tags,
       previewToken: canSeePreviewToken ? previewToken : undefined,
       ...(isPreview ? { preview: { status: article.status as unknown as ArticleStatus } } : {}),
+    };
+  }
+
+  /**
+   * Get single article by ID specifically for author editing or curation
+   */
+  async getArticleById(
+    id: string,
+    options: { user?: UserSessionPayload } = {}
+  ) {
+    const article = await prisma.article.findUnique({
+      where: { id },
+      include: {
+        author: {
+          select: {
+            id: true,
+            name: true,
+            username: true,
+            avatarUrl: true,
+            bio: true,
+          },
+        },
+        category: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+          },
+        },
+        tags: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+          },
+        },
+      },
+    });
+
+    if (!article || article.deletedAt !== null) {
+      throw HttpError.notFound('Artikel tidak ditemukan.');
+    }
+
+    // Permission: If not published, only author or curator/admin may view
+    if (article.status !== ArticleStatus.PUBLISHED) {
+      const isAuthor = options.user && options.user.userId === article.authorId;
+      const isCuratorOrAdmin =
+        options.user &&
+        (options.user.role === Role.KURATOR || options.user.role === Role.ADMIN);
+
+      if (!isAuthor && !isCuratorOrAdmin) {
+        throw HttpError.notFound('Artikel tidak ditemukan.');
+      }
+    }
+
+    return {
+      id: article.id,
+      title: article.title,
+      slug: article.slug,
+      subtitle: article.subtitle,
+      excerpt: article.excerpt,
+      content: article.content,
+      plainText: article.plainText,
+      coverImage: article.coverImage,
+      coverCredit: article.coverCredit,
+      publishedAt: article.publishedAt?.toISOString() || null,
+      readingTime: article.readingTime,
+      wordCount: article.wordCount,
+      viewCount: article.viewCount,
+      commentCount: article.commentCount,
+      isFeatured: article.isFeatured,
+      allowComments: article.allowComments,
+      status: article.status as unknown as ArticleStatus,
+      author: article.author,
+      category: article.category,
+      tags: article.tags,
+      previewToken: article.previewToken,
     };
   }
 

@@ -106,27 +106,153 @@
   letter-spacing: -0.03em;
 }
 
-/* ── Editorial Editor — Inline Image Styles ─────────────────────────────── */
-.editorial-editor-content .editor-inline-image {
-  max-width: 100%;
-  height: auto;
-  display: block;
-  margin: 1.5rem auto;
+/* ── Editorial Editor — Comprehensive Typography & Elements ──────────────── */
+.editorial-editor-content {
+  color: hsl(var(--foreground));
+}
+
+.editorial-editor-content p {
+  margin-top: 0.65rem;
+  margin-bottom: 0.65rem;
+  line-height: 1.75;
+}
+
+.editorial-editor-content p:first-child {
+  margin-top: 0;
+}
+
+.editorial-editor-content h1 {
+  font-family: var(--font-playfair), Georgia, serif;
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+  color: hsl(var(--foreground));
+  border-bottom: 1px solid hsl(var(--border-hairline));
+  padding-bottom: 0.5rem;
+}
+
+.editorial-editor-content h2 {
+  font-family: var(--font-playfair), Georgia, serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -0.015em;
+  margin-top: 1.75rem;
+  margin-bottom: 0.5rem;
+  color: hsl(var(--foreground));
+}
+
+.editorial-editor-content h3 {
+  font-family: var(--font-playfair), Georgia, serif;
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.35;
+  margin-top: 1.5rem;
+  margin-bottom: 0.4rem;
+  color: hsl(var(--foreground));
+}
+
+.editorial-editor-content blockquote {
+  border-left: 3px solid hsl(var(--foreground));
+  padding-left: 1.25rem;
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
+  margin-top: 1.25rem;
+  margin-bottom: 1.25rem;
+  font-style: italic;
+  color: hsl(var(--foreground) / 0.85);
+}
+
+.editorial-editor-content ul {
+  list-style-type: disc;
+  margin-left: 1.75rem;
+  margin-top: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.editorial-editor-content ol {
+  list-style-type: decimal;
+  margin-left: 1.75rem;
+  margin-top: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.editorial-editor-content li {
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+  line-height: 1.65;
+}
+
+.editorial-editor-content hr {
+  border: none;
+  border-top: 1px solid hsl(var(--border));
+  margin: 2.25rem 0;
+}
+
+.editorial-editor-content pre {
+  background-color: hsl(var(--surface-muted));
   border: 1px solid hsl(var(--border));
+  padding: 1rem;
+  margin-top: 1.25rem;
+  margin-bottom: 1.25rem;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.85rem;
+  line-height: 1.55;
+  overflow-x: auto;
+  border-radius: 2px;
+}
+
+.editorial-editor-content code {
+  background-color: hsl(var(--surface-muted));
+  padding: 0.15rem 0.35rem;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.85em;
+  border: 1px solid hsl(var(--border-hairline));
+  border-radius: 2px;
+}
+
+.editorial-editor-content pre code {
+  background: transparent;
+  padding: 0;
+  border: none;
+}
+
+.editorial-editor-content a {
+  color: hsl(var(--foreground));
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  font-weight: 500;
+  transition: opacity 0.15s ease;
+}
+
+.editorial-editor-content a:hover {
+  opacity: 0.75;
 }
 
 .editorial-editor-content .editor-image-figure {
-  margin: 1.5rem 0;
+  margin: 1.75rem 0;
   text-align: center;
+}
+
+.editorial-editor-content .editor-inline-image {
+  max-width: 100%;
+  max-height: 520px;
+  object-fit: cover;
+  display: block;
+  margin: 0 auto;
+  border: 1px solid hsl(var(--border));
 }
 
 .editorial-editor-content .editor-image-figure figcaption {
   font-family: var(--font-mono, monospace);
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   color: hsl(var(--muted-foreground));
-  margin-top: 0.5rem;
+  margin-top: 0.6rem;
 }
 
 /* ── Focus Mode — hide dashboard sidebar ─────────────────────────────────── */
@@ -138,3 +264,4 @@ body.editor-focus-mode nav {
 /* ── No scrollbar (tabs, toolbar) ─────────────────────────────────────────── */
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+

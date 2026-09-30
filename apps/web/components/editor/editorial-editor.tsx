@@ -69,7 +69,7 @@ function InlineImageModal({
         xhr.onload = () => {
           if (xhr.status >= 200 && xhr.status < 300) {
             const data = JSON.parse(xhr.responseText);
-            if (data.url) { onInsert(data.url, altText || file.name.replace(/\.[^/.]+$/, '')); resolve(); }
+            if (data.url) { onInsert(data.url, altText.trim()); resolve(); }
             else reject(new Error(data.error || 'Gagal mendapat URL gambar.'));
           } else reject(new Error(`Unggah gagal (HTTP ${xhr.status})`));
         };
@@ -186,7 +186,7 @@ function InlineImageModal({
               <button
                 type="button"
                 disabled={!urlValue.trim()}
-                onClick={() => { if (urlValue.trim()) onInsert(urlValue.trim(), altText); }}
+                onClick={() => { if (urlValue.trim()) onInsert(urlValue.trim(), altText.trim()); }}
                 className="w-full h-11 bg-foreground text-background font-mono text-xs uppercase tracking-wider disabled:opacity-40 hover:opacity-90 transition-opacity"
               >
                 Sisipkan Gambar
@@ -256,6 +256,23 @@ export function EditorialEditor({
   const [isFocusMode, setIsFocusMode] = React.useState(false);
   const [showImageModal, setShowImageModal] = React.useState(false);
   const [showLinkModal, setShowLinkModal] = React.useState(false);
+
+  const [activeFormats, setActiveFormats] = React.useState({
+    bold: false,
+    italic: false,
+    underline: false,
+    strike: false,
+    h1: false,
+    h2: false,
+    h3: false,
+    quote: false,
+    code: false,
+    ul: false,
+    ol: false,
+    alignLeft: false,
+    alignCenter: false,
+    alignRight: false,
+  });
 
   // Save selection before modal opens (lost when modal steals focus)
   const savedRange = React.useRef<Range | null>(null);
@@ -420,10 +437,97 @@ export function EditorialEditor({
     handleInput();
   };
 
+  const getActiveBlockTag = (): string => {
+    if (typeof window === 'undefined') return 'p';
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0 || !editorRef.current) return 'p';
+    let node: Node | null = sel.getRangeAt(0).commonAncestorContainer;
+    if (node.nodeType === Node.TEXT_NODE) node = node.parentNode;
+    while (node && node !== editorRef.current) {
+      const tag = (node as HTMLElement).tagName?.toLowerCase();
+      if (['h1', 'h2', 'h3', 'blockquote', 'pre', 'ul', 'ol'].includes(tag)) {
+        return tag;
+      }
+      node = node.parentNode;
+    }
+    return 'p';
+  };
+
+  const updateActiveFormats = React.useCallback(() => {
+    if (typeof window === 'undefined' || !editorRef.current) return;
+    try {
+      const currentBlock = getActiveBlockTag();
+      setActiveFormats({
+        bold: document.queryCommandState('bold'),
+        italic: document.queryCommandState('italic'),
+        underline: document.queryCommandState('underline'),
+        strike: document.queryCommandState('strikeThrough'),
+        h1: currentBlock === 'h1',
+        h2: currentBlock === 'h2',
+        h3: currentBlock === 'h3',
+        quote: currentBlock === 'blockquote',
+        code: currentBlock === 'pre',
+        ul: currentBlock === 'ul' || document.queryCommandState('insertUnorderedList'),
+        ol: currentBlock === 'ol' || document.queryCommandState('insertOrderedList'),
+        alignLeft: document.queryCommandState('justifyLeft'),
+        alignCenter: document.queryCommandState('justifyCenter'),
+        alignRight: document.queryCommandState('justifyRight'),
+      });
+    } catch {
+      // Ignore if document not focused
+    }
+  }, []);
+
+  React.useEffect(() => {
+    const handleSelectionChange = () => {
+      updateActiveFormats();
+    };
+    document.addEventListener('selectionchange', handleSelectionChange);
+    return () => document.removeEventListener('selectionchange', handleSelectionChange);
+  }, [updateActiveFormats]);
+
+  const toggleBlock = (tag: 'h1' | 'h2' | 'h3' | 'blockquote' | 'pre') => {
+    editorRef.current?.focus();
+    const currentBlock = getActiveBlockTag();
+
+    if (currentBlock === tag) {
+      // Toggle back to normal paragraph
+      try {
+        document.execCommand('formatBlock', false, '<p>');
+      } catch {
+        document.execCommand('formatBlock', false, 'p');
+      }
+    } else {
+      try {
+        document.execCommand('formatBlock', false, `<${tag}>`);
+      } catch {
+        try {
+          document.execCommand('formatBlock', false, tag);
+        } catch {
+          document.execCommand('formatBlock', false, `<${tag.toUpperCase()}>`);
+        }
+      }
+    }
+    handleInput();
+    updateActiveFormats();
+  };
+
+  const toggleList = (type: 'ul' | 'ol') => {
+    editorRef.current?.focus();
+    if (type === 'ul') {
+      document.execCommand('insertUnorderedList', false);
+    } else {
+      document.execCommand('insertOrderedList', false);
+    }
+    handleInput();
+    updateActiveFormats();
+  };
+
   const execCmd = (command: string, value?: string) => {
     document.execCommand(command, false, value);
     editorRef.current?.focus();
     handleInput();
+    updateActiveFormats();
   };
 
   const handleInsertLink = () => {
@@ -455,8 +559,30 @@ export function EditorialEditor({
     setShowImageModal(false);
     restoreSelection();
     editorRef.current?.focus();
-    const imgHtml = `<figure class="editor-image-figure"><img src="${url}" alt="${alt}" class="editor-inline-image" />${alt ? `<figcaption>${alt}</figcaption>` : ''}</figure>`;
+
+    const cleanAlt = alt.trim();
+    const nextPId = 'after-img-' + Math.random().toString(36).substring(2, 9);
+    const imgHtml = `<figure class="editor-image-figure" contenteditable="false"><img src="${url}" alt="${cleanAlt}" class="editor-inline-image" />${cleanAlt ? `<figcaption contenteditable="true">${cleanAlt}</figcaption>` : ''}</figure><p id="${nextPId}"><br></p>`;
+
     execCmd('insertHTML', imgHtml);
+
+    // Explicitly place the caret in the fresh empty paragraph below the image
+    setTimeout(() => {
+      const nextP = document.getElementById(nextPId);
+      if (nextP && editorRef.current) {
+        nextP.removeAttribute('id');
+        const sel = window.getSelection();
+        if (sel) {
+          const range = document.createRange();
+          range.selectNodeContents(nextP);
+          range.collapse(true);
+          sel.removeAllRanges();
+          sel.addRange(range);
+        }
+      }
+      handleInput();
+      updateActiveFormats();
+    }, 20);
   };
 
   // 15-second autosave
@@ -530,31 +656,31 @@ export function EditorialEditor({
           <div className="flex items-center justify-between gap-1.5 sm:gap-2 px-2 py-1 overflow-x-auto no-scrollbar touch-pan-x">
             <div className="flex items-center gap-0.5 flex-nowrap min-w-max">
               {/* Text style */}
-              <TB onClick={() => execCmd('bold')} title="Tebal (Ctrl+B)"><Bold className="w-4 h-4" /></TB>
-              <TB onClick={() => execCmd('italic')} title="Miring (Ctrl+I)"><Italic className="w-4 h-4" /></TB>
-              <TB onClick={() => execCmd('underline')} title="Garis Bawah (Ctrl+U)"><Underline className="w-4 h-4" /></TB>
-              <TB onClick={() => execCmd('strikeThrough')} title="Coret"><Strikethrough className="w-4 h-4" /></TB>
+              <TB onClick={() => execCmd('bold')} active={activeFormats.bold} title="Tebal (Ctrl+B)"><Bold className="w-4 h-4" /></TB>
+              <TB onClick={() => execCmd('italic')} active={activeFormats.italic} title="Miring (Ctrl+I)"><Italic className="w-4 h-4" /></TB>
+              <TB onClick={() => execCmd('underline')} active={activeFormats.underline} title="Garis Bawah (Ctrl+U)"><Underline className="w-4 h-4" /></TB>
+              <TB onClick={() => execCmd('strikeThrough')} active={activeFormats.strike} title="Coret"><Strikethrough className="w-4 h-4" /></TB>
 
               <Sep />
 
               {/* Headings */}
-              <TB onClick={() => execCmd('formatBlock', '<h1>')} title="Judul Bab (H1)"><Heading1 className="w-4 h-4" /></TB>
-              <TB onClick={() => execCmd('formatBlock', '<h2>')} title="Subjudul (H2)"><Heading2 className="w-4 h-4" /></TB>
-              <TB onClick={() => execCmd('formatBlock', '<h3>')} title="Sub-Bagian (H3)"><Heading3 className="w-4 h-4" /></TB>
+              <TB onClick={() => toggleBlock('h1')} active={activeFormats.h1} title="Judul Bab (H1)"><Heading1 className="w-4 h-4" /></TB>
+              <TB onClick={() => toggleBlock('h2')} active={activeFormats.h2} title="Subjudul (H2)"><Heading2 className="w-4 h-4" /></TB>
+              <TB onClick={() => toggleBlock('h3')} active={activeFormats.h3} title="Sub-Bagian (H3)"><Heading3 className="w-4 h-4" /></TB>
 
               <Sep />
 
               {/* Block */}
-              <TB onClick={() => execCmd('formatBlock', '<blockquote>')} title="Kutipan Blok"><Quote className="w-4 h-4" /></TB>
-              <TB onClick={() => execCmd('insertUnorderedList')} title="Daftar Poin"><List className="w-4 h-4" /></TB>
-              <TB onClick={() => execCmd('insertOrderedList')} title="Daftar Bernomor"><ListOrdered className="w-4 h-4" /></TB>
+              <TB onClick={() => toggleBlock('blockquote')} active={activeFormats.quote} title="Kutipan Blok"><Quote className="w-4 h-4" /></TB>
+              <TB onClick={() => toggleList('ul')} active={activeFormats.ul} title="Daftar Poin"><List className="w-4 h-4" /></TB>
+              <TB onClick={() => toggleList('ol')} active={activeFormats.ol} title="Daftar Bernomor"><ListOrdered className="w-4 h-4" /></TB>
 
               <Sep />
 
               {/* Align */}
-              <TB onClick={() => execCmd('justifyLeft')} title="Rata Kiri"><AlignLeft className="w-4 h-4" /></TB>
-              <TB onClick={() => execCmd('justifyCenter')} title="Rata Tengah"><AlignCenter className="w-4 h-4" /></TB>
-              <TB onClick={() => execCmd('justifyRight')} title="Rata Kanan"><AlignRight className="w-4 h-4" /></TB>
+              <TB onClick={() => execCmd('justifyLeft')} active={activeFormats.alignLeft} title="Rata Kiri"><AlignLeft className="w-4 h-4" /></TB>
+              <TB onClick={() => execCmd('justifyCenter')} active={activeFormats.alignCenter} title="Rata Tengah"><AlignCenter className="w-4 h-4" /></TB>
+              <TB onClick={() => execCmd('justifyRight')} active={activeFormats.alignRight} title="Rata Kanan"><AlignRight className="w-4 h-4" /></TB>
 
               <Sep />
 
@@ -562,7 +688,7 @@ export function EditorialEditor({
               <TB onClick={handleInsertLink} title="Sisipkan Tautan (Ctrl+K)"><LinkIcon className="w-4 h-4" /></TB>
               <TB onClick={handleInsertImage} title="Sisipkan Gambar (Upload/URL)"><ImageIcon className="w-4 h-4" /></TB>
               <TB onClick={() => execCmd('insertHorizontalRule')} title="Garis Pemisah"><Minus className="w-4 h-4" /></TB>
-              <TB onClick={() => execCmd('formatBlock', '<pre>')} title="Blok Kode"><Code className="w-4 h-4" /></TB>
+              <TB onClick={() => toggleBlock('pre')} active={activeFormats.code} title="Blok Kode"><Code className="w-4 h-4" /></TB>
 
               <Sep />
 
@@ -605,8 +731,10 @@ export function EditorialEditor({
             contentEditable
             onInput={handleInput}
             onPaste={handlePaste}
+            onKeyUp={updateActiveFormats}
+            onMouseUp={updateActiveFormats}
             suppressContentEditableWarning
-            className="editorial-editor-content min-h-[400px] sm:min-h-[520px] outline-none font-serif text-base sm:text-[18px] leading-[1.85] text-foreground/90 space-y-4 empty:before:content-[attr(data-placeholder)] empty:before:text-muted/40 empty:before:pointer-events-none"
+            className="editorial-editor-content min-h-[400px] sm:min-h-[520px] outline-none font-serif text-base sm:text-[18px] text-foreground/90 empty:before:content-[attr(data-placeholder)] empty:before:text-muted/40 empty:before:pointer-events-none"
             data-placeholder={placeholder}
           />
         </div>

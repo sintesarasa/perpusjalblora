@@ -38,6 +38,18 @@ export class ArticlesController {
     }
   }
 
+  async getArticleById(req: Request, res: Response, next: NextFunction) {
+    try {
+      const id = req.params.id as string;
+      const article = await articlesService.getArticleById(id, {
+        user: req.user,
+      });
+      res.status(200).json({ data: article });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async getRelatedArticles(req: Request, res: Response, next: NextFunction) {
     try {
       const slug = req.params.slug as string;

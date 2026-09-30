@@ -71,20 +71,29 @@ export default function DashboardEditArticlePage() {
   const isSavingRef = React.useRef(false);
   const titleTextareaRef = React.useRef<HTMLTextAreaElement>(null);
 
-  React.useEffect(() => {
-    async function loadData() {
-      if (!articleId) return;
-      setIsLoading(true);
+  const loadData = React.useCallback(async () => {
+    if (!articleId) return;
+    setIsLoading(true);
+    setErrorMessage(null);
+
+    try {
       const [catRes, tagRes, artRes] = await Promise.all([
         apiClient<ArticleCategory[]>('/articles/categories'),
         apiClient<ArticleTag[]>('/articles/tags'),
-        apiClient<ArticleDetail>(`/articles/${articleId}`),
+        apiClient<ArticleDetail>(`/articles/id/${articleId}`),
       ]);
 
       if (catRes.data) setCategories(catRes.data);
       if (tagRes.data) setTags(tagRes.data);
-      if (artRes.data) {
-        const art = artRes.data;
+
+      let art = artRes.data;
+      if (!art) {
+        // Fallback to /articles/:slug endpoint which also resolves by id
+        const fallbackRes = await apiClient<ArticleDetail>(`/articles/${articleId}`);
+        if (fallbackRes.data) art = fallbackRes.data;
+      }
+
+      if (art) {
         setArticle(art);
         setTitle(art.title);
         setSubtitle(art.subtitle || '');
@@ -97,10 +106,16 @@ export default function DashboardEditArticlePage() {
       } else {
         setErrorMessage(artRes.error?.message || 'Gagal memuat data naskah.');
       }
+    } catch {
+      setErrorMessage('Terjadi kesalahan saat menghubungi server.');
+    } finally {
       setIsLoading(false);
     }
-    loadData();
   }, [articleId]);
+
+  React.useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const doSave = React.useCallback(async () => {
     if (!title.trim() || isSavingRef.current) return false;
@@ -204,6 +219,37 @@ export default function DashboardEditArticlePage() {
     return (
       <div className="min-h-[60vh] flex items-center justify-center p-12">
         <CustomLoader size="md" label="MEMBUKA LEMBAR SUNTONGAN NASKAH..." />
+      </div>
+    );
+  }
+
+  if (!article) {
+    return (
+      <div className="min-h-[65vh] flex flex-col items-center justify-center p-6 text-center max-w-md mx-auto">
+        <div className="w-14 h-14 rounded-full bg-surface-muted border border-border flex items-center justify-center mb-5 text-foreground">
+          <AlertCircle className="w-7 h-7 text-destructive" />
+        </div>
+        <h2 className="font-serif text-2xl font-bold mb-2">Naskah Tidak Ditemukan</h2>
+        <p className="text-sm font-sans text-muted mb-6 leading-relaxed">
+          {errorMessage || 'Naskah yang ingin Anda sunting tidak ditemukan, telah dihapus, atau Anda belum memiliki hak akses.'}
+        </p>
+        <div className="flex flex-wrap items-center justify-center gap-3">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => loadData()}
+            className="font-mono text-xs"
+          >
+            Coba Muat Ulang
+          </Button>
+          <Link
+            href="/dashboard/tulisan"
+            className="inline-flex items-center gap-1.5 h-10 px-4 bg-foreground text-background font-mono text-xs uppercase tracking-wider hover:opacity-90 transition-opacity"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Kembali ke Naskah Saya</span>
+          </Link>
+        </div>
       </div>
     );
   }

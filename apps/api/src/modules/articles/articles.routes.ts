@@ -13,6 +13,7 @@ router.post('/tags', requireAuth, (req, res, next) => articlesController.createT
 
 // Author routes (Protected)
 router.get('/me/list', requireAuth, (req, res, next) => articlesController.getMyArticles(req, res, next));
+router.get('/id/:id', requireAuth, (req, res, next) => articlesController.getArticleById(req, res, next));
 router.post('/', requireAuth, requireVerified, (req, res, next) => articlesController.createArticle(req, res, next));
 router.patch('/:id', requireAuth, (req, res, next) => articlesController.updateArticle(req, res, next));
 router.delete('/:id', requireAuth, (req, res, next) => articlesController.deleteArticle(req, res, next));
