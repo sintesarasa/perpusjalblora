@@ -292,24 +292,28 @@ export function EditorialEditor({
     }
   };
 
+  const renderNodeMarks = (node: any): string => {
+    return (node.content || []).map((c: any) => {
+      let text = c.text || '';
+      if (c.marks) c.marks.forEach((m: any) => {
+        if (m.type === 'bold') text = `<strong>${text}</strong>`;
+        if (m.type === 'italic') text = `<em>${text}</em>`;
+        if (m.type === 'underline') text = `<u>${text}</u>`;
+        if (m.type === 'strike') text = `<s>${text}</s>`;
+        if (m.type === 'link') text = `<a href="${m.attrs?.href}">${text}</a>`;
+        if (m.type === 'code') text = `<code>${text}</code>`;
+      });
+      return text;
+    }).join('');
+  };
+
   const contentToHtml = React.useCallback((content: any): string => {
     if (!content) return '';
     if (typeof content === 'string') return content;
     if (content.type === 'doc' && Array.isArray(content.content)) {
       return content.content.map((node: any) => {
         if (node.type === 'paragraph') {
-          const inner = (node.content || []).map((c: any) => {
-            let text = c.text || '';
-            if (c.marks) c.marks.forEach((m: any) => {
-              if (m.type === 'bold') text = `<strong>${text}</strong>`;
-              if (m.type === 'italic') text = `<em>${text}</em>`;
-              if (m.type === 'underline') text = `<u>${text}</u>`;
-              if (m.type === 'strike') text = `<s>${text}</s>`;
-              if (m.type === 'link') text = `<a href="${m.attrs?.href}">${text}</a>`;
-              if (m.type === 'code') text = `<code>${text}</code>`;
-            });
-            return text;
-          }).join('');
+          const inner = renderNodeMarks(node);
           return `<p>${inner || '<br>'}</p>`;
         }
         if (node.type === 'heading') {
@@ -318,8 +322,11 @@ export function EditorialEditor({
           return `<h${level}>${inner}</h${level}>`;
         }
         if (node.type === 'blockquote') {
-          const inner = (node.content || []).map((c: any) => `<p>${(c.content || []).map((t: any) => t.text || '').join('')}</p>`).join('');
-          return `<blockquote>${inner}</blockquote>`;
+          const inner = (node.content || []).map((c: any) => {
+            const pInner = renderNodeMarks(c);
+            return `<p>${pInner || '<br>'}</p>`;
+          }).join('');
+          return `<blockquote>${inner || '<p><br></p>'}</blockquote>`;
         }
         if (node.type === 'bulletList') {
           const items = (node.content || []).map((li: any) => `<li>${(li.content || []).map((p: any) => (p.content || []).map((t: any) => t.text || '').join('')).join('')}</li>`).join('');
@@ -350,7 +357,23 @@ export function EditorialEditor({
         const tag = el.tagName.toLowerCase();
         if (tag === 'p') nodes.push({ type: 'paragraph', content: extractInlineMarks(el) });
         else if (['h1','h2','h3','h4'].includes(tag)) nodes.push({ type: 'heading', attrs: { level: parseInt(tag.charAt(1), 10) }, content: [{ type: 'text', text: el.textContent || '' }] });
-        else if (tag === 'blockquote') nodes.push({ type: 'blockquote', content: [{ type: 'paragraph', content: [{ type: 'text', text: el.textContent || '' }] }] });
+        else if (tag === 'blockquote') {
+          const pChildren = Array.from(el.querySelectorAll('p'));
+          if (pChildren.length > 0) {
+            nodes.push({
+              type: 'blockquote',
+              content: pChildren.map((p) => ({
+                type: 'paragraph',
+                content: extractInlineMarks(p),
+              })),
+            });
+          } else {
+            nodes.push({
+              type: 'blockquote',
+              content: [{ type: 'paragraph', content: extractInlineMarks(el) }],
+            });
+          }
+        }
         else if (tag === 'ul') {
           const items = Array.from(el.querySelectorAll('li')).map((li) => ({ type: 'listItem', content: [{ type: 'paragraph', content: [{ type: 'text', text: li.textContent || '' }] }] }));
           nodes.push({ type: 'bulletList', content: items });
@@ -486,12 +509,11 @@ export function EditorialEditor({
     return () => document.removeEventListener('selectionchange', handleSelectionChange);
   }, [updateActiveFormats]);
 
-  const toggleBlock = (tag: 'h1' | 'h2' | 'h3' | 'blockquote' | 'pre') => {
+  const toggleBlock = (tag: 'h1' | 'h2' | 'h3' | 'pre') => {
     editorRef.current?.focus();
     const currentBlock = getActiveBlockTag();
 
     if (currentBlock === tag) {
-      // Toggle back to normal paragraph
       try {
         document.execCommand('formatBlock', false, '<p>');
       } catch {
@@ -510,6 +532,170 @@ export function EditorialEditor({
     }
     handleInput();
     updateActiveFormats();
+  };
+
+  const toggleBlockquote = () => {
+    editorRef.current?.focus();
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0 || !editorRef.current) return;
+
+    // Check if currently inside a blockquote
+    let bq: HTMLElement | null = null;
+    let curr: Node | null = sel.getRangeAt(0).commonAncestorContainer;
+    if (curr.nodeType === Node.TEXT_NODE) curr = curr.parentNode;
+    while (curr && curr !== editorRef.current) {
+      if ((curr as HTMLElement).tagName?.toLowerCase() === 'blockquote') {
+        bq = curr as HTMLElement;
+        break;
+      }
+      curr = curr.parentNode;
+    }
+
+    if (bq) {
+      // UNWRAP blockquote: turn it back into normal paragraphs!
+      const parent = bq.parentNode;
+      if (parent) {
+        const pList = Array.from(bq.querySelectorAll('p'));
+        const fragment = document.createDocumentFragment();
+        let lastP: HTMLElement | null = null;
+        if (pList.length > 0) {
+          pList.forEach((p) => {
+            const newP = document.createElement('p');
+            newP.innerHTML = p.innerHTML || '<br>';
+            fragment.appendChild(newP);
+            lastP = newP;
+          });
+        } else {
+          const newP = document.createElement('p');
+          newP.innerHTML = bq.innerHTML || '<br>';
+          fragment.appendChild(newP);
+          lastP = newP;
+        }
+        parent.replaceChild(fragment, bq);
+        if (lastP) {
+          const newRange = document.createRange();
+          newRange.selectNodeContents(lastP);
+          newRange.collapse(false);
+          sel.removeAllRanges();
+          sel.addRange(newRange);
+        }
+      }
+    } else {
+      // WRAP in blockquote!
+      try {
+        document.execCommand('formatBlock', false, '<blockquote>');
+      } catch {
+        try {
+          document.execCommand('formatBlock', false, 'blockquote');
+        } catch {
+          document.execCommand('formatBlock', false, '<BLOCKQUOTE>');
+        }
+      }
+    }
+    handleInput();
+    updateActiveFormats();
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      const sel = window.getSelection();
+      if (!sel || sel.rangeCount === 0 || !editorRef.current) return;
+
+      const range = sel.getRangeAt(0);
+      let node: Node | null = range.commonAncestorContainer;
+      if (node.nodeType === Node.TEXT_NODE) node = node.parentNode;
+
+      // Check if inside a blockquote
+      let bq: HTMLElement | null = null;
+      let curr: Node | null = node;
+      while (curr && curr !== editorRef.current) {
+        if ((curr as HTMLElement).tagName?.toLowerCase() === 'blockquote') {
+          bq = curr as HTMLElement;
+          break;
+        }
+        curr = curr.parentNode;
+      }
+
+      if (bq) {
+        // Check if the current line/block inside the quote is empty
+        const lineText = node?.textContent?.replace(/\u200B/g, '').trim() || '';
+        if (!lineText) {
+          // Double enter or enter on empty line inside blockquote: break out of the quote into normal paragraph!
+          e.preventDefault();
+          const newP = document.createElement('p');
+          newP.innerHTML = '<br>';
+
+          // If blockquote is entirely empty, remove blockquote and just leave the new paragraph
+          const bqText = bq.textContent?.replace(/\u200B/g, '').trim() || '';
+          if (!bqText) {
+            bq.parentNode?.replaceChild(newP, bq);
+          } else {
+            // Remove the empty paragraph inside blockquote
+            if (node && node !== bq && bq.contains(node)) {
+              node.parentNode?.removeChild(node);
+            }
+
+            // Insert new paragraph right after the blockquote
+            if (bq.nextSibling) {
+              bq.parentNode?.insertBefore(newP, bq.nextSibling);
+            } else {
+              bq.parentNode?.appendChild(newP);
+            }
+          }
+
+          // Move cursor into the new paragraph
+          const newRange = document.createRange();
+          newRange.selectNodeContents(newP);
+          newRange.collapse(true);
+          sel.removeAllRanges();
+          sel.addRange(newRange);
+
+          handleInput();
+          updateActiveFormats();
+          return;
+        }
+      }
+    }
+
+    if (e.key === 'Backspace') {
+      const sel = window.getSelection();
+      if (!sel || sel.rangeCount === 0 || !editorRef.current) return;
+
+      const range = sel.getRangeAt(0);
+      let node: Node | null = range.commonAncestorContainer;
+      if (node.nodeType === Node.TEXT_NODE) node = node.parentNode;
+
+      let bq: HTMLElement | null = null;
+      let curr: Node | null = node;
+      while (curr && curr !== editorRef.current) {
+        if ((curr as HTMLElement).tagName?.toLowerCase() === 'blockquote') {
+          bq = curr as HTMLElement;
+          break;
+        }
+        curr = curr.parentNode;
+      }
+
+      // If empty blockquote, backspace converts it back to a standard paragraph
+      if (bq) {
+        const bqText = bq.textContent?.replace(/\u200B/g, '').trim() || '';
+        if (!bqText) {
+          e.preventDefault();
+          const newP = document.createElement('p');
+          newP.innerHTML = '<br>';
+          bq.parentNode?.replaceChild(newP, bq);
+
+          const newRange = document.createRange();
+          newRange.selectNodeContents(newP);
+          newRange.collapse(true);
+          sel.removeAllRanges();
+          sel.addRange(newRange);
+
+          handleInput();
+          updateActiveFormats();
+          return;
+        }
+      }
+    }
   };
 
   const toggleList = (type: 'ul' | 'ol') => {
@@ -671,7 +857,7 @@ export function EditorialEditor({
               <Sep />
 
               {/* Block */}
-              <TB onClick={() => toggleBlock('blockquote')} active={activeFormats.quote} title="Kutipan Blok"><Quote className="w-4 h-4" /></TB>
+              <TB onClick={toggleBlockquote} active={activeFormats.quote} title="Kutipan Blok"><Quote className="w-4 h-4" /></TB>
               <TB onClick={() => toggleList('ul')} active={activeFormats.ul} title="Daftar Poin"><List className="w-4 h-4" /></TB>
               <TB onClick={() => toggleList('ol')} active={activeFormats.ol} title="Daftar Bernomor"><ListOrdered className="w-4 h-4" /></TB>
 
@@ -730,6 +916,7 @@ export function EditorialEditor({
             ref={editorRef}
             contentEditable
             onInput={handleInput}
+            onKeyDown={handleKeyDown}
             onPaste={handlePaste}
             onKeyUp={updateActiveFormats}
             onMouseUp={updateActiveFormats}

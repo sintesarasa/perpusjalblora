@@ -152,7 +152,7 @@ export function RichTextRenderer({
         return (
           <blockquote
             key={index}
-            className="my-8 pl-5 sm:pl-6 border-l-2 border-foreground font-serif italic text-lg sm:text-xl leading-relaxed text-foreground/90 space-y-2 py-1"
+            className="my-8 pl-5 sm:pl-6 pr-4 py-3 border-l-[3px] border-foreground bg-surface-muted/40 font-serif italic text-lg sm:text-xl leading-relaxed text-foreground/90 space-y-2 rounded-r"
           >
             {node.content?.map((child, cIdx) => renderNode(child, cIdx))}
           </blockquote>

@@ -156,14 +156,31 @@
 }
 
 .editorial-editor-content blockquote {
+  position: relative;
   border-left: 3px solid hsl(var(--foreground));
-  padding-left: 1.25rem;
-  padding-top: 0.25rem;
-  padding-bottom: 0.25rem;
-  margin-top: 1.25rem;
-  margin-bottom: 1.25rem;
+  background-color: hsl(var(--surface-muted) / 0.45);
+  padding: 0.85rem 1.25rem 0.85rem 1.5rem;
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
   font-style: italic;
-  color: hsl(var(--foreground) / 0.85);
+  font-size: 1.1em;
+  line-height: 1.75;
+  color: hsl(var(--foreground) / 0.9);
+  border-radius: 0 4px 4px 0;
+}
+
+.editorial-editor-content blockquote p {
+  margin-top: 0.35rem;
+  margin-bottom: 0.35rem;
+  font-style: italic;
+}
+
+.editorial-editor-content blockquote p:first-child {
+  margin-top: 0;
+}
+
+.editorial-editor-content blockquote p:last-child {
+  margin-bottom: 0;
 }
 
 .editorial-editor-content ul {
