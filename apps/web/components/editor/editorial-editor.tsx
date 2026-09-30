@@ -591,6 +591,37 @@ export function EditorialEditor({
           document.execCommand('formatBlock', false, '<BLOCKQUOTE>');
         }
       }
+
+      // Automatically strip redundant literal quotation marks if author highlighted text with quotes
+      let newBq: HTMLElement | null = null;
+      let checkNode: Node | null = window.getSelection()?.getRangeAt(0).commonAncestorContainer || null;
+      if (checkNode?.nodeType === Node.TEXT_NODE) checkNode = checkNode.parentNode;
+      while (checkNode && checkNode !== editorRef.current) {
+        if ((checkNode as HTMLElement).tagName?.toLowerCase() === 'blockquote') {
+          newBq = checkNode as HTMLElement;
+          break;
+        }
+        checkNode = checkNode.parentNode;
+      }
+      if (newBq) {
+        const textNodes: Node[] = [];
+        const walker = document.createTreeWalker(newBq, NodeFilter.SHOW_TEXT);
+        let n: Node | null = walker.nextNode();
+        while (n) {
+          textNodes.push(n);
+          n = walker.nextNode();
+        }
+        if (textNodes.length > 0) {
+          const first = textNodes[0];
+          const last = textNodes[textNodes.length - 1];
+          if (first && first.textContent) {
+            first.textContent = first.textContent.replace(/^[\s"“”„«»]+/, '');
+          }
+          if (last && last.textContent) {
+            last.textContent = last.textContent.replace(/[\s"“”„«»]+$/, '');
+          }
+        }
+      }
     }
     handleInput();
     updateActiveFormats();

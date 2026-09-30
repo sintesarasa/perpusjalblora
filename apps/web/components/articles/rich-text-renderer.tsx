@@ -152,9 +152,20 @@ export function RichTextRenderer({
         return (
           <blockquote
             key={index}
-            className="my-8 pl-5 sm:pl-6 pr-4 py-3 border-l-[3px] border-foreground bg-surface-muted/40 font-serif italic text-lg sm:text-xl leading-relaxed text-foreground/90 space-y-2 rounded-r"
+            className="editorial-rich-blockquote my-8 relative border-l-[3px] border-foreground bg-surface-muted/35 pl-5 sm:pl-7 pr-4 sm:pr-6 py-3.5 sm:py-4 font-serif text-[17px] sm:text-[18px] leading-[1.8] sm:leading-[1.85] text-foreground/90 rounded-r"
           >
-            {node.content?.map((child, cIdx) => renderNode(child, cIdx))}
+            {node.content?.map((child, cIdx) => {
+              if (child.type === 'paragraph') {
+                return (
+                  <p key={cIdx} className="my-1.5 first:mt-0 last:mb-0">
+                    {child.content?.map((c, ccIdx) =>
+                      c.text ? renderTextWithMarks(c, ccIdx) : renderNode(c, ccIdx)
+                    )}
+                  </p>
+                );
+              }
+              return renderNode(child, cIdx);
+            })}
           </blockquote>
         );
       }

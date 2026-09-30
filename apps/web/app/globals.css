@@ -155,32 +155,72 @@
   color: hsl(var(--foreground));
 }
 
-.editorial-editor-content blockquote {
+/* Editorial Blockquote — Elegant Gazette Style */
+.editorial-editor-content blockquote,
+.editorial-rich-blockquote {
   position: relative;
   border-left: 3px solid hsl(var(--foreground));
-  background-color: hsl(var(--surface-muted) / 0.45);
-  padding: 0.85rem 1.25rem 0.85rem 1.5rem;
-  margin-top: 1.5rem;
-  margin-bottom: 1.5rem;
-  font-style: italic;
-  font-size: 1.1em;
-  line-height: 1.75;
-  color: hsl(var(--foreground) / 0.9);
+  background-color: hsl(var(--surface-muted) / 0.35);
+  padding: 0.95rem 1.35rem 0.95rem 1.65rem;
+  margin-top: 1.75rem;
+  margin-bottom: 1.75rem;
+  font-family: var(--font-serif), Georgia, Cambria, 'Times New Roman', serif;
+  font-size: 1.025rem;
+  line-height: 1.8;
+  color: hsl(var(--foreground) / 0.95);
   border-radius: 0 4px 4px 0;
 }
 
-.editorial-editor-content blockquote p {
-  margin-top: 0.35rem;
-  margin-bottom: 0.35rem;
-  font-style: italic;
+.editorial-editor-content blockquote p,
+.editorial-rich-blockquote p {
+  margin-top: 0.45rem;
+  margin-bottom: 0.45rem;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  color: inherit;
+  font-style: normal;
 }
 
-.editorial-editor-content blockquote p:first-child {
+.editorial-editor-content blockquote p:first-child,
+.editorial-rich-blockquote p:first-child {
   margin-top: 0;
 }
 
-.editorial-editor-content blockquote p:last-child {
+.editorial-editor-content blockquote p:last-child,
+.editorial-rich-blockquote p:last-child {
   margin-bottom: 0;
+}
+
+/* Typographic Quotation Marks ("") */
+.editorial-editor-content blockquote p:first-of-type::before,
+.editorial-editor-content blockquote:not(:has(p))::before,
+.editorial-rich-blockquote p:first-of-type::before,
+.editorial-rich-blockquote:not(:has(p))::before {
+  content: "“";
+  font-family: var(--font-serif), 'Playfair Display', Georgia, serif;
+  font-weight: 700;
+  font-size: 1.3em;
+  line-height: 0;
+  margin-right: 0.15em;
+  color: hsl(var(--foreground));
+  vertical-align: -0.06em;
+  user-select: none;
+}
+
+.editorial-editor-content blockquote p:last-of-type::after,
+.editorial-editor-content blockquote:not(:has(p))::after,
+.editorial-rich-blockquote p:last-of-type::after,
+.editorial-rich-blockquote:not(:has(p))::after {
+  content: "”";
+  font-family: var(--font-serif), 'Playfair Display', Georgia, serif;
+  font-weight: 700;
+  font-size: 1.3em;
+  line-height: 0;
+  margin-left: 0.12em;
+  color: hsl(var(--foreground));
+  vertical-align: -0.06em;
+  user-select: none;
 }
 
 .editorial-editor-content ul {
