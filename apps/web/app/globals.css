@@ -155,9 +155,9 @@
   color: hsl(var(--foreground));
 }
 
-/* Editorial Blockquote — Elegant Gazette Style */
-.editorial-editor-content blockquote,
-.editorial-rich-blockquote {
+/* Editorial Blockquote — Standard Style (Left Accent + Background) */
+.editorial-editor-content blockquote:not([data-quote-style="pull"]),
+.editorial-rich-blockquote:not([data-quote-style="pull"]) {
   position: relative;
   border-left: 3px solid hsl(var(--foreground));
   background-color: hsl(var(--surface-muted) / 0.35);
@@ -169,6 +169,32 @@
   line-height: 1.8;
   color: hsl(var(--foreground) / 0.95);
   border-radius: 0 4px 4px 0;
+}
+
+/* Editorial Blockquote — Pull Quote (Centered Literary Statement) */
+.editorial-editor-content blockquote[data-quote-style="pull"],
+.editorial-rich-blockquote[data-quote-style="pull"] {
+  position: relative;
+  text-align: center;
+  margin: 2.25rem auto;
+  padding: 1.75rem 1.25rem;
+  max-width: 44rem;
+  border-left: none;
+  border-top: 1px solid hsl(var(--border));
+  border-bottom: 1px solid hsl(var(--border));
+  background-color: transparent;
+  font-family: var(--font-serif), 'Playfair Display', Georgia, serif;
+  font-size: 1.25rem;
+  line-height: 1.65;
+  color: hsl(var(--foreground));
+}
+
+@media (min-width: 640px) {
+  .editorial-editor-content blockquote[data-quote-style="pull"],
+  .editorial-rich-blockquote[data-quote-style="pull"] {
+    font-size: 1.375rem;
+    padding: 2.25rem 2rem;
+  }
 }
 
 .editorial-editor-content blockquote p,
@@ -220,6 +246,53 @@
   margin-left: 0.12em;
   color: hsl(var(--foreground));
   vertical-align: -0.06em;
+  user-select: none;
+}
+
+/* Citation / Source Field (<cite>) */
+.editorial-editor-content blockquote cite,
+.editorial-rich-blockquote cite {
+  display: block;
+  margin-top: 0.85rem;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: hsl(var(--muted-foreground));
+  font-style: normal;
+  font-weight: 500;
+}
+
+.editorial-editor-content blockquote[data-quote-style="pull"] cite,
+.editorial-rich-blockquote[data-quote-style="pull"] cite {
+  text-align: center;
+  margin-top: 1rem;
+}
+
+.editorial-rich-blockquote cite::before {
+  content: "— ";
+  font-weight: 600;
+  color: hsl(var(--foreground) / 0.7);
+}
+
+.editorial-editor-content blockquote cite {
+  outline: none;
+  cursor: text;
+  border-top: 1px dashed hsl(var(--border-hairline));
+  padding-top: 0.4rem;
+}
+
+.editorial-editor-content blockquote cite:not(:empty)::before {
+  content: "— ";
+  font-weight: 600;
+  color: hsl(var(--foreground) / 0.7);
+  user-select: none;
+}
+
+.editorial-editor-content blockquote cite:empty::before {
+  content: "— Tambah nama sumber / tokoh (opsional)...";
+  opacity: 0.35;
+  font-style: italic;
   user-select: none;
 }
 

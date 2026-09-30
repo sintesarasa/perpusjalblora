@@ -257,7 +257,23 @@ export function EditorialEditor({
   const [showImageModal, setShowImageModal] = React.useState(false);
   const [showLinkModal, setShowLinkModal] = React.useState(false);
 
-  const [activeFormats, setActiveFormats] = React.useState({
+  const [activeFormats, setActiveFormats] = React.useState<{
+    bold: boolean;
+    italic: boolean;
+    underline: boolean;
+    strike: boolean;
+    h1: boolean;
+    h2: boolean;
+    h3: boolean;
+    quote: boolean;
+    quoteStyle: 'standard' | 'pull' | false;
+    code: boolean;
+    ul: boolean;
+    ol: boolean;
+    alignLeft: boolean;
+    alignCenter: boolean;
+    alignRight: boolean;
+  }>({
     bold: false,
     italic: false,
     underline: false,
@@ -266,6 +282,7 @@ export function EditorialEditor({
     h2: false,
     h3: false,
     quote: false,
+    quoteStyle: false,
     code: false,
     ul: false,
     ol: false,
@@ -322,11 +339,15 @@ export function EditorialEditor({
           return `<h${level}>${inner}</h${level}>`;
         }
         if (node.type === 'blockquote') {
+          const style = node.attrs?.quoteStyle === 'pull' ? 'pull' : 'standard';
+          const citeText = node.attrs?.cite || '';
           const inner = (node.content || []).map((c: any) => {
+            if (c.type === 'cite') return '';
             const pInner = renderNodeMarks(c);
             return `<p>${pInner || '<br>'}</p>`;
           }).join('');
-          return `<blockquote>${inner || '<p><br></p>'}</blockquote>`;
+          const citeHtml = citeText ? `<cite contenteditable="true">${citeText}</cite>` : '';
+          return `<blockquote data-quote-style="${style}">${inner || '<p><br></p>'}${citeHtml}</blockquote>`;
         }
         if (node.type === 'bulletList') {
           const items = (node.content || []).map((li: any) => `<li>${(li.content || []).map((p: any) => (p.content || []).map((t: any) => t.text || '').join('')).join('')}</li>`).join('');
@@ -358,10 +379,14 @@ export function EditorialEditor({
         if (tag === 'p') nodes.push({ type: 'paragraph', content: extractInlineMarks(el) });
         else if (['h1','h2','h3','h4'].includes(tag)) nodes.push({ type: 'heading', attrs: { level: parseInt(tag.charAt(1), 10) }, content: [{ type: 'text', text: el.textContent || '' }] });
         else if (tag === 'blockquote') {
-          const pChildren = Array.from(el.querySelectorAll('p'));
+          const quoteStyle = el.getAttribute('data-quote-style') === 'pull' ? 'pull' : 'standard';
+          const citeEl = el.querySelector('cite');
+          const citeText = citeEl?.textContent?.replace(/^[—\s\-]+/, '').trim() || undefined;
+          const pChildren = Array.from(el.querySelectorAll('p')).filter((p) => !p.closest('cite'));
           if (pChildren.length > 0) {
             nodes.push({
               type: 'blockquote',
+              attrs: { quoteStyle, cite: citeText },
               content: pChildren.map((p) => ({
                 type: 'paragraph',
                 content: extractInlineMarks(p),
@@ -370,6 +395,7 @@ export function EditorialEditor({
           } else {
             nodes.push({
               type: 'blockquote',
+              attrs: { quoteStyle, cite: citeText },
               content: [{ type: 'paragraph', content: extractInlineMarks(el) }],
             });
           }
@@ -480,6 +506,20 @@ export function EditorialEditor({
     if (typeof window === 'undefined' || !editorRef.current) return;
     try {
       const currentBlock = getActiveBlockTag();
+      let quoteStyle: false | 'standard' | 'pull' = false;
+      if (currentBlock === 'blockquote') {
+        const sel = window.getSelection();
+        let curr = sel?.getRangeAt(0).commonAncestorContainer || null;
+        if (curr?.nodeType === Node.TEXT_NODE) curr = curr.parentNode;
+        while (curr && curr !== editorRef.current) {
+          if ((curr as HTMLElement).tagName?.toLowerCase() === 'blockquote') {
+            quoteStyle = ((curr as HTMLElement).getAttribute('data-quote-style') as any) === 'pull' ? 'pull' : 'standard';
+            break;
+          }
+          curr = curr.parentNode;
+        }
+      }
+
       setActiveFormats({
         bold: document.queryCommandState('bold'),
         italic: document.queryCommandState('italic'),
@@ -489,6 +529,7 @@ export function EditorialEditor({
         h2: currentBlock === 'h2',
         h3: currentBlock === 'h3',
         quote: currentBlock === 'blockquote',
+        quoteStyle,
         code: currentBlock === 'pre',
         ul: currentBlock === 'ul' || document.queryCommandState('insertUnorderedList'),
         ol: currentBlock === 'ol' || document.queryCommandState('insertOrderedList'),
@@ -534,7 +575,7 @@ export function EditorialEditor({
     updateActiveFormats();
   };
 
-  const toggleBlockquote = () => {
+  const toggleBlockquote = (targetStyle?: 'standard' | 'pull') => {
     editorRef.current?.focus();
     const sel = window.getSelection();
     if (!sel || sel.rangeCount === 0 || !editorRef.current) return;
@@ -552,10 +593,32 @@ export function EditorialEditor({
     }
 
     if (bq) {
+      const currentStyle = bq.getAttribute('data-quote-style') === 'pull' ? 'pull' : 'standard';
+
+      // If user explicitly requests another style
+      if (targetStyle && targetStyle !== currentStyle) {
+        bq.setAttribute('data-quote-style', targetStyle);
+        handleInput();
+        updateActiveFormats();
+        return;
+      }
+
+      // If user clicked toolbar quote button without argument: cycle Standard -> Pull -> Off
+      if (!targetStyle) {
+        if (currentStyle === 'standard') {
+          bq.setAttribute('data-quote-style', 'pull');
+          handleInput();
+          updateActiveFormats();
+          return;
+        }
+        // If currentStyle is 'pull', proceed to UNWRAP (turn off) below
+      }
+
       // UNWRAP blockquote: turn it back into normal paragraphs!
       const parent = bq.parentNode;
       if (parent) {
-        const pList = Array.from(bq.querySelectorAll('p'));
+        const pList = Array.from(bq.querySelectorAll('p')).filter((p) => !p.closest('cite'));
+        const citeEl = bq.querySelector('cite');
         const fragment = document.createDocumentFragment();
         let lastP: HTMLElement | null = null;
         if (pList.length > 0) {
@@ -571,6 +634,13 @@ export function EditorialEditor({
           fragment.appendChild(newP);
           lastP = newP;
         }
+
+        if (citeEl && citeEl.textContent?.trim()) {
+          const citeP = document.createElement('p');
+          citeP.textContent = `— ${citeEl.textContent.replace(/^[—\s\-]+/, '').trim()}`;
+          fragment.appendChild(citeP);
+        }
+
         parent.replaceChild(fragment, bq);
         if (lastP) {
           const newRange = document.createRange();
@@ -582,6 +652,7 @@ export function EditorialEditor({
       }
     } else {
       // WRAP in blockquote!
+      const styleToSet = targetStyle || 'standard';
       try {
         document.execCommand('formatBlock', false, '<blockquote>');
       } catch {
@@ -592,7 +663,7 @@ export function EditorialEditor({
         }
       }
 
-      // Automatically strip redundant literal quotation marks if author highlighted text with quotes
+      // Automatically set data-quote-style & strip redundant literal quotes
       let newBq: HTMLElement | null = null;
       let checkNode: Node | null = window.getSelection()?.getRangeAt(0).commonAncestorContainer || null;
       if (checkNode?.nodeType === Node.TEXT_NODE) checkNode = checkNode.parentNode;
@@ -604,6 +675,8 @@ export function EditorialEditor({
         checkNode = checkNode.parentNode;
       }
       if (newBq) {
+        newBq.setAttribute('data-quote-style', styleToSet);
+
         const textNodes: Node[] = [];
         const walker = document.createTreeWalker(newBq, NodeFilter.SHOW_TEXT);
         let n: Node | null = walker.nextNode();
@@ -627,7 +700,91 @@ export function EditorialEditor({
     updateActiveFormats();
   };
 
+  const insertCitation = () => {
+    editorRef.current?.focus();
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0 || !editorRef.current) return;
+
+    let bq: HTMLElement | null = null;
+    let curr: Node | null = sel.getRangeAt(0).commonAncestorContainer;
+    if (curr.nodeType === Node.TEXT_NODE) curr = curr.parentNode;
+    while (curr && curr !== editorRef.current) {
+      if ((curr as HTMLElement).tagName?.toLowerCase() === 'blockquote') {
+        bq = curr as HTMLElement;
+        break;
+      }
+      curr = curr.parentNode;
+    }
+
+    if (!bq) {
+      toggleBlockquote('standard');
+      setTimeout(insertCitation, 30);
+      return;
+    }
+
+    let citeEl = bq.querySelector('cite') as HTMLElement | null;
+    if (!citeEl) {
+      citeEl = document.createElement('cite');
+      citeEl.setAttribute('contenteditable', 'true');
+      bq.appendChild(citeEl);
+    }
+
+    const newRange = document.createRange();
+    newRange.selectNodeContents(citeEl);
+    newRange.collapse(false);
+    sel.removeAllRanges();
+    sel.addRange(newRange);
+
+    handleInput();
+    updateActiveFormats();
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    // 1. Smart typing shortcut: '> ' at the start of a block converts to blockquote
+    if (e.key === ' ' && !e.shiftKey && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      const sel = window.getSelection();
+      if (sel && sel.rangeCount > 0 && sel.isCollapsed && editorRef.current) {
+        const range = sel.getRangeAt(0);
+        let node: Node | null = range.commonAncestorContainer;
+        if (node.nodeType === Node.TEXT_NODE) {
+          const textBefore = node.textContent?.slice(0, range.startOffset) || '';
+          if (textBefore === '>') {
+            e.preventDefault();
+            node.textContent = node.textContent?.slice(range.startOffset) || '';
+            toggleBlockquote('standard');
+            return;
+          }
+        }
+      }
+    }
+
+    // 2. Shift + Enter inside blockquote inserts/moves to citation field
+    if (e.key === 'Enter' && e.shiftKey) {
+      const sel = window.getSelection();
+      if (sel && sel.rangeCount > 0 && editorRef.current) {
+        const range = sel.getRangeAt(0);
+        let node: Node | null = range.commonAncestorContainer;
+        if (node.nodeType === Node.TEXT_NODE) node = node.parentNode;
+        let bq: HTMLElement | null = null;
+        let isCite = false;
+        let curr: Node | null = node;
+        while (curr && curr !== editorRef.current) {
+          if ((curr as HTMLElement).tagName?.toLowerCase() === 'cite') isCite = true;
+          if ((curr as HTMLElement).tagName?.toLowerCase() === 'blockquote') {
+            bq = curr as HTMLElement;
+            break;
+          }
+          curr = curr.parentNode;
+        }
+        if (bq && !isCite) {
+          e.preventDefault();
+          insertCitation();
+          return;
+        }
+      }
+    }
+
+    // 3. Regular Enter handling inside blockquote and cite
     if (e.key === 'Enter' && !e.shiftKey) {
       const sel = window.getSelection();
       if (!sel || sel.rangeCount === 0 || !editorRef.current) return;
@@ -636,10 +793,13 @@ export function EditorialEditor({
       let node: Node | null = range.commonAncestorContainer;
       if (node.nodeType === Node.TEXT_NODE) node = node.parentNode;
 
-      // Check if inside a blockquote
       let bq: HTMLElement | null = null;
+      let citeNode: HTMLElement | null = null;
       let curr: Node | null = node;
       while (curr && curr !== editorRef.current) {
+        if ((curr as HTMLElement).tagName?.toLowerCase() === 'cite') {
+          citeNode = curr as HTMLElement;
+        }
         if ((curr as HTMLElement).tagName?.toLowerCase() === 'blockquote') {
           bq = curr as HTMLElement;
           break;
@@ -647,26 +807,42 @@ export function EditorialEditor({
         curr = curr.parentNode;
       }
 
+      // Enter inside citation field: break out to standard paragraph below
+      if (citeNode && bq) {
+        e.preventDefault();
+        const newP = document.createElement('p');
+        newP.innerHTML = '<br>';
+        if (bq.nextSibling) {
+          bq.parentNode?.insertBefore(newP, bq.nextSibling);
+        } else {
+          bq.parentNode?.appendChild(newP);
+        }
+        const newRange = document.createRange();
+        newRange.selectNodeContents(newP);
+        newRange.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(newRange);
+        handleInput();
+        updateActiveFormats();
+        return;
+      }
+
       if (bq) {
         // Check if the current line/block inside the quote is empty
         const lineText = node?.textContent?.replace(/\u200B/g, '').trim() || '';
         if (!lineText) {
-          // Double enter or enter on empty line inside blockquote: break out of the quote into normal paragraph!
+          // Double enter or enter on empty line inside blockquote: break out into normal paragraph!
           e.preventDefault();
           const newP = document.createElement('p');
           newP.innerHTML = '<br>';
 
-          // If blockquote is entirely empty, remove blockquote and just leave the new paragraph
           const bqText = bq.textContent?.replace(/\u200B/g, '').trim() || '';
           if (!bqText) {
             bq.parentNode?.replaceChild(newP, bq);
           } else {
-            // Remove the empty paragraph inside blockquote
             if (node && node !== bq && bq.contains(node)) {
               node.parentNode?.removeChild(node);
             }
-
-            // Insert new paragraph right after the blockquote
             if (bq.nextSibling) {
               bq.parentNode?.insertBefore(newP, bq.nextSibling);
             } else {
@@ -674,7 +850,6 @@ export function EditorialEditor({
             }
           }
 
-          // Move cursor into the new paragraph
           const newRange = document.createRange();
           newRange.selectNodeContents(newP);
           newRange.collapse(true);
@@ -688,6 +863,7 @@ export function EditorialEditor({
       }
     }
 
+    // 4. Backspace handling inside blockquote and cite
     if (e.key === 'Backspace') {
       const sel = window.getSelection();
       if (!sel || sel.rangeCount === 0 || !editorRef.current) return;
@@ -697,13 +873,35 @@ export function EditorialEditor({
       if (node.nodeType === Node.TEXT_NODE) node = node.parentNode;
 
       let bq: HTMLElement | null = null;
+      let citeNode: HTMLElement | null = null;
       let curr: Node | null = node;
       while (curr && curr !== editorRef.current) {
+        if ((curr as HTMLElement).tagName?.toLowerCase() === 'cite') {
+          citeNode = curr as HTMLElement;
+        }
         if ((curr as HTMLElement).tagName?.toLowerCase() === 'blockquote') {
           bq = curr as HTMLElement;
           break;
         }
         curr = curr.parentNode;
+      }
+
+      // Backspace in empty cite field removes cite element cleanly
+      if (citeNode && bq) {
+        const citeText = citeNode.textContent?.replace(/\u200B/g, '').trim() || '';
+        if (!citeText) {
+          e.preventDefault();
+          const prevEl = citeNode.previousElementSibling || bq;
+          citeNode.parentNode?.removeChild(citeNode);
+          const newRange = document.createRange();
+          newRange.selectNodeContents(prevEl);
+          newRange.collapse(false);
+          sel.removeAllRanges();
+          sel.addRange(newRange);
+          handleInput();
+          updateActiveFormats();
+          return;
+        }
       }
 
       // If empty blockquote, backspace converts it back to a standard paragraph
@@ -888,7 +1086,31 @@ export function EditorialEditor({
               <Sep />
 
               {/* Block */}
-              <TB onClick={toggleBlockquote} active={activeFormats.quote} title="Kutipan Blok"><Quote className="w-4 h-4" /></TB>
+              <div className="flex items-center gap-0.5">
+                <TB
+                  onClick={() => toggleBlockquote()}
+                  active={activeFormats.quote}
+                  title={
+                    !activeFormats.quote
+                      ? 'Kutipan Blok (Ketik > lalu Spasi, atau klik)'
+                      : activeFormats.quoteStyle === 'standard'
+                      ? 'Kutipan Standar — Klik lagi untuk Kutipan Sorot (Pull Quote)'
+                      : 'Kutipan Sorot (Pull Quote) — Klik lagi untuk Batal'
+                  }
+                >
+                  <Quote className={cn('w-4 h-4', activeFormats.quoteStyle === 'pull' && 'scale-110')} />
+                </TB>
+                {activeFormats.quote && (
+                  <button
+                    type="button"
+                    onMouseDown={(e) => { e.preventDefault(); insertCitation(); }}
+                    title="Sisipkan Nama Tokoh / Judul Sumber (Shift+Enter)"
+                    className="h-8 px-2 text-[10px] font-mono uppercase tracking-wider text-muted-foreground hover:text-foreground hover:bg-surface-muted border border-border-hairline transition-colors shrink-0"
+                  >
+                    + Sumber
+                  </button>
+                )}
+              </div>
               <TB onClick={() => toggleList('ul')} active={activeFormats.ul} title="Daftar Poin"><List className="w-4 h-4" /></TB>
               <TB onClick={() => toggleList('ol')} active={activeFormats.ol} title="Daftar Bernomor"><ListOrdered className="w-4 h-4" /></TB>
 
