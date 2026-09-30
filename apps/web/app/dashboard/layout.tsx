@@ -117,7 +117,7 @@ export default function DashboardLayout({
         )}
 
         {/* Right Content Area */}
-        <main className="flex-1 min-w-0 bg-background overflow-x-hidden">
+        <main className="flex-1 min-w-0 bg-background overflow-x-clip">
           <PrintQueueProvider>
             {children}
           </PrintQueueProvider>

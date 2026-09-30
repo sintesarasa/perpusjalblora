@@ -246,7 +246,7 @@ export function EditorialEditor({
   onAutosave,
   placeholder = 'Mulai menuangkan gagasan, esai, atau catatan kritis di sini...',
   className,
-  stickyTopOffset = 'relative sm:sticky sm:top-[100px]',
+  stickyTopOffset = 'sticky top-[100px]',
 }: EditorialEditorProps) {
   const editorRef = React.useRef<HTMLDivElement>(null);
   const [wordCount, setWordCount] = React.useState(0);
@@ -522,12 +522,12 @@ export function EditorialEditor({
         {/* ── Sticky Toolbar ── */}
         <div
           className={cn(
-            'z-20 bg-background/95 backdrop-blur-sm border-b border-border select-none',
+            'z-20 bg-background/98 backdrop-blur-md border-b border-border select-none shadow-[0_2px_4px_rgba(0,0,0,0.04)] dark:shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-shadow',
             isFocusMode ? 'sticky top-0' : stickyTopOffset
           )}
         >
           {/* Main toolbar row — horizontally scrollable on mobile */}
-          <div className="flex items-center justify-between gap-2 px-2 py-1 overflow-x-auto no-scrollbar">
+          <div className="flex items-center justify-between gap-1.5 sm:gap-2 px-2 py-1 overflow-x-auto no-scrollbar touch-pan-x">
             <div className="flex items-center gap-0.5 flex-nowrap min-w-max">
               {/* Text style */}
               <TB onClick={() => execCmd('bold')} title="Tebal (Ctrl+B)"><Bold className="w-4 h-4" /></TB>
@@ -596,24 +596,10 @@ export function EditorialEditor({
               </button>
             </div>
           </div>
-
-          {/* Mobile word count row */}
-          <div className="sm:hidden flex items-center justify-between px-3 py-1 border-t border-border-hairline/50 bg-surface-muted/20">
-            <span className="font-mono text-[10px] text-muted uppercase">
-              {wordCount} Kata · {readingTime} Mnt Baca
-            </span>
-            {isSaving && <span className="font-mono text-[10px] text-foreground animate-pulse">Menyimpan...</span>}
-            {!isSaving && lastSaved && (
-              <span className="font-mono text-[10px] text-emerald-600 flex items-center gap-1">
-                <CheckCircle2 className="w-3 h-3" />
-                Tersimpan {lastSaved.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
-              </span>
-            )}
-          </div>
         </div>
 
         {/* ── Editor Canvas ── */}
-        <div className={cn('flex-1 overflow-y-auto', isFocusMode ? 'p-6 sm:p-16 max-w-3xl mx-auto w-full' : 'p-4 sm:p-10')}>
+        <div className={cn(isFocusMode ? 'flex-1 overflow-y-auto p-6 sm:p-16 max-w-3xl mx-auto w-full' : 'p-4 sm:p-10')}>
           <div
             ref={editorRef}
             contentEditable

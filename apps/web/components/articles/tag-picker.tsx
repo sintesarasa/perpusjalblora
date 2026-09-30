@@ -1,19 +1,9 @@
 'use client';
 
 import * as React from 'react';
-import { X, Hash, ChevronDown, Plus, Sparkles, Loader2 } from 'lucide-react';
+import { X, Hash, ChevronDown, Plus, Loader2 } from 'lucide-react';
 import { ArticleTag } from '@perpusjal/types';
 import { apiClient } from '@/lib/api';
-
-const POPULAR_SUGGESTED_TAGS = [
-  'alun-alun',
-  'pramoedya',
-  'sedulur-sikep',
-  'relawan',
-  'hutan-jati',
-  'barongan',
-  'ruang-terbuka',
-];
 
 interface TagPickerProps {
   tags: ArticleTag[];
@@ -145,23 +135,10 @@ export function TagPicker({
     }
   };
 
-  const handleQuickAdd = async (tagName: string) => {
-    const existing = allTags.find(
-      (t) => t.slug === tagName || t.name.toLowerCase() === tagName.toLowerCase()
-    );
-    if (existing) {
-      if (!selectedIds.includes(existing.id) && selectedIds.length < maxTags) {
-        onChange([...selectedIds, existing.id]);
-      }
-    } else {
-      await handleCreateNewTag(tagName);
-    }
-  };
-
   const canAddMore = selectedIds.length < maxTags;
 
   return (
-    <div ref={dropdownRef} className="space-y-2">
+    <div ref={dropdownRef} className="relative space-y-1.5">
       {/* ── Main Tag Input / Badges Display Container ── */}
       <div
         onClick={() => {
@@ -209,8 +186,8 @@ export function TagPicker({
             onKeyDown={handleKeyDown}
             placeholder={
               selectedTags.length === 0
-                ? 'Pilih atau ketik tag lalu tekan Enter...'
-                : 'Tambah tag...'
+                ? 'Ketik kata kunci lalu tekan Enter (maks. 5)...'
+                : 'Tambah kata kunci...'
             }
             className="flex-1 min-w-[140px] bg-transparent font-sans text-xs text-foreground placeholder:text-muted/40 focus:outline-none py-1"
           />
@@ -231,9 +208,9 @@ export function TagPicker({
         </div>
       </div>
 
-      {/* ── Dropdown Suggestions ── */}
+      {/* ── Dropdown Suggestions (Floating seamlessly) ── */}
       {isOpen && (
-        <div className="border border-foreground bg-surface shadow-xl max-h-60 overflow-hidden flex flex-col z-50">
+        <div className="absolute left-0 right-0 top-full mt-1 border border-foreground bg-surface shadow-2xl max-h-60 overflow-hidden flex flex-col z-50">
           {errorMsg && (
             <div className="px-3 py-1.5 bg-destructive/10 text-destructive text-[11px] font-sans">
               {errorMsg}
@@ -291,34 +268,10 @@ export function TagPicker({
         </div>
       )}
 
-      {/* ── Quick-Click Recommendations (Mobile-Ready) ── */}
-      <div className="flex flex-wrap items-center gap-1.5 pt-1 select-none">
-        <span className="font-mono text-[9px] uppercase tracking-wider text-muted flex items-center gap-1 mr-1">
-          <Sparkles className="w-2.5 h-2.5" />
-          Rekomendasi Cepat:
-        </span>
-        {POPULAR_SUGGESTED_TAGS.map((name) => {
-          const matchedTag = allTags.find(
-            (t) => t.slug === name || t.name.toLowerCase() === name.toLowerCase()
-          );
-          const isSelected = matchedTag && selectedIds.includes(matchedTag.id);
-
-          if (isSelected) return null;
-
-          return (
-            <button
-              key={name}
-              type="button"
-              onClick={() => handleQuickAdd(name)}
-              disabled={!canAddMore || isCreating}
-              className="inline-flex items-center gap-1 px-2 py-0.5 border border-border bg-background hover:border-foreground font-mono text-[10px] text-muted hover:text-foreground transition-colors disabled:opacity-30 cursor-pointer"
-              title={`Klik untuk menambahkan #${name}`}
-            >
-              <span>+ #{name}</span>
-            </button>
-          );
-        })}
-      </div>
+      {/* ── Guidance Note (Minimalist & Clean) ── */}
+      <p className="font-mono text-[10px] text-muted tracking-tight">
+        Ketik kata kunci bebas lalu tekan Enter untuk menyematkan (maksimal {maxTags} tag).
+      </p>
     </div>
   );
 }

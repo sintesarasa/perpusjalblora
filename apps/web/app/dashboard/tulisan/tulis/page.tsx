@@ -487,9 +487,6 @@ export default function DashboardWriteArticlePage() {
                     Tag Kata Kunci (Maksimal 5)
                   </label>
                   <TagPicker tags={tags} selectedIds={tagIds} onChange={setTagIds} />
-                  <p className="font-sans text-[11px] text-muted leading-tight">
-                    Tambahkan topik spesifik untuk mempermudah indeksasi dan rekomendasi.
-                  </p>
                 </div>
               </div>
 
