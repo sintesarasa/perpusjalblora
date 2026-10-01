@@ -31,7 +31,7 @@ export function AuthorCard({ author, className }: AuthorCardProps) {
           <img
             src={author.avatarUrl}
             alt={author.name}
-            className="w-full h-full object-cover grayscale contrast-105"
+            className="w-full h-full object-cover"
           />
         ) : (
           <span className="font-mono font-bold text-base tracking-wider text-foreground">

@@ -202,7 +202,7 @@ function ArticleDetailContent() {
                     <img
                       src={article.author.avatarUrl}
                       alt={article.author.name}
-                      className="w-full h-full object-cover grayscale"
+                      className="w-full h-full object-cover"
                     />
                   ) : (
                     <span>{article.author?.name?.charAt(0) || 'R'}</span>
@@ -238,7 +238,7 @@ function ArticleDetailContent() {
                 <img
                   src={article.coverImage}
                   alt={article.title}
-                  className="w-full h-full object-cover grayscale contrast-[1.08] hover:contrast-100 transition-all duration-500"
+                  className="w-full h-full object-cover transition-all duration-500"
                 />
               </div>
               {article.coverCredit && (

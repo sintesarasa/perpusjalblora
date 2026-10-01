@@ -80,7 +80,7 @@ export function ArticleFeatured({ article, className }: ArticleFeaturedProps) {
                 <img
                   src={article.coverImage}
                   alt={article.title}
-                  className="w-full h-full object-cover grayscale contrast-125"
+                  className="w-full h-full object-cover"
                 />
               </div>
               {article.coverCredit && (

@@ -36,7 +36,7 @@ export function ArticleCard({
             <img
               src={article.coverImage}
               alt={article.title}
-              className="w-full h-full object-cover grayscale transition-transform duration-300 group-hover:scale-[1.02]"
+              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
               loading="lazy"
             />
           </div>
