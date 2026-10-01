@@ -457,23 +457,29 @@ export function EditorialEditor({
     if (onChange) onChange(htmlToTipTapJson(editorRef.current), text.trim());
   };
 
-  // Paste cleaner — strip Word/GDocs inline styles, keep semantic formatting
+  // Paste cleaner — strip Word/GDocs inline styles and office XML, keep semantic formatting
   const handlePaste = (e: React.ClipboardEvent) => {
     e.preventDefault();
     const html = e.clipboardData.getData('text/html');
     const plain = e.clipboardData.getData('text/plain');
     if (html) {
+      // Clean HTML comments, office XML tags, and style blocks
+      let cleanedHtml = html
+        .replace(/<!--[\s\S]*?-->/g, '')
+        .replace(/<o:p>[\s\S]*?<\/o:p>/gi, '')
+        .replace(/<\/?(xml|meta|link|style)[^>]*>/gi, '');
+
       const tmp = document.createElement('div');
-      tmp.innerHTML = html;
-      // Remove all style attrs, class attrs, data-* attrs
+      tmp.innerHTML = cleanedHtml;
+      // Remove all style attrs, class attrs, data-* attrs, MS office attributes
       tmp.querySelectorAll('*').forEach((el) => {
         el.removeAttribute('style');
         el.removeAttribute('class');
         el.removeAttribute('id');
         Array.from(el.attributes)
-          .filter((a) => a.name.startsWith('data-'))
+          .filter((a) => a.name.startsWith('data-') || a.name.startsWith('v:') || a.name.startsWith('o:'))
           .forEach((a) => el.removeAttribute(a.name));
-        // Remove span wrappers (used heavily by GDocs)
+        // Remove span wrappers (used heavily by GDocs and Word)
         if (el.tagName.toLowerCase() === 'span') {
           const parent = el.parentNode;
           while (el.firstChild) parent?.insertBefore(el.firstChild, el);
@@ -1060,7 +1066,7 @@ export function EditorialEditor({
         <LinkModal onInsert={doInsertLink} onClose={() => setShowLinkModal(false)} />
       )}
 
-      <div className={cn('border border-border bg-surface flex flex-col relative', isFocusMode && 'fixed inset-0 z-[100] border-0', className)}>
+      <div className={cn('flex flex-col relative bg-transparent', isFocusMode && 'fixed inset-0 z-[100] bg-background border-0', className)}>
         {/* ── Sticky Toolbar ── */}
         <div
           className={cn(
@@ -1153,7 +1159,7 @@ export function EditorialEditor({
         </div>
 
         {/* ── Editor Canvas ── */}
-        <div className={cn(isFocusMode ? 'flex-1 overflow-y-auto p-6 sm:p-16 max-w-3xl mx-auto w-full' : 'p-4 sm:p-10')}>
+        <div className={cn(isFocusMode ? 'flex-1 overflow-y-auto p-6 sm:p-16 max-w-3xl mx-auto w-full' : 'py-4 sm:py-6 px-0')}>
           <div
             ref={editorRef}
             contentEditable

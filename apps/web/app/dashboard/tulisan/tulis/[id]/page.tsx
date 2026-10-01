@@ -24,11 +24,13 @@ import {
   ArrowLeft,
   SlidersHorizontal,
   ChevronDown,
-  ChevronUp,
+  BookOpen,
   Image as ImageIcon,
   Tag as TagIcon,
-  BookOpen,
   Eye,
+  X,
+  RotateCcw,
+  Sparkles,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -41,6 +43,18 @@ const FALLBACK_ARTICLE_CATEGORIES: ArticleCategory[] = [
   { id: 'puisi', name: 'Puisi', slug: 'puisi' },
   { id: 'refleksi-diri', name: 'Refleksi Diri', slug: 'refleksi-diri' },
 ];
+
+interface ArticleLocalDraft {
+  title: string;
+  subtitle: string;
+  categoryId: string;
+  coverImage: string;
+  coverCredit: string;
+  tagIds: string[];
+  contentJson: any;
+  plainText: string;
+  updatedAt: string;
+}
 
 export default function DashboardEditArticlePage() {
   const params = useParams();
@@ -65,8 +79,16 @@ export default function DashboardEditArticlePage() {
   const [successMessage, setSuccessMessage] = React.useState<string | null>(null);
   const [autosaveState, setAutosaveState] = React.useState<'idle' | 'saving' | 'saved'>('idle');
   const [lastSavedAt, setLastSavedAt] = React.useState<string | null>(null);
-  const [metaAccordionOpen, setMetaAccordionOpen] = React.useState(false);
+
+  // Ergonomic writing drawers and modals
+  const [isSettingsOpen, setIsSettingsOpen] = React.useState(false);
   const [categoryModalOpen, setCategoryModalOpen] = React.useState(false);
+
+  // Unsaved changes & Local storage recovery state
+  const [isDirty, setIsDirty] = React.useState(false);
+  const [hasLocalBackup, setHasLocalBackup] = React.useState(false);
+  const [localBackupTime, setLocalBackupTime] = React.useState<string | null>(null);
+  const [localBackupData, setLocalBackupData] = React.useState<ArticleLocalDraft | null>(null);
 
   const isSavingRef = React.useRef(false);
   const titleTextareaRef = React.useRef<HTMLTextAreaElement>(null);
@@ -95,14 +117,46 @@ export default function DashboardEditArticlePage() {
 
       if (art) {
         setArticle(art);
-        setTitle(art.title);
+        setTitle(art.title || '');
         setSubtitle(art.subtitle || '');
-        setCategoryId(art.category?.id || '');
+        setCategoryId(art.category?.id || 'suara-lapak');
         setCoverImage(art.coverImage || '');
         setCoverCredit(art.coverCredit || '');
         setTagIds((art.tags || []).map((t) => t.id));
         setContentJson(art.content);
         setPlainText(art.plainText || '');
+
+        // Check if there is an offline local backup in localStorage
+        try {
+          const rawBackup = localStorage.getItem(`perpusjal_draft_${articleId}`);
+          if (rawBackup) {
+            const parsed: ArticleLocalDraft = JSON.parse(rawBackup);
+            const artAny = art as Record<string, any>;
+            const serverUpdated = artAny.updatedAt ? new Date(artAny.updatedAt).getTime() : 0;
+            const localUpdated = parsed.updatedAt ? new Date(parsed.updatedAt).getTime() : 0;
+
+            // If local backup is strictly newer than server and has different content
+            if (localUpdated > serverUpdated) {
+              const hasDiff =
+                (parsed.title && parsed.title !== art.title) ||
+                (parsed.plainText && parsed.plainText !== (art.plainText || '')) ||
+                (parsed.subtitle && parsed.subtitle !== (art.subtitle || ''));
+
+              if (hasDiff) {
+                setHasLocalBackup(true);
+                setLocalBackupTime(
+                  new Date(localUpdated).toLocaleTimeString('id-ID', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })
+                );
+                setLocalBackupData(parsed);
+              }
+            }
+          }
+        } catch (e) {
+          console.warn('Gagal membaca draf lokal:', e);
+        }
       } else {
         setErrorMessage(artRes.error?.message || 'Gagal memuat data naskah.');
       }
@@ -116,6 +170,89 @@ export default function DashboardEditArticlePage() {
   React.useEffect(() => {
     loadData();
   }, [loadData]);
+
+  // Auto-resize title textarea on title change
+  React.useEffect(() => {
+    if (titleTextareaRef.current) {
+      titleTextareaRef.current.style.height = 'auto';
+      titleTextareaRef.current.style.height = `${titleTextareaRef.current.scrollHeight}px`;
+    }
+  }, [title]);
+
+  // Warn user before leaving page if there are unsaved changes
+  React.useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isDirty) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [isDirty]);
+
+  // Close slide-over drawer on Escape key
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isSettingsOpen) {
+        setIsSettingsOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isSettingsOpen]);
+
+  // Helper to persist silent local backup
+  const persistLocalBackup = React.useCallback(
+    (overrides?: Partial<ArticleLocalDraft>) => {
+      if (!articleId) return;
+      try {
+        const draft: ArticleLocalDraft = {
+          title,
+          subtitle,
+          categoryId,
+          coverImage,
+          coverCredit,
+          tagIds,
+          contentJson,
+          plainText,
+          updatedAt: new Date().toISOString(),
+          ...overrides,
+        };
+        localStorage.setItem(`perpusjal_draft_${articleId}`, JSON.stringify(draft));
+        setIsDirty(true);
+      } catch (e) {
+        console.warn('Gagal menyimpan draf lokal:', e);
+      }
+    },
+    [articleId, title, subtitle, categoryId, coverImage, coverCredit, tagIds, contentJson, plainText]
+  );
+
+  const restoreLocalBackup = () => {
+    if (!localBackupData) return;
+    if (localBackupData.title !== undefined) setTitle(localBackupData.title);
+    if (localBackupData.subtitle !== undefined) setSubtitle(localBackupData.subtitle);
+    if (localBackupData.categoryId !== undefined) setCategoryId(localBackupData.categoryId);
+    if (localBackupData.coverImage !== undefined) setCoverImage(localBackupData.coverImage);
+    if (localBackupData.coverCredit !== undefined) setCoverCredit(localBackupData.coverCredit);
+    if (localBackupData.tagIds !== undefined) setTagIds(localBackupData.tagIds);
+    if (localBackupData.contentJson !== undefined) setContentJson(localBackupData.contentJson);
+    if (localBackupData.plainText !== undefined) setPlainText(localBackupData.plainText);
+
+    setHasLocalBackup(false);
+    setLocalBackupData(null);
+    setIsDirty(true);
+    setSuccessMessage('Draf offline lokal berhasil dipulihkan ke lembar kerja.');
+    setTimeout(() => setSuccessMessage(null), 3500);
+  };
+
+  const discardLocalBackup = () => {
+    try {
+      localStorage.removeItem(`perpusjal_draft_${articleId}`);
+    } catch {}
+    setHasLocalBackup(false);
+    setLocalBackupData(null);
+  };
 
   const doSave = React.useCallback(async () => {
     if (!title.trim() || isSavingRef.current) return false;
@@ -136,6 +273,10 @@ export default function DashboardEditArticlePage() {
       });
       setAutosaveState('saved');
       setLastSavedAt(new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }));
+      setIsDirty(false);
+      try {
+        localStorage.removeItem(`perpusjal_draft_${articleId}`);
+      } catch {}
       setTimeout(() => setAutosaveState('idle'), 3000);
       return true;
     } catch {
@@ -159,7 +300,7 @@ export default function DashboardEditArticlePage() {
     if (andSubmit) {
       if (!coverImage.trim()) {
         setErrorMessage('Gambar sampul wajib diunggah sebelum mengajukan naskah ke redaksi.');
-        setMetaAccordionOpen(true);
+        setIsSettingsOpen(true);
         window.scrollTo({ top: 0, behavior: 'smooth' });
         return;
       }
@@ -189,6 +330,11 @@ export default function DashboardEditArticlePage() {
         return;
       }
 
+      setIsDirty(false);
+      try {
+        localStorage.removeItem(`perpusjal_draft_${articleId}`);
+      } catch {}
+
       if (andSubmit) {
         const submitRes = await apiClient(`/articles/${articleId}/submit`, { method: 'POST' });
         if (submitRes.error) {
@@ -214,6 +360,11 @@ export default function DashboardEditArticlePage() {
   const tagNames = tags.filter((t) => tagIds.includes(t.id)).map((t) => t.name);
   const selectedCategory = categories.find((c) => c.id === categoryId);
   const selectedCategoryGuide = selectedCategory ? OFFICIAL_CATEGORY_GUIDES[selectedCategory.slug] : null;
+
+  // Metadata completeness helper
+  const hasCover = Boolean(coverImage.trim());
+  const hasCategory = Boolean(categoryId);
+  const isMetaComplete = hasCover && hasCategory;
 
   if (isLoading) {
     return (
@@ -255,9 +406,9 @@ export default function DashboardEditArticlePage() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground pb-20">
-      {/* ── 1. Top Action Bar (Sleek Utility Bar, h-11 = 44px, sticky beneath Dashboard Navbar at top-14) ── */}
-      <div className="sticky top-14 z-30 h-11 bg-background/95 backdrop-blur-md border-b border-border flex items-center justify-between px-3 sm:px-6 transition-all">
+    <div className="min-h-screen bg-background text-foreground selection:bg-foreground/15">
+      {/* ── 1. Top Action Bar (h-12 = 48px, sticky beneath Dashboard Navbar at top-14) ── */}
+      <div className="sticky top-14 z-30 h-12 bg-background/95 backdrop-blur-md border-b border-border flex items-center justify-between px-3 sm:px-6 transition-all">
         {/* Left: Back button & status pill */}
         <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           <Link
@@ -284,6 +435,12 @@ export default function DashboardEditArticlePage() {
                 <span className="hidden sm:inline">Tersimpan {lastSavedAt}</span>
                 <span className="sm:hidden">Tersimpan</span>
               </span>
+            ) : isDirty ? (
+              <span className="text-amber-600 dark:text-amber-400 border border-amber-500/30 px-1.5 py-0.5 rounded-xs flex items-center gap-1">
+                <span className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-pulse" />
+                <span className="hidden xs:inline">Draf Diubah</span>
+                <span className="xs:hidden">Draf</span>
+              </span>
             ) : (
               <span className="text-muted border border-border-hairline px-1.5 py-0.5 rounded-xs">
                 [ EDITING ]
@@ -292,24 +449,47 @@ export default function DashboardEditArticlePage() {
           </div>
         </div>
 
-        {/* Right: Word count, Preview & Action Buttons */}
-        <div className="flex items-center gap-2 shrink-0">
+        {/* Right: Word count, Settings Drawer Trigger & Action Buttons */}
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           {wordCount > 0 && (
-            <span className="font-mono text-[10px] text-muted uppercase tracking-wider hidden md:inline-block mr-1">
+            <span className="font-mono text-[10px] text-muted uppercase tracking-wider hidden lg:inline-block mr-1">
               {wordCount} Kata
             </span>
           )}
 
+          {/* Slide-over Settings Drawer Toggle */}
+          <button
+            type="button"
+            onClick={() => setIsSettingsOpen(!isSettingsOpen)}
+            className={cn(
+              'h-8 px-2.5 sm:px-3 border font-mono text-[10px] sm:text-[11px] uppercase tracking-wider inline-flex items-center gap-1.5 transition-colors relative',
+              isSettingsOpen
+                ? 'bg-foreground text-background border-foreground'
+                : 'border-border text-muted hover:text-foreground hover:border-foreground bg-surface-muted/20'
+            )}
+            title="Buka Pengaturan Naskah (Sampul, Kategori, Tag, SEO)"
+          >
+            <SlidersHorizontal className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Pengaturan</span>
+            {!hasCover && (
+              <span
+                className="w-2 h-2 rounded-full bg-amber-500 shrink-0"
+                title="Gambar sampul belum diunggah"
+              />
+            )}
+          </button>
+
+          {/* Preview button */}
           {article?.previewToken && (
             <a
               href={`/artikel/${article.slug}?preview=${article.previewToken}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="h-8 px-2.5 sm:px-3 border border-border text-muted hover:text-foreground hover:border-foreground font-mono text-[10px] sm:text-[11px] uppercase tracking-wider inline-flex items-center gap-1.5 transition-colors"
-              title="Buka pratinjau publik"
+              className="h-8 px-2.5 sm:px-3 border border-border text-muted hover:text-foreground hover:border-foreground font-mono text-[10px] sm:text-[11px] uppercase tracking-wider inline-flex items-center gap-1.5 transition-colors hidden sm:inline-flex"
+              title="Buka pratinjau publik naskah"
             >
               <Eye className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Pratinjau</span>
+              <span>Pratinjau</span>
             </a>
           )}
 
@@ -319,7 +499,7 @@ export default function DashboardEditArticlePage() {
             size="sm"
             onClick={() => handleUpdate(false)}
             isLoading={isSubmitting}
-            className="h-8 px-3 font-mono text-[10px] sm:text-[11px]"
+            className="h-8 px-2.5 sm:px-3 font-mono text-[10px] sm:text-[11px]"
           >
             <Save className="w-3.5 h-3.5 sm:mr-1.5" />
             <span className="hidden sm:inline">Simpan</span>
@@ -331,24 +511,75 @@ export default function DashboardEditArticlePage() {
             size="sm"
             onClick={() => handleUpdate(true)}
             isLoading={isSubmitting}
-            className="h-8 px-3.5 font-mono text-[10px] sm:text-[11px] font-semibold"
+            className="h-8 px-3 sm:px-3.5 font-mono text-[10px] sm:text-[11px] font-semibold"
           >
             <Send className="w-3.5 h-3.5 sm:mr-1.5" />
             <span>Ajukan</span>
-            <span className="hidden sm:inline">&nbsp;ke Redaksi</span>
+            <span className="hidden md:inline">&nbsp;ke Redaksi</span>
           </Button>
         </div>
       </div>
 
-      {/* ── 2. Main Writing Canvas Area ── */}
-      <div className="max-w-4xl mx-auto px-4 sm:px-8 pt-10 sm:pt-16 lg:pt-20 space-y-8 sm:space-y-10">
-        {/* Error Alert */}
+      {/* ── 2. Pure Editorial Stationery Canvas ── */}
+      {/* Optimal line length ~720px (max-w-[740px]) & eye-level bottom cushion (pb-[45vh]) */}
+      <main className="max-w-[740px] mx-auto px-4 sm:px-6 pt-8 sm:pt-12 pb-[45vh] space-y-6 sm:space-y-8">
+        {/* Offline Local Recovery Banner */}
+        {hasLocalBackup && (
+          <div className="p-3.5 sm:p-4 border-2 border-foreground bg-surface flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+            <div className="flex items-start gap-2.5">
+              <RotateCcw className="w-4 h-4 text-foreground mt-0.5 shrink-0" />
+              <div>
+                <p className="font-mono text-[10px] font-bold uppercase tracking-wider text-muted">
+                  Pemulihan Otomatis Tersedia
+                </p>
+                <p className="text-xs sm:text-sm font-sans text-foreground mt-0.5">
+                  Ditemukan draf lokal ({localBackupTime}) yang lebih baru dari data server.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 w-full sm:w-auto shrink-0 justify-end">
+              <Button
+                type="button"
+                variant="solid"
+                size="sm"
+                onClick={restoreLocalBackup}
+                className="h-7 px-3 font-mono text-[10px] uppercase font-bold"
+              >
+                Pulihkan Draf
+              </Button>
+              <button
+                type="button"
+                onClick={discardLocalBackup}
+                className="h-7 px-2.5 font-mono text-[10px] uppercase text-muted hover:text-foreground transition-colors"
+              >
+                Abaikan
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Curator Revision Notes Callout if article was returned for revision */}
+        {article.status === 'REVISION' && (
+          <div className="p-4 border-2 border-amber-600 bg-amber-50 dark:bg-amber-950/20 text-foreground flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <h4 className="font-mono text-xs uppercase tracking-wider font-bold text-amber-900 dark:text-amber-300">
+                Naskah Memerlukan Revisi Redaksi
+              </h4>
+              <p className="font-sans text-xs sm:text-sm text-foreground/90 mt-1 leading-relaxed">
+                Tim kurator redaksi telah meninjau tulisan Anda dan meminta sedikit penyempurnaan. Silakan lakukan revisi pada lembar kerja di bawah, lalu klik <strong>Ajukan ke Redaksi</strong> kembali.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Global Error Banner */}
         {errorMessage && (
-          <div className="p-4 border-2 border-foreground bg-surface flex items-start gap-3 shadow-xs">
+          <div className="p-3.5 sm:p-4 border-2 border-foreground bg-surface flex items-start gap-3 shadow-xs">
             <AlertCircle className="w-4 h-4 mt-0.5 text-foreground shrink-0" />
             <div className="flex-1 min-w-0">
               <p className="font-mono text-[10px] font-bold uppercase tracking-wider text-muted">
-                Perhatian Pengiriman
+                Perhatian Naskah
               </p>
               <p className="text-sm font-sans mt-0.5 text-foreground">{errorMessage}</p>
             </div>
@@ -361,9 +592,9 @@ export default function DashboardEditArticlePage() {
           </div>
         )}
 
-        {/* Success Alert */}
+        {/* Global Success Banner */}
         {successMessage && (
-          <div className="p-4 border-2 border-emerald-600 bg-emerald-50 dark:bg-emerald-950/30 flex items-center gap-3">
+          <div className="p-3.5 sm:p-4 border-2 border-emerald-600 bg-emerald-50 dark:bg-emerald-950/30 flex items-center gap-3">
             <CheckCircle2 className="w-4 h-4 text-emerald-700 dark:text-emerald-400 shrink-0" />
             <p className="text-sm font-sans text-emerald-900 dark:text-emerald-200 font-medium">
               {successMessage}
@@ -371,10 +602,10 @@ export default function DashboardEditArticlePage() {
           </div>
         )}
 
-        {/* ── Section A: Editorial Headline & Lede Area ── */}
-        <div className="space-y-6">
-          {/* Folio / Section Marker & Headline Character Counter */}
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border-hairline pb-2.5">
+        {/* ── Section A: Editorial Headline & Lede Flow ── */}
+        <header className="space-y-4 sm:space-y-5">
+          {/* Minimal Folio Pill & Rubrik Switcher */}
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border-hairline pb-2">
             <div className="flex items-center gap-2">
               <button
                 type="button"
@@ -393,7 +624,7 @@ export default function DashboardEditArticlePage() {
 
               <span className="text-muted/40 font-mono text-[10px] hidden xs:inline">•</span>
               <span className="font-mono text-[10px] tracking-wider uppercase text-muted hidden xs:inline">
-                Menyunting Naskah
+                Lembar Naskah
               </span>
             </div>
 
@@ -409,171 +640,70 @@ export default function DashboardEditArticlePage() {
             </div>
           </div>
 
-          {/* Main Title Textarea (Auto-resizing & Distinct Headline Typography) */}
-          <div className="space-y-2">
+          {/* Main Title (Auto-resizing & Distinct Editorial Serif Headline) */}
+          <div>
             <textarea
               ref={titleTextareaRef}
               rows={1}
               placeholder="Tuliskan Gagasan atau Judul Utama Naskah Anda..."
               value={title}
               onChange={(e) => {
-                setTitle(e.target.value);
-                e.target.style.height = 'auto';
-                e.target.style.height = `${e.target.scrollHeight}px`;
+                const val = e.target.value;
+                setTitle(val);
+                persistLocalBackup({ title: val });
               }}
-              className="w-full bg-transparent font-serif font-normal leading-[1.2] tracking-[-0.02em] text-foreground placeholder:text-muted/25 focus:outline-none resize-none border-b-2 border-border focus:border-foreground transition-all duration-150 pb-3 overflow-hidden"
-              style={{ fontSize: 'clamp(1.75rem, 5vw, 3.25rem)' }}
+              className="w-full bg-transparent font-serif font-normal leading-[1.2] tracking-[-0.02em] text-foreground placeholder:text-muted/25 focus:outline-none resize-none border-b-2 border-border/70 focus:border-foreground transition-all duration-150 pb-2 overflow-hidden"
+              style={{ fontSize: 'clamp(1.75rem, 4.5vw, 3rem)' }}
             />
           </div>
 
           {/* Subtitle / Deck (Journalistic Lede) */}
-          <div className="space-y-1.5">
-            <label className="font-mono text-[10px] uppercase tracking-widest text-muted block">
-              // SUBJUDUL ATAU INTISARI PENGANTAR (DECK)
-            </label>
+          <div>
             <input
               type="text"
-              placeholder="Satu atau dua kalimat pengantar untuk menarik minat pembaca..."
+              placeholder="Subjudul atau kalimat pengantar untuk memikat pembaca (opsional)..."
               value={subtitle}
-              onChange={(e) => setSubtitle(e.target.value)}
-              className="w-full bg-transparent font-serif italic text-base sm:text-xl text-foreground/80 placeholder:text-muted/30 focus:outline-none border-b border-border-hairline focus:border-foreground transition-colors pb-2"
+              onChange={(e) => {
+                const val = e.target.value;
+                setSubtitle(val);
+                persistLocalBackup({ subtitle: val });
+              }}
+              className="w-full bg-transparent font-serif italic text-base sm:text-lg text-foreground/80 placeholder:text-muted/30 focus:outline-none border-b border-border-hairline focus:border-foreground transition-colors pb-1.5"
             />
           </div>
 
-          {/* Byline & Estimate Strip */}
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[10px] sm:text-[11px] uppercase tracking-wider text-muted pt-1">
-            <span className="text-foreground">Oleh Penulis Warga</span>
+          {/* Byline & Reading Time Strip */}
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[10px] sm:text-[11px] uppercase tracking-wider text-muted pt-0.5">
+            <span className="text-foreground">Oleh {article.author?.name || 'Penulis Warga'}</span>
             <span>•</span>
             <span>{wordCount} Kata</span>
             <span>•</span>
             <span>~{Math.max(1, Math.ceil(wordCount / 200))} Mnt Baca</span>
+            {!hasCover && (
+              <>
+                <span>•</span>
+                <button
+                  type="button"
+                  onClick={() => setIsSettingsOpen(true)}
+                  className="text-amber-600 dark:text-amber-400 hover:underline inline-flex items-center gap-1 cursor-pointer"
+                >
+                  <ImageIcon className="w-3 h-3" />
+                  <span>+ Tambah Sampul</span>
+                </button>
+              </>
+            )}
           </div>
-        </div>
+        </header>
 
-        {/* ── Section B: Collapsible Metadata Strip (Category, Tags, Cover) ── */}
-        <div className="border border-border bg-surface rounded-xs overflow-hidden transition-all">
-          <button
-            type="button"
-            onClick={() => setMetaAccordionOpen(!metaAccordionOpen)}
-            className="w-full px-4 py-3 bg-surface-muted/30 hover:bg-surface-muted/60 flex items-center justify-between gap-3 text-left transition-colors"
-          >
-            <div className="flex flex-wrap items-center gap-2 sm:gap-3 min-w-0">
-              <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-foreground flex items-center gap-1.5">
-                <SlidersHorizontal className="w-3.5 h-3.5 text-muted" />
-                Kelengkapan Naskah
-              </span>
-
-              {/* Status pills */}
-              <span className="font-mono text-[10px] uppercase px-2 py-0.5 border border-border text-muted bg-background hidden sm:inline-flex items-center gap-1">
-                <BookOpen className="w-3 h-3 text-muted" />
-                {selectedCategory?.name || 'Kategori'}
-              </span>
-
-              <span className="font-mono text-[10px] uppercase px-2 py-0.5 border border-border text-muted bg-background hidden sm:inline-flex items-center gap-1">
-                <TagIcon className="w-3 h-3 text-muted" />
-                {tagIds.length > 0 ? `${tagIds.length} Tag` : 'Belum Ada Tag'}
-              </span>
-
-              <span
-                className={cn(
-                  'font-mono text-[10px] uppercase px-2 py-0.5 border flex items-center gap-1',
-                  coverImage
-                    ? 'border-emerald-600 text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/20'
-                    : 'border-border text-muted bg-background'
-                )}
-              >
-                <ImageIcon className="w-3 h-3" />
-                {coverImage ? 'Sampul Siap' : 'Sampul Belum'}
-              </span>
-            </div>
-
-            <div className="flex items-center gap-1 font-mono text-[11px] uppercase tracking-wider text-muted shrink-0">
-              <span className="hidden sm:inline">{metaAccordionOpen ? 'Tutup' : 'Atur'}</span>
-              {metaAccordionOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-            </div>
-          </button>
-
-          {/* Expanded Drawer */}
-          {metaAccordionOpen && (
-            <div className="p-4 sm:p-6 space-y-6 border-t border-border-hairline bg-surface">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <label className="font-mono text-[10px] uppercase tracking-wider text-muted font-bold block">
-                      Rubrik Tulisan
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() => setCategoryModalOpen(true)}
-                      className="font-mono text-[10px] uppercase text-muted hover:text-foreground underline cursor-pointer"
-                    >
-                      Buka Panduan ↗
-                    </button>
-                  </div>
-
-                  <div
-                    onClick={() => setCategoryModalOpen(true)}
-                    className="p-3 border border-border bg-background hover:border-foreground transition-colors cursor-pointer group flex items-start justify-between gap-3 select-none"
-                    title="Klik untuk membuka panduan & memilih rubrik"
-                  >
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="font-mono text-[10px] font-bold px-1.5 py-0.5 border bg-foreground text-background border-foreground">
-                          {selectedCategoryGuide?.number || '•'}
-                        </span>
-                        <span className="font-serif text-sm font-bold text-foreground">
-                          {selectedCategory?.name || 'Belum Dipilih'}
-                        </span>
-                      </div>
-                      <p className="font-serif italic text-xs text-muted mt-1 truncate">
-                        &ldquo;{selectedCategoryGuide?.tagline || selectedCategory?.description || 'Pilih rubrik yang sesuai'}&rdquo;
-                      </p>
-                    </div>
-                    <span className="h-7 px-2.5 bg-surface-muted border border-border font-mono text-[10px] uppercase tracking-wider text-foreground inline-flex items-center shrink-0 group-hover:bg-foreground group-hover:text-background transition-colors">
-                      Ganti
-                    </span>
-                  </div>
-
-                  {selectedCategoryGuide?.avoidFor && (
-                    <p className="font-sans text-[11px] text-amber-700 dark:text-amber-300 leading-tight flex items-start gap-1">
-                      <span>⚠</span>
-                      <span><strong>Catatan Redaksi:</strong> Hindari {selectedCategoryGuide.avoidFor.toLowerCase()}</span>
-                    </p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <label className="font-mono text-[10px] uppercase tracking-wider text-muted font-bold block">
-                    Tag Kata Kunci (Maksimal 5)
-                  </label>
-                  <TagPicker tags={tags} selectedIds={tagIds} onChange={setTagIds} />
-                </div>
-              </div>
-
-              {/* Cover Image Uploader */}
-              <div className="pt-2 border-t border-border-hairline">
-                <ArticleCoverUploader
-                  value={coverImage}
-                  onChange={setCoverImage}
-                  credit={coverCredit}
-                  onCreditChange={setCoverCredit}
-                />
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* ── Section C: Editorial Editor (Canvas) ── */}
-        <div className="space-y-2">
-          <label className="font-mono text-[10px] uppercase tracking-widest text-muted block">
-            // LEMBAR KERJA PENULIS
-          </label>
+        {/* ── Section B: Seamless Paper Editorial Editor Canvas ── */}
+        <div className="pt-2">
           {article && (
             <EditorialEditor
               initialContent={article.content}
               onChange={(json, text) => {
                 setContentJson(json);
                 setPlainText(text);
+                persistLocalBackup({ contentJson: json, plainText: text });
               }}
               onAutosave={() => doSave()}
               placeholder="Lanjutkan penulisan naskah Anda di sini..."
@@ -581,66 +711,234 @@ export default function DashboardEditArticlePage() {
           )}
         </div>
 
-        {/* ── Section D: Live SEO & Readability Analysis ── */}
-        <SeoAnalysisPanel
-          title={title}
-          plainText={plainText}
-          tags={tagNames}
-          coverImage={coverImage}
-        />
-
-        {/* ── Section E: Bottom Action Bar ── */}
-        <div className="pt-4 border-t border-border flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
-          <div className="font-mono text-[11px] text-muted uppercase tracking-wider">
-            {wordCount > 0 ? (
-              <span>
-                {wordCount} kata ditulis
-                {wordCount < 100 && (
-                  <span className="text-amber-600 dark:text-amber-400 ml-2">
-                    (Butuh min. 100 kata untuk ajukan)
-                  </span>
-                )}
+        {/* ── Section C: Bottom Editorial Action Strip ── */}
+        <div className="pt-6 border-t border-border flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+          <div className="font-mono text-[11px] text-muted uppercase tracking-wider flex items-center gap-2">
+            <span>{wordCount} kata</span>
+            {wordCount < 100 ? (
+              <span className="text-amber-600 dark:text-amber-400">
+                (Minimal 100 kata untuk diajukan)
               </span>
             ) : (
-              <span>Belum ada kata terketik</span>
+              <span className="text-emerald-600 dark:text-emerald-400">
+                [Memenuhi syarat kata]
+              </span>
             )}
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <Button
               type="button"
               variant="outline"
-              size="md"
+              size="sm"
               onClick={() => handleUpdate(false)}
               isLoading={isSubmitting}
-              className="flex-1 sm:flex-none min-h-[44px] px-5 font-mono text-xs"
+              className="flex-1 sm:flex-none h-9 px-4 font-mono text-xs"
             >
-              <Save className="w-4 h-4 mr-2" />
-              Simpan Perubahan
+              <Save className="w-3.5 h-3.5 mr-1.5" />
+              Simpan Draf
             </Button>
 
             <Button
               type="button"
               variant="solid"
-              size="md"
+              size="sm"
               onClick={() => handleUpdate(true)}
               isLoading={isSubmitting}
-              className="flex-1 sm:flex-none min-h-[44px] px-6 font-mono text-xs font-semibold"
+              className="flex-1 sm:flex-none h-9 px-5 font-mono text-xs font-semibold"
             >
-              <Send className="w-4 h-4 mr-2" />
+              <Send className="w-3.5 h-3.5 mr-1.5" />
               Ajukan ke Redaksi
             </Button>
           </div>
         </div>
-      </div>
+      </main>
 
-      {/* ── Category Picker Guided Modal ── */}
+      {/* ── 3. Slide-Over Right Settings Drawer ── */}
+      {/* Backdrop */}
+      {isSettingsOpen && (
+        <div
+          className="fixed inset-0 bg-background/60 backdrop-blur-xs z-50 transition-opacity duration-200"
+          onClick={() => setIsSettingsOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* Drawer Panel */}
+      <aside
+        className={cn(
+          'fixed inset-y-0 right-0 z-50 w-full sm:w-[460px] bg-background border-l border-border shadow-2xl flex flex-col transition-transform duration-300 ease-in-out',
+          isSettingsOpen ? 'translate-x-0' : 'translate-x-full'
+        )}
+        aria-label="Pengaturan Naskah"
+      >
+        {/* Drawer Header */}
+        <div className="h-14 px-5 sm:px-6 border-b border-border flex items-center justify-between shrink-0 bg-surface-muted/30">
+          <div className="flex items-center gap-2">
+            <SlidersHorizontal className="w-4 h-4 text-foreground" />
+            <h3 className="font-serif font-bold text-base text-foreground">Pengaturan Naskah</h3>
+          </div>
+          <button
+            type="button"
+            onClick={() => setIsSettingsOpen(false)}
+            className="w-8 h-8 rounded-full border border-border flex items-center justify-center text-muted hover:text-foreground hover:border-foreground transition-colors cursor-pointer"
+            title="Tutup Pengaturan (Esc)"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Drawer Content */}
+        <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-6">
+          {/* Rubrik Section */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <label className="font-mono text-[10px] uppercase tracking-wider text-muted font-bold block">
+                Rubrik Naskah
+              </label>
+              <button
+                type="button"
+                onClick={() => setCategoryModalOpen(true)}
+                className="font-mono text-[10px] uppercase text-muted hover:text-foreground underline cursor-pointer"
+              >
+                Panduan Rubrik ↗
+              </button>
+            </div>
+
+            <div
+              onClick={() => setCategoryModalOpen(true)}
+              className="p-3 border border-border bg-surface hover:border-foreground transition-colors cursor-pointer group flex items-start justify-between gap-3 select-none"
+              title="Klik untuk membuka panduan & memilih rubrik"
+            >
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-[10px] font-bold px-1.5 py-0.5 border bg-foreground text-background border-foreground">
+                    {selectedCategoryGuide?.number || '•'}
+                  </span>
+                  <span className="font-serif text-sm font-bold text-foreground">
+                    {selectedCategory?.name || 'Belum Dipilih'}
+                  </span>
+                </div>
+                <p className="font-serif italic text-xs text-muted mt-1 truncate">
+                  &ldquo;{selectedCategoryGuide?.tagline || selectedCategory?.description || 'Pilih rubrik yang sesuai'}&rdquo;
+                </p>
+              </div>
+              <span className="h-7 px-2.5 bg-surface-muted border border-border font-mono text-[10px] uppercase tracking-wider text-foreground inline-flex items-center shrink-0 group-hover:bg-foreground group-hover:text-background transition-colors">
+                Ganti
+              </span>
+            </div>
+
+            {selectedCategoryGuide?.avoidFor && (
+              <p className="font-sans text-[11px] text-amber-700 dark:text-amber-300 leading-tight flex items-start gap-1">
+                <span>⚠</span>
+                <span><strong>Catatan Redaksi:</strong> Hindari {selectedCategoryGuide.avoidFor.toLowerCase()}</span>
+              </p>
+            )}
+          </div>
+
+          {/* Cover Image & Credit Section */}
+          <div className="space-y-2 pt-2 border-t border-border-hairline">
+            <div className="flex items-center justify-between">
+              <label className="font-mono text-[10px] uppercase tracking-wider text-muted font-bold block">
+                Gambar Sampul & Kredit
+              </label>
+              <span className="font-mono text-[10px] uppercase text-amber-600 dark:text-amber-400">
+                {!hasCover ? '*Wajib untuk Terbit' : '✓ Siap'}
+              </span>
+            </div>
+            <ArticleCoverUploader
+              value={coverImage}
+              onChange={(url) => {
+                setCoverImage(url);
+                persistLocalBackup({ coverImage: url });
+              }}
+              credit={coverCredit}
+              onCreditChange={(credit) => {
+                setCoverCredit(credit);
+                persistLocalBackup({ coverCredit: credit });
+              }}
+            />
+          </div>
+
+          {/* Tag Picker Section */}
+          <div className="space-y-2 pt-2 border-t border-border-hairline">
+            <label className="font-mono text-[10px] uppercase tracking-wider text-muted font-bold block">
+              Tag Kata Kunci (Maksimal 5)
+            </label>
+            <TagPicker
+              tags={tags}
+              selectedIds={tagIds}
+              onChange={(ids) => {
+                setTagIds(ids);
+                persistLocalBackup({ tagIds: ids });
+              }}
+            />
+          </div>
+
+          {/* Live SEO & Readability Analysis Panel */}
+          <div className="pt-2 border-t border-border-hairline">
+            <div className="flex items-center gap-1.5 mb-2 font-mono text-[10px] uppercase tracking-wider text-muted font-bold">
+              <Sparkles className="w-3.5 h-3.5 text-foreground" />
+              <span>Analisis SEO & Keterbacaan</span>
+            </div>
+            <SeoAnalysisPanel
+              title={title}
+              plainText={plainText}
+              tags={tagNames}
+              coverImage={coverImage}
+            />
+          </div>
+
+          {/* Public Preview Link */}
+          {article?.previewToken && (
+            <div className="pt-2 border-t border-border-hairline">
+              <label className="font-mono text-[10px] uppercase tracking-wider text-muted font-bold block mb-1.5">
+                Tautan Pratinjau Redaksi
+              </label>
+              <a
+                href={`/artikel/${article.slug}?preview=${article.previewToken}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full p-2.5 border border-border bg-surface hover:border-foreground font-mono text-xs flex items-center justify-between gap-2 transition-colors text-foreground"
+              >
+                <span className="truncate text-muted">/artikel/{article.slug}?preview=...</span>
+                <span className="shrink-0 text-foreground font-semibold inline-flex items-center gap-1">
+                  <Eye className="w-3.5 h-3.5" /> Buka ↗
+                </span>
+              </a>
+            </div>
+          )}
+        </div>
+
+        {/* Drawer Footer with Quick Save */}
+        <div className="p-4 border-t border-border bg-surface-muted/20 flex items-center justify-between gap-3">
+          <span className="font-mono text-[10px] text-muted uppercase">
+            {isDirty ? 'Ada perubahan belum disimpan' : 'Semua tersimpan'}
+          </span>
+          <Button
+            type="button"
+            variant="solid"
+            size="sm"
+            onClick={() => handleUpdate(false)}
+            isLoading={isSubmitting}
+            className="h-8 px-4 font-mono text-[11px]"
+          >
+            <Save className="w-3.5 h-3.5 mr-1.5" />
+            Simpan
+          </Button>
+        </div>
+      </aside>
+
+      {/* ── 4. Category Picker Guided Modal ── */}
       <CategoryPickerModal
         isOpen={categoryModalOpen}
         onClose={() => setCategoryModalOpen(false)}
         categories={categories}
         selectedId={categoryId}
-        onSelect={(cat) => setCategoryId(cat.id)}
+        onSelect={(cat) => {
+          setCategoryId(cat.id);
+          persistLocalBackup({ categoryId: cat.id });
+        }}
         currentTitle={title}
         currentWordCount={wordCount}
       />
