@@ -174,18 +174,19 @@ export function RichTextRenderer({
                 );
               }
               if (child.type === 'cite') {
-                const citeText = (child.content || []).map((c: any) => c.text || '').join('');
+                const citeText = (child.content || []).map((c: any) => c.text || '').join('').replace(/^[—\s\-]+/, '').trim();
+                if (!citeText) return null;
                 return (
-                  <cite key={cIdx} className="block mt-3 font-mono text-[11px] sm:text-xs uppercase tracking-wider text-muted-foreground not-italic before:content-['—_']">
+                  <cite key={cIdx} className="block mt-3.5 font-serif italic text-sm sm:text-[14.5px] text-foreground/65">
                     {citeText}
                   </cite>
                 );
               }
               return renderNode(child, cIdx);
             })}
-            {citeAttr && (
-              <cite className="block mt-3 font-mono text-[11px] sm:text-xs uppercase tracking-wider text-muted-foreground not-italic before:content-['—_']">
-                {citeAttr}
+            {citeAttr && citeAttr.trim() && (
+              <cite className="block mt-3.5 font-serif italic text-sm sm:text-[14.5px] text-foreground/65">
+                {citeAttr.replace(/^[—\s\-]+/, '').trim()}
               </cite>
             )}
           </blockquote>

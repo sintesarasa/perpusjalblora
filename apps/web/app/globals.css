@@ -249,48 +249,52 @@
   user-select: none;
 }
 
-/* Citation / Source Field (<cite>) */
+/* Citation / Source Field (<cite>) — Refined Gazette Serif */
 .editorial-editor-content blockquote cite,
 .editorial-rich-blockquote cite {
   display: block;
   margin-top: 0.85rem;
-  font-family: var(--font-mono), monospace;
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: hsl(var(--muted-foreground));
-  font-style: normal;
-  font-weight: 500;
+  font-family: inherit;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: hsl(var(--foreground) / 0.65);
+  font-style: italic;
+  font-weight: 400;
+  border-top: none;
+  padding-top: 0;
+  letter-spacing: normal;
+  text-transform: none;
 }
 
 .editorial-editor-content blockquote[data-quote-style="pull"] cite,
 .editorial-rich-blockquote[data-quote-style="pull"] cite {
   text-align: center;
-  margin-top: 1rem;
+  margin-top: 1.15rem;
+  font-size: 0.925rem;
 }
 
 .editorial-rich-blockquote cite::before {
   content: "— ";
-  font-weight: 600;
-  color: hsl(var(--foreground) / 0.7);
+  font-style: normal;
+  font-weight: 500;
+  color: hsl(var(--foreground) / 0.75);
 }
 
 .editorial-editor-content blockquote cite {
   outline: none;
   cursor: text;
-  border-top: 1px dashed hsl(var(--border-hairline));
-  padding-top: 0.4rem;
 }
 
 .editorial-editor-content blockquote cite:not(:empty)::before {
   content: "— ";
-  font-weight: 600;
-  color: hsl(var(--foreground) / 0.7);
+  font-style: normal;
+  font-weight: 500;
+  color: hsl(var(--foreground) / 0.75);
   user-select: none;
 }
 
 .editorial-editor-content blockquote cite:empty::before {
-  content: "— Tambah nama sumber / tokoh (opsional)...";
+  content: "— Nama tokoh atau judul sumber (opsional)...";
   opacity: 0.35;
   font-style: italic;
   user-select: none;

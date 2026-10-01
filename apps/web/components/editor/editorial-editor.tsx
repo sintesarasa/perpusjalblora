@@ -340,7 +340,7 @@ export function EditorialEditor({
         }
         if (node.type === 'blockquote') {
           const style = node.attrs?.quoteStyle === 'pull' ? 'pull' : 'standard';
-          const citeText = node.attrs?.cite || '';
+          const citeText = (node.attrs?.cite || '').replace(/^[—\s\-]+/, '').trim();
           const inner = (node.content || []).map((c: any) => {
             if (c.type === 'cite') return '';
             const pInner = renderNodeMarks(c);
@@ -381,7 +381,8 @@ export function EditorialEditor({
         else if (tag === 'blockquote') {
           const quoteStyle = el.getAttribute('data-quote-style') === 'pull' ? 'pull' : 'standard';
           const citeEl = el.querySelector('cite');
-          const citeText = citeEl?.textContent?.replace(/^[—\s\-]+/, '').trim() || undefined;
+          const cleanCite = citeEl?.textContent?.replace(/^[—\s\-]+/, '').trim();
+          const citeText = cleanCite && cleanCite.length > 0 ? cleanCite : undefined;
           const pChildren = Array.from(el.querySelectorAll('p')).filter((p) => !p.closest('cite'));
           if (pChildren.length > 0) {
             nodes.push({
@@ -1086,31 +1087,19 @@ export function EditorialEditor({
               <Sep />
 
               {/* Block */}
-              <div className="flex items-center gap-0.5">
-                <TB
-                  onClick={() => toggleBlockquote()}
-                  active={activeFormats.quote}
-                  title={
-                    !activeFormats.quote
-                      ? 'Kutipan Blok (Ketik > lalu Spasi, atau klik)'
-                      : activeFormats.quoteStyle === 'standard'
-                      ? 'Kutipan Standar — Klik lagi untuk Kutipan Sorot (Pull Quote)'
-                      : 'Kutipan Sorot (Pull Quote) — Klik lagi untuk Batal'
-                  }
-                >
-                  <Quote className={cn('w-4 h-4', activeFormats.quoteStyle === 'pull' && 'scale-110')} />
-                </TB>
-                {activeFormats.quote && (
-                  <button
-                    type="button"
-                    onMouseDown={(e) => { e.preventDefault(); insertCitation(); }}
-                    title="Sisipkan Nama Tokoh / Judul Sumber (Shift+Enter)"
-                    className="h-8 px-2 text-[10px] font-mono uppercase tracking-wider text-muted-foreground hover:text-foreground hover:bg-surface-muted border border-border-hairline transition-colors shrink-0"
-                  >
-                    + Sumber
-                  </button>
-                )}
-              </div>
+              <TB
+                onClick={() => toggleBlockquote()}
+                active={activeFormats.quote}
+                title={
+                  !activeFormats.quote
+                    ? 'Kutipan Blok (Ketik > lalu Spasi, atau klik)'
+                    : activeFormats.quoteStyle === 'standard'
+                    ? 'Kutipan Standar (Shift+Enter untuk tambah sumber, klik lagi untuk Kutipan Sorot)'
+                    : 'Kutipan Sorot / Pull Quote (Klik lagi untuk Batal)'
+                }
+              >
+                <Quote className={cn('w-4 h-4', activeFormats.quoteStyle === 'pull' && 'scale-110')} />
+              </TB>
               <TB onClick={() => toggleList('ul')} active={activeFormats.ul} title="Daftar Poin"><List className="w-4 h-4" /></TB>
               <TB onClick={() => toggleList('ol')} active={activeFormats.ol} title="Daftar Bernomor"><ListOrdered className="w-4 h-4" /></TB>
 
