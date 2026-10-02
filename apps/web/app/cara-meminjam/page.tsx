@@ -1200,6 +1200,7 @@ export default function CaraMeminjamPage() {
               </p>
             </div>
 
+            {/* TODO: Ganti nomor placeholder 6281234567890 dengan nomor WhatsApp resmi Perpusjal Blora */}
             <a
               href="https://wa.me/6281234567890?text=Halo%20Relawan%20Perpusjal%20Blora%2C%20saya%20membaca%20panduan%20cara%20meminjam%20dan%20ingin%20bertanya..."
               target="_blank"
