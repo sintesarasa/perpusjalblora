@@ -30,6 +30,11 @@ import {
   Feather,
   Palette,
   Tent,
+  HelpCircle,
+  ChevronDown,
+  Quote,
+  BookMarked,
+  Share2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -39,7 +44,9 @@ interface TimelineEvent {
   title: string;
   summary: string;
   fieldNotes: string;
-  highlights: string[];
+  visualIcon: 'terpal' | 'hutan' | 'senyum' | 'kriya' | 'web';
+  quote: string;
+  quoteAuthor: string;
 }
 
 const TIMELINE_DATA: TimelineEvent[] = [
@@ -48,82 +55,164 @@ const TIMELINE_DATA: TimelineEvent[] = [
     badge: 'BENIH TROTOAR',
     title: 'Awal Mula di Sudut Lapangan & Trotoar Kota',
     summary:
-      'Sekelompok anak muda di Blora mulai menggelar buku milik pribadi beralaskan terpal sederhana di trotoar Alun-Alun dan Lapangan Kridosono. Kala itu masih mengusung semboyan jalanan: "Membaca adalah Melawan".',
-    fieldNotes:
-      'Arsip Awal: Dimulai hanya dengan belasan buku sastra, zine fotokopian, dan termos teh hangat untuk pembaca yang mampir.',
-    highlights: [
-      'Gelar terpal swadaya pertama kali di CFD Alun-Alun',
-      'Koleksi buku murni sumbangan pribadi kawan-kawan relawan',
-      'Forum obrolan santai pasca-sekolah dan kampus',
-    ],
+      'Sekelompok anak muda di Blora mulai menggelar belasan buku pribadi beralaskan terpal sederhana di trotoar Alun-Alun dan Lapangan Kridosono. Kala itu masih mengusung semboyan jalanan: "Membaca adalah Melawan".',
+    fieldNotes: 'Dimulai dari 15 judul novel bekas, zine fotokopian, dan satu termos teh melati hangat.',
+    visualIcon: 'terpal',
+    quote: 'Buku yang hanya disimpan di lemari kaca adalah buku yang kesepian.',
+    quoteAuthor: 'Catatan Lapak Perdana 2017',
   },
   {
     year: '2019',
     badge: 'SAYAP SELATAN',
-    title: 'Lahirnya Perpusjal Dope (Doplang) di Pelosok Hutan',
+    title: 'Lahirnya Perpusjal Dope di Pelosok Hutan Jati',
     summary:
-      'Gerakan merambah ke wilayah selatan Kabupaten Blora. Kawan-kawan muda di Doplang menginisiasi Perpusjal Dope, mendekatkan buku kepada anak-anak pedesaan dan komunitas pinggir hutan jati.',
-    fieldNotes:
-      'Eksplorasi Alam: Mengadakan kemah literasi tahunan "Nginep Alas" di mata air Sendang Salak Desa Tanggel.',
-    highlights: [
-      'Terhubung aktif dalam Forum Taman Bacaan Masyarakat (TBM)',
-      'Program literasi lingkungan: Kemah Alas & Sendang Salak',
-      'Pelatihan kerajinan ramah lingkungan batik ecoprint daun jati',
-    ],
+      'Gerakan merambah ke wilayah selatan Blora (Kecamatan Jati/Doplang). Mendekatkan buku dongeng dan pengetahuan kepada anak-anak pedesaan yang berjarak puluhan kilometer dari perpustakaan kota.',
+    fieldNotes: 'Sendang Salak Tanggel menjadi saksi kemah literasi tahunan pertama di bawah rimbun hutan jati.',
+    visualIcon: 'hutan',
+    quote: 'Anak-anak desa tidak kekurangan rasa ingin tahu; mereka hanya kekurangan akses.',
+    quoteAuthor: 'Relawan Perpusjal Dope',
   },
   {
     year: '2021',
     badge: 'METAMORFOSIS',
     title: 'Dari "Melawan" Menjadi "Membaca dan Berbahagia"',
     summary:
-      'Menyadari kata "melawan" sempat menimbulkan kesan kaku dan berjarak bagi warga awam serta para orang tua, Perpusjal secara resmi bertransformasi mengusung semboyan baru: "Membaca dan Berbahagia".',
-    fieldNotes:
-      'Pendekatan Kultural: Membaca dirayakan sebagai festival kebahagiaan warga—lesehan, menggambar, tertawa bersama tanpa sekat politis.',
-    highlights: [
-      'Perubahan semboyan resmi agar lebih ramah bagi semua kalangan warga',
-      'Penyediaan pojok gambar & mewarnai khusus anak-anak',
-      'Membuka ruang kolaborasi hangat dengan perpustakaan keliling daerah',
-    ],
+      'Menyadari kata "melawan" sempat menimbulkan kesan kaku dan berjarak bagi warga awam serta para orang tua, Perpusjal secara resmi bertransformasi merayakan kegembiraan: "Membaca dan Berbahagia".',
+    fieldNotes: 'Terpal dipenuhi anak-anak yang mewarnai, ibu-ibu yang mengobrol, dan remaja yang berdiskusi santai.',
+    visualIcon: 'senyum',
+    quote: 'Membaca itu rekreasi batin, bukan beban kewajiban yang menegangkan.',
+    quoteAuthor: 'Musyawarah Relawan 2021',
   },
   {
     year: '2024',
-    badge: 'RUMAH KREATIF',
-    title: 'Markas Omah Talang Bocor & Seni Kriya Warga',
+    badge: 'BENGKEL KRIYA',
+    title: 'Markas Omah Talang Bocor & Keterampilan Nyata',
     summary:
-      'Ruang kreasi diperluas di markas Omah Talang Bocor (dekat Stadion Kridosono). Literasi tidak lagi hanya membaca huruf, melainkan mengasah keterampilan hidup nyata melalui seni cetak cukil kayu, sablon, dan daur ulang.',
-    fieldNotes:
-      'Praksis Merdeka: Remaja dan warga diajak mandiri membuat zine karya sendiri dan mencetak sablon kaos dengan teknik cukil kayu murah meriah.',
-    highlights: [
-      'Workshop sablon mandiri dan cukil kayu (woodcut printmaking)',
-      'Pertunjukan Barongan dan apresiasi musik puisi di ruang terbuka',
-      'Pemberdayaan ibu-ibu desa melalui pengolahan limbah plastik',
-    ],
+      'Ruang kreasi diperluas di markas Omah Talang Bocor dekat Stadion Kridosono. Literasi berkembang menjadi kecakapan hidup: workshop sablon cukil kayu mandiri, batik ecoprint daun jati, dan daur ulang.',
+    fieldNotes: 'Belasan remaja Blora mencetak zine dan kaos komunitas mereka sendiri memakai papan cukil kayu.',
+    visualIcon: 'kriya',
+    quote: 'Tangan yang membolak-balik buku adalah tangan yang mampu berkarya nyata.',
+    quoteAuthor: 'Kolektif Talang Bocor',
   },
   {
     year: '2026',
-    badge: 'ARSIP TERBUKA',
-    title: 'Digitalisasi Katalog & Wadah Suara Seluruh Warga',
+    badge: 'ARSIP RAKYAT',
+    title: 'Katalog Terbuka & Wadah Karya Tulis Warga',
     summary:
-      'Peluncuran platform web mandiri Perpusjal Blora: katalog digital terbuka, antrean waitlist otomatis, penerbitan surat pembaca, serta mimbar bebas bagi warga untuk menulis esai dan resensi buku secara cuma-cuma.',
-    fieldNotes:
-      'Teknologi Kerakyatan: Sistem sirkulasi online tanpa biaya server mahal, dirancang monokrom, ringan di ponsel hemat kuota, dan bebas pelacak iklan.',
-    highlights: [
-      'Peminjaman buku online terhubung titik sirkulasi lapak',
-      'Ruang publikasi tulisan warga tanpa kurasi birokratis yang kaku',
-      'Integrasi tiket sirkulasi digital dan WhatsApp koordinasi relawan',
-    ],
+      'Peluncuran platform web digital mandiri: pencarian katalog buku terbuka, reservasi antrean otomatis, serta ruang redaksi bebas bagi warga Blora untuk menerbitkan resensi buku, esai opini, dan puisi.',
+    fieldNotes: 'Teknologi kerakyatan yang ringan kuota, tanpa iklan komersial, dan dirawat gotong royong.',
+    visualIcon: 'web',
+    quote: 'Setiap warga Blora berhak membaca, dan setiap warga berhak menyuarakan pikirannya.',
+    quoteAuthor: 'Platform Web Perpusjal 2026',
+  },
+];
+
+interface ArtifactItem {
+  id: string;
+  name: string;
+  symbol: string;
+  origin: string;
+  tagline: string;
+  story: string;
+}
+
+const ARTIFACTS_DATA: ArtifactItem[] = [
+  {
+    id: 'art-1',
+    name: 'Terpal Biru Trotoar',
+    symbol: '🏕',
+    origin: 'Alun-Alun & Taman Tirtonadi',
+    tagline: 'Simbol Kesetaraan Tanpa Sekat Kelas',
+    story:
+      'Di atas terpal, tidak ada kursi kehormatan bagi pejabat dan tidak ada lantai rendah bagi rakyat biasa. Siapa pun yang melepas alas kaki dan duduk bersila memiliki derajat yang persis sama untuk membaca buku yang sama.',
+  },
+  {
+    id: 'art-2',
+    name: 'Papan Cukil Kayu & Rol Tinta',
+    symbol: '🎨',
+    origin: 'Omah Talang Bocor Kridosono',
+    tagline: 'Kemandirian Berekspresi & Seni Rakyat',
+    story:
+      'Memakai cukil kayu (woodcut printmaking) murah meriah, anak-anak muda Blora belajar mencetak desain poster, pembatas buku, dan kaos zine mereka sendiri tanpa perlu modal mesin percetakan mahal.',
+  },
+  {
+    id: 'art-3',
+    name: 'Kain Ecoprint Daun Jati',
+    symbol: '🍃',
+    origin: 'Sendang Salak Desa Tanggel (Doplang)',
+    tagline: 'Harmoni Alam Hutan Jati & Pemberdayaan Warga',
+    story:
+      'Diinisiasi bersama ibu-ibu desa hutan jati di Blora Selatan. Mengetuk getah daun jati segar ke atas kain mori menghasilkan motif alam yang bernilai seni tinggi sekaligus melatih kemandirian ekonomi keluarga.',
+  },
+  {
+    id: 'art-4',
+    name: 'Termos Kopi & Kaleng Gotong Royong',
+    symbol: '☕',
+    origin: 'Lapak Mingguan Perpusjal',
+    tagline: 'Bukti Nyata Swadaya Tanpa Sponsor Korporat',
+    story:
+      'Teh hangat diseduh dari rumah relawan, kopi disumbang pengunjung terpal, dan koin sukarela di kaleng bekas dipakai membeli plastik pembungkus buku. Lapak ini hidup dari cinta warga, bukan proposal komersial.',
+  },
+];
+
+interface GrassrootsFAQ {
+  id: string;
+  q: string;
+  a: string;
+}
+
+const GRASSROOTS_FAQS: GrassrootsFAQ[] = [
+  {
+    id: 'faq-1',
+    q: 'Siapa saja yang boleh menjadi relawan di Perpustakaan Jalanan Blora?',
+    a: 'Siapa saja! Kamu tidak harus mahasiswa sastra atau kutu buku. Pelajar SMA, pekerja harian, fotografer, guru, hingga pemuda desa boleh bergabung. Tugasnya sederhana dan menyenangkan: membantu menggelar terpal, menata buku, menyapa pembaca cilik, atau mendokumentasikan kegiatan lapak.',
+  },
+  {
+    id: 'faq-2',
+    q: 'Bagaimana cara menyumbangkan buku fisik yang saya miliki?',
+    a: 'Kamu bisa langsung membawa buku ke lapak terpal saat Car Free Day Alun-Alun (Minggu pagi) atau Taman Tirtonadi (Sabtu sore). Kami menerima novel, komik anak, sastra, sejarah, sains populer, buku cerita bergambar, hingga zine independen. Buku yang masih layak baca akan langsung kami beri stempel dan dimasukkan ke dalam katalog sirkulasi warga.',
+  },
+  {
+    id: 'faq-3',
+    q: 'Apakah kegiatan lapak terpal tetap buka jika cuaca mendung atau hujan?',
+    a: 'Jika gerimis rintik atau hujan deras saat Car Free Day, buku fisik kami amankan ke tempat teduh (seperti teras pendopo atau koridor toko terdekat). Jika hujan reda, lapak kembali digelar. Kami selalu mengabarkan status lapak secara langsung lewat media sosial dan grup WhatsApp warga.',
+  },
+  {
+    id: 'faq-4',
+    q: 'Bagaimana cara warga menerbitkan tulisan, puisi, atau esai di website ini?',
+    a: 'Cukup buat akun gratis di website ini, lalu masuk ke menu "Tulis". Kamu bisa mengetik esai, resensi buku yang baru kamu baca, atau cerita budaya seputar Blora. Tulisanmu akan dipublikasikan di rubrik Arsip Tulisan Warga agar dapat dibaca oleh masyarakat luas.',
   },
 ];
 
 export default function AboutPage() {
   const [selectedYear, setSelectedYear] = React.useState<number>(0);
+  const [activeArtifact, setActiveArtifact] = React.useState<number>(0);
   const [activeWing, setActiveWing] = React.useState<'KOTA' | 'DOPE'>('KOTA');
+  const [openFaq, setOpenFaq] = React.useState<string | null>('faq-1');
   const yearScrollRef = React.useRef<HTMLDivElement>(null);
+
+  // Auto-scroll year tab into view on mobile
+  React.useEffect(() => {
+    if (yearScrollRef.current) {
+      const activeEl = yearScrollRef.current.children[selectedYear] as HTMLElement;
+      if (activeEl) {
+        activeEl.scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest',
+          inline: 'center',
+        });
+      }
+    }
+  }, [selectedYear]);
 
   const handlePrint = () => {
     if (typeof window !== 'undefined') {
       window.print();
     }
+  };
+
+  const toggleFaq = (id: string) => {
+    setOpenFaq((prev) => (prev === id ? null : id));
   };
 
   return (
@@ -185,9 +274,7 @@ export default function AboutPage() {
                   'Batik Ecoprint Daun Jati',
                   'Sablon Cukil Kayu',
                 ],
-                sameAs: [
-                  'https://instagram.com/perpusjal.dope',
-                ],
+                sameAs: ['https://instagram.com/perpusjal.dope'],
               },
             ],
           }),
@@ -200,25 +287,25 @@ export default function AboutPage() {
 
       <main className="flex-1 pb-16 sm:pb-24">
         {/* ========================================================= */}
-        {/* 1. EDITORIAL MASTHEAD BANNER                              */}
+        {/* 1. EDITORIAL BROADSHEET MASTHEAD                          */}
         {/* ========================================================= */}
         <section className="border-b-2 border-foreground max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-12 pb-8 sm:pb-12">
-          {/* Top Colophon Gazette Bar */}
+          {/* Top Colophon Bar */}
           <div className="flex flex-wrap items-center justify-between border-b border-border-hairline pb-3 mb-6 sm:mb-8 text-[10px] sm:text-[11px] font-mono uppercase tracking-widest text-muted gap-2">
             <div className="flex items-center gap-2 sm:gap-3">
               <BrandStamp edition="KRONIK GERAKAN" year="2026" />
-              <span className="hidden sm:inline">[ ARSIP HISTORIOGRAFI &amp; MANIFESTO AKAR RUMPUT ]</span>
+              <span className="hidden sm:inline">[ ARSIP HISTORIOGRAFI &amp; DOKUMEN BUDAYA ]</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-foreground animate-pulse" />
-              <span>BERKEMBANG SEJAK 2017</span>
+              <span>BERKEMBANG DI BLORA SEJAK 2017</span>
             </div>
             <div className="hidden lg:flex items-center gap-2">
               <button
                 type="button"
                 onClick={handlePrint}
                 className="hover:text-foreground inline-flex items-center gap-1.5 transition-colors"
-                title="Cetak Profil & Manifesto"
+                title="Cetak Arsip Panduan Zine"
               >
                 <Printer className="w-3.5 h-3.5" />
                 <span>CETAK ARSIP</span>
@@ -229,7 +316,7 @@ export default function AboutPage() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 lg:gap-12 items-end">
             <div className="lg:col-span-8 space-y-3 sm:space-y-4">
               <div className="inline-flex items-center gap-2 px-2.5 py-1 border border-foreground font-mono text-[9px] sm:text-[10px] tracking-wider uppercase font-bold bg-foreground text-background">
-                <span>DARI TROTOAR HINGGA TEPIAN ALAS JATI BLORA</span>
+                <span>DARI TROTOAR KOTA HINGGA RIMBUN HUTAN JATI</span>
               </div>
 
               <h1 className="font-serif text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-black uppercase tracking-tight text-foreground leading-[1.02] sm:leading-[0.95] break-words">
@@ -238,7 +325,7 @@ export default function AboutPage() {
               </h1>
 
               <p className="font-serif text-base sm:text-lg lg:text-xl text-foreground/90 max-w-2xl leading-relaxed pt-1 sm:pt-2">
-                Sebuah ikhtiar swadaya warga Blora untuk mengembalikan buku ke pangkuan rakyat:
+                Sebuah ikhtiar swadaya warga Blora untuk membebaskan buku dari lemari kaca:
                 digelar hangat di atas selembar terpal, bebas birokrasi, tanpa uang jaminan,
                 dan menghidupkan percakapan merdeka di ruang-ruang terbuka.
               </p>
@@ -250,22 +337,22 @@ export default function AboutPage() {
                 <span className="font-bold tracking-wider">[ KARTU IDENTITAS ]</span>
                 <span className="text-[10px] bg-foreground text-background px-1.5 py-0.5 font-bold">SWADAYA</span>
               </div>
-              <ul className="space-y-2 text-[11px] leading-relaxed text-foreground/90">
+              <ul className="space-y-2 text-[11px] leading-relaxed text-foreground/90 font-sans">
                 <li className="flex items-start gap-2">
-                  <span className="text-foreground font-bold shrink-0">🏛</span>
-                  <span><strong>Warisan Kota:</strong> Jejak sastra Pramoedya Ananta Toer &amp; PATABA.</span>
+                  <span className="font-mono text-foreground font-bold shrink-0">🏛</span>
+                  <span><strong>Warisan Budaya:</strong> Meneladani semangat Pramoedya Ananta Toer &amp; PATABA.</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-foreground font-bold shrink-0">🏕</span>
-                  <span><strong>Basis Lapak:</strong> Alun-Alun, Taman Tirtonadi, dan Sendang Salak.</span>
+                  <span className="font-mono text-foreground font-bold shrink-0">🏕</span>
+                  <span><strong>Format Lapak:</strong> Alun-Alun Blora, Taman Tirtonadi, dan Sendang Salak.</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-foreground font-bold shrink-0">🤝</span>
+                  <span className="font-mono text-foreground font-bold shrink-0">🤝</span>
                   <span><strong>Prinsip Kerja:</strong> <em>Ngurip-urip</em> (gotong royong saling menghidupkan).</span>
                 </li>
               </ul>
-              <div className="pt-2 border-t border-border-hairline text-[10px] text-muted uppercase tracking-wider flex justify-between">
-                <span>FORMAT: LAPAK TERPAL</span>
+              <div className="pt-2 border-t border-border-hairline font-mono text-[10px] text-muted uppercase tracking-wider flex justify-between">
+                <span>FORMAT: TERPAL BERSILA</span>
                 <span>BIAYA: 100% GRATIS</span>
               </div>
             </div>
@@ -277,7 +364,7 @@ export default function AboutPage() {
         {/* ========================================================= */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-start">
-            {/* Left Main Essay (8 cols) */}
+            {/* Left Main Editorial Narrative */}
             <div className="lg:col-span-8 space-y-6 font-serif text-base sm:text-lg text-foreground/90 leading-[1.8] sm:leading-[1.85]">
               <div className="border-b border-border-hairline pb-2 mb-4 font-mono text-xs uppercase tracking-widest text-muted flex items-center gap-2">
                 <Feather className="w-3.5 h-3.5 text-foreground shrink-0" />
@@ -285,56 +372,59 @@ export default function AboutPage() {
               </div>
 
               <p className="first-letter:float-left first-letter:text-5xl sm:first-letter:text-6xl first-letter:leading-none first-letter:font-serif first-letter:pr-3.5 first-letter:pt-1 first-letter:font-bold first-letter:text-foreground">
-                Kabupaten Blora di Jawa Tengah menempati posisi tersendiri dalam sejarah sastra Indonesia.
+                Kabupaten Blora di Jawa Tengah menempati posisi tersendiri dalam sejarah kesusastraan Indonesia.
                 Tanah jati ini melahirkan maestro sastra dunia <strong>Pramoedya Ananta Toer</strong>,
-                serta adiknya, <strong>Mbah Soesilo Toer</strong>, pemegang gelar doktor ekonomi dari Uni Soviet
+                serta adiknya, <strong>Mbah Soesilo Toer</strong>, peraih gelar doktor ekonomi dari Uni Soviet
                 yang memilih pulang ke Blora, memulung barang bekas, dan mendirikan <strong>Perpustakaan PATABA</strong> yang legendaris.
               </p>
 
               <p>
-                Namun di tengah kebanggaan sejarah tersebut, kenyataan sehari-hari memperlihatkan celah besar.
-                Masih banyak anak-anak muda, pelajar di pelosok, dan warga biasa yang kesulitan mengakses buku berkualitas.
-                Bagi sebagian masyarakat di kampung dan pinggiran rel, mendatangi gedung perpustakaan besar sering kali terasa segan,
-                berjarak, atau terbebani tata tertib yang kaku.
+                Namun di balik harumnya sejarah sastra tersebut, kenyataan sehari-hari warga pinggiran memperlihatkan
+                jurang yang nyata. Masih banyak anak-anak muda, pelajar pelosok desa, dan warga biasa yang kesulitan mendapatkan
+                bacaan berkualitas. Bagi sebagian masyarakat di kampung dan tepi rel kereta, melangkahkan kaki ke gedung perpustakaan besar
+                sering kali terasa segan, kaku, dan penuh formalitas administrasi.
               </p>
 
               <p>
-                Dari kesadaran itulah, <strong>Perpustakaan Jalanan Blora (Perpusjal)</strong> lahir. Kami tidak menunggu warga
-                datang ke gedung; kami yang memanggul buku mendatangi tempat warga berkerumun. Cukup membentangkan selembar terpal
-                di trotoar Alun-Alun, di bawah rimbun pohon trembesi taman, atau di tepian embung desa, siapa pun boleh duduk,
-                membaca, berdiskusi, dan meminjam buku tanpa pungutan biaya satu rupiah pun.
+                Dari kesadaran sederhana itulah, <strong>Perpustakaan Jalanan Blora (Perpusjal)</strong> lahir. Kami tidak menunggu warga
+                datang; kamilah yang memanggul buku mendatangi ruang santai warga. Cukup menggelar terpal di trotoar Alun-Alun saat Car Free Day,
+                di bawah teduh pohon trembesi taman kota, atau di dekat embung desa, siapa pun boleh duduk bersila, membaca, berdiskusi,
+                dan meminjam buku tanpa pungutan biaya sepeser pun.
               </p>
             </div>
 
-            {/* Right Pull Quote & Column (4 cols) */}
+            {/* Right Pull Quote & Slogan Box */}
             <div className="lg:col-span-4 border-t-2 lg:border-t-0 lg:border-l-2 border-foreground pt-6 lg:pt-0 lg:pl-8 space-y-6">
               <div className="font-mono text-[10px] uppercase tracking-ultra text-muted">
                 [ WEJANGAN PATABA ]
               </div>
 
-              <blockquote className="font-serif italic text-xl sm:text-2xl text-foreground leading-snug">
-                &ldquo;Membaca bukan cuma soal mengeja huruf di atas kertas, tapi jalan melatih rasa dan pikiran agar kita menjadi manusia yang berdaulat dan merdeka.&rdquo;
-              </blockquote>
+              <div className="relative border-l-4 border-foreground pl-4 py-1">
+                <blockquote className="font-serif italic text-xl sm:text-2xl text-foreground leading-snug">
+                  &ldquo;Membaca bukan cuma soal mengeja huruf di atas kertas, tapi jalan melatih rasa dan pikiran agar kita menjadi manusia yang berdaulat dan merdeka.&rdquo;
+                </blockquote>
+              </div>
 
               <cite className="block font-mono text-[11px] uppercase tracking-wider text-muted not-italic border-t border-border-hairline pt-2">
-                — Terinspirasi dari keteladanan Mbah Soesilo Toer (Perpustakaan PATABA Blora)
+                — Terinspirasi dari keteladanan Mbah Soesilo Toer (PATABA Blora)
               </cite>
 
-              {/* Slogan Evolution Mini Box */}
-              <div className="p-4 border-2 border-foreground bg-surface font-mono text-xs space-y-3 shadow-xs">
+              {/* Slogan Evolution Card */}
+              <div className="p-4 sm:p-5 border-2 border-foreground bg-surface font-mono text-xs space-y-3 shadow-[3px_3px_0px_0px_currentColor]">
                 <div className="text-[10px] uppercase tracking-wider text-muted font-bold pb-1 border-b border-border-hairline">
-                  PERJALANAN SEMBOYAN KITA
+                  PERJALANAN SEMBOYAN GERAKAN
                 </div>
                 <div className="space-y-2">
                   <div className="p-2 border border-border-hairline bg-surface-muted text-muted line-through text-[11px]">
                     2017: &ldquo;Membaca adalah Melawan&rdquo;
                   </div>
-                  <div className="p-2.5 border-2 border-foreground bg-background font-bold text-foreground text-[11px]">
-                    KINI: &ldquo;Membaca dan Berbahagia&rdquo;
+                  <div className="p-2.5 border-2 border-foreground bg-background font-bold text-foreground text-[11px] flex items-center justify-between">
+                    <span>KINI: &ldquo;Membaca dan Berbahagia&rdquo;</span>
+                    <Smile className="w-3.5 h-3.5 shrink-0" />
                   </div>
                 </div>
                 <p className="text-[10px] text-muted leading-relaxed font-sans">
-                  Semboyan diubah agar membaca terasa akrab, bersahabat bagi anak-anak, dan tidak ditakuti sebagai gerakan politik yang tegang.
+                  Semboyan diubah agar membaca dirayakan sebagai festival kebahagiaan warga—lesehan santai, anak-anak menggambar, dan bebas dari ketegangan politik.
                 </p>
               </div>
             </div>
@@ -356,7 +446,7 @@ export default function AboutPage() {
               </h2>
             </div>
             <p className="font-mono text-xs text-muted max-w-sm">
-              Klik tahun di bawah untuk membuka catatan penting di balik perjalanan komunitas kami di Blora.
+              Klik tahun di bawah untuk membuka arsip penting dan catatan lapangan di balik perjalanan komunitas kami di Blora.
             </p>
           </div>
 
@@ -383,7 +473,7 @@ export default function AboutPage() {
                     )}
                   >
                     <div className="text-[10px] uppercase tracking-wider opacity-80 flex items-center justify-between">
-                      <span>TAHUN</span>
+                      <span>FASE</span>
                       {isSelected && <span className="w-1.5 h-1.5 rounded-full bg-background sm:hidden" />}
                     </div>
                     <div className="font-bold text-lg tracking-tight mt-0.5 font-serif">{t.year}</div>
@@ -400,21 +490,25 @@ export default function AboutPage() {
           <div className="border-2 border-foreground bg-surface p-5 sm:p-8 lg:p-10 relative shadow-[4px_4px_0px_0px_currentColor] sm:shadow-[6px_6px_0px_0px_currentColor]">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 lg:gap-12 items-center">
               {/* Left Column: Visual Ledger Banner */}
-              <div className="lg:col-span-5 bg-surface-muted border-2 border-foreground p-5 sm:p-6 relative flex flex-col justify-between min-h-[220px] select-none font-mono">
+              <div className="lg:col-span-5 bg-surface-muted border-2 border-foreground p-5 sm:p-6 relative flex flex-col justify-between min-h-[240px] select-none font-mono">
                 <div className="flex items-center justify-between border-b border-foreground/30 pb-2">
                   <span className="text-[9px] uppercase px-2 py-0.5 bg-foreground text-background font-bold tracking-wider">
                     {TIMELINE_DATA[selectedYear].badge}
                   </span>
-                  <span className="text-xl font-black font-serif text-foreground">
+                  <span className="text-2xl font-black font-serif text-foreground">
                     {TIMELINE_DATA[selectedYear].year}
                   </span>
                 </div>
 
-                <div className="py-6 space-y-2">
-                  <div className="text-[10px] uppercase font-bold text-muted">CATATAN LAPANGAN:</div>
-                  <p className="font-serif italic text-sm text-foreground/90 leading-relaxed">
-                    &ldquo;{TIMELINE_DATA[selectedYear].fieldNotes}&rdquo;
+                <div className="py-4 space-y-2">
+                  <div className="text-[10px] uppercase font-bold text-muted flex items-center gap-1.5">
+                    <Quote className="w-3.5 h-3.5" />
+                    <span>MUTIARA KATA LAPAK:</span>
+                  </div>
+                  <p className="font-serif italic text-sm text-foreground/95 leading-relaxed">
+                    &ldquo;{TIMELINE_DATA[selectedYear].quote}&rdquo;
                   </p>
+                  <span className="block text-[9px] text-muted text-right">— {TIMELINE_DATA[selectedYear].quoteAuthor}</span>
                 </div>
 
                 <div className="border-t border-foreground/30 pt-2 flex items-center justify-between text-[9px] text-muted">
@@ -423,8 +517,8 @@ export default function AboutPage() {
                 </div>
               </div>
 
-              {/* Right Column: Title & Highlights */}
-              <div className="lg:col-span-7 space-y-5">
+              {/* Right Column: Title & Field Notes */}
+              <div className="lg:col-span-7 space-y-4">
                 <div>
                   <div className="text-[10px] font-mono uppercase font-bold tracking-wider text-muted mb-1">
                     PERISTIWA TAHUN {TIMELINE_DATA[selectedYear].year}
@@ -432,24 +526,40 @@ export default function AboutPage() {
                   <h3 className="font-serif text-2xl sm:text-3xl font-black text-foreground tracking-tight">
                     {TIMELINE_DATA[selectedYear].title}
                   </h3>
-                  <p className="font-sans text-xs sm:text-sm text-foreground/80 leading-relaxed mt-2">
+                  <p className="font-sans text-xs sm:text-sm text-foreground/85 leading-relaxed mt-2">
                     {TIMELINE_DATA[selectedYear].summary}
                   </p>
                 </div>
 
-                {/* Highlights List */}
-                <div className="space-y-2 pt-2 border-t border-border-hairline">
-                  <div className="font-mono text-[10px] uppercase font-bold text-muted">
-                    POIN TONGGAK PERKEMBANGAN:
-                  </div>
-                  <ul className="space-y-1.5 font-sans text-xs text-foreground/90">
-                    {TIMELINE_DATA[selectedYear].highlights.map((h, i) => (
-                      <li key={i} className="flex items-start gap-2">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-foreground shrink-0 mt-0.5" />
-                        <span>{h}</span>
-                      </li>
-                    ))}
-                  </ul>
+                {/* Field Notes Callout */}
+                <div className="p-3 bg-surface-muted/70 border-l-2 border-foreground font-mono text-xs space-y-1">
+                  <span className="text-[10px] font-bold text-foreground uppercase block">Catatan Lapangan:</span>
+                  <p className="font-sans text-xs text-muted leading-relaxed">
+                    {TIMELINE_DATA[selectedYear].fieldNotes}
+                  </p>
+                </div>
+
+                {/* Navigation Buttons for Years */}
+                <div className="flex items-center justify-between pt-2 border-t border-border-hairline font-mono text-xs">
+                  <button
+                    type="button"
+                    disabled={selectedYear === 0}
+                    onClick={() => setSelectedYear((prev) => Math.max(0, prev - 1))}
+                    className="px-3 py-1.5 border border-border bg-surface text-[11px] uppercase tracking-wider disabled:opacity-30 disabled:pointer-events-none hover:border-foreground"
+                  >
+                    ← Tahun Sebelumnya
+                  </button>
+                  <span className="text-muted text-[11px]">
+                    {selectedYear + 1} dari {TIMELINE_DATA.length}
+                  </span>
+                  <button
+                    type="button"
+                    disabled={selectedYear === TIMELINE_DATA.length - 1}
+                    onClick={() => setSelectedYear((prev) => Math.min(TIMELINE_DATA.length - 1, prev + 1))}
+                    className="px-3 py-1.5 border border-border bg-surface text-[11px] uppercase tracking-wider disabled:opacity-30 disabled:pointer-events-none hover:border-foreground"
+                  >
+                    Tahun Berikutnya →
+                  </button>
                 </div>
               </div>
             </div>
@@ -457,97 +567,82 @@ export default function AboutPage() {
         </section>
 
         {/* ========================================================= */}
-        {/* 4. TIGA PILAR NILAI: BUKAN SEKADAR MEMBACA                 */}
+        {/* 4. ARTEFAK FISIK LAPAK (INTERAKTIF & EDUKATIF)            */}
         {/* ========================================================= */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16">
-          <div className="border-b-2 border-foreground pb-4 mb-8 flex flex-col md:flex-row md:items-end justify-between gap-3">
+          <div className="border-b-2 border-foreground pb-4 mb-6 sm:mb-8 flex flex-col md:flex-row md:items-end justify-between gap-3">
             <div>
               <div className="font-mono text-xs uppercase tracking-widest text-muted flex items-center gap-2">
-                <Sun className="w-3.5 h-3.5 text-foreground shrink-0" />
-                <span>FALSAFAH &amp; NILAI DASAR</span>
+                <Layers className="w-3.5 h-3.5 text-foreground shrink-0" />
+                <span>ARTEFAK &amp; BENDA BERKASAH</span>
               </div>
               <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground tracking-tight mt-1">
-                Tiga Pilar yang Menghidupkan Terpal
+                Empat Benda yang Menghidupkan Budaya Lapak
               </h2>
             </div>
             <p className="font-mono text-xs text-muted max-w-sm">
-              Perpusjal bukan sekadar tempat menukar buku, melainkan arena pertemuan kebudayaan rakyat.
+              Klik salah satu benda untuk membaca filosofi dan cerita unik di baliknya.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Pilar 1 */}
-            <div className="border-2 border-foreground bg-surface p-6 flex flex-col justify-between shadow-[4px_4px_0px_0px_currentColor] relative">
-              <div className="space-y-4">
-                <div className="w-10 h-10 border-2 border-foreground bg-foreground text-background flex items-center justify-center font-mono text-sm font-black">
-                  01
-                </div>
-                <div>
-                  <h3 className="font-serif text-xl font-bold text-foreground">
-                    Cukup Selembar Terpal
-                  </h3>
-                  <p className="font-mono text-xs text-muted mt-1 uppercase tracking-wider">
-                    Akses Gratis Tanpa Sekat
-                  </p>
-                </div>
-                <p className="font-sans text-xs sm:text-sm text-muted leading-relaxed">
-                  Kami tidak memiliki gedung ber-AC atau resepsionis formal. Lapak digelar di trotoar, rumput taman,
-                  atau pinggir lapangan. Siapa pun boleh duduk beralaskan sandal, tanpa harus merasa minder atau canggung.
-                </p>
-              </div>
-              <div className="pt-4 mt-4 border-t border-border-hairline font-mono text-[10px] text-muted uppercase flex justify-between">
-                <span>SEKAT SOSIAL: NOL</span>
-                <span>SIFAT: TERBUKA</span>
-              </div>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            {/* Left 4 Artifact Selectors */}
+            <div className="lg:col-span-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-2.5">
+              {ARTIFACTS_DATA.map((art, idx) => {
+                const isSelected = activeArtifact === idx;
+                return (
+                  <button
+                    key={art.id}
+                    type="button"
+                    onClick={() => setActiveArtifact(idx)}
+                    className={cn(
+                      'p-4 text-left border-2 transition-all font-mono flex items-center gap-3.5',
+                      isSelected
+                        ? 'border-foreground bg-foreground text-background shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] dark:shadow-[3px_3px_0px_0px_rgba(255,255,255,1)]'
+                        : 'border-border-hairline bg-surface hover:border-foreground text-foreground'
+                    )}
+                  >
+                    <span className="text-2xl shrink-0">{art.symbol}</span>
+                    <div className="min-w-0">
+                      <div className="text-[10px] uppercase tracking-wider opacity-80 truncate">{art.origin}</div>
+                      <div className="font-serif font-bold text-sm sm:text-base truncate mt-0.5">{art.name}</div>
+                    </div>
+                    <ChevronRight className={cn('w-4 h-4 ml-auto shrink-0 transition-transform', isSelected && 'translate-x-1')} />
+                  </button>
+                );
+              })}
             </div>
 
-            {/* Pilar 2 */}
-            <div className="border-2 border-foreground bg-surface p-6 flex flex-col justify-between shadow-[4px_4px_0px_0px_currentColor] relative">
-              <div className="space-y-4">
-                <div className="w-10 h-10 border-2 border-foreground bg-surface-muted text-foreground flex items-center justify-center font-mono text-sm font-black">
-                  02
+            {/* Right Detailed Showcase Card */}
+            <div className="lg:col-span-7 border-2 border-foreground bg-surface p-6 sm:p-8 space-y-4 shadow-[4px_4px_0px_0px_currentColor]">
+              <div className="flex items-center justify-between border-b-2 border-foreground pb-3 font-mono">
+                <div className="flex items-center gap-2">
+                  <span className="text-3xl">{ARTIFACTS_DATA[activeArtifact].symbol}</span>
+                  <div>
+                    <span className="text-[10px] text-muted uppercase tracking-wider block">NAMA ARTEFAK:</span>
+                    <h3 className="font-serif text-xl sm:text-2xl font-bold text-foreground">
+                      {ARTIFACTS_DATA[activeArtifact].name}
+                    </h3>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-serif text-xl font-bold text-foreground">
-                    Jiwa &ldquo;Ngurip-Urip&rdquo;
-                  </h3>
-                  <p className="font-mono text-xs text-muted mt-1 uppercase tracking-wider">
-                    Solidaritas Saling Menghidupkan
-                  </p>
+                <div className="text-right">
+                  <span className="text-[9px] bg-surface-muted border border-foreground px-2 py-0.5 uppercase font-bold">
+                    KOLEKSI LAPAK
+                  </span>
                 </div>
-                <p className="font-sans text-xs sm:text-sm text-muted leading-relaxed">
-                  Tidak ada bos, dewan direksi, ataupun bayaran. Semua kawan bergerak atas rasa cinta sukarela
-                  untuk saling menghidupkan minat baca. Menjaga buku, merapikan terpal, dan menyeduh kopi dilakukan gotong royong.
-                </p>
               </div>
-              <div className="pt-4 mt-4 border-t border-border-hairline font-mono text-[10px] text-muted uppercase flex justify-between">
-                <span>PENGELOLAAN: SWADAYA</span>
-                <span>MOTIF: SUKARELA</span>
-              </div>
-            </div>
 
-            {/* Pilar 3 */}
-            <div className="border-2 border-foreground bg-surface p-6 flex flex-col justify-between shadow-[4px_4px_0px_0px_currentColor] relative">
-              <div className="space-y-4">
-                <div className="w-10 h-10 border-2 border-foreground bg-surface-muted text-foreground flex items-center justify-center font-mono text-sm font-black">
-                  03
-                </div>
-                <div>
-                  <h3 className="font-serif text-xl font-bold text-foreground">
-                    Praktik Keterampilan Nyata
-                  </h3>
-                  <p className="font-mono text-xs text-muted mt-1 uppercase tracking-wider">
-                    Literasi Tangan &amp; Seni Kriya
-                  </p>
-                </div>
-                <p className="font-sans text-xs sm:text-sm text-muted leading-relaxed">
-                  Literasi diperluas menjadi daya hidup: kami berlatih teknik sablon cukil kayu murah,
-                  batik ecoprint daun jati bersama warga desa, pengolahan daur ulang plastik, hingga panggung sastra rakyat.
-                </p>
+              <div className="inline-block font-mono text-xs uppercase font-bold text-foreground py-0.5 px-2 bg-surface-muted border border-border-hairline">
+                Filosofi: {ARTIFACTS_DATA[activeArtifact].tagline}
               </div>
-              <div className="pt-4 mt-4 border-t border-border-hairline font-mono text-[10px] text-muted uppercase flex justify-between">
-                <span>KETERAMPILAN: NYATA</span>
-                <span>EKSPRESI: BEBAS</span>
+
+              <p className="font-serif text-base sm:text-lg text-foreground/90 leading-relaxed pt-1">
+                {ARTIFACTS_DATA[activeArtifact].story}
+              </p>
+
+              <div className="pt-4 border-t border-border-hairline font-mono text-[11px] text-muted flex items-center justify-between">
+                <span>Asal Usul: {ARTIFACTS_DATA[activeArtifact].origin}</span>
+                <span className="font-bold text-foreground">RUANG_TERBUKA_BLORA</span>
               </div>
             </div>
           </div>
@@ -573,7 +668,7 @@ export default function AboutPage() {
                 type="button"
                 onClick={() => setActiveWing('KOTA')}
                 className={cn(
-                  'px-4 py-2 font-bold transition-colors',
+                  'px-4 py-2 font-bold transition-colors min-h-[44px]',
                   activeWing === 'KOTA'
                     ? 'bg-foreground text-background'
                     : 'bg-surface text-foreground hover:bg-surface-muted'
@@ -585,7 +680,7 @@ export default function AboutPage() {
                 type="button"
                 onClick={() => setActiveWing('DOPE')}
                 className={cn(
-                  'px-4 py-2 font-bold border-l-2 border-foreground transition-colors',
+                  'px-4 py-2 font-bold border-l-2 border-foreground transition-colors min-h-[44px]',
                   activeWing === 'DOPE'
                     ? 'bg-foreground text-background'
                     : 'bg-surface text-foreground hover:bg-surface-muted'
@@ -777,7 +872,67 @@ export default function AboutPage() {
         </section>
 
         {/* ========================================================= */}
-        {/* 7. KOTAK AJAKAN TERLIBAT: DARI KITA UNTUK KITA            */}
+        {/* 7. TANYA JAWAB KETERLIBATAN (FAQ RELAWAN & DONASI)        */}
+        {/* ========================================================= */}
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16">
+          <div className="border-b-2 border-foreground pb-4 mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-3">
+            <div>
+              <div className="font-mono text-xs uppercase tracking-widest text-muted flex items-center gap-2">
+                <HelpCircle className="w-3.5 h-3.5 text-foreground shrink-0" />
+                <span>PERTANYAAN CALON RELAWAN &amp; WARGA</span>
+              </div>
+              <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground tracking-tight mt-1">
+                Tanya Jawab Seputar Gerakan
+              </h2>
+            </div>
+            <p className="font-mono text-xs text-muted">
+              Klik pertanyaan untuk melihat penjelasan lengkap.
+            </p>
+          </div>
+
+          <div className="space-y-3 max-w-4xl">
+            {GRASSROOTS_FAQS.map((faq, idx) => {
+              const isOpen = openFaq === faq.id;
+              return (
+                <div
+                  key={faq.id}
+                  className="border-2 border-foreground bg-surface overflow-hidden transition-all shadow-[2px_2px_0px_0px_currentColor]"
+                >
+                  <button
+                    type="button"
+                    onClick={() => toggleFaq(faq.id)}
+                    className="w-full p-4 sm:p-5 text-left font-mono flex items-center justify-between gap-4 hover:bg-surface-muted/40 transition-colors focus:outline-none min-h-[44px]"
+                    aria-expanded={isOpen}
+                  >
+                    <div className="flex items-start sm:items-center gap-3">
+                      <span className="text-[10px] text-muted uppercase font-bold shrink-0 pt-0.5 sm:pt-0">
+                        [Q{idx + 1}]
+                      </span>
+                      <span className="font-serif text-base sm:text-lg font-bold text-foreground">
+                        {faq.q}
+                      </span>
+                    </div>
+                    <ChevronDown
+                      className={cn(
+                        'w-4 h-4 text-foreground shrink-0 transition-transform duration-200',
+                        isOpen && 'rotate-180'
+                      )}
+                    />
+                  </button>
+
+                  {isOpen && (
+                    <div className="px-4 sm:px-5 pb-5 pt-1 border-t border-border-hairline bg-surface-muted/20 font-sans text-xs sm:text-sm text-muted leading-relaxed">
+                      {faq.a}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* ========================================================= */}
+        {/* 8. KOTAK AJAKAN TERLIBAT: DARI KITA UNTUK KITA            */}
         {/* ========================================================= */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6">
           <div className="border-4 border-foreground bg-surface p-6 sm:p-12 lg:p-14 space-y-8 shadow-[6px_6px_0px_0px_currentColor]">
@@ -809,7 +964,7 @@ export default function AboutPage() {
                 </div>
                 <Link
                   href="/cara-meminjam"
-                  className="font-bold text-foreground underline inline-flex items-center gap-1 hover:opacity-80 pt-2"
+                  className="min-h-[44px] font-bold text-foreground underline inline-flex items-center gap-1 hover:opacity-80 pt-2"
                 >
                   <span>Baca Panduan Pinjam</span>
                   <ArrowRight className="w-3 h-3" />
@@ -833,7 +988,7 @@ export default function AboutPage() {
                   href="https://wa.me/6281234567890?text=Halo%20Relawan%20Perpusjal%20Blora%2C%20saya%20ingin%20menitipkan%20donasi%20buku..."
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="font-bold text-foreground underline inline-flex items-center gap-1 hover:opacity-80 pt-2"
+                  className="min-h-[44px] font-bold text-foreground underline inline-flex items-center gap-1 hover:opacity-80 pt-2"
                 >
                   <span>Hubungi Relawan Donasi</span>
                   <ExternalLink className="w-3 h-3" />
@@ -855,7 +1010,7 @@ export default function AboutPage() {
                 </div>
                 <Link
                   href="/dashboard/tulisan/tulis"
-                  className="font-bold text-foreground underline inline-flex items-center gap-1 hover:opacity-80 pt-2"
+                  className="min-h-[44px] font-bold text-foreground underline inline-flex items-center gap-1 hover:opacity-80 pt-2"
                 >
                   <span>Mulai Tulis Artikel</span>
                   <ArrowRight className="w-3 h-3" />
@@ -869,7 +1024,7 @@ export default function AboutPage() {
               </span>
               <Link
                 href="/buku"
-                className="min-h-[44px] px-6 py-2.5 bg-foreground text-background uppercase tracking-wider font-bold inline-flex items-center gap-2 hover:opacity-90 transition-opacity"
+                className="min-h-[44px] px-6 py-2.5 bg-foreground text-background uppercase tracking-wider font-bold inline-flex items-center justify-center gap-2 hover:opacity-90 transition-opacity w-full sm:w-auto text-center"
               >
                 <BookOpen className="w-4 h-4" />
                 <span>Telusuri Katalog Buku Terpal</span>
