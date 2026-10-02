@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { BrandStamp } from '@/components/ui/brand-stamp';
+import { RevealOnScroll } from '@/components/ui/reveal-on-scroll';
 import {
   BookOpen,
   Users,
@@ -151,6 +152,30 @@ export default function AboutPage() {
   const [activeWing, setActiveWing] = React.useState<'KOTA' | 'DOPE'>('KOTA');
   const [openFaq, setOpenFaq] = React.useState<string | null>('faq-1');
 
+  // Timeline Scroll Progress calculation (Thread Line fills down on scroll)
+  const timelineRef = React.useRef<HTMLDivElement>(null);
+  const [timelineProgress, setTimelineProgress] = React.useState(0);
+
+  React.useEffect(() => {
+    const handleScroll = () => {
+      if (!timelineRef.current) return;
+      const rect = timelineRef.current.getBoundingClientRect();
+      const windowHeight = window.innerHeight;
+      const totalHeight = rect.height;
+
+      // Calculate how far into the timeline section the viewport has scrolled
+      const progress = Math.min(
+        100,
+        Math.max(0, ((windowHeight * 0.7 - rect.top) / totalHeight) * 100)
+      );
+      setTimelineProgress(progress);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   const handlePrint = () => {
     if (typeof window !== 'undefined') {
       window.print();
@@ -242,61 +267,65 @@ export default function AboutPage() {
           </div>
 
           {/* Top Vintage Gazette Bar */}
-          <div className="flex flex-wrap items-center justify-between border-b border-border-hairline pb-3 mb-8 sm:mb-12 text-[10px] sm:text-[11px] font-mono uppercase tracking-widest text-muted gap-2 relative z-10">
-            <div className="flex items-center gap-2 sm:gap-3">
-              <BrandStamp edition="KRONIK GERAKAN" year="2026" />
-              <span className="hidden sm:inline">[ MANIFESTO &amp; DOKUMEN HISTORIS // SWADAYA RAKYAT ]</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-foreground animate-pulse" />
-              <span>BERJALAN SEJAK 2017</span>
-            </div>
-            <div className="hidden lg:flex items-center gap-2">
-              <button
-                type="button"
-                onClick={handlePrint}
-                className="hover:text-foreground inline-flex items-center gap-1.5 transition-colors"
-                title="Cetak Arsip Panduan Zine"
-              >
-                <Printer className="w-3.5 h-3.5" />
-                <span>CETAK ARSIP</span>
-              </button>
-            </div>
-          </div>
-
-          <div className="max-w-4xl space-y-4 sm:space-y-6 relative z-10">
-            <div className="inline-flex items-center gap-2 px-2.5 py-1 border border-foreground font-mono text-[9px] sm:text-[10px] tracking-wider uppercase font-bold bg-foreground text-background">
-              <span>GERAKAN LITERASI AKAR RUMPUT BLORA</span>
-            </div>
-
-            <h1 className="font-serif text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-black uppercase tracking-tight text-foreground leading-[1.02] sm:leading-[0.95] break-words">
-              MEMBACA DAN <br />
-              <span className="italic font-normal lowercase font-serif">merawat bahagia bersama.</span>
-            </h1>
-
-            <p className="font-serif text-lg sm:text-2xl text-foreground/90 leading-relaxed pt-1 sm:pt-2 max-w-3xl">
-              Sebuah ikhtiar swadaya warga Blora untuk membebaskan buku dari lemari kaca:
-              digelar hangat di atas selembar terpal, bebas birokrasi, tanpa uang jaminan,
-              dan menghidupkan percakapan merdeka di ruang-ruang terbuka.
-            </p>
-
-            <div className="pt-4 flex flex-wrap items-center gap-x-6 gap-y-2 font-mono text-xs text-muted uppercase tracking-wider border-t border-border-hairline">
-              <div className="flex items-center gap-1.5">
-                <Compass className="w-3.5 h-3.5 text-foreground" />
-                <span>Trotoar Alun-Alun &amp; Kridosono</span>
+          <RevealOnScroll variant="fade-up" delayMs={50}>
+            <div className="flex flex-wrap items-center justify-between border-b border-border-hairline pb-3 mb-8 sm:mb-12 text-[10px] sm:text-[11px] font-mono uppercase tracking-widest text-muted gap-2 relative z-10">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <BrandStamp edition="KRONIK GERAKAN" year="2026" />
+                <span className="hidden sm:inline">[ MANIFESTO &amp; DOKUMEN HISTORIS // SWADAYA RAKYAT ]</span>
               </div>
-              <span>&bull;</span>
-              <div className="flex items-center gap-1.5">
-                <TreePine className="w-3.5 h-3.5 text-foreground" />
-                <span>Sendang Salak Alas Tanggel</span>
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-foreground animate-pulse" />
+                <span>BERJALAN SEJAK 2017</span>
               </div>
-              <span>&bull;</span>
-              <div className="flex items-center gap-1.5">
-                <Heart className="w-3.5 h-3.5 text-foreground" />
-                <span>100% Swadaya Tanpa Sponsor</span>
+              <div className="hidden lg:flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handlePrint}
+                  className="hover:text-foreground inline-flex items-center gap-1.5 transition-colors"
+                  title="Cetak Arsip Panduan Zine"
+                >
+                  <Printer className="w-3.5 h-3.5" />
+                  <span>CETAK ARSIP</span>
+                </button>
               </div>
             </div>
-          </div>
+          </RevealOnScroll>
+
+          <RevealOnScroll variant="fade-up" delayMs={150}>
+            <div className="max-w-4xl space-y-4 sm:space-y-6 relative z-10">
+              <div className="inline-flex items-center gap-2 px-2.5 py-1 border border-foreground font-mono text-[9px] sm:text-[10px] tracking-wider uppercase font-bold bg-foreground text-background">
+                <span>GERAKAN LITERASI AKAR RUMPUT BLORA</span>
+              </div>
+
+              <h1 className="font-serif text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-black uppercase tracking-tight text-foreground leading-[1.02] sm:leading-[0.95] break-words">
+                MEMBACA DAN <br />
+                <span className="italic font-normal lowercase font-serif">merawat bahagia bersama.</span>
+              </h1>
+
+              <p className="font-serif text-lg sm:text-2xl text-foreground/90 leading-relaxed pt-1 sm:pt-2 max-w-3xl">
+                Sebuah ikhtiar swadaya warga Blora untuk membebaskan buku dari lemari kaca:
+                digelar hangat di atas selembar terpal, bebas birokrasi, tanpa uang jaminan,
+                dan menghidupkan percakapan merdeka di ruang-ruang terbuka.
+              </p>
+
+              <div className="pt-4 flex flex-wrap items-center gap-x-6 gap-y-2 font-mono text-xs text-muted uppercase tracking-wider border-t border-border-hairline">
+                <div className="flex items-center gap-1.5">
+                  <Compass className="w-3.5 h-3.5 text-foreground" />
+                  <span>Trotoar Alun-Alun &amp; Kridosono</span>
+                </div>
+                <span>&bull;</span>
+                <div className="flex items-center gap-1.5">
+                  <TreePine className="w-3.5 h-3.5 text-foreground" />
+                  <span>Sendang Salak Alas Tanggel</span>
+                </div>
+                <span>&bull;</span>
+                <div className="flex items-center gap-1.5">
+                  <Heart className="w-3.5 h-3.5 text-foreground" />
+                  <span>100% Swadaya Tanpa Sponsor</span>
+                </div>
+              </div>
+            </div>
+          </RevealOnScroll>
         </section>
 
         {/* ========================================================= */}
@@ -304,63 +333,73 @@ export default function AboutPage() {
         {/* ========================================================= */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-20 border-b-2 border-foreground">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-start">
-            {/* Left Narrative Text */}
+            {/* Left Narrative Text with Subtle Fade-up */}
             <div className="lg:col-span-7 space-y-6 font-serif text-base sm:text-lg text-foreground/90 leading-[1.8] sm:leading-[1.85]">
-              <div className="border-b border-border-hairline pb-2 mb-2 font-mono text-xs uppercase tracking-widest text-muted flex items-center gap-2">
-                <Feather className="w-3.5 h-3.5 text-foreground shrink-0" />
-                <span>AKAR INSPIRASI KULTURAL</span>
-              </div>
+              <RevealOnScroll variant="fade-up" delayMs={50}>
+                <div className="border-b border-border-hairline pb-2 mb-2 font-mono text-xs uppercase tracking-widest text-muted flex items-center gap-2">
+                  <Feather className="w-3.5 h-3.5 text-foreground shrink-0" />
+                  <span>AKAR INSPIRASI KULTURAL</span>
+                </div>
 
-              <p className="first-letter:float-left first-letter:text-5xl sm:first-letter:text-6xl first-letter:leading-none first-letter:font-serif first-letter:pr-3.5 first-letter:pt-1 first-letter:font-bold first-letter:text-foreground">
-                Kabupaten Blora di Jawa Tengah menempati posisi tersendiri dalam sejarah kesusastraan Indonesia.
-                Tanah jati ini melahirkan sastrawan besar dunia <strong>Pramoedya Ananta Toer</strong>,
-                serta adiknya, <strong>Mbah Soesilo Toer</strong>, peraih gelar doktor ekonomi dari Moskow
-                yang memilih pulang ke Blora, memulung barang bekas, dan mendirikan <strong>Perpustakaan PATABA</strong> yang legendaris.
-              </p>
+                <p className="first-letter:float-left first-letter:text-5xl sm:first-letter:text-6xl first-letter:leading-none first-letter:font-serif first-letter:pr-3.5 first-letter:pt-1 first-letter:font-bold first-letter:text-foreground">
+                  Kabupaten Blora di Jawa Tengah menempati posisi tersendiri dalam sejarah kesusastraan Indonesia.
+                  Tanah jati ini melahirkan sastrawan besar dunia <strong>Pramoedya Ananta Toer</strong>,
+                  serta adiknya, <strong>Mbah Soesilo Toer</strong>, peraih gelar doktor ekonomi dari Moskow
+                  yang memilih pulang ke Blora, memulung barang bekas, dan mendirikan <strong>Perpustakaan PATABA</strong> yang legendaris.
+                </p>
+              </RevealOnScroll>
 
-              <p>
-                Namun di balik kebanggaan sejarah tersebut, kenyataan sehari-hari warga pinggiran memperlihatkan
-                jurang yang nyata. Masih banyak anak-anak muda, pelajar desa pelosok, dan warga biasa yang kesulitan mendapatkan
-                bacaan bermutu. Melangkahkan kaki ke gedung perpustakaan formal sering kali terasa segan, kaku, dan berjarak.
-              </p>
+              <RevealOnScroll variant="fade-up" delayMs={150}>
+                <p>
+                  Namun di balik kebanggaan sejarah tersebut, kenyataan sehari-hari warga pinggiran memperlihatkan
+                  jurang yang nyata. Masih banyak anak-anak muda, pelajar desa pelosok, dan warga biasa yang kesulitan mendapatkan
+                  bacaan bermutu. Melangkahkan kaki ke gedung perpustakaan formal sering kali terasa segan, kaku, dan berjarak.
+                </p>
+              </RevealOnScroll>
 
-              <p>
-                Dari keresahan itulah, <strong>Perpustakaan Jalanan Blora</strong> hadir. Kami tidak menunggu warga
-                datang; kamilah yang memanggul buku mendatangi ruang santai warga. Cukup menggelar terpal di trotoar Alun-Alun saat Car Free Day,
-                di bawah teduh trembesi taman kota, atau di dekat embung desa, siapa pun boleh duduk bersila, membaca, dan meminjam buku secara cuma-cuma.
-              </p>
+              <RevealOnScroll variant="fade-up" delayMs={200}>
+                <p>
+                  Dari keresahan itulah, <strong>Perpustakaan Jalanan Blora</strong> hadir. Kami tidak menunggu warga
+                  datang; kamilah yang memanggul buku mendatangi ruang santai warga. Cukup menggelar terpal di trotoar Alun-Alun saat Car Free Day,
+                  di bawah teduh trembesi taman kota, atau di dekat embung desa, siapa pun boleh duduk bersila, membaca, dan meminjam buku secara cuma-cuma.
+                </p>
+              </RevealOnScroll>
             </div>
 
-            {/* Right Pull Quote Scene Card */}
-            <div className="lg:col-span-5 border-2 border-foreground bg-surface p-6 sm:p-8 space-y-6 shadow-[5px_5px_0px_0px_currentColor]">
-              <div className="font-mono text-[10px] uppercase tracking-ultra text-muted border-b border-foreground pb-2 flex items-center justify-between">
-                <span>[ AMANAT PATABA ]</span>
-                <span className="text-foreground font-bold">KUTHO KIDUL, BLORA</span>
-              </div>
+            {/* Right Pull Quote Scene Card with Stamp Reveal */}
+            <div className="lg:col-span-5">
+              <RevealOnScroll variant="stamp" delayMs={100}>
+                <div className="border-2 border-foreground bg-surface p-6 sm:p-8 space-y-6 shadow-[5px_5px_0px_0px_currentColor]">
+                  <div className="font-mono text-[10px] uppercase tracking-ultra text-muted border-b border-foreground pb-2 flex items-center justify-between">
+                    <span>[ AMANAT PATABA ]</span>
+                    <span className="text-foreground font-bold">KUTHO KIDUL, BLORA</span>
+                  </div>
 
-              <div className="relative border-l-4 border-foreground pl-4 py-1">
-                <blockquote className="font-serif italic text-xl sm:text-2xl text-foreground leading-snug">
-                  &ldquo;Membaca bukan cuma soal mengeja huruf di atas kertas, tapi jalan melatih rasa dan pikiran agar kita menjadi manusia yang berdaulat dan merdeka.&rdquo;
-                </blockquote>
-              </div>
+                  <div className="relative border-l-4 border-foreground pl-4 py-1">
+                    <blockquote className="font-serif italic text-xl sm:text-2xl text-foreground leading-snug">
+                      &ldquo;Membaca bukan cuma soal mengeja huruf di atas kertas, tapi jalan melatih rasa dan pikiran agar kita menjadi manusia yang berdaulat dan merdeka.&rdquo;
+                    </blockquote>
+                  </div>
 
-              <cite className="block font-mono text-[11px] uppercase tracking-wider text-muted not-italic border-t border-border-hairline pt-3">
-                — Mbah Soesilo Toer (Perpustakaan PATABA Blora)
-              </cite>
+                  <cite className="block font-mono text-[11px] uppercase tracking-wider text-muted not-italic border-t border-border-hairline pt-3">
+                    — Mbah Soesilo Toer (Perpustakaan PATABA Blora)
+                  </cite>
 
-              <div className="p-4 bg-surface-muted border border-border-hairline font-mono text-xs space-y-2">
-                <div className="text-[10px] uppercase font-bold text-foreground">
-                  Transformasi Semboyan Kita:
+                  <div className="p-4 bg-surface-muted border border-border-hairline font-mono text-xs space-y-2">
+                    <div className="text-[10px] uppercase font-bold text-foreground">
+                      Transformasi Semboyan Kita:
+                    </div>
+                    <div className="flex items-center gap-2 text-[11px]">
+                      <span className="line-through text-muted">Membaca adalah Melawan</span>
+                      <span>→</span>
+                      <strong className="text-foreground">Membaca dan Berbahagia</strong>
+                    </div>
+                    <p className="font-sans text-[11px] text-muted leading-relaxed pt-1">
+                      Membaca tidak lagi dipertentangkan sebagai simbol perlawanan yang tegang, melainkan dirayakan sebagai festival kehangatan bersama warga.
+                    </p>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2 text-[11px]">
-                  <span className="line-through text-muted">Membaca adalah Melawan</span>
-                  <span>→</span>
-                  <strong className="text-foreground">Membaca dan Berbahagia</strong>
-                </div>
-                <p className="font-sans text-[11px] text-muted leading-relaxed pt-1">
-                  Membaca tidak lagi dipertentangkan sebagai simbol perlawanan yang tegang, melainkan dirayakan sebagai festival kehangatan bersama warga.
-                </p>
-              </div>
+              </RevealOnScroll>
             </div>
           </div>
         </section>
@@ -368,27 +407,39 @@ export default function AboutPage() {
         {/* ========================================================= */}
         {/* 3. THE CINEMATIC TIMELINE RIVER (SCROLL-DRIVEN VOYAGE)     */}
         {/* ========================================================= */}
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
-          <div className="border-b-2 border-foreground pb-6 mb-12 sm:mb-20 flex flex-col md:flex-row md:items-end justify-between gap-4">
-            <div>
-              <div className="font-mono text-xs uppercase tracking-widest text-muted flex items-center gap-2">
-                <Clock className="w-4 h-4 text-foreground shrink-0" />
-                <span>KRONIK PERJALANAN SIRKULASI (2017 – 2026)</span>
+        <section ref={timelineRef} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
+          <RevealOnScroll variant="fade-up">
+            <div className="border-b-2 border-foreground pb-6 mb-12 sm:mb-20 flex flex-col md:flex-row md:items-end justify-between gap-4">
+              <div>
+                <div className="font-mono text-xs uppercase tracking-widest text-muted flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-foreground shrink-0" />
+                  <span>KRONIK PERJALANAN SIRKULASI (2017 – 2026)</span>
+                </div>
+                <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-black text-foreground tracking-tight mt-1">
+                  Jejak Terpal dari Waktu ke Waktu
+                </h2>
               </div>
-              <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-black text-foreground tracking-tight mt-1">
-                Jejak Terpal dari Waktu ke Waktu
-              </h2>
+              <p className="font-mono text-xs text-muted max-w-md leading-relaxed">
+                Gulir ke bawah untuk menelusuri bagaimana selembar terpal trotoar di alun-alun berkembang menjadi ekosistem literasi yang menjangkau desa dan hutan jati.
+              </p>
             </div>
-            <p className="font-mono text-xs text-muted max-w-md leading-relaxed">
-              Gulir ke bawah untuk menelusuri bagaimana selembar terpal trotoar di alun-alun berkembang menjadi ekosistem literasi yang menjangkau desa dan hutan jati.
-            </p>
-          </div>
+          </RevealOnScroll>
 
-          {/* Cinematic Vertical Timeline Track */}
+          {/* Cinematic Vertical Timeline Track with Progressive Thread Line */}
           <div className="relative">
-            {/* Center Spine Line (Desktop) / Left Line (Mobile) */}
-            <div className="absolute left-4 sm:left-1/2 top-4 bottom-4 w-1 -translate-x-1/2 bg-foreground/20 dark:bg-foreground/20 hidden md:block" />
-            <div className="absolute left-4 top-4 bottom-4 w-1 -translate-x-1/2 bg-foreground/20 md:hidden" />
+            {/* Background Spine Guide (Faint) */}
+            <div className="absolute left-4 sm:left-1/2 top-4 bottom-4 w-0.5 -translate-x-1/2 bg-foreground/15 hidden md:block" />
+            <div className="absolute left-4 top-4 bottom-4 w-0.5 -translate-x-1/2 bg-foreground/15 md:hidden" />
+
+            {/* Active Thread Line (Fills down dynamically on scroll) */}
+            <div
+              className="absolute left-4 sm:left-1/2 top-4 w-1 -translate-x-1/2 bg-foreground transition-all duration-150 ease-out hidden md:block"
+              style={{ height: `${timelineProgress}%` }}
+            />
+            <div
+              className="absolute left-4 top-4 w-1 -translate-x-1/2 bg-foreground transition-all duration-150 ease-out md:hidden"
+              style={{ height: `${timelineProgress}%` }}
+            />
 
             <div className="space-y-12 sm:space-y-24">
               {TIMELINE_EVENTS.map((event, idx) => {
@@ -402,91 +453,103 @@ export default function AboutPage() {
                       isEven ? 'md:flex-row' : 'md:flex-row-reverse'
                     )}
                   >
-                    {/* Spine Node Badge in Center */}
+                    {/* Spine Node Badge in Center with Stamp Effect */}
                     <div className="absolute left-4 md:left-1/2 top-0 -translate-x-1/2 z-20 flex items-center justify-center">
-                      <div className="w-10 h-10 sm:w-12 sm:h-12 border-2 border-foreground bg-background text-foreground font-mono font-black text-xs sm:text-sm flex items-center justify-center shadow-[3px_3px_0px_0px_currentColor] group-hover:bg-foreground group-hover:text-background transition-colors">
-                        {event.year.slice(-2)}
-                      </div>
+                      <RevealOnScroll variant="stamp" delayMs={50}>
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 border-2 border-foreground bg-background text-foreground font-mono font-black text-xs sm:text-sm flex items-center justify-center shadow-[3px_3px_0px_0px_currentColor] group-hover:bg-foreground group-hover:text-background transition-colors cursor-default">
+                          {event.year.slice(-2)}
+                        </div>
+                      </RevealOnScroll>
                     </div>
 
-                    {/* Left/Right Story Card */}
+                    {/* Left/Right Story Card with Slide-in Transition */}
                     <div className="w-full md:w-1/2 pl-12 md:pl-0">
-                      <div
-                        className={cn(
-                          'border-2 border-foreground bg-surface p-6 sm:p-8 relative overflow-hidden shadow-[4px_4px_0px_0px_currentColor] transition-all duration-300 group-hover:shadow-[7px_7px_0px_0px_currentColor]',
-                          isEven ? 'md:mr-8 lg:md:mr-12' : 'md:ml-8 lg:md:ml-12'
-                        )}
+                      <RevealOnScroll
+                        variant={isEven ? 'slide-right' : 'slide-left'}
+                        delayMs={100}
                       >
-                        {/* Huge Background Watermark of Year */}
-                        <div className="absolute -right-4 -bottom-6 font-serif font-black text-[90px] sm:text-[120px] text-foreground/5 select-none pointer-events-none leading-none">
-                          {event.year}
-                        </div>
-
-                        <div className="space-y-4 relative z-10">
-                          {/* Header Strip */}
-                          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border-hairline pb-3 font-mono text-[10px]">
-                            <span className="font-bold uppercase tracking-wider text-muted">
-                              {event.badge}
-                            </span>
-                            <span className="px-2 py-0.5 bg-foreground text-background font-bold tracking-widest">
-                              {event.phase}
-                            </span>
+                        <div
+                          className={cn(
+                            'border-2 border-foreground bg-surface p-6 sm:p-8 relative overflow-hidden shadow-[4px_4px_0px_0px_currentColor] transition-all duration-300 hover:shadow-[7px_7px_0px_0px_currentColor]',
+                            isEven ? 'md:mr-8 lg:md:mr-12' : 'md:ml-8 lg:md:ml-12'
+                          )}
+                        >
+                          {/* Huge Background Watermark of Year */}
+                          <div className="absolute -right-4 -bottom-6 font-serif font-black text-[90px] sm:text-[120px] text-foreground/5 select-none pointer-events-none leading-none">
+                            {event.year}
                           </div>
 
-                          {/* Title */}
-                          <h3 className="font-serif text-2xl sm:text-3xl font-bold text-foreground tracking-tight leading-tight">
-                            {event.title}
-                          </h3>
-
-                          {/* Summary */}
-                          <p className="font-sans text-xs sm:text-sm text-foreground/85 leading-relaxed">
-                            {event.summary}
-                          </p>
-
-                          {/* Atmospheric Location & Field Note */}
-                          <div className="p-3 bg-surface-muted/60 border-l-2 border-foreground font-mono text-xs space-y-1">
-                            <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase text-foreground">
-                              <MapPin className="w-3.5 h-3.5 shrink-0" />
-                              <span>{event.location}</span>
+                          <div className="space-y-4 relative z-10">
+                            {/* Header Strip */}
+                            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border-hairline pb-3 font-mono text-[10px]">
+                              <span className="font-bold uppercase tracking-wider text-muted">
+                                {event.badge}
+                              </span>
+                              <span className="px-2 py-0.5 bg-foreground text-background font-bold tracking-widest">
+                                {event.phase}
+                              </span>
                             </div>
-                            <p className="font-sans text-[11px] text-muted leading-relaxed">
-                              {event.fieldNotes}
-                            </p>
-                          </div>
 
-                          {/* Quote Callout */}
-                          <div className="pt-2 border-t border-border-hairline">
-                            <blockquote className="font-serif italic text-xs sm:text-sm text-foreground/90">
-                              &ldquo;{event.quote}&rdquo;
-                            </blockquote>
-                            <span className="block font-mono text-[9px] uppercase tracking-wider text-muted mt-1">
-                              — {event.quoteAuthor}
-                            </span>
+                            {/* Title */}
+                            <h3 className="font-serif text-2xl sm:text-3xl font-bold text-foreground tracking-tight leading-tight">
+                              {event.title}
+                            </h3>
+
+                            {/* Summary */}
+                            <p className="font-sans text-xs sm:text-sm text-foreground/85 leading-relaxed">
+                              {event.summary}
+                            </p>
+
+                            {/* Atmospheric Location & Field Note */}
+                            <div className="p-3 bg-surface-muted/60 border-l-2 border-foreground font-mono text-xs space-y-1">
+                              <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase text-foreground">
+                                <MapPin className="w-3.5 h-3.5 shrink-0" />
+                                <span>{event.location}</span>
+                              </div>
+                              <p className="font-sans text-[11px] text-muted leading-relaxed">
+                                {event.fieldNotes}
+                              </p>
+                            </div>
+
+                            {/* Quote Callout */}
+                            <div className="pt-2 border-t border-border-hairline">
+                              <blockquote className="font-serif italic text-xs sm:text-sm text-foreground/90">
+                                &ldquo;{event.quote}&rdquo;
+                              </blockquote>
+                              <span className="block font-mono text-[9px] uppercase tracking-wider text-muted mt-1">
+                                — {event.quoteAuthor}
+                              </span>
+                            </div>
                           </div>
                         </div>
-                      </div>
+                      </RevealOnScroll>
                     </div>
 
                     {/* Opposite Side: Atmospheric Filmic Stamp Card (Desktop Only) */}
                     <div className="hidden md:flex md:w-1/2 items-center justify-center">
-                      <div
-                        className={cn(
-                          'p-6 border-2 border-dashed border-foreground/40 bg-surface-muted/30 font-mono text-xs max-w-sm w-full space-y-3',
-                          isEven ? 'ml-8 lg:ml-12' : 'mr-8 lg:mr-12'
-                        )}
+                      <RevealOnScroll
+                        variant={isEven ? 'slide-left' : 'slide-right'}
+                        delayMs={150}
                       >
-                        <div className="flex items-center justify-between text-[10px] text-muted uppercase tracking-widest border-b border-border-hairline pb-2">
-                          <span>SUASANA ZAMAN</span>
-                          <span className="font-bold text-foreground">{event.year}</span>
+                        <div
+                          className={cn(
+                            'p-6 border-2 border-dashed border-foreground/40 bg-surface-muted/30 font-mono text-xs max-w-sm w-full space-y-3',
+                            isEven ? 'ml-8 lg:ml-12' : 'mr-8 lg:mr-12'
+                          )}
+                        >
+                          <div className="flex items-center justify-between text-[10px] text-muted uppercase tracking-widest border-b border-border-hairline pb-2">
+                            <span>SUASANA ZAMAN</span>
+                            <span className="font-bold text-foreground">{event.year}</span>
+                          </div>
+                          <p className="font-serif italic text-sm text-foreground/90 leading-relaxed">
+                            &ldquo;{event.atmosphere}&rdquo;
+                          </p>
+                          <div className="text-[9px] uppercase tracking-widest text-muted flex items-center justify-between pt-1">
+                            <span>DOKUMEN HISTORIS</span>
+                            <span className="font-bold text-foreground">PERPUSJAL_ARCHIVE</span>
+                          </div>
                         </div>
-                        <p className="font-serif italic text-sm text-foreground/90 leading-relaxed">
-                          &ldquo;{event.atmosphere}&rdquo;
-                        </p>
-                        <div className="text-[9px] uppercase tracking-widest text-muted flex items-center justify-between pt-1">
-                          <span>DOKUMEN HISTORIS</span>
-                          <span className="font-bold text-foreground">PERPUSJAL_ARCHIVE</span>
-                        </div>
-                      </div>
+                      </RevealOnScroll>
                     </div>
                   </div>
                 );
@@ -499,280 +562,289 @@ export default function AboutPage() {
         {/* 4. DUA SAYAP WILAYAH: KOTA VS. DESA HUTAN                */}
         {/* ========================================================= */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-20 border-t-2 border-foreground">
-          <div className="border-b-2 border-foreground pb-4 mb-6 sm:mb-8 flex flex-col md:flex-row md:items-end justify-between gap-3">
-            <div>
-              <div className="font-mono text-xs uppercase tracking-widest text-muted flex items-center gap-2">
-                <TreePine className="w-3.5 h-3.5 text-foreground shrink-0" />
-                <span>BENTANG WILAYAH KOLEKTIF</span>
+          <RevealOnScroll variant="fade-up">
+            <div className="border-b-2 border-foreground pb-4 mb-6 sm:mb-8 flex flex-col md:flex-row md:items-end justify-between gap-3">
+              <div>
+                <div className="font-mono text-xs uppercase tracking-widest text-muted flex items-center gap-2">
+                  <TreePine className="w-3.5 h-3.5 text-foreground shrink-0" />
+                  <span>BENTANG WILAYAH KOLEKTIF</span>
+                </div>
+                <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground tracking-tight mt-1">
+                  Dua Sayap Gerakan di Tanah Blora
+                </h2>
               </div>
-              <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground tracking-tight mt-1">
-                Dua Sayap Gerakan di Tanah Blora
-              </h2>
+              {/* Wing Switcher Toggle */}
+              <div className="flex border-2 border-foreground font-mono text-xs">
+                <button
+                  type="button"
+                  onClick={() => setActiveWing('KOTA')}
+                  className={cn(
+                    'px-4 py-2 font-bold transition-colors min-h-[44px]',
+                    activeWing === 'KOTA'
+                      ? 'bg-foreground text-background'
+                      : 'bg-surface text-foreground hover:bg-surface-muted'
+                  )}
+                >
+                  [01] SAYAP KOTA (BLORA)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveWing('DOPE')}
+                  className={cn(
+                    'px-4 py-2 font-bold border-l-2 border-foreground transition-colors min-h-[44px]',
+                    activeWing === 'DOPE'
+                      ? 'bg-foreground text-background'
+                      : 'bg-surface text-foreground hover:bg-surface-muted'
+                  )}
+                >
+                  [02] SAYAP SELATAN (DOPLANG)
+                </button>
+              </div>
             </div>
-            {/* Wing Switcher Toggle */}
-            <div className="flex border-2 border-foreground font-mono text-xs">
-              <button
-                type="button"
-                onClick={() => setActiveWing('KOTA')}
-                className={cn(
-                  'px-4 py-2 font-bold transition-colors min-h-[44px]',
-                  activeWing === 'KOTA'
-                    ? 'bg-foreground text-background'
-                    : 'bg-surface text-foreground hover:bg-surface-muted'
-                )}
-              >
-                [01] SAYAP KOTA (BLORA)
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveWing('DOPE')}
-                className={cn(
-                  'px-4 py-2 font-bold border-l-2 border-foreground transition-colors min-h-[44px]',
-                  activeWing === 'DOPE'
-                    ? 'bg-foreground text-background'
-                    : 'bg-surface text-foreground hover:bg-surface-muted'
-                )}
-              >
-                [02] SAYAP SELATAN (DOPLANG)
-              </button>
+          </RevealOnScroll>
+
+          {/* Active Wing Content Card with Stamp Reveal */}
+          <RevealOnScroll variant="stamp" delayMs={50}>
+            <div className="border-2 border-foreground bg-surface p-6 sm:p-10 shadow-[6px_6px_0px_0px_currentColor] relative">
+              {activeWing === 'KOTA' ? (
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                  <div className="lg:col-span-7 space-y-4">
+                    <div className="inline-block px-2.5 py-0.5 border border-foreground bg-foreground text-background font-mono text-[10px] font-bold uppercase tracking-wider">
+                      PERPUSJAL BLORA // BASIS KOTA
+                    </div>
+                    <h3 className="font-serif text-3xl font-black text-foreground">
+                      Menyapa Warga Trotoar, Kridosono &amp; Omah Talang Bocor
+                    </h3>
+                    <p className="font-sans text-xs sm:text-sm text-foreground/80 leading-relaxed">
+                      Bergerak di jantung kota Blora, lapak kota memadukan kehangatan membaca di Car Free Day Alun-Alun,
+                      diskusi film independen di tepian Embung Rowo, dan bengkel kriya mandiri di <strong>Omah Talang Bocor</strong> (dekat Stadion Kridosono).
+                    </p>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 font-mono text-xs">
+                      <div className="p-3 border border-border-hairline bg-surface-muted/50 space-y-1">
+                        <div className="text-[10px] text-muted uppercase font-bold">TITIK KUMPUL RUTIN:</div>
+                        <div className="font-bold text-foreground">Alun-Alun CFD &amp; Tirtonadi</div>
+                        <div className="text-[10px] text-muted">Setiap Minggu Pagi &amp; Sabtu Sore</div>
+                      </div>
+                      <div className="p-3 border border-border-hairline bg-surface-muted/50 space-y-1">
+                        <div className="text-[10px] text-muted uppercase font-bold">KEGIATAN UTAMA:</div>
+                        <div className="font-bold text-foreground">Cukil Kayu &amp; Diskusi Terbuka</div>
+                        <div className="text-[10px] text-muted">Sablon kaos, puisi &amp; barongan</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="lg:col-span-5 bg-surface-muted border-2 border-foreground p-6 font-mono text-xs space-y-3">
+                    <div className="text-[10px] uppercase font-bold text-muted border-b border-border-hairline pb-1">
+                      KARAKTER SAYAP KOTA:
+                    </div>
+                    <ul className="space-y-2 text-[11px] text-foreground/90 font-sans">
+                      <li className="flex items-start gap-2">
+                        <span className="font-mono text-foreground font-bold">[•]</span>
+                        <span>Menjangkau pelajar sekolah menengah, mahasiswa, dan keluarga muda perkotaan.</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="font-mono text-foreground font-bold">[•]</span>
+                        <span>Panggung terbuka bagi seniman jalanan, pemusik akustik, dan pegiat seni Barongan.</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="font-mono text-foreground font-bold">[•]</span>
+                        <span>Pusat gudang sirkulasi dan katalogisasi arsip buku kolektif Perpusjal.</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                  <div className="lg:col-span-7 space-y-4">
+                    <div className="inline-block px-2.5 py-0.5 border border-foreground bg-foreground text-background font-mono text-[10px] font-bold uppercase tracking-wider">
+                      PERPUSJAL DOPE // BASIS ALAS SELATAN
+                    </div>
+                    <h3 className="font-serif text-3xl font-black text-foreground">
+                      Kemah Literasi &amp; Ruang Belajar Pinggir Hutan
+                    </h3>
+                    <p className="font-sans text-xs sm:text-sm text-foreground/80 leading-relaxed">
+                      Digerakkan kawan-kawan di Kecamatan Jati / Doplang, terhubung di Forum TBM (Instagram: <code>@perpusjal.dope</code>).
+                      Fokus mendekatkan buku cerita dan edukasi kepada anak-anak pedesaan yang jauh dari toko buku kota.
+                    </p>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 font-mono text-xs">
+                      <div className="p-3 border border-border-hairline bg-surface-muted/50 space-y-1">
+                        <div className="text-[10px] text-muted uppercase font-bold">AGENDA TAHUNAN:</div>
+                        <div className="font-bold text-foreground">Kemah Alas Sendang Salak</div>
+                        <div className="text-[10px] text-muted">Mata air Sendang Salak Desa Tanggel</div>
+                      </div>
+                      <div className="p-3 border border-border-hairline bg-surface-muted/50 space-y-1">
+                        <div className="text-[10px] text-muted uppercase font-bold">PEMBERDAYAAN:</div>
+                        <div className="font-bold text-foreground">Batik Ecoprint Daun Jati</div>
+                        <div className="text-[10px] text-muted">Bersama ibu-ibu PKK &amp; pemuda desa</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="lg:col-span-5 bg-surface-muted border-2 border-foreground p-6 font-mono text-xs space-y-3">
+                    <div className="text-[10px] uppercase font-bold text-muted border-b border-border-hairline pb-1">
+                      KARAKTER SAYAP SELATAN:
+                    </div>
+                    <ul className="space-y-2 text-[11px] text-foreground/90 font-sans">
+                      <li className="flex items-start gap-2">
+                        <span className="font-mono text-foreground font-bold">[•]</span>
+                        <span>Menjangkau anak-anak pelosok desa tepi hutan yang minim akses perpustakaan.</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="font-mono text-foreground font-bold">[•]</span>
+                        <span>Mengajarkan kesadaran ekologis dan pelestarian mata air alami Sendang Salak.</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="font-mono text-foreground font-bold">[•]</span>
+                        <span>Kolaborasi erat dengan ibu-ibu desa dan pegiat kriya dedaunan hutan.</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              )}
             </div>
-          </div>
-
-          {/* Active Wing Content Card */}
-          <div className="border-2 border-foreground bg-surface p-6 sm:p-10 shadow-[6px_6px_0px_0px_currentColor] relative">
-            {activeWing === 'KOTA' ? (
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-                <div className="lg:col-span-7 space-y-4">
-                  <div className="inline-block px-2.5 py-0.5 border border-foreground bg-foreground text-background font-mono text-[10px] font-bold uppercase tracking-wider">
-                    PERPUSJAL BLORA // BASIS KOTA
-                  </div>
-                  <h3 className="font-serif text-3xl font-black text-foreground">
-                    Menyapa Warga Trotoar, Kridosono &amp; Omah Talang Bocor
-                  </h3>
-                  <p className="font-sans text-xs sm:text-sm text-foreground/80 leading-relaxed">
-                    Bergerak di jantung kota Blora, lapak kota memadukan kehangatan membaca di Car Free Day Alun-Alun,
-                    diskusi film independen di tepian Embung Rowo, dan bengkel kriya mandiri di <strong>Omah Talang Bocor</strong> (dekat Stadion Kridosono).
-                  </p>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 font-mono text-xs">
-                    <div className="p-3 border border-border-hairline bg-surface-muted/50 space-y-1">
-                      <div className="text-[10px] text-muted uppercase font-bold">TITIK KUMPUL RUTIN:</div>
-                      <div className="font-bold text-foreground">Alun-Alun CFD &amp; Tirtonadi</div>
-                      <div className="text-[10px] text-muted">Setiap Minggu Pagi &amp; Sabtu Sore</div>
-                    </div>
-                    <div className="p-3 border border-border-hairline bg-surface-muted/50 space-y-1">
-                      <div className="text-[10px] text-muted uppercase font-bold">KEGIATAN UTAMA:</div>
-                      <div className="font-bold text-foreground">Cukil Kayu &amp; Diskusi Terbuka</div>
-                      <div className="text-[10px] text-muted">Sablon kaos, puisi &amp; barongan</div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="lg:col-span-5 bg-surface-muted border-2 border-foreground p-6 font-mono text-xs space-y-3">
-                  <div className="text-[10px] uppercase font-bold text-muted border-b border-border-hairline pb-1">
-                    KARAKTER SAYAP KOTA:
-                  </div>
-                  <ul className="space-y-2 text-[11px] text-foreground/90 font-sans">
-                    <li className="flex items-start gap-2">
-                      <span className="font-mono text-foreground font-bold">[•]</span>
-                      <span>Menjangkau pelajar sekolah menengah, mahasiswa, dan keluarga muda perkotaan.</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="font-mono text-foreground font-bold">[•]</span>
-                      <span>Panggung terbuka bagi seniman jalanan, pemusik akustik, dan pegiat seni Barongan.</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="font-mono text-foreground font-bold">[•]</span>
-                      <span>Pusat gudang sirkulasi dan katalogisasi arsip buku kolektif Perpusjal.</span>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-                <div className="lg:col-span-7 space-y-4">
-                  <div className="inline-block px-2.5 py-0.5 border border-foreground bg-foreground text-background font-mono text-[10px] font-bold uppercase tracking-wider">
-                    PERPUSJAL DOPE // BASIS ALAS SELATAN
-                  </div>
-                  <h3 className="font-serif text-3xl font-black text-foreground">
-                    Kemah Literasi &amp; Ruang Belajar Pinggir Hutan
-                  </h3>
-                  <p className="font-sans text-xs sm:text-sm text-foreground/80 leading-relaxed">
-                    Digerakkan kawan-kawan di Kecamatan Jati / Doplang, terhubung di Forum TBM (Instagram: <code>@perpusjal.dope</code>).
-                    Fokus mendekatkan buku cerita dan edukasi kepada anak-anak pedesaan yang jauh dari toko buku kota.
-                  </p>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 font-mono text-xs">
-                    <div className="p-3 border border-border-hairline bg-surface-muted/50 space-y-1">
-                      <div className="text-[10px] text-muted uppercase font-bold">AGENDA TAHUNAN:</div>
-                      <div className="font-bold text-foreground">Kemah Alas Sendang Salak</div>
-                      <div className="text-[10px] text-muted">Mata air Sendang Salak Desa Tanggel</div>
-                    </div>
-                    <div className="p-3 border border-border-hairline bg-surface-muted/50 space-y-1">
-                      <div className="text-[10px] text-muted uppercase font-bold">PEMBERDAYAAN:</div>
-                      <div className="font-bold text-foreground">Batik Ecoprint Daun Jati</div>
-                      <div className="text-[10px] text-muted">Bersama ibu-ibu PKK &amp; pemuda desa</div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="lg:col-span-5 bg-surface-muted border-2 border-foreground p-6 font-mono text-xs space-y-3">
-                  <div className="text-[10px] uppercase font-bold text-muted border-b border-border-hairline pb-1">
-                    KARAKTER SAYAP SELATAN:
-                  </div>
-                  <ul className="space-y-2 text-[11px] text-foreground/90 font-sans">
-                    <li className="flex items-start gap-2">
-                      <span className="font-mono text-foreground font-bold">[•]</span>
-                      <span>Menjangkau anak-anak pelosok desa tepi hutan yang minim akses perpustakaan.</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="font-mono text-foreground font-bold">[•]</span>
-                      <span>Mengajarkan kesadaran ekologis dan pelestarian mata air alami Sendang Salak.</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="font-mono text-foreground font-bold">[•]</span>
-                      <span>Kolaborasi erat dengan ibu-ibu desa dan pegiat kriya dedaunan hutan.</span>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            )}
-          </div>
+          </RevealOnScroll>
         </section>
 
         {/* ========================================================= */}
         {/* 5. TABEL SIMBIOSIS: DPK PERPUSDA VS PERPUSJAL TERPAL     */}
         {/* ========================================================= */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16">
-          <div className="border-b-2 border-foreground pb-4 mb-6 sm:mb-8 flex flex-col md:flex-row md:items-end justify-between gap-3">
-            <div>
-              <div className="font-mono text-xs uppercase tracking-widest text-muted flex items-center gap-2">
-                <Coffee className="w-3.5 h-3.5 text-foreground shrink-0" />
-                <span>SIMBIOSIS SALING MELENGKAPI</span>
+          <RevealOnScroll variant="fade-up">
+            <div className="border-b-2 border-foreground pb-4 mb-6 sm:mb-8 flex flex-col md:flex-row md:items-end justify-between gap-3">
+              <div>
+                <div className="font-mono text-xs uppercase tracking-widest text-muted flex items-center gap-2">
+                  <Coffee className="w-3.5 h-3.5 text-foreground shrink-0" />
+                  <span>SIMBIOSIS SALING MELENGKAPI</span>
+                </div>
+                <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground tracking-tight mt-1">
+                  Bergandengan Tangan Demi Warga Blora
+                </h2>
               </div>
-              <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground tracking-tight mt-1">
-                Bergandengan Tangan Demi Warga Blora
-              </h2>
+              <p className="font-mono text-xs text-muted max-w-sm">
+                Perpusjal tidak pernah berniat menyaingi perpustakaan pemerintah; kami hadir mengisi ruang-ruang santai di luar gedung formal.
+              </p>
             </div>
-            <p className="font-mono text-xs text-muted max-w-sm">
-              Perpusjal tidak pernah berniat menyaingi perpustakaan pemerintah; kami hadir mengisi ruang-ruang santai di luar gedung formal.
-            </p>
-          </div>
+          </RevealOnScroll>
 
-          <div className="border-2 border-foreground overflow-x-auto bg-surface shadow-[4px_4px_0px_0px_currentColor]">
-            <table className="w-full text-left font-sans text-xs sm:text-sm">
-              <thead>
-                <tr className="border-b-2 border-foreground bg-surface-muted font-mono text-[11px] uppercase tracking-wider text-foreground">
-                  <th className="p-3.5 sm:p-4 font-bold">ASPEK PELAYANAN</th>
-                  <th className="p-3.5 sm:p-4 font-bold border-l-2 border-foreground">PERPUSDA KABUPATEN (DPK)</th>
-                  <th className="p-3.5 sm:p-4 font-bold border-l-2 border-foreground bg-foreground text-background">
-                    PERPUSJAL (LAPAK TERPAL)
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border-hairline">
-                <tr>
-                  <td className="p-3.5 sm:p-4 font-mono text-xs text-muted font-bold">Ruang Baca</td>
-                  <td className="p-3.5 sm:p-4 text-foreground/80 border-l-2 border-foreground">
-                    Gedung megah 4 lantai ber-AC &amp; mobil layanan keliling resmi CFD
-                  </td>
-                  <td className="p-3.5 sm:p-4 text-foreground font-semibold border-l-2 border-foreground bg-surface-muted/40">
-                    Lesehan di trotoar, taman kota, angkringan, hingga mata air hutan
-                  </td>
-                </tr>
-                <tr>
-                  <td className="p-3.5 sm:p-4 font-mono text-xs text-muted font-bold">Suasana Interaksi</td>
-                  <td className="p-3.5 sm:p-4 text-foreground/80 border-l-2 border-foreground">
-                    Formal, tenang, hening, dan teratur dengan tata tertib gedung
-                  </td>
-                  <td className="p-3.5 sm:p-4 text-foreground font-semibold border-l-2 border-foreground bg-surface-muted/40">
-                    Hangat, santai, boleh sambil ngopi, bercanda, dan menggambar bebas
-                  </td>
-                </tr>
-                <tr>
-                  <td className="p-3.5 sm:p-4 font-mono text-xs text-muted font-bold">Sumber Koleksi</td>
-                  <td className="p-3.5 sm:p-4 text-foreground/80 border-l-2 border-foreground">
-                    Pengadaan resmi APBD pemerintah daerah Kabupaten Blora
-                  </td>
-                  <td className="p-3.5 sm:p-4 text-foreground font-semibold border-l-2 border-foreground bg-surface-muted/40">
-                    Sumbangan sukarela kawan-kawan relawan dan titipan berkah dari warga
-                  </td>
-                </tr>
-                <tr>
-                  <td className="p-3.5 sm:p-4 font-mono text-xs text-muted font-bold">Kegiatan Belajar</td>
-                  <td className="p-3.5 sm:p-4 text-foreground/80 border-l-2 border-foreground">
-                    Kunjungan sekolah terstruktur, arsip daerah, pojok baca digital
-                  </td>
-                  <td className="p-3.5 sm:p-4 text-foreground font-semibold border-l-2 border-foreground bg-surface-muted/40">
-                    Sablon cukil kayu, batik ecoprint daun jati, kemah alas, daur ulang sampah
-                  </td>
-                </tr>
-                <tr>
-                  <td className="p-3.5 sm:p-4 font-mono text-xs text-muted font-bold">Tujuan Luhur</td>
-                  <td colSpan={2} className="p-3.5 sm:p-4 text-center font-serif italic text-foreground font-bold border-l-2 border-foreground bg-surface-muted">
-                    &ldquo;Sama-sama berjuang agar masyarakat Blora gemar membaca, berpengetahuan luas, dan merdeka berekspresi.&rdquo;
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+          <RevealOnScroll variant="fade-up" delayMs={100}>
+            <div className="border-2 border-foreground overflow-x-auto bg-surface shadow-[4px_4px_0px_0px_currentColor]">
+              <table className="w-full text-left font-sans text-xs sm:text-sm">
+                <thead>
+                  <tr className="border-b-2 border-foreground bg-surface-muted font-mono text-[11px] uppercase tracking-wider text-foreground">
+                    <th className="p-3.5 sm:p-4 font-bold">ASPEK PELAYANAN</th>
+                    <th className="p-3.5 sm:p-4 font-bold border-l-2 border-foreground">PERPUSDA KABUPATEN (DPK)</th>
+                    <th className="p-3.5 sm:p-4 font-bold border-l-2 border-foreground bg-foreground text-background">
+                      PERPUSJAL (LAPAK TERPAL)
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border-hairline">
+                  <tr>
+                    <td className="p-3.5 sm:p-4 font-mono text-xs text-muted font-bold">Ruang Baca</td>
+                    <td className="p-3.5 sm:p-4 text-foreground/80 border-l-2 border-foreground">
+                      Gedung megah 4 lantai ber-AC &amp; mobil layanan keliling resmi CFD
+                    </td>
+                    <td className="p-3.5 sm:p-4 text-foreground font-semibold border-l-2 border-foreground bg-surface-muted/40">
+                      Lesehan di trotoar, taman kota, angkringan, hingga mata air hutan
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="p-3.5 sm:p-4 font-mono text-xs text-muted font-bold">Suasana Interaksi</td>
+                    <td className="p-3.5 sm:p-4 text-foreground/80 border-l-2 border-foreground">
+                      Formal, tenang, hening, dan teratur dengan tata tertib gedung
+                    </td>
+                    <td className="p-3.5 sm:p-4 text-foreground font-semibold border-l-2 border-foreground bg-surface-muted/40">
+                      Hangat, santai, boleh sambil ngopi, bercanda, dan menggambar bebas
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="p-3.5 sm:p-4 font-mono text-xs text-muted font-bold">Sumber Koleksi</td>
+                    <td className="p-3.5 sm:p-4 text-foreground/80 border-l-2 border-foreground">
+                      Pengadaan resmi APBD pemerintah daerah Kabupaten Blora
+                    </td>
+                    <td className="p-3.5 sm:p-4 text-foreground font-semibold border-l-2 border-foreground bg-surface-muted/40">
+                      Sumbangan sukarela kawan-kawan relawan dan titipan berkah dari warga
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="p-3.5 sm:p-4 font-mono text-xs text-muted font-bold">Kegiatan Belajar</td>
+                    <td className="p-3.5 sm:p-4 text-foreground/80 border-l-2 border-foreground">
+                      Kunjungan sekolah terstruktur, arsip daerah, pojok baca digital
+                    </td>
+                    <td className="p-3.5 sm:p-4 text-foreground font-semibold border-l-2 border-foreground bg-surface-muted/40">
+                      Sablon cukil kayu, batik ecoprint daun jati, kemah alas, daur ulang sampah
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="p-3.5 sm:p-4 font-mono text-xs text-muted font-bold">Tujuan Luhur</td>
+                    <td colSpan={2} className="p-3.5 sm:p-4 text-center font-serif italic text-foreground font-bold border-l-2 border-foreground bg-surface-muted">
+                      &ldquo;Sama-sama berjuang agar masyarakat Blora gemar membaca, berpengetahuan luas, dan merdeka berekspresi.&rdquo;
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </RevealOnScroll>
         </section>
 
         {/* ========================================================= */}
         {/* 6. TANYA JAWAB KETERLIBATAN (FAQ RELAWAN & DONASI)        */}
         {/* ========================================================= */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16">
-          <div className="border-b-2 border-foreground pb-4 mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-3">
-            <div>
-              <div className="font-mono text-xs uppercase tracking-widest text-muted flex items-center gap-2">
-                <HelpCircle className="w-3.5 h-3.5 text-foreground shrink-0" />
-                <span>PERTANYAAN CALON RELAWAN &amp; WARGA</span>
+          <RevealOnScroll variant="fade-up">
+            <div className="border-b-2 border-foreground pb-4 mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-3">
+              <div>
+                <div className="font-mono text-xs uppercase tracking-widest text-muted flex items-center gap-2">
+                  <HelpCircle className="w-3.5 h-3.5 text-foreground shrink-0" />
+                  <span>PERTANYAAN CALON RELAWAN &amp; WARGA</span>
+                </div>
+                <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground tracking-tight mt-1">
+                  Tanya Jawab Seputar Gerakan
+                </h2>
               </div>
-              <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground tracking-tight mt-1">
-                Tanya Jawab Seputar Gerakan
-              </h2>
+              <p className="font-mono text-xs text-muted">
+                Klik pertanyaan untuk melihat penjelasan lengkap.
+              </p>
             </div>
-            <p className="font-mono text-xs text-muted">
-              Klik pertanyaan untuk melihat penjelasan lengkap.
-            </p>
-          </div>
+          </RevealOnScroll>
 
           <div className="space-y-3 max-w-4xl">
             {GRASSROOTS_FAQS.map((faq, idx) => {
               const isOpen = openFaq === faq.id;
               return (
-                <div
-                  key={faq.id}
-                  className="border-2 border-foreground bg-surface overflow-hidden transition-all shadow-[2px_2px_0px_0px_currentColor]"
-                >
-                  <button
-                    type="button"
-                    onClick={() => toggleFaq(faq.id)}
-                    className="w-full p-4 sm:p-5 text-left font-mono flex items-center justify-between gap-4 hover:bg-surface-muted/40 transition-colors focus:outline-none min-h-[44px]"
-                    aria-expanded={isOpen}
-                  >
-                    <div className="flex items-start sm:items-center gap-3">
-                      <span className="text-[10px] text-muted uppercase font-bold shrink-0 pt-0.5 sm:pt-0">
-                        [Q{idx + 1}]
-                      </span>
-                      <span className="font-serif text-base sm:text-lg font-bold text-foreground">
-                        {faq.q}
-                      </span>
-                    </div>
-                    <ChevronDown
-                      className={cn(
-                        'w-4 h-4 text-foreground shrink-0 transition-transform duration-200',
-                        isOpen && 'rotate-180'
-                      )}
-                    />
-                  </button>
+                <RevealOnScroll key={faq.id} variant="fade-up" delayMs={idx * 50}>
+                  <div className="border-2 border-foreground bg-surface overflow-hidden transition-all shadow-[2px_2px_0px_0px_currentColor]">
+                    <button
+                      type="button"
+                      onClick={() => toggleFaq(faq.id)}
+                      className="w-full p-4 sm:p-5 text-left font-mono flex items-center justify-between gap-4 hover:bg-surface-muted/40 transition-colors focus:outline-none min-h-[44px]"
+                      aria-expanded={isOpen}
+                    >
+                      <div className="flex items-start sm:items-center gap-3">
+                        <span className="text-[10px] text-muted uppercase font-bold shrink-0 pt-0.5 sm:pt-0">
+                          [Q{idx + 1}]
+                        </span>
+                        <span className="font-serif text-base sm:text-lg font-bold text-foreground">
+                          {faq.q}
+                        </span>
+                      </div>
+                      <ChevronDown
+                        className={cn(
+                          'w-4 h-4 text-foreground shrink-0 transition-transform duration-200',
+                          isOpen && 'rotate-180'
+                        )}
+                      />
+                    </button>
 
-                  {isOpen && (
-                    <div className="px-4 sm:px-5 pb-5 pt-1 border-t border-border-hairline bg-surface-muted/20 font-sans text-xs sm:text-sm text-muted leading-relaxed">
-                      {faq.a}
-                    </div>
-                  )}
-                </div>
+                    {isOpen && (
+                      <div className="px-4 sm:px-5 pb-5 pt-1 border-t border-border-hairline bg-surface-muted/20 font-sans text-xs sm:text-sm text-muted leading-relaxed">
+                        {faq.a}
+                      </div>
+                    )}
+                  </div>
+                </RevealOnScroll>
               );
             })}
           </div>
@@ -782,103 +854,105 @@ export default function AboutPage() {
         {/* 7. KOTAK AJAKAN TERLIBAT: DARI KITA UNTUK KITA            */}
         {/* ========================================================= */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6">
-          <div className="border-4 border-foreground bg-surface p-6 sm:p-12 lg:p-14 space-y-8 shadow-[6px_6px_0px_0px_currentColor]">
-            <div className="max-w-2xl mx-auto text-center space-y-3">
-              <div className="inline-block border border-foreground px-3 py-1 font-mono text-[9px] sm:text-[10px] uppercase tracking-widest font-bold bg-surface-muted">
-                PINTU TERPAL TERBUKA LEBAR
-              </div>
-              <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-black uppercase tracking-tight text-foreground">
-                Bagaimana Kamu Bisa Terlibat?
-              </h2>
-              <p className="font-serif italic text-sm sm:text-base text-muted leading-relaxed">
-                Gerakan ini tidak punya pemilik tunggal. Kamu bisa mengambil peran sekecil apa pun untuk merawat nyala literasi di Blora.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 font-mono text-xs">
-              {/* Opsi 1 */}
-              <div className="p-5 border-2 border-foreground bg-surface-muted/30 space-y-3 flex flex-col justify-between">
-                <div className="space-y-2">
-                  <div className="text-[10px] font-bold text-foreground uppercase tracking-wider">
-                    [ PERAN 01 // BACA &amp; KUNJUNGI ]
-                  </div>
-                  <div className="font-serif font-bold text-base text-foreground">
-                    Mampir Duduk di Terpal
-                  </div>
-                  <p className="font-sans text-xs text-muted leading-relaxed">
-                    Cara paling membahagiakan mendukung kami adalah dengan datang, memilih buku, lalu membacanya santai di lapak CFD atau taman sore.
-                  </p>
+          <RevealOnScroll variant="stamp" delayMs={50}>
+            <div className="border-4 border-foreground bg-surface p-6 sm:p-12 lg:p-14 space-y-8 shadow-[6px_6px_0px_0px_currentColor]">
+              <div className="max-w-2xl mx-auto text-center space-y-3">
+                <div className="inline-block border border-foreground px-3 py-1 font-mono text-[9px] sm:text-[10px] uppercase tracking-widest font-bold bg-surface-muted">
+                  PINTU TERPAL TERBUKA LEBAR
                 </div>
+                <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-black uppercase tracking-tight text-foreground">
+                  Bagaimana Kamu Bisa Terlibat?
+                </h2>
+                <p className="font-serif italic text-sm sm:text-base text-muted leading-relaxed">
+                  Gerakan ini tidak punya pemilik tunggal. Kamu bisa mengambil peran sekecil apa pun untuk merawat nyala literasi di Blora.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 font-mono text-xs">
+                {/* Opsi 1 */}
+                <div className="p-5 border-2 border-foreground bg-surface-muted/30 space-y-3 flex flex-col justify-between">
+                  <div className="space-y-2">
+                    <div className="text-[10px] font-bold text-foreground uppercase tracking-wider">
+                      [ PERAN 01 // BACA &amp; KUNJUNGI ]
+                    </div>
+                    <div className="font-serif font-bold text-base text-foreground">
+                      Mampir Duduk di Terpal
+                    </div>
+                    <p className="font-sans text-xs text-muted leading-relaxed">
+                      Cara paling membahagiakan mendukung kami adalah dengan datang, memilih buku, lalu membacanya santai di lapak CFD atau taman sore.
+                    </p>
+                  </div>
+                  <Link
+                    href="/cara-meminjam"
+                    className="min-h-[44px] font-bold text-foreground underline inline-flex items-center gap-1 hover:opacity-80 pt-2"
+                  >
+                    <span>Baca Panduan Pinjam</span>
+                    <ArrowRight className="w-3 h-3" />
+                  </Link>
+                </div>
+
+                {/* Opsi 2 */}
+                <div className="p-5 border-2 border-foreground bg-background space-y-3 flex flex-col justify-between shadow-xs">
+                  <div className="space-y-2">
+                    <div className="text-[10px] font-bold text-foreground uppercase tracking-wider">
+                      [ PERAN 02 // DONASI BUKU ]
+                    </div>
+                    <div className="font-serif font-bold text-base text-foreground">
+                      Sumbang Bacaan Bermutu
+                    </div>
+                    <p className="font-sans text-xs text-muted leading-relaxed">
+                      Punya buku sastra, novel, sejarah, atau buku cerita anak yang sudah selesai dibaca? Titipkan ke lapak kami agar bisa berputar ke tangan ratusan pembaca lain.
+                    </p>
+                  </div>
+                  <a
+                    href="https://wa.me/6281234567890?text=Halo%20Relawan%20Perpusjal%20Blora%2C%20saya%20ingin%20menitipkan%20donasi%20buku..."
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="min-h-[44px] font-bold text-foreground underline inline-flex items-center gap-1 hover:opacity-80 pt-2"
+                  >
+                    <span>Hubungi Relawan Donasi</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                </div>
+
+                {/* Opsi 3 */}
+                <div className="p-5 border-2 border-foreground bg-surface-muted/30 space-y-3 flex flex-col justify-between">
+                  <div className="space-y-2">
+                    <div className="text-[10px] font-bold text-foreground uppercase tracking-wider">
+                      [ PERAN 03 // SUARA WARGA ]
+                    </div>
+                    <div className="font-serif font-bold text-base text-foreground">
+                      Tulis Esai &amp; Resensi
+                    </div>
+                    <p className="font-sans text-xs text-muted leading-relaxed">
+                      Punya opini tentang kondisi Blora, cerita masa kecil, puisi, atau ulasan buku yang baru kamu tuntas baca? Kirimkan tulisanmu ke website ini.
+                    </p>
+                  </div>
+                  <Link
+                    href="/dashboard/tulisan/tulis"
+                    className="min-h-[44px] font-bold text-foreground underline inline-flex items-center gap-1 hover:opacity-80 pt-2"
+                  >
+                    <span>Mulai Tulis Artikel</span>
+                    <ArrowRight className="w-3 h-3" />
+                  </Link>
+                </div>
+              </div>
+
+              <div className="pt-4 border-t-2 border-foreground flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-xs">
+                <span className="text-muted text-center sm:text-left">
+                  SEKRETARIAT &amp; BASECAMP BERSAMA: JL. PEMUDA NO. 12, BLORA
+                </span>
                 <Link
-                  href="/cara-meminjam"
-                  className="min-h-[44px] font-bold text-foreground underline inline-flex items-center gap-1 hover:opacity-80 pt-2"
+                  href="/buku"
+                  className="min-h-[44px] px-6 py-2.5 bg-foreground text-background uppercase tracking-wider font-bold inline-flex items-center justify-center gap-2 hover:opacity-90 transition-opacity w-full sm:w-auto text-center"
                 >
-                  <span>Baca Panduan Pinjam</span>
-                  <ArrowRight className="w-3 h-3" />
+                  <BookOpen className="w-4 h-4" />
+                  <span>Telusuri Katalog Buku Terpal</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
               </div>
-
-              {/* Opsi 2 */}
-              <div className="p-5 border-2 border-foreground bg-background space-y-3 flex flex-col justify-between shadow-xs">
-                <div className="space-y-2">
-                  <div className="text-[10px] font-bold text-foreground uppercase tracking-wider">
-                    [ PERAN 02 // DONASI BUKU ]
-                  </div>
-                  <div className="font-serif font-bold text-base text-foreground">
-                    Sumbang Bacaan Bermutu
-                  </div>
-                  <p className="font-sans text-xs text-muted leading-relaxed">
-                    Punya buku sastra, novel, sejarah, atau buku cerita anak yang sudah selesai dibaca? Titipkan ke lapak kami agar bisa berputar ke tangan ratusan pembaca lain.
-                  </p>
-                </div>
-                <a
-                  href="https://wa.me/6281234567890?text=Halo%20Relawan%20Perpusjal%20Blora%2C%20saya%20ingin%20menitipkan%20donasi%20buku..."
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="min-h-[44px] font-bold text-foreground underline inline-flex items-center gap-1 hover:opacity-80 pt-2"
-                >
-                  <span>Hubungi Relawan Donasi</span>
-                  <ExternalLink className="w-3 h-3" />
-                </a>
-              </div>
-
-              {/* Opsi 3 */}
-              <div className="p-5 border-2 border-foreground bg-surface-muted/30 space-y-3 flex flex-col justify-between">
-                <div className="space-y-2">
-                  <div className="text-[10px] font-bold text-foreground uppercase tracking-wider">
-                    [ PERAN 03 // SUARA WARGA ]
-                  </div>
-                  <div className="font-serif font-bold text-base text-foreground">
-                    Tulis Esai &amp; Resensi
-                  </div>
-                  <p className="font-sans text-xs text-muted leading-relaxed">
-                    Punya opini tentang kondisi Blora, cerita masa kecil, puisi, atau ulasan buku yang baru kamu tuntas baca? Kirimkan tulisanmu ke website ini.
-                  </p>
-                </div>
-                <Link
-                  href="/dashboard/tulisan/tulis"
-                  className="min-h-[44px] font-bold text-foreground underline inline-flex items-center gap-1 hover:opacity-80 pt-2"
-                >
-                  <span>Mulai Tulis Artikel</span>
-                  <ArrowRight className="w-3 h-3" />
-                </Link>
-              </div>
             </div>
-
-            <div className="pt-4 border-t-2 border-foreground flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-xs">
-              <span className="text-muted text-center sm:text-left">
-                SEKRETARIAT &amp; BASECAMP BERSAMA: JL. PEMUDA NO. 12, BLORA
-              </span>
-              <Link
-                href="/buku"
-                className="min-h-[44px] px-6 py-2.5 bg-foreground text-background uppercase tracking-wider font-bold inline-flex items-center justify-center gap-2 hover:opacity-90 transition-opacity w-full sm:w-auto text-center"
-              >
-                <BookOpen className="w-4 h-4" />
-                <span>Telusuri Katalog Buku Terpal</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
-            </div>
-          </div>
+          </RevealOnScroll>
         </section>
       </main>
 
