@@ -128,6 +128,72 @@ export default function AboutPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground selection:bg-foreground selection:text-background flex flex-col justify-between editorial-grain">
+      {/* ── JSON-LD Structured Data for Google Search SEO (AboutPage & NGO Organization) ── */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@graph': [
+              {
+                '@type': 'AboutPage',
+                '@id': 'https://perpusjalblora.id/tentang#webpage',
+                url: 'https://perpusjalblora.id/tentang',
+                name: 'Tentang Perpustakaan Jalanan Blora — Sejarah, Nilai & Ekosistem Gerakan',
+                description:
+                  'Historiografi, falsafah ngurip-urip, dan jejaring Perpustakaan Jalanan Blora. Ruang baca rakyat di trotoar, taman kota, hingga pelosok hutan jati Blora.',
+                inLanguage: 'id-ID',
+                isPartOf: {
+                  '@type': 'WebSite',
+                  '@id': 'https://perpusjalblora.id/#website',
+                  url: 'https://perpusjalblora.id',
+                  name: 'Perpustakaan Jalanan Blora',
+                },
+                about: {
+                  '@id': 'https://perpusjalblora.id/#organization',
+                },
+              },
+              {
+                '@type': 'NGO',
+                '@id': 'https://perpusjalblora.id/#organization',
+                name: 'Perpustakaan Jalanan Blora',
+                alternateName: ['Perpusjal Blora', 'Perpusjal Dope'],
+                url: 'https://perpusjalblora.id',
+                logo: 'https://perpusjalblora.id/logo.png',
+                foundingDate: '2017',
+                foundingLocation: {
+                  '@type': 'Place',
+                  name: 'Kabupaten Blora, Jawa Tengah, Indonesia',
+                  address: {
+                    '@type': 'PostalAddress',
+                    streetAddress: 'Jl. Pemuda No. 12',
+                    addressLocality: 'Blora',
+                    addressRegion: 'Jawa Tengah',
+                    postalCode: '58219',
+                    addressCountry: 'ID',
+                  },
+                },
+                description:
+                  'Inisiatif akar rumput literasi swadaya di Kabupaten Blora. Menggelar buku gratis di trotoar Alun-Alun, taman kota, dan desa tepian hutan dengan prinsip tanpa uang jaminan dan tanpa denda.',
+                slogan: 'Membaca dan Berbahagia',
+                knowsAbout: [
+                  'Literasi Kerakyatan',
+                  'Perpustakaan Jalanan',
+                  'Pramoedya Ananta Toer',
+                  'Soesilo Toer',
+                  'Perpustakaan PATABA',
+                  'Batik Ecoprint Daun Jati',
+                  'Sablon Cukil Kayu',
+                ],
+                sameAs: [
+                  'https://instagram.com/perpusjal.dope',
+                ],
+              },
+            ],
+          }),
+        }}
+      />
+
       <div className="no-print">
         <Header />
       </div>
