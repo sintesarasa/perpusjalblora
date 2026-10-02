@@ -245,15 +245,22 @@ export default function CaraMeminjamPage() {
     };
   }, []);
 
-  // Auto-scroll active tab into view on small screens
+  // Auto-scroll active tab horizontally on small screens only on user interaction (never hijack window scroll on mount)
+  const isFirstRender = React.useRef(true);
   React.useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
     if (scrollContainerRef.current) {
       const activeEl = scrollContainerRef.current.children[activeTab] as HTMLElement;
       if (activeEl) {
-        activeEl.scrollIntoView({
+        const container = scrollContainerRef.current;
+        const targetLeft =
+          activeEl.offsetLeft - (container.clientWidth - activeEl.clientWidth) / 2;
+        container.scrollTo({
+          left: Math.max(0, targetLeft),
           behavior: 'smooth',
-          block: 'nearest',
-          inline: 'center',
         });
       }
     }
@@ -322,43 +329,41 @@ export default function CaraMeminjamPage() {
         {/* ========================================================= */}
         {/* 1. EDITORIAL BROADSHEET MASTHEAD                          */}
         {/* ========================================================= */}
-        <section className="border-b-2 border-foreground max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-12 pb-8 sm:pb-12">
+        <section className="border-b-2 border-foreground max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-10 pb-8 sm:pb-12">
           {/* Top Vintage Gazette Bar */}
-          <RevealOnScroll variant="fade-up" delayMs={50}>
-            <div className="flex flex-wrap items-center justify-between border-b border-border-hairline pb-3 mb-6 sm:mb-8 text-[10px] sm:text-[11px] font-mono uppercase tracking-widest text-muted gap-2">
-              <div className="flex items-center gap-2 sm:gap-3">
-                <BrandStamp edition="EDISI PANDUAN" year="2026" />
-                <span className="hidden sm:inline">[ LEMBAR PETUNJUK WARGA // DOKUMEN PUBLIK ]</span>
-              </div>
-              
-              {/* Live Indicator Pill */}
-              <div className="flex items-center gap-2 px-2.5 py-0.5 border border-foreground/40 bg-surface">
-                <span
-                  className={cn(
-                    'w-2 h-2 rounded-full',
-                    currentLapakStatus.active
-                      ? 'bg-emerald-500 animate-ping'
-                      : 'bg-foreground'
-                  )}
-                />
-                <span className="text-[10px] font-bold text-foreground truncate max-w-[240px] sm:max-w-none">
-                  {currentLapakStatus.text}
-                </span>
-              </div>
-
-              <div className="hidden lg:flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={handlePrint}
-                  className="hover:text-foreground inline-flex items-center gap-1.5 transition-colors"
-                  title="Cetak Selebaran Panduan"
-                >
-                  <Printer className="w-3.5 h-3.5" />
-                  <span>CETAK SELEBARAN</span>
-                </button>
-              </div>
+          <div className="flex flex-wrap items-center justify-between border-b border-border-hairline pb-3 mb-6 sm:mb-8 text-[10px] sm:text-[11px] font-mono uppercase tracking-widest text-muted gap-2">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <BrandStamp edition="EDISI PANDUAN" year="2026" />
+              <span className="hidden sm:inline">[ LEMBAR PETUNJUK WARGA // DOKUMEN PUBLIK ]</span>
             </div>
-          </RevealOnScroll>
+            
+            {/* Live Indicator Pill */}
+            <div className="flex items-center gap-2 px-2.5 py-0.5 border border-foreground/40 bg-surface">
+              <span
+                className={cn(
+                  'w-2 h-2 rounded-full',
+                  currentLapakStatus.active
+                    ? 'bg-emerald-500 animate-ping'
+                    : 'bg-foreground'
+                )}
+              />
+              <span className="text-[10px] font-bold text-foreground truncate max-w-[240px] sm:max-w-none">
+                {currentLapakStatus.text}
+              </span>
+            </div>
+
+            <div className="hidden lg:flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handlePrint}
+                className="hover:text-foreground inline-flex items-center gap-1.5 transition-colors"
+                title="Cetak Selebaran Panduan"
+              >
+                <Printer className="w-3.5 h-3.5" />
+                <span>CETAK SELEBARAN</span>
+              </button>
+            </div>
+          </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 lg:gap-12 items-end">
             <div className="lg:col-span-8">

@@ -258,36 +258,34 @@ export default function AboutPage() {
         {/* ========================================================= */}
         {/* 1. CINEMATIC BROADSHEET OPENING SCENE                     */}
         {/* ========================================================= */}
-        <section className="border-b-2 border-foreground max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-14 pb-10 sm:pb-16 relative overflow-hidden">
+        <section className="border-b-2 border-foreground max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-10 pb-10 sm:pb-16 relative overflow-hidden">
           {/* Subtle giant background typography watermark */}
           <div className="absolute right-0 top-1/2 -translate-y-1/2 opacity-[0.03] select-none pointer-events-none font-serif text-[180px] sm:text-[280px] font-black leading-none text-foreground tracking-tighter">
             BLORA
           </div>
 
           {/* Top Vintage Gazette Bar */}
-          <RevealOnScroll variant="fade-up" delayMs={50}>
-            <div className="flex flex-wrap items-center justify-between border-b border-border-hairline pb-3 mb-8 sm:mb-12 text-[10px] sm:text-[11px] font-mono uppercase tracking-widest text-muted gap-2 relative z-10">
-              <div className="flex items-center gap-2 sm:gap-3">
-                <BrandStamp edition="KRONIK GERAKAN" year="2026" />
-                <span className="hidden sm:inline">[ MANIFESTO &amp; DOKUMEN HISTORIS // SWADAYA RAKYAT ]</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-foreground animate-pulse" />
-                <span>BERJALAN SEJAK 2017</span>
-              </div>
-              <div className="hidden lg:flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={handlePrint}
-                  className="hover:text-foreground inline-flex items-center gap-1.5 transition-colors"
-                  title="Cetak Arsip Panduan Zine"
-                >
-                  <Printer className="w-3.5 h-3.5" />
-                  <span>CETAK ARSIP</span>
-                </button>
-              </div>
+          <div className="flex flex-wrap items-center justify-between border-b border-border-hairline pb-3 mb-8 sm:mb-12 text-[10px] sm:text-[11px] font-mono uppercase tracking-widest text-muted gap-2 relative z-10">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <BrandStamp edition="KRONIK GERAKAN" year="2026" />
+              <span className="hidden sm:inline">[ MANIFESTO &amp; DOKUMEN HISTORIS // SWADAYA RAKYAT ]</span>
             </div>
-          </RevealOnScroll>
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-foreground animate-pulse" />
+              <span>BERJALAN SEJAK 2017</span>
+            </div>
+            <div className="hidden lg:flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handlePrint}
+                className="hover:text-foreground inline-flex items-center gap-1.5 transition-colors"
+                title="Cetak Arsip Panduan Zine"
+              >
+                <Printer className="w-3.5 h-3.5" />
+                <span>CETAK ARSIP</span>
+              </button>
+            </div>
+          </div>
 
           <RevealOnScroll variant="fade-up" delayMs={150}>
             <div className="max-w-4xl space-y-4 sm:space-y-6 relative z-10">
