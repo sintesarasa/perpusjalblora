@@ -18,15 +18,15 @@ import {
   Clock,
   Compass,
   FileText,
-  CornerDownRight,
   Printer,
   Copy,
   Check,
-  QrCode,
-  Tag,
-  ChevronRight,
   ChevronDown,
   AlertCircle,
+  ExternalLink,
+  MessageCircle,
+  CalendarPlus,
+  Radio,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -125,11 +125,124 @@ const STEPS_DATA: StepItem[] = [
   },
 ];
 
+interface FAQItem {
+  id: string;
+  q: string;
+  a: string;
+}
+
+const FAQ_LIST: FAQItem[] = [
+  {
+    id: 'faq-1',
+    q: 'Apakah saya harus punya KTP Blora atau kartu anggota resmi?',
+    a: 'Sama sekali tidak! Siapa pun yang sedang tinggal, belajar, atau singgah di Blora boleh meminjam. Kami tidak menahan KTP fisik atau meminta fotokopi kartu identitas. Cukup daftarkan akun web atau berikan nomor WA aktif saat meminjam.',
+  },
+  {
+    id: 'faq-2',
+    q: 'Bagaimana kalau buku yang ingin saya baca sedang dipinjam orang lain?',
+    a: 'Di halaman buku, klik tombol "Gabung Antrean / Waitlist". Sistem web kami akan mencatat antreanmu secara transparan. Ketika buku tersebut dikembalikan ke lapak, kamu akan menjadi orang pertama yang dihubungi oleh relawan.',
+  },
+  {
+    id: 'faq-3',
+    q: 'Apakah ada sanksi denda finansial jika terlambat mengembalikan?',
+    a: 'Nol rupiah. Kami menolak konsep denda finansial dalam literasi warga. Yang kami minta hanyalah tanggung jawab moral dan komunikasi terbuka. Jika masa pinjam 7 hari hampir habis dan kamu belum selesai, minta perpanjangan waktu (+7 hari) via web atau chat relawan kami.',
+  },
+  {
+    id: 'faq-4',
+    q: 'Bolehkah saya langsung datang ke terpal tanpa memesan lewat web?',
+    a: 'Sangat boleh! Website ini adalah alat bantu katalog bagi yang ingin memastikan stok dari rumah. Jika kamu sedang lewat di Car Free Day Alun-Alun atau Taman Tirtonadi, langsung saja pilih buku yang digelar di atas terpal. Relawan kami akan dengan senang hati mencatatkannya langsung di tempat.',
+  },
+  {
+    id: 'faq-5',
+    q: 'Berapa jumlah maksimal buku yang boleh dipinjam sekaligus?',
+    a: 'Maksimal 2 (dua) buku per orang dalam satu waktu. Pembatasan ini bertujuan agar koleksi buku dapat berputar adil dan merata kepada seluruh warga pembaca di Blora.',
+  },
+];
+
 export default function CaraMeminjamPage() {
   const [activeTab, setActiveTab] = React.useState<number>(0);
   const [ticketSampleCode, setTicketSampleCode] = React.useState<string>('PJL-849201');
   const [copied, setCopied] = React.useState<boolean>(false);
+  const [openFaq, setOpenFaq] = React.useState<string | null>('faq-1');
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
+
+  // ── Loan Date Calculator State ──
+  const [pickupDate, setPickupDate] = React.useState<string>(() => {
+    const today = new Date();
+    return today.toISOString().split('T')[0];
+  });
+
+  // Calculate timelines
+  const timelineDates = React.useMemo(() => {
+    const d = new Date(pickupDate || Date.now());
+    if (isNaN(d.getTime())) return null;
+
+    const reminderDate = new Date(d);
+    reminderDate.setDate(d.getDate() + 5);
+
+    const dueDate = new Date(d);
+    dueDate.setDate(d.getDate() + 7);
+
+    const extendedDate = new Date(d);
+    extendedDate.setDate(d.getDate() + 14);
+
+    const formatDate = (date: Date) =>
+      date.toLocaleDateString('id-ID', {
+        weekday: 'short',
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      });
+
+    return {
+      pickupFormatted: formatDate(d),
+      reminderFormatted: formatDate(reminderDate),
+      dueFormatted: formatDate(dueDate),
+      extendedFormatted: formatDate(extendedDate),
+      dueRaw: dueDate,
+    };
+  }, [pickupDate]);
+
+  // Google Calendar URL Generator
+  const googleCalendarUrl = React.useMemo(() => {
+    if (!timelineDates?.dueRaw) return '#';
+    const due = timelineDates.dueRaw;
+    const startStr = due.toISOString().replace(/-|:|\.\d\d\d/g, '').split('T')[0] + 'T090000Z';
+    const endStr = due.toISOString().replace(/-|:|\.\d\d\d/g, '').split('T')[0] + 'T100000Z';
+    const title = encodeURIComponent('Kembalikan Buku / Perpanjang Pinjaman Perpusjal Blora');
+    const details = encodeURIComponent(
+      'Hari ini adalah jatuh tempo pengembalian buku di Perpustakaan Jalanan Blora (7 hari). Jika belum selesai, silakan perpanjang via web atau WA relawan.'
+    );
+    const location = encodeURIComponent('Alun-Alun Blora / Taman Tirtonadi / Basecamp Jl. Pemuda');
+    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startStr}/${endStr}&details=${details}&location=${location}`;
+  }, [timelineDates]);
+
+  // Real-time Day of Week Checker for Live Lapak Status
+  const currentLapakStatus = React.useMemo(() => {
+    const now = new Date();
+    const day = now.getDay(); // 0 = Sunday, 6 = Saturday
+    const hour = now.getHours();
+
+    if (day === 0 && hour >= 6 && hour < 10) {
+      return {
+        active: true,
+        text: 'LAPAK SEDANG DIGELAR SEKARANG DI ALUN-ALUN BLORA (06.00 – 09.30 WIB)',
+        location: 'ALUN_ALUN',
+      };
+    }
+    if (day === 6 && hour >= 15 && hour < 18) {
+      return {
+        active: true,
+        text: 'LAPAK SENJA SEDANG BUKA DI TAMAN TIRTONADI (15.30 – 17.45 WIB)',
+        location: 'TAMAN_TIRTONADI',
+      };
+    }
+    return {
+      active: false,
+      text: 'Lapak terdekat berikutnya: Minggu pagi di Car Free Day Alun-Alun Blora',
+      location: 'NEXT_SUNDAY',
+    };
+  }, []);
 
   // Auto-scroll active tab into view on small screens
   React.useEffect(() => {
@@ -153,9 +266,58 @@ export default function CaraMeminjamPage() {
     }
   };
 
+  const handlePrint = () => {
+    if (typeof window !== 'undefined') {
+      window.print();
+    }
+  };
+
+  const toggleFaq = (id: string) => {
+    setOpenFaq((prev) => (prev === id ? null : id));
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground selection:bg-foreground selection:text-background flex flex-col justify-between editorial-grain">
-      <Header />
+      {/* ── JSON-LD Structured Data for Google Search SEO (HowTo & FAQPage) ── */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'HowTo',
+            name: 'Cara Meminjam Buku di Perpustakaan Jalanan Blora',
+            description:
+              'Panduan lengkap meminjam buku gratis tanpa jaminan uang dan tanpa denda di Perpustakaan Jalanan Blora.',
+            step: STEPS_DATA.map((s, idx) => ({
+              '@type': 'HowToStep',
+              position: idx + 1,
+              name: s.title,
+              text: s.instructions.join(' '),
+            })),
+          }),
+        }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'FAQPage',
+            mainEntity: FAQ_LIST.map((f) => ({
+              '@type': 'Question',
+              name: f.q,
+              acceptedAnswer: {
+                '@type': 'Answer',
+                text: f.a,
+              },
+            })),
+          }),
+        }}
+      />
+
+      <div className="no-print">
+        <Header />
+      </div>
 
       <main className="flex-1 pb-16 sm:pb-24">
         {/* ========================================================= */}
@@ -168,11 +330,33 @@ export default function CaraMeminjamPage() {
               <BrandStamp edition="EDISI PANDUAN" year="2026" />
               <span className="hidden sm:inline">[ LEMBAR PETUNJUK WARGA // DOKUMEN PUBLIK ]</span>
             </div>
-            <div className="flex items-center gap-1.5 sm:gap-2">
-              <span className="w-2 h-2 rounded-full bg-foreground animate-pulse" />
-              <span>SISTEM SIRKULASI TERBUKA</span>
+            
+            {/* Live Indicator Pill */}
+            <div className="flex items-center gap-2 px-2.5 py-0.5 border border-foreground/40 bg-surface">
+              <span
+                className={cn(
+                  'w-2 h-2 rounded-full',
+                  currentLapakStatus.active
+                    ? 'bg-emerald-500 animate-ping'
+                    : 'bg-foreground'
+                )}
+              />
+              <span className="text-[10px] font-bold text-foreground truncate max-w-[240px] sm:max-w-none">
+                {currentLapakStatus.text}
+              </span>
             </div>
-            <div className="hidden lg:block">BLORA — JAWA TENGAH</div>
+
+            <div className="hidden lg:flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handlePrint}
+                className="hover:text-foreground inline-flex items-center gap-1.5 transition-colors"
+                title="Cetak Selebaran Panduan"
+              >
+                <Printer className="w-3.5 h-3.5" />
+                <span>CETAK SELEBARAN</span>
+              </button>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 lg:gap-12 items-end">
@@ -511,9 +695,140 @@ export default function CaraMeminjamPage() {
         </section>
 
         {/* ========================================================= */}
-        {/* 3. SIMULATOR TIKET PINJAMAN DIGITAL (INTERAKTIF & KREATIF) */}
+        {/* 3. SIMULATOR TENGGAT PINJAM & KALENDER (FITUR BARU)       */}
         {/* ========================================================= */}
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+          <div className="border-2 border-foreground bg-surface p-5 sm:p-8 lg:p-10 shadow-[4px_4px_0px_0px_currentColor]">
+            <div className="border-b-2 border-foreground pb-4 mb-6 flex flex-col md:flex-row md:items-end justify-between gap-3">
+              <div>
+                <div className="font-mono text-xs uppercase tracking-widest text-muted flex items-center gap-2">
+                  <Calendar className="w-3.5 h-3.5 text-foreground shrink-0" />
+                  <span>KALKULATOR SIKLUS PINJAM</span>
+                </div>
+                <h2 className="font-serif text-2xl sm:text-3xl font-black text-foreground tracking-tight mt-1">
+                  Hitung Jadwal &amp; Tenggat Baca Bukumu
+                </h2>
+              </div>
+              <p className="font-mono text-xs text-muted max-w-sm">
+                Pilih tanggal rencanamu mengambil buku untuk melihat estimasi tanggal jatuh tempo dan notifikasi santai kami.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              {/* Left Form: Select Date */}
+              <div className="lg:col-span-4 space-y-4 font-mono">
+                <div className="p-4 bg-surface-muted border border-border-hairline space-y-3">
+                  <label htmlFor="pickup-date-input" className="block text-xs uppercase tracking-wider font-bold text-foreground">
+                    TANGGAL RENCANA AMBIL:
+                  </label>
+                  <input
+                    id="pickup-date-input"
+                    type="date"
+                    value={pickupDate}
+                    onChange={(e) => setPickupDate(e.target.value)}
+                    className="w-full px-3 py-2 border-2 border-foreground bg-background text-foreground font-mono text-xs focus:outline-none"
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setPickupDate(new Date().toISOString().split('T')[0])}
+                      className="px-2.5 py-1 text-[10px] uppercase font-bold border border-foreground bg-background hover:bg-surface-muted"
+                    >
+                      Hari Ini
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const now = new Date();
+                        const nextSunday = new Date(now);
+                        nextSunday.setDate(now.getDate() + ((7 - now.getDay()) % 7 || 7));
+                        setPickupDate(nextSunday.toISOString().split('T')[0]);
+                      }}
+                      className="px-2.5 py-1 text-[10px] uppercase font-bold border border-foreground bg-background hover:bg-surface-muted"
+                    >
+                      CFD Minggu Besok
+                    </button>
+                  </div>
+                </div>
+
+                {timelineDates && (
+                  <a
+                    href={googleCalendarUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="min-h-[44px] w-full px-4 py-2.5 bg-foreground text-background text-xs uppercase font-bold tracking-wider inline-flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
+                  >
+                    <CalendarPlus className="w-4 h-4" />
+                    <span>Pasang Pengingat di Google Calendar</span>
+                    <ExternalLink className="w-3 h-3 ml-auto opacity-70" />
+                  </a>
+                )}
+              </div>
+
+              {/* Right Output: 4-Point Cycle Timeline */}
+              {timelineDates && (
+                <div className="lg:col-span-8 grid grid-cols-1 sm:grid-cols-4 gap-3 font-mono text-xs">
+                  {/* Point 1 */}
+                  <div className="p-4 border border-border-hairline bg-surface-muted/40 space-y-1 relative">
+                    <span className="text-[9px] uppercase tracking-wider text-muted font-bold block">
+                      HARI 0 // AMBIL
+                    </span>
+                    <div className="font-bold text-foreground text-sm">
+                      {timelineDates.pickupFormatted}
+                    </div>
+                    <p className="text-[10px] text-muted font-sans pt-1">
+                      Serah terima buku di lapak pilihanmu.
+                    </p>
+                  </div>
+
+                  {/* Point 2 */}
+                  <div className="p-4 border border-border-hairline bg-surface-muted/40 space-y-1">
+                    <span className="text-[9px] uppercase tracking-wider text-muted font-bold block">
+                      HARI KE-5 // SAPAAN
+                    </span>
+                    <div className="font-bold text-foreground text-sm">
+                      {timelineDates.reminderFormatted}
+                    </div>
+                    <p className="text-[10px] text-muted font-sans pt-1">
+                      Relawan menyapa santai via WhatsApp: sudah tuntas atau butuh tambah waktu?
+                    </p>
+                  </div>
+
+                  {/* Point 3 */}
+                  <div className="p-4 border-2 border-foreground bg-background space-y-1 shadow-xs">
+                    <span className="text-[9px] uppercase tracking-wider text-foreground font-black block">
+                      HARI KE-7 // TENGGAT
+                    </span>
+                    <div className="font-bold text-foreground text-sm underline">
+                      {timelineDates.dueFormatted}
+                    </div>
+                    <p className="text-[10px] text-foreground/80 font-sans pt-1">
+                      Batas pengembalian normal. Kembalikan ke lapak terdekat.
+                    </p>
+                  </div>
+
+                  {/* Point 4 */}
+                  <div className="p-4 border border-border-hairline bg-surface-muted/40 space-y-1">
+                    <span className="text-[9px] uppercase tracking-wider text-muted font-bold block">
+                      HARI KE-14 // MAKSIMAL
+                    </span>
+                    <div className="font-bold text-foreground text-sm">
+                      {timelineDates.extendedFormatted}
+                    </div>
+                    <p className="text-[10px] text-muted font-sans pt-1">
+                      Batas akhir jika kamu memanfaatkan perpanjangan +7 hari.
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+
+        {/* ========================================================= */}
+        {/* 4. SIMULATOR TIKET PINJAMAN DIGITAL (INTERAKTIF & KREATIF) */}
+        {/* ========================================================= */}
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
           <div className="border-2 border-foreground bg-surface-muted/40 p-4 sm:p-8 lg:p-10 relative">
             <div className="max-w-3xl mx-auto space-y-6">
               <div className="text-center space-y-2">
@@ -605,7 +920,7 @@ export default function CaraMeminjamPage() {
         </section>
 
         {/* ========================================================= */}
-        {/* 4. TIGA TITIK LAPAK PERTEMUAN RESMI DI TANAH BLORA       */}
+        {/* 5. TIGA TITIK LAPAK PERTEMUAN RESMI DI TANAH BLORA       */}
         {/* ========================================================= */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16">
           <div className="border-b-2 border-foreground pb-4 mb-6 sm:mb-8 flex flex-col md:flex-row md:items-end justify-between gap-3 sm:gap-4">
@@ -650,9 +965,17 @@ export default function CaraMeminjamPage() {
                   Titik lapak paling ramai. Sambil jalan pagi, senam, atau bersepeda, warga bisa mampir menggelar buku bersama keluarga dan anak-anak.
                 </p>
               </div>
-              <div className="pt-4 mt-4 border-t border-border-hairline font-mono text-[10px] text-muted uppercase flex justify-between">
-                <span>SERAH TERIMA: CEPAT</span>
-                <span>SUASANA: RAMAI</span>
+              <div className="pt-4 mt-4 border-t border-border-hairline font-mono text-[10px] flex items-center justify-between">
+                <span className="text-muted uppercase">SUASANA: RAMAI</span>
+                <a
+                  href="https://maps.google.com/?q=Alun-Alun+Blora"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-bold text-foreground hover:underline inline-flex items-center gap-1"
+                >
+                  <span>Google Maps</span>
+                  <ExternalLink className="w-3 h-3" />
+                </a>
               </div>
             </div>
 
@@ -679,9 +1002,17 @@ export default function CaraMeminjamPage() {
                   Cocok untuk yang menyukai ketenangan. Lapak terpal digelar saat hawa mulai sejuk, pas untuk membaca sambil menunggu waktu magrib tiba.
                 </p>
               </div>
-              <div className="pt-4 mt-4 border-t border-border-hairline font-mono text-[10px] text-muted uppercase flex justify-between">
-                <span>SERAH TERIMA: SANTAI</span>
-                <span>SUASANA: ADEM</span>
+              <div className="pt-4 mt-4 border-t border-border-hairline font-mono text-[10px] flex items-center justify-between">
+                <span className="text-muted uppercase">SUASANA: ADEM</span>
+                <a
+                  href="https://maps.google.com/?q=Taman+Tirtonadi+Blora"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-bold text-foreground hover:underline inline-flex items-center gap-1"
+                >
+                  <span>Google Maps</span>
+                  <ExternalLink className="w-3 h-3" />
+                </a>
               </div>
             </div>
 
@@ -708,16 +1039,24 @@ export default function CaraMeminjamPage() {
                   Pusat gudang arsip dan sirkulasi mingguan. Pilihan fleksibel bagi pekerja atau pelajar yang tidak sempat mampir saat akhir pekan.
                 </p>
               </div>
-              <div className="pt-4 mt-4 border-t border-border-hairline font-mono text-[10px] text-muted uppercase flex justify-between">
-                <span>SERAH TERIMA: FLEKSIBEL</span>
-                <span>DROP BOX: ADA</span>
+              <div className="pt-4 mt-4 border-t border-border-hairline font-mono text-[10px] flex items-center justify-between">
+                <span className="text-muted uppercase">DROP BOX: ADA</span>
+                <a
+                  href="https://maps.google.com/?q=Jl.+Pemuda+Blora"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-bold text-foreground hover:underline inline-flex items-center gap-1"
+                >
+                  <span>Google Maps</span>
+                  <ExternalLink className="w-3 h-3" />
+                </a>
               </div>
             </div>
           </div>
         </section>
 
         {/* ========================================================= */}
-        {/* 5. GENTLEMEN'S AGREEMENT: KONTRAK KEHORMATAN KITA        */}
+        {/* 6. GENTLEMEN'S AGREEMENT: KONTRAK KEHORMATAN KITA        */}
         {/* ========================================================= */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
           <div className="border-2 border-foreground bg-surface p-5 sm:p-8 lg:p-10 font-mono text-xs shadow-[4px_4px_0px_0px_currentColor]">
@@ -788,10 +1127,10 @@ export default function CaraMeminjamPage() {
         </section>
 
         {/* ========================================================= */}
-        {/* 6. TANYA JAWAB PRAKTIS (FAQ DARI SUDUT PANDANG WARGA)      */}
+        {/* 7. TANYA JAWAB PRAKTIS & AKORDEON (FAQ INTERAKTIF)        */}
         {/* ========================================================= */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-14">
-          <div className="border-b-2 border-foreground pb-4 mb-6 sm:mb-8 flex items-center justify-between">
+          <div className="border-b-2 border-foreground pb-4 mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-3">
             <div>
               <div className="font-mono text-xs uppercase tracking-widest text-muted flex items-center gap-2">
                 <HelpCircle className="w-3.5 h-3.5 text-foreground shrink-0" />
@@ -801,57 +1140,80 @@ export default function CaraMeminjamPage() {
                 Kerap Ditanyakan oleh Pembaca Pemula
               </h2>
             </div>
+            <p className="font-mono text-xs text-muted">
+              Klik pertanyaan untuk membuka rincian jawaban.
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-            <div className="p-5 sm:p-6 border-2 border-foreground bg-surface space-y-3 font-mono shadow-[3px_3px_0px_0px_currentColor] sm:shadow-none">
-              <div className="text-[10px] uppercase tracking-wider text-muted font-bold">PERTANYAAN 01</div>
-              <h4 className="font-serif text-base sm:text-lg font-bold text-foreground">
-                Apakah saya harus punya KTP Blora atau kartu anggota resmi?
-              </h4>
-              <p className="font-sans text-xs text-muted leading-relaxed">
-                <strong>Sama sekali tidak!</strong> Siapa pun yang sedang tinggal, belajar, atau singgah di Blora boleh meminjam.
-                Kami tidak menahan KTP fisik atau meminta fotokopi kartu identitas. Cukup daftarkan akun web atau berikan nomor WA aktif.
+          <div className="space-y-3 max-w-4xl">
+            {FAQ_LIST.map((faq, idx) => {
+              const isOpen = openFaq === faq.id;
+              return (
+                <div
+                  key={faq.id}
+                  className="border-2 border-foreground bg-surface overflow-hidden transition-all shadow-[2px_2px_0px_0px_currentColor]"
+                >
+                  <button
+                    type="button"
+                    onClick={() => toggleFaq(faq.id)}
+                    className="w-full p-4 sm:p-5 text-left font-mono flex items-center justify-between gap-4 hover:bg-surface-muted/40 transition-colors focus:outline-none"
+                    aria-expanded={isOpen}
+                  >
+                    <div className="flex items-start sm:items-center gap-3">
+                      <span className="text-[10px] text-muted uppercase font-bold shrink-0 pt-0.5 sm:pt-0">
+                        [Q{idx + 1}]
+                      </span>
+                      <span className="font-serif text-base sm:text-lg font-bold text-foreground">
+                        {faq.q}
+                      </span>
+                    </div>
+                    <ChevronDown
+                      className={cn(
+                        'w-4 h-4 text-foreground shrink-0 transition-transform duration-200',
+                        isOpen && 'rotate-180'
+                      )}
+                    />
+                  </button>
+
+                  {isOpen && (
+                    <div className="px-4 sm:px-5 pb-5 pt-1 border-t border-border-hairline bg-surface-muted/20 font-sans text-xs sm:text-sm text-muted leading-relaxed">
+                      {faq.a}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Quick Volunteer Help Strip */}
+          <div className="mt-8 p-5 sm:p-6 border-2 border-foreground bg-surface-muted/60 max-w-4xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <div className="font-mono text-[10px] uppercase font-bold text-muted flex items-center gap-1.5">
+                <MessageCircle className="w-3.5 h-3.5 text-foreground" />
+                <span>BANTUAN KOORDINATOR LAPAK</span>
+              </div>
+              <div className="font-serif text-lg font-bold text-foreground">
+                Punya pertanyaan khusus atau ingin menitipkan buku?
+              </div>
+              <p className="font-sans text-xs text-muted">
+                Relawan kami siap menjawab pesanmu dengan senang hati tanpa formalitas rumit.
               </p>
             </div>
 
-            <div className="p-5 sm:p-6 border-2 border-foreground bg-surface space-y-3 font-mono shadow-[3px_3px_0px_0px_currentColor] sm:shadow-none">
-              <div className="text-[10px] uppercase tracking-wider text-muted font-bold">PERTANYAAN 02</div>
-              <h4 className="font-serif text-base sm:text-lg font-bold text-foreground">
-                Bagaimana kalau buku yang ingin saya baca sedang dipinjam orang?
-              </h4>
-              <p className="font-sans text-xs text-muted leading-relaxed">
-                Di halaman buku, klik tombol <strong>&ldquo;Gabung Antrean / Waitlist&rdquo;</strong>. Sistem web kami akan mencatat antreanmu
-                secara transparan. Ketika buku tersebut dikembalikan ke lapak, kamu akan menjadi orang pertama yang dihubungi oleh relawan.
-              </p>
-            </div>
-
-            <div className="p-5 sm:p-6 border-2 border-foreground bg-surface space-y-3 font-mono shadow-[3px_3px_0px_0px_currentColor] sm:shadow-none">
-              <div className="text-[10px] uppercase tracking-wider text-muted font-bold">PERTANYAAN 03</div>
-              <h4 className="font-serif text-base sm:text-lg font-bold text-foreground">
-                Apakah ada sanksi denda jika terlambat mengembalikan?
-              </h4>
-              <p className="font-sans text-xs text-muted leading-relaxed">
-                <strong>Nol rupiah.</strong> Kami menolak konsep denda finansial dalam literasi. Yang kami minta hanyalah tanggung jawab moral.
-                Jika masa pinjam 7 hari hampir habis dan kamu belum selesai, minta perpanjangan via web atau chat relawan kami.
-              </p>
-            </div>
-
-            <div className="p-5 sm:p-6 border-2 border-foreground bg-surface space-y-3 font-mono shadow-[3px_3px_0px_0px_currentColor] sm:shadow-none">
-              <div className="text-[10px] uppercase tracking-wider text-muted font-bold">PERTANYAAN 04</div>
-              <h4 className="font-serif text-base sm:text-lg font-bold text-foreground">
-                Bolehkah saya langsung datang ke terpal tanpa memesan lewat web?
-              </h4>
-              <p className="font-sans text-xs text-muted leading-relaxed">
-                <strong>Sangat boleh!</strong> Website ini adalah alat bantu katalog. Jika kamu sedang lewat di Car Free Day Alun-Alun
-                atau Taman Tirtonadi, langsung saja pilih buku yang digelar di atas terpal. Relawan kami akan dengan senang hati mencatatkannya langsung di tempat.
-              </p>
-            </div>
+            <a
+              href="https://wa.me/6281234567890?text=Halo%20Relawan%20Perpusjal%20Blora%2C%20saya%20membaca%20panduan%20cara%20meminjam%20dan%20ingin%20bertanya..."
+              target="_blank"
+              rel="noopener noreferrer"
+              className="min-h-[44px] px-5 py-2.5 bg-foreground text-background font-mono text-xs uppercase tracking-wider font-bold inline-flex items-center gap-2 hover:opacity-90 transition-opacity shrink-0 w-full sm:w-auto justify-center"
+            >
+              <MessageCircle className="w-4 h-4" />
+              <span>Sapa Relawan via WhatsApp</span>
+            </a>
           </div>
         </section>
 
         {/* ========================================================= */}
-        {/* 7. BROADSHEET CALL TO ACTION                              */}
+        {/* 8. BROADSHEET CALL TO ACTION                              */}
         {/* ========================================================= */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6">
           <div className="border-4 border-foreground bg-foreground text-background p-6 sm:p-12 lg:p-14 text-center space-y-5 sm:space-y-6 relative overflow-hidden">
@@ -895,7 +1257,9 @@ export default function CaraMeminjamPage() {
         </section>
       </main>
 
-      <Footer />
+      <div className="no-print">
+        <Footer />
+      </div>
     </div>
   );
 }
