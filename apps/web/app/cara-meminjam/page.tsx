@@ -278,7 +278,7 @@ export default function CaraMeminjamPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground selection:bg-foreground selection:text-background flex flex-col justify-between editorial-grain overflow-x-clip">
+    <div className="min-h-screen bg-background text-foreground selection:bg-foreground selection:text-background flex flex-col justify-between editorial-grain">
       {/* ── JSON-LD Structured Data for Google Search SEO (HowTo & FAQPage) ── */}
       <script
         type="application/ld+json"
@@ -316,9 +316,7 @@ export default function CaraMeminjamPage() {
         }}
       />
 
-      <div className="no-print">
-        <Header />
-      </div>
+      <Header />
 
       <main className="flex-1 pb-16 sm:pb-24">
         {/* ========================================================= */}
@@ -1294,7 +1292,7 @@ export default function CaraMeminjamPage() {
         </section>
       </main>
 
-      <div className="no-print">
+      <div className="print:hidden">
         <Footer />
       </div>
     </div>

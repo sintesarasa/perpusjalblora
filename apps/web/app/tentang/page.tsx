@@ -187,7 +187,7 @@ export default function AboutPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground selection:bg-foreground selection:text-background flex flex-col justify-between editorial-grain overflow-x-clip">
+    <div className="min-h-screen bg-background text-foreground selection:bg-foreground selection:text-background flex flex-col justify-between editorial-grain">
       {/* ── JSON-LD Structured Data for Google Search SEO (AboutPage & NGO Organization) ── */}
       <script
         type="application/ld+json"
@@ -252,9 +252,7 @@ export default function AboutPage() {
         }}
       />
 
-      <div className="no-print">
-        <Header />
-      </div>
+      <Header />
 
       <main className="flex-1 pb-16 sm:pb-24">
         {/* ========================================================= */}
@@ -407,7 +405,7 @@ export default function AboutPage() {
         {/* ========================================================= */}
         {/* 3. THE CINEMATIC TIMELINE RIVER (SCROLL-DRIVEN VOYAGE)     */}
         {/* ========================================================= */}
-        <section ref={timelineRef} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
+        <section ref={timelineRef} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 overflow-x-clip">
           <RevealOnScroll variant="fade-up">
             <div className="border-b-2 border-foreground pb-6 mb-12 sm:mb-20 flex flex-col md:flex-row md:items-end justify-between gap-4">
               <div>
@@ -951,7 +949,7 @@ export default function AboutPage() {
         </section>
       </main>
 
-      <div className="no-print">
+      <div className="print:hidden">
         <Footer />
       </div>
     </div>

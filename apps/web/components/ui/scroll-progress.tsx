@@ -7,7 +7,7 @@ export function ScrollProgress() {
 
   React.useEffect(() => {
     const handleScroll = () => {
-      const totalScroll = document.documentElement.scrollTop;
+      const totalScroll = window.scrollY || document.documentElement.scrollTop;
       const windowHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
       if (windowHeight > 0) {
         setProgress((totalScroll / windowHeight) * 100);
@@ -15,11 +15,12 @@ export function ScrollProgress() {
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   return (
-    <div className="fixed top-0 left-0 right-0 h-[2px] bg-transparent z-[60] pointer-events-none">
+    <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-transparent pointer-events-none overflow-hidden z-10">
       <div
         className="h-full bg-foreground transition-all duration-75 ease-out"
         style={{ width: `${progress}%` }}
