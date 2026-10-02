@@ -187,7 +187,7 @@ export default function AboutPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground selection:bg-foreground selection:text-background flex flex-col justify-between editorial-grain">
+    <div className="min-h-screen bg-background text-foreground selection:bg-foreground selection:text-background flex flex-col justify-between editorial-grain overflow-x-clip">
       {/* ── JSON-LD Structured Data for Google Search SEO (AboutPage & NGO Organization) ── */}
       <script
         type="application/ld+json"
@@ -428,16 +428,11 @@ export default function AboutPage() {
           {/* Cinematic Vertical Timeline Track with Progressive Thread Line */}
           <div className="relative">
             {/* Background Spine Guide (Faint) */}
-            <div className="absolute left-4 sm:left-1/2 top-4 bottom-4 w-0.5 -translate-x-1/2 bg-foreground/15 hidden md:block" />
-            <div className="absolute left-4 top-4 bottom-4 w-0.5 -translate-x-1/2 bg-foreground/15 md:hidden" />
+            <div className="absolute left-6 md:left-1/2 top-4 bottom-4 w-0.5 -translate-x-1/2 bg-foreground/15" />
 
             {/* Active Thread Line (Fills down dynamically on scroll) */}
             <div
-              className="absolute left-4 sm:left-1/2 top-4 w-1 -translate-x-1/2 bg-foreground transition-all duration-150 ease-out hidden md:block"
-              style={{ height: `${timelineProgress}%` }}
-            />
-            <div
-              className="absolute left-4 top-4 w-1 -translate-x-1/2 bg-foreground transition-all duration-150 ease-out md:hidden"
+              className="absolute left-6 md:left-1/2 top-4 w-1 -translate-x-1/2 bg-foreground transition-all duration-150 ease-out"
               style={{ height: `${timelineProgress}%` }}
             />
 
@@ -454,7 +449,7 @@ export default function AboutPage() {
                     )}
                   >
                     {/* Spine Node Badge in Center with Stamp Effect */}
-                    <div className="absolute left-4 md:left-1/2 top-0 -translate-x-1/2 z-20 flex items-center justify-center">
+                    <div className="absolute left-6 md:left-1/2 top-0 -translate-x-1/2 z-20 flex items-center justify-center">
                       <RevealOnScroll variant="stamp" delayMs={50}>
                         <div className="w-10 h-10 sm:w-12 sm:h-12 border-2 border-foreground bg-background text-foreground font-mono font-black text-xs sm:text-sm flex items-center justify-center shadow-[3px_3px_0px_0px_currentColor] group-hover:bg-foreground group-hover:text-background transition-colors cursor-default">
                           {event.year.slice(-2)}
@@ -463,7 +458,7 @@ export default function AboutPage() {
                     </div>
 
                     {/* Left/Right Story Card with Slide-in Transition */}
-                    <div className="w-full md:w-1/2 pl-12 md:pl-0">
+                    <div className="w-full md:w-1/2 pl-14 md:pl-0">
                       <RevealOnScroll
                         variant={isEven ? 'slide-right' : 'slide-left'}
                         delayMs={100}
