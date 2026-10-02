@@ -1,14 +1,12 @@
+'use client';
+
 import * as React from 'react';
 import Link from 'next/link';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
+import { BrandStamp } from '@/components/ui/brand-stamp';
 import {
   BookOpen,
-  Search,
-  MapPin,
-  Ticket,
-  Clock,
-  HeartHandshake,
   ArrowRight,
   HelpCircle,
   CheckCircle2,
@@ -16,563 +14,850 @@ import {
   Coffee,
   Sparkles,
   ShieldCheck,
-  Smartphone,
-  ChevronDown,
+  MapPin,
+  Clock,
+  Compass,
+  FileText,
+  CornerDownRight,
+  Printer,
+  Copy,
+  Check,
+  QrCode,
+  Tag,
+  ChevronRight,
+  AlertCircle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-export const metadata = {
-  title: 'Panduan Cara Meminjam Buku — Perpustakaan Jalanan Blora',
-  description:
-    'Langkah mudah meminjam buku gratis di Perpustakaan Jalanan Blora. Tanpa biaya, tanpa jaminan uang, dan tanpa birokrasi rumit.',
-};
+interface StepItem {
+  id: string;
+  stepNum: string;
+  title: string;
+  tagline: string;
+  badge: string;
+  illustrationType: 'katalog' | 'lokasi' | 'slip' | 'lapak' | 'baca';
+  instructions: string[];
+  fieldNote: string;
+  systemHint?: string;
+}
+
+const STEPS_DATA: StepItem[] = [
+  {
+    id: 'step-1',
+    stepNum: '01',
+    title: 'Pilih Judul di Katalog Web',
+    tagline: 'Telusuri koleksi buku yang beredar di Blora',
+    badge: 'TAHAP PENELUSURAN',
+    illustrationType: 'katalog',
+    instructions: [
+      'Buka rubrik katalog buku digital Perpusjal Blora.',
+      'Cari judul, nama penulis (Toer, Tan Malaka, Pram, dll), atau genre.',
+      'Perhatikan label ketersediaan: [TERSEDIA] atau [SEDANG DIPINJAM].',
+    ],
+    fieldNote:
+      'Catatan terpal: Kalau buku incaranmu sedang dipinjam orang lain, klik tombol "Gabung Antrean" agar sistem otomatis memberi jatah saat buku diserahkan kembali.',
+    systemHint: 'GET /api/books?tersedia=true',
+  },
+  {
+    id: 'step-2',
+    stepNum: '02',
+    title: 'Tentukan Titik Temu & Pengambilan',
+    tagline: 'Pilih pos lapak terpal yang paling dekat dengan rute harianmu',
+    badge: 'PENENTUAN RUTE',
+    illustrationType: 'lokasi',
+    instructions: [
+      'Klik tombol "AJUKAN PINJAM BUKU" pada halaman rincian buku.',
+      'Pilih lokasi pengambilan: CFD Alun-Alun, Taman Tirtonadi, atau Basecamp Jl. Pemuda.',
+      'Tuliskan nomor WhatsApp aktifmu agar relawan lapak dapat mengabari kesiapan buku.',
+    ],
+    fieldNote:
+      'Tidak ada biaya tebusan, meterai, ataupun uang jaminan. Cukup komitmen sebagai sesama warga pecinta buku.',
+    systemHint: 'POST /api/loans/request { pickupPoint }',
+  },
+  {
+    id: 'step-3',
+    stepNum: '03',
+    title: 'Simpan Slip & Kode Transaksi',
+    tagline: 'Kupon 6-digit tanda sah peminjaman di buku besar kolektif',
+    badge: 'VERIFIKASI MEJA',
+    illustrationType: 'slip',
+    instructions: [
+      'Kamu akan menerima Kode Pengambilan unik 6 digit (contoh: #PJL-8492).',
+      'Kode ini juga otomatis muncul di Dasbor Akun & dikonfirmasi relawan via WhatsApp.',
+      'Cukup simpan tangkapan layar ponselmu atau catat kodenya di secarik kertas.',
+    ],
+    fieldNote:
+      'Kode ini berfungsi seperti stempel perpustakaan jadul, memastikan buku tidak tertukar dengan kawan pembaca lainnya.',
+    systemHint: 'REF_CODE: #PJL-849201 // STATUS: RESERVED',
+  },
+  {
+    id: 'step-4',
+    stepNum: '04',
+    title: 'Ambil di Lapak & Sapa Relawan',
+    tagline: 'Rasakan kehangatan ruang publik tanpa sekat birokrasi',
+    badge: 'SERAH TERIMA TROTOAR',
+    illustrationType: 'lapak',
+    instructions: [
+      'Datang ke lapak terpal yang kamu pilih sesuai jadwal buka relawan.',
+      'Tunjukkan kode transaksi atau sebut namamu pada kawan relawan yang berjaga.',
+      'Buku diserahkan langsung. Kamu boleh langsung pulang, atau duduk membaca di terpal sambil ngobrol santai.',
+    ],
+    fieldNote:
+      'Bawa botol minum sendiri jika ingin berlama-lama membaca di lapak Alun-Alun atau Tirtonadi!',
+    systemHint: 'CIRCULATION_DESK: READY_FOR_PICKUP',
+  },
+  {
+    id: 'step-5',
+    stepNum: '05',
+    title: 'Baca 7 Hari & Pulangkan dengan Riang',
+    tagline: 'Perjanjian kehormatan warga: rawat fisik buku, kembalikan tepat waktu',
+    badge: 'SIRKULASI AMANAH',
+    illustrationType: 'baca',
+    instructions: [
+      'Masa baca standar adalah 7 hari kalender di rumahmu.',
+      'Belum selesai membaca? Kamu bisa ajukan perpanjangan +7 hari lewat web atau chat relawan.',
+      'Saat tuntas, pulangkan ke lapak mingguan mana pun atau drop box di Basecamp.',
+    ],
+    fieldNote:
+      'NOL RUPIAH DENDA. Jika terlambat, jangan kabur atau malu! Kami tidak pernah mendenda uang sepeser pun. Cukup jujur kabari kawan relawan.',
+    systemHint: 'LOAN_POLICY: ZERO_MONETARY_FINES',
+  },
+];
 
 export default function CaraMeminjamPage() {
+  const [activeTab, setActiveTab] = React.useState<number>(0);
+  const [ticketSampleCode, setTicketSampleCode] = React.useState<string>('PJL-849201');
+  const [copied, setCopied] = React.useState<boolean>(false);
+
+  const handleCopyCode = () => {
+    navigator.clipboard?.writeText(ticketSampleCode);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   return (
-    <div className="min-h-screen bg-background text-foreground selection:bg-foreground/15 flex flex-col justify-between">
+    <div className="min-h-screen bg-background text-foreground selection:bg-foreground selection:text-background flex flex-col justify-between editorial-grain">
       <Header />
 
-      <main className="flex-1">
-        {/* ── 1. Hero Header Banner ── */}
-        <section className="border-b border-border bg-surface-muted/30 pt-14 sm:pt-20 pb-12 sm:pb-16 px-4 sm:px-8 relative overflow-hidden">
-          <div className="max-w-5xl mx-auto space-y-5 text-center relative z-10">
-            {/* Kicker Pill */}
-            <div className="inline-flex items-center gap-2 font-mono text-[10px] sm:text-[11px] uppercase tracking-widest px-3 py-1 border border-border bg-background text-foreground font-semibold">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>PANDUAN LITERASI WARGA // 100% GRATIS TANPA BIAYA</span>
+      <main className="flex-1 pb-20">
+        {/* ========================================================= */}
+        {/* 1. EDITORIAL BROADSHEET MASTHEAD                          */}
+        {/* ========================================================= */}
+        <section className="border-b-2 border-foreground max-w-7xl mx-auto px-4 sm:px-8 pt-8 sm:pt-12 pb-8 sm:pb-12">
+          {/* Top Vintage Gazette Bar */}
+          <div className="flex flex-wrap items-center justify-between border-b border-border-hairline pb-3 mb-8 text-[11px] font-mono uppercase tracking-widest text-muted gap-2">
+            <div className="flex items-center gap-3">
+              <BrandStamp edition="EDISI PANDUAN" year="2026" />
+              <span className="hidden md:inline">[ LEMBAR PETUNJUK WARGA // DOKUMEN PUBLIK ]</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-foreground animate-pulse" />
+              <span>SISTEM SIRKULASI BUKU TERBUKA</span>
+            </div>
+            <div className="hidden lg:block">BLORA — JAWA TENGAH</div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-end">
+            <div className="lg:col-span-8 space-y-4">
+              <div className="inline-flex items-center gap-2 px-2.5 py-1 border border-foreground font-mono text-[10px] tracking-wider uppercase font-bold bg-foreground text-background">
+                <span>MANUAL PEMINJAMAN PERPUSTAKAAN JALANAN</span>
+              </div>
+
+              <h1 className="font-serif text-4xl sm:text-6xl lg:text-7xl font-black uppercase tracking-tight text-foreground leading-[0.95]">
+                CARA MEMINJAM <br />
+                <span className="italic font-normal lowercase font-serif">&amp; membaca bebas.</span>
+              </h1>
+
+              <p className="font-serif text-lg sm:text-xl text-foreground/90 max-w-2xl leading-relaxed pt-2">
+                Di Perpustakaan Jalanan Blora, buku bukan benda museum yang dikurung dalam lemari kaca.
+                Siapa saja boleh meminjam, membawa pulang, dan membaca santai—tanpa kartu anggota formal,
+                tanpa setoran uang, dan tanpa denda sepeser pun.
+              </p>
             </div>
 
-            {/* Main Headline */}
-            <h1 className="font-serif text-3xl sm:text-5xl lg:text-6xl font-normal tracking-tight text-foreground leading-[1.15]">
-              Cara Mudah Meminjam Buku
-            </h1>
-
-            {/* Subtitle */}
-            <p className="font-serif italic text-base sm:text-xl text-foreground/80 max-w-2xl mx-auto leading-relaxed">
-              Membaca buku bagus tidak harus mahal dan tidak perlu ribet. Ikuti 5 langkah sederhana berikut untuk membaca koleksi Perpustakaan Jalanan Blora.
-            </p>
-
-            {/* Quick Guarantees Strip */}
-            <div className="pt-3 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 font-mono text-xs text-muted uppercase tracking-wider">
-              <span className="flex items-center gap-1.5 text-foreground font-medium">
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                Tanpa Biaya Pendaftaran
-              </span>
-              <span>&bull;</span>
-              <span className="flex items-center gap-1.5 text-foreground font-medium">
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                Tanpa Jaminan Uang
-              </span>
-              <span>&bull;</span>
-              <span className="flex items-center gap-1.5 text-foreground font-medium">
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                Tanpa Denda Keterlambatan
-              </span>
+            {/* Right Quick Summary Card */}
+            <div className="lg:col-span-4 border-2 border-foreground bg-surface p-5 sm:p-6 font-mono text-xs space-y-4 shadow-[4px_4px_0px_0px_currentColor]">
+              <div className="flex items-center justify-between border-b border-foreground pb-2">
+                <span className="font-bold tracking-wider">[ MAKLUMAT RESMI ]</span>
+                <span className="text-[10px] bg-foreground text-background px-1.5 py-0.5">GRATIS 100%</span>
+              </div>
+              <ul className="space-y-2 text-[11px] leading-relaxed text-foreground/90">
+                <li className="flex items-start gap-2">
+                  <span className="text-foreground font-bold">✔</span>
+                  <span><strong>Nol Biaya Pendaftaran:</strong> Tak perlu beli map atau formulir.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-foreground font-bold">✔</span>
+                  <span><strong>Nol Uang Jaminan:</strong> Modal utamanya adalah rasa saling percaya.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-foreground font-bold">✔</span>
+                  <span><strong>Nol Denda Moneter:</strong> Terlambat baca? Cukup kabari relawan kami.</span>
+                </li>
+              </ul>
+              <div className="pt-2 border-t border-border-hairline text-[10px] text-muted uppercase tracking-wider flex justify-between">
+                <span>DURASI PINJAM: 7 HARI</span>
+                <span>MAKSIMAL: 2 BUKU</span>
+              </div>
             </div>
           </div>
         </section>
 
-        {/* ── 2. Langkah-Langkah Meminjam (Dengan Ilustrasi Visual Kreatif) ── */}
-        <section className="max-w-5xl mx-auto px-4 sm:px-8 py-16 sm:py-20 space-y-16">
-          <div className="text-center max-w-xl mx-auto space-y-2">
-            <h2 className="font-serif text-2xl sm:text-3xl font-bold text-foreground">
-              Alur Peminjaman Buku
-            </h2>
-            <p className="font-sans text-xs sm:text-sm text-muted">
-              Bisa diajukan langsung melalui website ini, atau langsung datang ke lapak terpal mingguan kami.
+        {/* ========================================================= */}
+        {/* 2. THE EDITORIAL ROUTE: 5 INTERACTIVE / VISUAL STEPS       */}
+        {/* ========================================================= */}
+        <section className="max-w-7xl mx-auto px-4 sm:px-8 py-12 sm:py-16">
+          <div className="border-b-2 border-foreground pb-4 mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
+            <div>
+              <div className="font-mono text-xs uppercase tracking-widest text-muted flex items-center gap-2">
+                <Compass className="w-3.5 h-3.5 text-foreground" />
+                <span>TRAJEKTORI SIRKULASI</span>
+              </div>
+              <h2 className="font-serif text-2xl sm:text-4xl font-bold text-foreground tracking-tight mt-1">
+                Lima Langkah Dari Trotoar ke Meja Belajarmu
+              </h2>
+            </div>
+            <p className="font-mono text-xs text-muted max-w-sm">
+              Alur peminjaman dirancang seringkas mungkin agar siapa pun dari anak sekolah hingga lansia dapat meminjam tanpa kebingungan.
             </p>
           </div>
 
-          <div className="space-y-12">
-            {/* ── Langkah 1 ── */}
-            <div className="border border-border bg-surface p-6 sm:p-8 grid grid-cols-1 md:grid-cols-12 gap-8 items-center hover:border-foreground transition-colors group">
-              {/* Kolom Kiri: Ilustrasi Vektor SVG */}
-              <div className="md:col-span-5 flex items-center justify-center bg-surface-muted/60 p-6 border border-border-hairline aspect-4/3 relative overflow-hidden">
-                <svg
-                  viewBox="0 0 240 180"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="w-full h-full max-h-48 text-foreground"
+          {/* Quick Step Switcher Tabs (Desktop / Mobile) */}
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 pb-8">
+            {STEPS_DATA.map((st, index) => {
+              const isSelected = activeTab === index;
+              return (
+                <button
+                  key={st.id}
+                  type="button"
+                  onClick={() => setActiveTab(index)}
+                  className={cn(
+                    'p-3 text-left border-2 transition-all font-mono',
+                    isSelected
+                      ? 'border-foreground bg-foreground text-background shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] dark:shadow-[3px_3px_0px_0px_rgba(255,255,255,1)]'
+                      : 'border-border-hairline bg-surface hover:border-foreground text-foreground'
+                  )}
                 >
-                  {/* Rak / Meja Buku */}
-                  <rect x="20" y="145" width="200" height="6" fill="currentColor" opacity="0.2" />
-                  <rect x="30" y="70" width="26" height="75" rx="2" stroke="currentColor" strokeWidth="2.5" fill="currentColor" fillOpacity="0.08" />
-                  <line x1="38" y1="85" x2="48" y2="85" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                  <line x1="38" y1="95" x2="48" y2="95" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                  <div className="text-[10px] uppercase tracking-wider opacity-80">LANGKAH {st.stepNum}</div>
+                  <div className="font-bold text-xs truncate mt-0.5">{st.title}</div>
+                </button>
+              );
+            })}
+          </div>
 
-                  <rect x="62" y="55" width="30" height="90" rx="2" stroke="currentColor" strokeWidth="2.5" fill="currentColor" fillOpacity="0.15" />
-                  <line x1="72" y1="75" x2="82" y2="75" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                  <line x1="72" y1="85" x2="82" y2="85" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          {/* Active Step Feature Box: Authentic Gazette & Stamp Style */}
+          <div className="border-2 border-foreground bg-surface p-6 sm:p-10 relative overflow-hidden shadow-[6px_6px_0px_0px_currentColor]">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+              {/* Left Column: Authentic Architectural / Gazette Visual Blueprint */}
+              <div className="lg:col-span-5 bg-surface-muted border-2 border-foreground p-6 relative flex flex-col justify-between min-h-[300px] select-none">
+                {/* Vintage Perforated Stamp Corners */}
+                <div className="absolute top-2 left-2 font-mono text-[9px] uppercase px-1.5 py-0.5 bg-foreground text-background font-bold tracking-wider">
+                  DOKUMEN // {STEPS_DATA[activeTab].badge}
+                </div>
+                <div className="absolute top-2 right-2 font-mono text-2xl font-black text-foreground/20">
+                  #{STEPS_DATA[activeTab].stepNum}
+                </div>
 
-                  {/* Buku Terpilih Terbuka */}
-                  <path
-                    d="M102 95C118 88 135 90 148 95V145C135 140 118 138 102 145V95Z"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                    fill="currentColor"
-                    fillOpacity="0.05"
-                  />
-                  <path
-                    d="M148 95C161 90 178 88 194 95V145C178 138 161 140 148 145V95Z"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                    fill="currentColor"
-                    fillOpacity="0.05"
-                  />
-                  <line x1="148" y1="95" x2="148" y2="145" stroke="currentColor" strokeWidth="2.5" />
+                {/* Dynamic Architectural Vector Diagram based on Step */}
+                <div className="my-auto py-6 flex flex-col items-center justify-center">
+                  {activeTab === 0 && (
+                    <div className="w-full max-w-[280px] space-y-3 font-mono text-xs">
+                      {/* Terminal-like Catalog Search Box */}
+                      <div className="border-2 border-foreground bg-background p-3 shadow-xs">
+                        <div className="flex items-center gap-1.5 pb-2 border-b border-border-hairline text-[10px] text-muted">
+                          <span className="w-2 h-2 rounded-full border border-foreground bg-foreground" />
+                          <span className="w-2 h-2 rounded-full border border-foreground" />
+                          <span className="w-2 h-2 rounded-full border border-foreground" />
+                          <span className="ml-auto">KATALOG_PERPUSJAL_BLORA</span>
+                        </div>
+                        <div className="pt-2 flex items-center justify-between">
+                          <span className="font-bold text-foreground">🔍 Pramoedya Ananta Toer</span>
+                          <span className="text-[10px] bg-foreground text-background px-1">CARI</span>
+                        </div>
+                      </div>
 
-                  {/* Kaca Pembesar (Search) */}
-                  <circle cx="155" cy="58" r="26" stroke="currentColor" strokeWidth="3" fill="currentColor" fillOpacity="0.05" />
-                  <line x1="174" y1="77" x2="198" y2="101" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
-                  {/* Kilau Kaca */}
-                  <path d="M145 42C152 40 162 44 167 50" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
-                </svg>
-                <div className="absolute top-3 left-3 font-mono text-[10px] font-bold px-2 py-0.5 bg-foreground text-background">
-                  LANGKAH 01
+                      {/* Mock Book Strip Result */}
+                      <div className="border border-foreground bg-surface p-2.5 flex items-center gap-3">
+                        <div className="w-9 h-12 bg-foreground text-background font-serif font-black text-[9px] flex items-center justify-center text-center p-1 leading-none">
+                          BUMI MANUSIA
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-[11px] font-bold truncate">Bumi Manusia</div>
+                          <div className="text-[9px] text-muted">Pramoedya A. Toer</div>
+                          <div className="mt-1 inline-block text-[9px] border border-foreground px-1 font-bold">
+                            [STATUS: TERSEDIA]
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {activeTab === 1 && (
+                    <div className="w-full max-w-[280px] space-y-2.5 font-mono text-xs">
+                      <div className="text-[10px] uppercase font-bold text-muted border-b border-border-hairline pb-1">
+                        PILIH TITIK DISTRIBUSI LAPAK:
+                      </div>
+                      <div className="p-2.5 border-2 border-foreground bg-background space-y-1">
+                        <div className="flex items-center justify-between font-bold text-[11px]">
+                          <span>[A] CFD ALUN-ALUN BLORA</span>
+                          <span className="text-[9px] bg-foreground text-background px-1">TERPILIH</span>
+                        </div>
+                        <div className="text-[10px] text-muted">Minggu Pagi // 06.00 - 09.30 WIB</div>
+                      </div>
+
+                      <div className="p-2 border border-border-hairline bg-surface/50 opacity-70">
+                        <div className="text-[11px] font-semibold">[B] BASECAMP JL. PEMUDA</div>
+                        <div className="text-[9px] text-muted">Senin - Jumat // Jam Kerja</div>
+                      </div>
+
+                      <div className="p-2 border border-border-hairline bg-surface/50 opacity-70">
+                        <div className="text-[11px] font-semibold">[C] LAPAK TAMAN TIRTONADI</div>
+                        <div className="text-[9px] text-muted">Sabtu Sore // 15.30 - 17.30 WIB</div>
+                      </div>
+                    </div>
+                  )}
+
+                  {activeTab === 2 && (
+                    <div className="w-full max-w-[280px]">
+                      {/* Vintage Library Punch Card / Ticket Slip */}
+                      <div className="border-2 border-foreground bg-background p-4 relative font-mono shadow-[4px_4px_0px_0px_currentColor]">
+                        {/* Perforations */}
+                        <div className="absolute -left-2 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-surface-muted border-r-2 border-foreground" />
+                        <div className="absolute -right-2 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-surface-muted border-l-2 border-foreground" />
+
+                        <div className="text-center border-b-2 border-dashed border-foreground pb-2">
+                          <div className="text-[8px] uppercase tracking-widest text-muted">BUKTI RESERVASI BUKU</div>
+                          <div className="font-serif font-black text-sm text-foreground">PERPUSJAL BLORA</div>
+                        </div>
+
+                        <div className="py-3 text-center space-y-1">
+                          <div className="text-[9px] uppercase tracking-wider text-muted">KODE PENGAMBILAN (6 DIGIT)</div>
+                          <div className="text-2xl font-black tracking-widest text-foreground bg-surface-muted py-1 border border-foreground/30">
+                            #849-201
+                          </div>
+                          <div className="text-[9px] text-muted pt-1">Tunjukkan kode ini ke relawan lapak</div>
+                        </div>
+
+                        <div className="border-t border-border-hairline pt-2 flex items-center justify-between text-[9px] text-muted">
+                          <span>BATAS VALID: 48 JAM</span>
+                          <span>NOTIF: WA OK</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {activeTab === 3 && (
+                    <div className="w-full max-w-[280px] font-mono text-xs space-y-3">
+                      <div className="border-2 border-foreground bg-background p-3 relative">
+                        <div className="text-[9px] uppercase tracking-wider text-muted font-bold">MEJA SIRKULASI LAPAK TERPAL</div>
+                        <div className="font-serif text-sm font-bold text-foreground mt-0.5">
+                          Serah Terima di Ruang Terbuka
+                        </div>
+                        <div className="mt-3 grid grid-cols-2 gap-2 text-center text-[10px]">
+                          <div className="p-2 border border-foreground bg-surface-muted">
+                            <span className="block font-bold">Relawan</span>
+                            <span className="text-[9px] text-muted">Cek Kode Slip</span>
+                          </div>
+                          <div className="p-2 border border-foreground bg-foreground text-background">
+                            <span className="block font-bold">Peminjam</span>
+                            <span className="text-[9px] opacity-80">Bawa Buku</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-center font-serif italic text-xs text-foreground/80">
+                        &ldquo;Duduklah sejenak di atas terpal, seduh teh atau kopi, lalu kenalan dengan pembaca lain.&rdquo;
+                      </div>
+                    </div>
+                  )}
+
+                  {activeTab === 4 && (
+                    <div className="w-full max-w-[280px] font-mono text-xs space-y-2.5">
+                      <div className="border-2 border-foreground bg-background p-4 text-center space-y-2">
+                        <div className="inline-block px-2 py-0.5 bg-foreground text-background text-[10px] font-bold">
+                          JANJI AMANAH WARGA
+                        </div>
+                        <div className="font-serif font-black text-3xl text-foreground">7 HARI BACA</div>
+                        <p className="text-[10px] text-muted leading-tight">
+                          Buku dirawat dengan cinta. Tanpa robekan, tanpa coretan, dan bebas dari basah hujan.
+                        </p>
+                        <div className="pt-2 border-t border-dashed border-foreground/40 flex items-center justify-center gap-1.5 text-xs font-bold text-foreground">
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          <span>0 RUPIAH DENDA</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Bottom Gazette Sub-strip */}
+                <div className="border-t border-foreground/40 pt-2 flex items-center justify-between font-mono text-[9px] text-muted">
+                  <span>REF: {STEPS_DATA[activeTab].systemHint}</span>
+                  <span className="font-bold text-foreground">PERPUSJAL_OS</span>
                 </div>
               </div>
 
-              {/* Kolom Kanan: Panduan Deskripsi */}
-              <div className="md:col-span-7 space-y-3">
-                <div className="flex items-center gap-2 font-mono text-xs text-muted uppercase tracking-wider">
-                  <Search className="w-3.5 h-3.5 text-foreground" />
-                  <span>Cari &amp; Pilih</span>
-                </div>
-                <h3 className="font-serif text-2xl font-bold text-foreground">
-                  Jelajahi Katalog Buku
-                </h3>
-                <p className="font-sans text-xs sm:text-sm text-muted leading-relaxed">
-                  Buka halaman <strong>Katalog Buku</strong> di website ini. Kamu bisa mencari buku berdasarkan judul,
-                  nama penulis, atau memilih rubrik seperti Sastra, Sejarah, Pemikiran, Buku Anak, Novel, hingga Zine independen.
-                </p>
-                <div className="p-3 bg-surface-muted border-l-2 border-foreground font-sans text-xs text-foreground/90 space-y-1">
-                  <p className="font-semibold text-[11px] font-mono uppercase text-muted">Tips Cepat:</p>
-                  <p>
-                    Perhatikan label <strong>[TERSEDIA]</strong> pada buku. Jika buku sedang dipinjam orang lain, kamu bisa
-                    memilih opsi <strong>&ldquo;Gabung Antrean / Waitlist&rdquo;</strong> untuk diprioritaskan saat buku kembali.
+              {/* Right Column: Step Instructions & Deep Context */}
+              <div className="lg:col-span-7 space-y-6">
+                <div>
+                  <div className="flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-wider text-muted mb-2">
+                    <span className="px-2 py-0.5 border border-foreground bg-surface text-foreground">
+                      TAHAPAN KE-{STEPS_DATA[activeTab].stepNum}
+                    </span>
+                    <span>&bull;</span>
+                    <span>{STEPS_DATA[activeTab].badge}</span>
+                  </div>
+
+                  <h3 className="font-serif text-3xl sm:text-4xl font-black text-foreground tracking-tight">
+                    {STEPS_DATA[activeTab].title}
+                  </h3>
+                  <p className="font-serif italic text-base sm:text-lg text-foreground/80 mt-1">
+                    {STEPS_DATA[activeTab].tagline}
                   </p>
                 </div>
-              </div>
-            </div>
 
-            {/* ── Langkah 2 ── */}
-            <div className="border border-border bg-surface p-6 sm:p-8 grid grid-cols-1 md:grid-cols-12 gap-8 items-center hover:border-foreground transition-colors group">
-              {/* Kolom Kiri: Ilustrasi Vektor SVG */}
-              <div className="md:col-span-5 flex items-center justify-center bg-surface-muted/60 p-6 border border-border-hairline aspect-4/3 relative overflow-hidden">
-                <svg
-                  viewBox="0 0 240 180"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="w-full h-full max-h-48 text-foreground"
-                >
-                  {/* Smartphone / Layar Formulir */}
-                  <rect x="40" y="25" width="80" height="135" rx="8" stroke="currentColor" strokeWidth="2.5" fill="currentColor" fillOpacity="0.05" />
-                  <line x1="68" y1="36" x2="92" y2="36" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                  <rect x="48" y="50" width="64" height="12" rx="2" fill="currentColor" fillOpacity="0.15" />
-                  <rect x="48" y="68" width="64" height="24" rx="2" stroke="currentColor" strokeWidth="1.5" />
-                  {/* Tombol Ajukan */}
-                  <rect x="48" y="100" width="64" height="16" rx="2" fill="currentColor" />
-                  <text x="80" y="112" fill="white" fontSize="7" fontFamily="monospace" textAnchor="middle" fontWeight="bold">AJUKAN</text>
-
-                  {/* Garis Panah Koneksi */}
-                  <path d="M125 80C140 80 145 70 155 70" stroke="currentColor" strokeWidth="2" strokeDasharray="3 3" />
-
-                  {/* Pin Lokasi Peta (Map Marker) */}
-                  <path
-                    d="M175 35C161.2 35 150 46.2 150 60C150 78.5 175 105 175 105C175 105 200 78.5 200 60C200 46.2 188.8 35 175 35Z"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                    fill="currentColor"
-                    fillOpacity="0.15"
-                  />
-                  <circle cx="175" cy="58" r="8" fill="currentColor" />
-
-                  {/* Bayangan Pin di Tanah */}
-                  <ellipse cx="175" cy="118" rx="20" ry="5" fill="currentColor" fillOpacity="0.15" />
-                  <text x="175" y="140" fill="currentColor" fontSize="8" fontFamily="sans-serif" textAnchor="middle" fontWeight="bold">Alun-Alun / Basecamp</text>
-                </svg>
-                <div className="absolute top-3 left-3 font-mono text-[10px] font-bold px-2 py-0.5 bg-foreground text-background">
-                  LANGKAH 02
+                {/* Tactical Checklist */}
+                <div className="space-y-3 font-sans">
+                  {STEPS_DATA[activeTab].instructions.map((inst, i) => (
+                    <div key={i} className="flex items-start gap-3 p-3 bg-surface-muted/60 border-l-2 border-foreground">
+                      <span className="font-mono text-xs font-bold text-foreground pt-0.5">
+                        [{i + 1}]
+                      </span>
+                      <p className="text-xs sm:text-sm text-foreground/90 leading-relaxed font-sans">
+                        {inst}
+                      </p>
+                    </div>
+                  ))}
                 </div>
-              </div>
 
-              {/* Kolom Kanan: Panduan Deskripsi */}
-              <div className="md:col-span-7 space-y-3">
-                <div className="flex items-center gap-2 font-mono text-xs text-muted uppercase tracking-wider">
-                  <MapPin className="w-3.5 h-3.5 text-foreground" />
-                  <span>Pilih Lokasi Pengambilan</span>
+                {/* Ground Note / Human Touch */}
+                <div className="p-4 border border-foreground/30 bg-background font-mono text-xs space-y-1">
+                  <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase text-foreground">
+                    <AlertCircle className="w-3.5 h-3.5" />
+                    <span>Catatan Lapak Akar Rumput:</span>
+                  </div>
+                  <p className="text-[11px] text-muted font-sans leading-relaxed">
+                    {STEPS_DATA[activeTab].fieldNote}
+                  </p>
                 </div>
-                <h3 className="font-serif text-2xl font-bold text-foreground">
-                  Klik &ldquo;Ajukan Pinjam&rdquo; &amp; Tentukan Lokasi Ambil
-                </h3>
-                <p className="font-sans text-xs sm:text-sm text-muted leading-relaxed">
-                  Pada halaman buku, klik tombol hitam <strong>AJUKAN PINJAM BUKU</strong>. Kamu tinggal memilih titik pengambilan
-                  yang paling dekat dengan aktivitasmu:
-                </p>
-                <ul className="font-sans text-xs text-foreground/90 space-y-2 pt-1">
-                  <li className="flex items-start gap-2">
-                    <span className="font-mono text-muted font-bold">[1]</span>
-                    <span><strong>Basecamp Perpusjal</strong> (Jl. Pemuda No. 12, Blora — setiap hari kerja).</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="font-mono text-muted font-bold">[2]</span>
-                    <span><strong>Lapak CFD Alun-Alun Blora</strong> (Minggu pagi, pukul 06.00 – 09.30 WIB).</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="font-mono text-muted font-bold">[3]</span>
-                    <span><strong>Lapak Sore Taman Tirtonadi</strong> (Sabtu sore, pukul 15.30 – 18.00 WIB).</span>
-                  </li>
-                </ul>
-              </div>
-            </div>
 
-            {/* ── Langkah 3 ── */}
-            <div className="border border-border bg-surface p-6 sm:p-8 grid grid-cols-1 md:grid-cols-12 gap-8 items-center hover:border-foreground transition-colors group">
-              {/* Kolom Kiri: Ilustrasi Vektor SVG */}
-              <div className="md:col-span-5 flex items-center justify-center bg-surface-muted/60 p-6 border border-border-hairline aspect-4/3 relative overflow-hidden">
-                <svg
-                  viewBox="0 0 240 180"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="w-full h-full max-h-48 text-foreground"
-                >
-                  {/* Tiket Pinjaman Digital */}
-                  <rect x="45" y="30" width="150" height="110" rx="4" stroke="currentColor" strokeWidth="2.5" fill="currentColor" fillOpacity="0.05" />
-                  {/* Lekukan Tiket Kiri & Kanan */}
-                  <circle cx="45" cy="85" r="8" fill="hsl(var(--background))" stroke="currentColor" strokeWidth="2" />
-                  <circle cx="195" cy="85" r="8" fill="hsl(var(--background))" stroke="currentColor" strokeWidth="2" />
-                  <line x1="55" y1="85" x2="185" y2="85" stroke="currentColor" strokeWidth="1.5" strokeDasharray="4 4" />
+                {/* Step Action / Navigation Buttons */}
+                <div className="flex items-center justify-between pt-2">
+                  <button
+                    type="button"
+                    disabled={activeTab === 0}
+                    onClick={() => setActiveTab((prev) => Math.max(0, prev - 1))}
+                    className="px-4 py-2 border border-border bg-surface font-mono text-xs uppercase tracking-wider disabled:opacity-30 disabled:pointer-events-none hover:border-foreground transition-colors"
+                  >
+                    ← Langkah Sebelumnya
+                  </button>
 
-                  {/* Header Tiket */}
-                  <text x="120" y="52" fill="currentColor" fontSize="8" fontFamily="monospace" textAnchor="middle" letterSpacing="2">TIKET PINJAMAN PERPUSJAL</text>
-                  <text x="120" y="68" fill="currentColor" fontSize="10" fontFamily="serif" textAnchor="middle" fontWeight="bold">KODE PENGAMBILAN</text>
+                  <div className="font-mono text-xs text-muted">
+                    {activeTab + 1} dari {STEPS_DATA.length}
+                  </div>
 
-                  {/* Kode Angka 6 Digit */}
-                  <rect x="65" y="98" width="110" height="28" rx="2" fill="currentColor" />
-                  <text x="120" y="117" fill="white" fontSize="16" fontFamily="monospace" textAnchor="middle" fontWeight="bold" letterSpacing="4">#849201</text>
-
-                  {/* Icon WhatsApp Kecil */}
-                  <circle cx="178" cy="46" r="6" fill="#10B981" />
-                  <path d="M176 46L177.5 47.5L180.5 44.5" stroke="white" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-                <div className="absolute top-3 left-3 font-mono text-[10px] font-bold px-2 py-0.5 bg-foreground text-background">
-                  LANGKAH 03
+                  {activeTab < STEPS_DATA.length - 1 ? (
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab((prev) => Math.min(STEPS_DATA.length - 1, prev + 1))}
+                      className="px-5 py-2 bg-foreground text-background font-mono text-xs uppercase tracking-wider font-bold hover:opacity-90 transition-opacity"
+                    >
+                      Langkah Berikutnya →
+                    </button>
+                  ) : (
+                    <Link
+                      href="/buku"
+                      className="px-5 py-2 bg-foreground text-background font-mono text-xs uppercase tracking-wider font-bold inline-flex items-center gap-2 hover:opacity-90 transition-opacity"
+                    >
+                      <span>Mulai Cari Buku Sekarang</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
+                  )}
                 </div>
-              </div>
-
-              {/* Kolom Kanan: Panduan Deskripsi */}
-              <div className="md:col-span-7 space-y-3">
-                <div className="flex items-center gap-2 font-mono text-xs text-muted uppercase tracking-wider">
-                  <Ticket className="w-3.5 h-3.5 text-foreground" />
-                  <span>Dapatkan Kode Transaksi</span>
-                </div>
-                <h3 className="font-serif text-2xl font-bold text-foreground">
-                  Simpan Kode Pengambilan (6 Digit)
-                </h3>
-                <p className="font-sans text-xs sm:text-sm text-muted leading-relaxed">
-                  Setelah pengajuan dikirim, kamu akan langsung mendapatkan <strong>Kode Pengambilan 6 Digit</strong> (contoh: <code>#849201</code>).
-                  Kode ini juga tercatat otomatis di halaman <Link href="/dashboard/pinjaman" className="text-foreground underline font-medium">Dasbor Pinjaman</Link> akunmu.
-                </p>
-                <p className="font-sans text-xs sm:text-sm text-muted leading-relaxed">
-                  Relawan kami akan menyiapkan buku dan mengirimkan konfirmasi sapaan hangat melalui WhatsApp untuk memastikan waktu pengambilan yang nyaman.
-                </p>
-              </div>
-            </div>
-
-            {/* ── Langkah 4 ── */}
-            <div className="border border-border bg-surface p-6 sm:p-8 grid grid-cols-1 md:grid-cols-12 gap-8 items-center hover:border-foreground transition-colors group">
-              {/* Kolom Kiri: Ilustrasi Vektor SVG */}
-              <div className="md:col-span-5 flex items-center justify-center bg-surface-muted/60 p-6 border border-border-hairline aspect-4/3 relative overflow-hidden">
-                <svg
-                  viewBox="0 0 240 180"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="w-full h-full max-h-48 text-foreground"
-                >
-                  {/* Terpal Terbuka */}
-                  <polygon points="30,150 210,150 185,120 55,120" fill="currentColor" fillOpacity="0.12" stroke="currentColor" strokeWidth="2" />
-                  <line x1="55" y1="120" x2="30" y2="150" stroke="currentColor" strokeWidth="2" />
-                  <line x1="185" y1="120" x2="210" y2="150" stroke="currentColor" strokeWidth="2" />
-
-                  {/* Buku-buku di Terpal */}
-                  <rect x="70" y="130" width="22" height="14" rx="1" fill="currentColor" stroke="currentColor" strokeWidth="1.5" />
-                  <rect x="98" y="132" width="22" height="12" rx="1" fill="currentColor" fillOpacity="0.4" stroke="currentColor" strokeWidth="1.5" />
-                  <rect x="145" y="128" width="24" height="15" rx="1" fill="currentColor" stroke="currentColor" strokeWidth="1.5" />
-
-                  {/* Dua Tangan Berjabatan / Serah Terima Buku */}
-                  {/* Tangan Kiri (Relawan) */}
-                  <path d="M40 75C60 75 75 80 90 85L110 85" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
-                  {/* Tangan Kanan (Peminjam) */}
-                  <path d="M200 75C180 75 165 80 150 85L130 85" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
-                  {/* Buku di Tengah Serah Terima */}
-                  <rect x="105" y="60" width="30" height="42" rx="2" fill="currentColor" stroke="currentColor" strokeWidth="2" />
-                  <line x1="112" y1="72" x2="128" y2="72" stroke="white" strokeWidth="2" strokeLinecap="round" />
-                  <line x1="112" y1="80" x2="124" y2="80" stroke="white" strokeWidth="2" strokeLinecap="round" />
-
-                  {/* Senyum Kehangatan / Bintang Persahabatan */}
-                  <path d="M120 35L122 40L127 42L122 44L120 49L118 44L113 42L118 40L120 35Z" fill="currentColor" />
-                </svg>
-                <div className="absolute top-3 left-3 font-mono text-[10px] font-bold px-2 py-0.5 bg-foreground text-background">
-                  LANGKAH 04
-                </div>
-              </div>
-
-              {/* Kolom Kanan: Panduan Deskripsi */}
-              <div className="md:col-span-7 space-y-3">
-                <div className="flex items-center gap-2 font-mono text-xs text-muted uppercase tracking-wider">
-                  <HeartHandshake className="w-3.5 h-3.5 text-foreground" />
-                  <span>Serah Terima di Lapak</span>
-                </div>
-                <h3 className="font-serif text-2xl font-bold text-foreground">
-                  Temui Relawan di Lapak Terpal &amp; Ambil Bukumu
-                </h3>
-                <p className="font-sans text-xs sm:text-sm text-muted leading-relaxed">
-                  Datanglah ke titik lapak yang sudah kamu pilih. Cukup sebutkan <strong>Kode Pengambilan</strong> atau namamu kepada relawan yang berjaga di atas terpal.
-                </p>
-                <p className="font-sans text-xs sm:text-sm text-muted leading-relaxed">
-                  Buku langsung diserahkan tanpa syarat berbelit. Kamu juga bisa duduk santai di terpal kami sambil menikmati suasana kota,
-                  membaca buku lainnya, atau sekadar bercengkerama bersama pembaca lain.
-                </p>
-              </div>
-            </div>
-
-            {/* ── Langkah 5 ── */}
-            <div className="border border-border bg-surface p-6 sm:p-8 grid grid-cols-1 md:grid-cols-12 gap-8 items-center hover:border-foreground transition-colors group">
-              {/* Kolom Kiri: Ilustrasi Vektor SVG */}
-              <div className="md:col-span-5 flex items-center justify-center bg-surface-muted/60 p-6 border border-border-hairline aspect-4/3 relative overflow-hidden">
-                <svg
-                  viewBox="0 0 240 180"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="w-full h-full max-h-48 text-foreground"
-                >
-                  {/* Kalender 7 Hari */}
-                  <rect x="40" y="35" width="85" height="95" rx="4" stroke="currentColor" strokeWidth="2.5" fill="currentColor" fillOpacity="0.05" />
-                  <rect x="40" y="35" width="85" height="24" rx="4" fill="currentColor" />
-                  <text x="82" y="51" fill="white" fontSize="9" fontFamily="monospace" textAnchor="middle" fontWeight="bold">MASA PINJAM</text>
-                  <text x="82" y="98" fill="currentColor" fontSize="32" fontFamily="serif" textAnchor="middle" fontWeight="bold">7</text>
-                  <text x="82" y="116" fill="currentColor" fontSize="10" fontFamily="sans-serif" textAnchor="middle" letterSpacing="1">HARI</text>
-
-                  {/* Cangkir Kopi Santai */}
-                  <path d="M150 90H185V125C185 133 178 140 170 140H165C157 140 150 133 150 125V90Z" stroke="currentColor" strokeWidth="2.5" fill="currentColor" fillOpacity="0.08" />
-                  {/* Gagang Cangkir */}
-                  <path d="M185 98C193 98 198 103 198 111C198 119 193 124 185 124" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
-                  {/* Tatakan */}
-                  <line x1="142" y1="145" x2="193" y2="145" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
-                  {/* Asap Hangat */}
-                  <path d="M160 78C162 72 158 68 160 62" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                  <path d="M172 78C174 72 170 68 172 62" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-
-                  {/* Badge Nol Denda */}
-                  <circle cx="195" cy="50" r="18" fill="currentColor" />
-                  <text x="195" y="47" fill="white" fontSize="7" fontFamily="sans-serif" textAnchor="middle" fontWeight="bold">BEBAS</text>
-                  <text x="195" y="57" fill="white" fontSize="8" fontFamily="sans-serif" textAnchor="middle" fontWeight="bold">DENDA</text>
-                </svg>
-                <div className="absolute top-3 left-3 font-mono text-[10px] font-bold px-2 py-0.5 bg-foreground text-background">
-                  LANGKAH 05
-                </div>
-              </div>
-
-              {/* Kolom Kanan: Panduan Deskripsi */}
-              <div className="md:col-span-7 space-y-3">
-                <div className="flex items-center gap-2 font-mono text-xs text-muted uppercase tracking-wider">
-                  <Clock className="w-3.5 h-3.5 text-foreground" />
-                  <span>Masa Baca &amp; Pengembalian</span>
-                </div>
-                <h3 className="font-serif text-2xl font-bold text-foreground">
-                  Baca Santai 7 Hari &amp; Kembalikan dengan Senyuman
-                </h3>
-                <p className="font-sans text-xs sm:text-sm text-muted leading-relaxed">
-                  Buku berlaku selama <strong>7 hari</strong>. Kamu bebas membacanya di rumah sambil ngopi santai.
-                  Jika belum selesai, kamu bisa mengajukan perpanjangan waktu <strong>+7 hari</strong> via dasbor atau konfirmasi ke relawan via WhatsApp.
-                </p>
-                <p className="font-sans text-xs sm:text-sm text-muted leading-relaxed">
-                  Saat selesai, kembalikan ke lapak terdekat. <strong>Tidak ada denda uang sepeser pun.</strong> Kami percaya sepenuhnya pada kejujuran dan rasa tanggung jawab warga Blora.
-                </p>
               </div>
             </div>
           </div>
+        </section>
 
-          {/* ── 3. Titik Lokasi Lapak Pengambilan ── */}
-          <div className="space-y-6 pt-6">
-            <div className="text-center max-w-xl mx-auto space-y-2">
-              <div className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-muted">
+        {/* ========================================================= */}
+        {/* 3. SIMULATOR TIKET PINJAMAN DIGITAL (INTERAKTIF & KREATIF) */}
+        {/* ========================================================= */}
+        <section className="max-w-7xl mx-auto px-4 sm:px-8 py-10">
+          <div className="border-2 border-foreground bg-surface-muted/40 p-6 sm:p-10 relative">
+            <div className="max-w-3xl mx-auto space-y-6">
+              <div className="text-center space-y-2">
+                <div className="inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest px-2.5 py-1 border border-foreground bg-foreground text-background font-semibold">
+                  <Sparkles className="w-3 h-3" />
+                  <span>SIMULASI INTERAKTIF</span>
+                </div>
+                <h2 className="font-serif text-2xl sm:text-3xl font-black text-foreground tracking-tight">
+                  Seperti Apa Bentuk Tiket Pengambilanmu Nanti?
+                </h2>
+                <p className="font-sans text-xs sm:text-sm text-muted max-w-xl mx-auto">
+                  Begitu kamu menekan tombol pinjam di katalog, kartu tanda bukti seperti di bawah ini langsung terbit di akunmu.
+                </p>
+              </div>
+
+              {/* The Physical-Style Digital Borrow Card */}
+              <div className="max-w-md mx-auto bg-surface border-4 border-double border-foreground p-6 sm:p-8 space-y-5 shadow-xl relative font-mono">
+                {/* Vintage Ticket Header */}
+                <div className="flex items-start justify-between border-b-2 border-foreground pb-4">
+                  <div>
+                    <div className="text-[10px] uppercase font-bold tracking-widest text-foreground">
+                      PERPUSJAL BLORA
+                    </div>
+                    <div className="font-serif text-lg font-black text-foreground">
+                      SLIP SIRKULASI BUKU
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-[9px] uppercase px-2 py-0.5 bg-foreground text-background font-bold">
+                      RESERVED
+                    </span>
+                    <span className="block text-[8px] text-muted mt-1">NO. DOK #2026-X</span>
+                  </div>
+                </div>
+
+                {/* Mocked Loan Content */}
+                <div className="space-y-3 text-xs">
+                  <div>
+                    <span className="text-[9px] text-muted uppercase tracking-wider block">BUKU YANG DIPINJAM:</span>
+                    <strong className="font-serif text-base font-bold block text-foreground">
+                      Catatan Pinggir Jilid 1
+                    </strong>
+                    <span className="text-[10px] text-muted">Penulis: Goenawan Mohamad</span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 pt-2 border-t border-border-hairline text-[11px]">
+                    <div>
+                      <span className="text-[9px] text-muted uppercase block">LOKASI AMBIL:</span>
+                      <strong className="text-foreground">Lapak CFD Alun-Alun</strong>
+                    </div>
+                    <div>
+                      <span className="text-[9px] text-muted uppercase block">MASA BACA:</span>
+                      <strong className="text-foreground">7 Hari (+7 Hari Opsional)</strong>
+                    </div>
+                  </div>
+
+                  {/* Big Code Box */}
+                  <div className="p-3 bg-surface-muted border-2 border-foreground text-center space-y-1 my-3">
+                    <span className="text-[9px] text-muted uppercase tracking-widest block font-bold">
+                      KODE PENGAMBILAN RESMI
+                    </span>
+                    <div className="text-2xl sm:text-3xl font-black tracking-widest text-foreground font-mono">
+                      #{ticketSampleCode}
+                    </div>
+                    <span className="text-[8px] text-muted block">
+                      Tunjukkan kode ini kepada relawan di atas terpal
+                    </span>
+                  </div>
+                </div>
+
+                {/* Action Strip */}
+                <div className="pt-3 border-t-2 border-dashed border-foreground/50 flex items-center justify-between text-xs">
+                  <button
+                    type="button"
+                    onClick={handleCopyCode}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-foreground bg-background hover:bg-surface-muted transition-colors text-[10px] uppercase font-bold"
+                  >
+                    {copied ? <Check className="w-3 h-3 text-foreground" /> : <Copy className="w-3 h-3 text-muted" />}
+                    <span>{copied ? 'Kode Tersalin!' : 'Salin Contoh'}</span>
+                  </button>
+
+                  <div className="text-[9px] text-muted uppercase tracking-wider text-right">
+                    <span>STATUS: SIAP DIVERIFIKASI</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ========================================================= */}
+        {/* 4. TIGA TITIK LAPAK PERTEMUAN RESMI DI TANAH BLORA       */}
+        {/* ========================================================= */}
+        <section className="max-w-7xl mx-auto px-4 sm:px-8 py-12 sm:py-16">
+          <div className="border-b-2 border-foreground pb-4 mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
+            <div>
+              <div className="font-mono text-xs uppercase tracking-widest text-muted flex items-center gap-2">
                 <MapPin className="w-3.5 h-3.5 text-foreground" />
-                <span>TITIK PENGAMBILAN BUKU</span>
+                <span>POSKO KOLEKTIF</span>
               </div>
-              <h2 className="font-serif text-2xl sm:text-3xl font-bold text-foreground">
-                Di Mana Saja Kamu Bisa Bertemu Kami?
+              <h2 className="font-serif text-2xl sm:text-4xl font-bold text-foreground tracking-tight mt-1">
+                Peta Titik &amp; Jadwal Lapak Terpal
               </h2>
             </div>
+            <p className="font-mono text-xs text-muted max-w-sm">
+              Kami tidak menyewa ruko megah. Kami hadir di tempat warga berkumpul dan beraktivitas sehari-hari.
+            </p>
+          </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Lokasi 1 */}
-              <div className="p-6 border border-border bg-surface space-y-3">
-                <div className="w-8 h-8 border border-border bg-surface-muted flex items-center justify-center font-mono text-xs font-bold text-foreground">
-                  A
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Lokasi 1: Alun-Alun CFD */}
+            <div className="border-2 border-foreground bg-surface p-6 flex flex-col justify-between shadow-[4px_4px_0px_0px_currentColor] relative group">
+              <div className="absolute top-3 right-3 font-mono text-[9px] bg-foreground text-background px-2 py-0.5 font-bold uppercase">
+                TERPOPULER
+              </div>
+              <div className="space-y-4">
+                <div className="w-10 h-10 border-2 border-foreground bg-foreground text-background flex items-center justify-center font-mono text-sm font-black">
+                  01
                 </div>
-                <h4 className="font-serif text-lg font-bold text-foreground">
-                  Basecamp Perpusjal
-                </h4>
-                <p className="font-mono text-xs text-muted">
-                  Jl. Pemuda No. 12, Kota Blora
+                <div>
+                  <h3 className="font-serif text-xl font-bold text-foreground">
+                    Lapak CFD Alun-Alun Blora
+                  </h3>
+                  <p className="font-mono text-xs text-foreground font-semibold mt-1">
+                    Sisi Timur Alun-Alun (Depan Gerbang Pendopo)
+                  </p>
+                </div>
+                <div className="p-3 bg-surface-muted border border-border-hairline font-mono text-xs space-y-1">
+                  <div className="text-[10px] text-muted uppercase font-bold">WAKTU BUKA:</div>
+                  <div className="font-bold text-foreground">Setiap Hari Minggu Pagi</div>
+                  <div className="text-[11px] text-muted">Pukul 06.00 – 09.30 WIB</div>
+                </div>
+                <p className="font-sans text-xs text-muted leading-relaxed">
+                  Titik lapak paling ramai. Sambil jalan pagi, senam, atau bersepeda, warga bisa mampir menggelar buku bersama keluarga dan anak-anak.
                 </p>
-                <p className="font-sans text-xs text-muted leading-relaxed pt-2 border-t border-border-hairline">
-                  Buka setiap hari kerja (Senin &ndash; Jumat, 09.00 &ndash; 16.30 WIB). Cocok untuk kamu yang ingin ambil atau kembalikan buku di jam fleksibel.
+              </div>
+              <div className="pt-4 mt-4 border-t border-border-hairline font-mono text-[10px] text-muted uppercase flex justify-between">
+                <span>SERAH TERIMA: CEPAT</span>
+                <span>SUASANA: RAMAI</span>
+              </div>
+            </div>
+
+            {/* Lokasi 2: Taman Tirtonadi */}
+            <div className="border-2 border-foreground bg-surface p-6 flex flex-col justify-between shadow-[4px_4px_0px_0px_currentColor] relative group">
+              <div className="space-y-4">
+                <div className="w-10 h-10 border-2 border-foreground bg-surface-muted text-foreground flex items-center justify-center font-mono text-sm font-black">
+                  02
+                </div>
+                <div>
+                  <h3 className="font-serif text-xl font-bold text-foreground">
+                    Lapak Senja Taman Tirtonadi
+                  </h3>
+                  <p className="font-mono text-xs text-muted mt-1">
+                    Bawah Rindang Pohon Kawasan Tirtonadi Blora
+                  </p>
+                </div>
+                <div className="p-3 bg-surface-muted border border-border-hairline font-mono text-xs space-y-1">
+                  <div className="text-[10px] text-muted uppercase font-bold">WAKTU BUKA:</div>
+                  <div className="font-bold text-foreground">Setiap Hari Sabtu Sore</div>
+                  <div className="text-[11px] text-muted">Pukul 15.30 – 17.45 WIB</div>
+                </div>
+                <p className="font-sans text-xs text-muted leading-relaxed">
+                  Cocok untuk yang menyukai ketenangan. Lapak terpal digelar saat hawa mulai sejuk, pas untuk membaca sambil menunggu waktu magrib tiba.
+                </p>
+              </div>
+              <div className="pt-4 mt-4 border-t border-border-hairline font-mono text-[10px] text-muted uppercase flex justify-between">
+                <span>SERAH TERIMA: SANTAI</span>
+                <span>SUASANA: ADEM</span>
+              </div>
+            </div>
+
+            {/* Lokasi 3: Basecamp Jl. Pemuda */}
+            <div className="border-2 border-foreground bg-surface p-6 flex flex-col justify-between shadow-[4px_4px_0px_0px_currentColor] relative group">
+              <div className="space-y-4">
+                <div className="w-10 h-10 border-2 border-foreground bg-surface-muted text-foreground flex items-center justify-center font-mono text-sm font-black">
+                  03
+                </div>
+                <div>
+                  <h3 className="font-serif text-xl font-bold text-foreground">
+                    Basecamp Perpusjal Kota
+                  </h3>
+                  <p className="font-mono text-xs text-muted mt-1">
+                    Jl. Pemuda No. 12, Blora
+                  </p>
+                </div>
+                <div className="p-3 bg-surface-muted border border-border-hairline font-mono text-xs space-y-1">
+                  <div className="text-[10px] text-muted uppercase font-bold">WAKTU BUKA:</div>
+                  <div className="font-bold text-foreground">Senin – Jumat (Hari Kerja)</div>
+                  <div className="text-[11px] text-muted">09.00 – 16.30 WIB (Konfirmasi WA)</div>
+                </div>
+                <p className="font-sans text-xs text-muted leading-relaxed">
+                  Pusat gudang arsip dan sirkulasi mingguan. Pilihan fleksibel bagi pekerja atau pelajar yang tidak sempat mampir saat akhir pekan.
+                </p>
+              </div>
+              <div className="pt-4 mt-4 border-t border-border-hairline font-mono text-[10px] text-muted uppercase flex justify-between">
+                <span>SERAH TERIMA: FLEKSIBEL</span>
+                <span>DROP BOX: ADA</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ========================================================= */}
+        {/* 5. GENTLEMEN'S AGREEMENT: KONTRAK KEHORMATAN KITA        */}
+        {/* ========================================================= */}
+        <section className="max-w-7xl mx-auto px-4 sm:px-8 py-10">
+          <div className="border-2 border-foreground bg-surface p-6 sm:p-10 font-mono text-xs">
+            <div className="flex flex-col md:flex-row md:items-center justify-between border-b-2 border-foreground pb-4 mb-6 gap-2">
+              <div>
+                <span className="text-[10px] uppercase tracking-widest text-muted block">
+                  KESEPAKATAN MORAL &amp; ETIKA
+                </span>
+                <h3 className="font-serif text-2xl font-black text-foreground">
+                  Pakta Kejujuran Peminjam Buku
+                </h3>
+              </div>
+              <div className="text-[10px] bg-surface-muted border border-foreground px-2.5 py-1 uppercase tracking-wider font-bold">
+                BERLAKU UNTUK SEMUA WARGA
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="p-4 border border-border-hairline bg-surface-muted/30 space-y-2">
+                <div className="text-[10px] font-bold text-foreground uppercase tracking-wider">
+                  [ 01 // FISIK BUKU ]
+                </div>
+                <div className="font-serif font-bold text-base text-foreground">
+                  Jaga Seperti Milik Sendiri
+                </div>
+                <p className="text-[11px] text-muted font-sans leading-relaxed">
+                  Gunakan pembatas kertas. Jangan melipat sudut halaman (dog-ear), dan jauhkan buku dari cangkir kopi atau tetesan hujan.
                 </p>
               </div>
 
-              {/* Lokasi 2 */}
-              <div className="p-6 border-2 border-foreground bg-background space-y-3 shadow-xs">
-                <div className="w-8 h-8 border border-foreground bg-foreground text-background flex items-center justify-center font-mono text-xs font-bold">
-                  B
+              <div className="p-4 border border-border-hairline bg-surface-muted/30 space-y-2">
+                <div className="text-[10px] font-bold text-foreground uppercase tracking-wider">
+                  [ 02 // TEPAT WAKTU ]
                 </div>
-                <h4 className="font-serif text-lg font-bold text-foreground">
-                  Lapak CFD Alun-Alun
-                </h4>
-                <p className="font-mono text-xs text-foreground font-semibold">
-                  Alun-Alun Blora (Sisi Timur / Depan Pendopo)
-                </p>
-                <p className="font-sans text-xs text-foreground/85 leading-relaxed pt-2 border-t border-border-hairline">
-                  Digelar setiap hari Minggu pagi (06.00 &ndash; 09.30 WIB). Ramai warga yang berolahraga, anak-anak menggambar, dan lesehan santai.
+                <div className="font-serif font-bold text-base text-foreground">
+                  Gilirkan Kepada Kawan Lain
+                </div>
+                <p className="text-[11px] text-muted font-sans leading-relaxed">
+                  Buku yang terlalu lama disimpan di kamar tidak bisa dibaca warga lain. Batas 7 hari adalah ritme sehat perputaran pengetahuan warga.
                 </p>
               </div>
 
-              {/* Lokasi 3 */}
-              <div className="p-6 border border-border bg-surface space-y-3">
-                <div className="w-8 h-8 border border-border bg-surface-muted flex items-center justify-center font-mono text-xs font-bold text-foreground">
-                  C
+              <div className="p-4 border border-border-hairline bg-surface-muted/30 space-y-2">
+                <div className="text-[10px] font-bold text-foreground uppercase tracking-wider">
+                  [ 03 // KUOTA WAJAR ]
                 </div>
-                <h4 className="font-serif text-lg font-bold text-foreground">
-                  Lapak Sore Tirtonadi
-                </h4>
-                <p className="font-mono text-xs text-muted">
-                  Kawasan Rekreasi Taman Tirtonadi Blora
+                <div className="font-serif font-bold text-base text-foreground">
+                  Maksimal 2 Buku
+                </div>
+                <p className="text-[11px] text-muted font-sans leading-relaxed">
+                  Demi pemerataan, setiap peminjam dibatasi membawa 2 buku sekaligus. Selesaikan dulu bacaanmu sebelum meminjam judul berikutnya.
                 </p>
-                <p className="font-sans text-xs text-muted leading-relaxed pt-2 border-t border-border-hairline">
-                  Digelar setiap Sabtu sore (15.30 &ndash; 18.00 WIB). Suasana teduh di bawah rindang pohon, asyik untuk membaca sambil menunggu senja.
+              </div>
+
+              <div className="p-4 border border-border-hairline bg-surface-muted/30 space-y-2">
+                <div className="text-[10px] font-bold text-foreground uppercase tracking-wider">
+                  [ 04 // KOMUNIKASI ]
+                </div>
+                <div className="font-serif font-bold text-base text-foreground">
+                  Jangan Ragu Menyapa
+                </div>
+                <p className="text-[11px] text-muted font-sans leading-relaxed">
+                  Jika sedang sakit atau ada halangan mendesak, cukup kirim pesan singkat WhatsApp kepada relawan. Kamu tidak akan pernah dihakimi.
                 </p>
               </div>
             </div>
           </div>
+        </section>
 
-          {/* ── 4. Aturan Sederhana (Kebaikan Bersama) ── */}
-          <div className="p-6 sm:p-8 border border-border bg-surface-muted/30 space-y-4">
-            <h3 className="font-serif text-xl font-bold text-foreground flex items-center gap-2">
-              <ShieldCheck className="w-5 h-5 text-foreground" />
-              <span>Etika Meminjam: Titipan Kasih Sayang Antarwarga</span>
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 pt-2">
-              <div className="p-4 bg-background border border-border-hairline space-y-1">
-                <p className="font-mono text-xs font-bold uppercase text-foreground">1. Sayangi Buku</p>
-                <p className="font-sans text-xs text-muted leading-relaxed">
-                  Jauhkan dari air dan tumpahan makanan. Gunakan pembatas buku, hindari melipat ujung halaman.
-                </p>
-              </div>
-
-              <div className="p-4 bg-background border border-border-hairline space-y-1">
-                <p className="font-mono text-xs font-bold uppercase text-foreground">2. Tepat Waktu</p>
-                <p className="font-sans text-xs text-muted leading-relaxed">
-                  Kembalikan buku dalam 7 hari agar teman-teman pembaca lain bisa bergiliran menikmati buku tersebut.
-                </p>
-              </div>
-
-              <div className="p-4 bg-background border border-border-hairline space-y-1">
-                <p className="font-mono text-xs font-bold uppercase text-foreground">3. Maksimal 2 Buku</p>
-                <p className="font-sans text-xs text-muted leading-relaxed">
-                  Setiap peminjam diperbolehkan meminjam hingga 2 judul buku sekaligus demi pemerataan koleksi.
-                </p>
-              </div>
-
-              <div className="p-4 bg-background border border-border-hairline space-y-1">
-                <p className="font-mono text-xs font-bold uppercase text-foreground">4. Kabari Relawan</p>
-                <p className="font-sans text-xs text-muted leading-relaxed">
-                  Jika ada kendala belum sempat mengembalikan, cukup balas chat WhatsApp relawan. Tidak akan dimarahi!
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* ── 5. FAQ (Tanya Jawab Singkat) ── */}
-          <div className="space-y-6 pt-4">
-            <div className="text-center max-w-xl mx-auto space-y-2">
-              <div className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-muted">
+        {/* ========================================================= */}
+        {/* 6. TANYA JAWAB PRAKTIS (FAQ DARI SUDUT PANDANG WARGA)      */}
+        {/* ========================================================= */}
+        <section className="max-w-7xl mx-auto px-4 sm:px-8 py-10 sm:py-14">
+          <div className="border-b-2 border-foreground pb-4 mb-8 flex items-center justify-between">
+            <div>
+              <div className="font-mono text-xs uppercase tracking-widest text-muted flex items-center gap-2">
                 <HelpCircle className="w-3.5 h-3.5 text-foreground" />
-                <span>TANYA JAWAB</span>
+                <span>TANYA JAWAB LAPAK</span>
               </div>
-              <h2 className="font-serif text-2xl sm:text-3xl font-bold text-foreground">
-                Pertanyaan yang Sering Diajukan
+              <h2 className="font-serif text-2xl sm:text-4xl font-bold text-foreground tracking-tight mt-1">
+                Kerap Ditanyakan oleh Pembaca Pemula
               </h2>
-            </div>
-
-            <div className="space-y-3 max-w-3xl mx-auto">
-              <div className="p-4 sm:p-5 border border-border bg-surface space-y-2">
-                <h4 className="font-serif text-base sm:text-lg font-bold text-foreground">
-                  Apakah saya wajib memiliki KTP atau kartu anggota?
-                </h4>
-                <p className="font-sans text-xs sm:text-sm text-muted leading-relaxed">
-                  Tidak wajib! Kamu tidak perlu fotokopi KTP ataupun membayar biaya kartu anggota. Cukup daftarkan akun di website ini atau berikan nomor WhatsApp aktif agar relawan bisa saling menyapa dan berkoordinasi.
-                </p>
-              </div>
-
-              <div className="p-4 sm:p-5 border border-border bg-surface space-y-2">
-                <h4 className="font-serif text-base sm:text-lg font-bold text-foreground">
-                  Bagaimana jika buku yang ingin saya baca sedang dipinjam orang lain?
-                </h4>
-                <p className="font-sans text-xs sm:text-sm text-muted leading-relaxed">
-                  Kamu bisa mengklik tombol <strong>&ldquo;Gabung Antrean (Waitlist)&rdquo;</strong> pada halaman detail buku tersebut. Begitu peminjam sebelumnya mengembalikan buku, sistem kami akan langsung mengirimkan kabar prioritas untukmu.
-                </p>
-              </div>
-
-              <div className="p-4 sm:p-5 border border-border bg-surface space-y-2">
-                <h4 className="font-serif text-base sm:text-lg font-bold text-foreground">
-                  Bagaimana jika saya terlambat mengembalikan buku?
-                </h4>
-                <p className="font-sans text-xs sm:text-sm text-muted leading-relaxed">
-                  Di Perpustakaan Jalanan Blora, <strong>tidak ada denda uang sepeser pun</strong>. Cukup komunikasikan dengan relawan kami via WhatsApp, lalu kembalikan saat lapak berikutnya dibuka. Kejujuran dan kepedulianmu adalah jaminan terbaik bagi kami.
-                </p>
-              </div>
-
-              <div className="p-4 sm:p-5 border border-border bg-surface space-y-2">
-                <h4 className="font-serif text-base sm:text-lg font-bold text-foreground">
-                  Apakah saya boleh langsung meminjam di tempat tanpa lewat website?
-                </h4>
-                <p className="font-sans text-xs sm:text-sm text-muted leading-relaxed">
-                  Tentu saja sangat boleh! Silakan langsung mampir ke lapak terpal kami di Alun-Alun saat Car Free Day atau taman kota. Relawan kami akan dengan senang hati membantu mencatatkan peminjamanmu di meja lapak.
-                </p>
-              </div>
             </div>
           </div>
 
-          {/* ── 6. Call to Action Box ── */}
-          <div className="p-8 sm:p-12 border-2 border-foreground bg-surface text-center space-y-6">
-            <div className="w-12 h-12 border border-foreground bg-foreground text-background flex items-center justify-center mx-auto">
-              <BookOpen className="w-6 h-6" />
-            </div>
-
-            <div className="max-w-xl mx-auto space-y-2">
-              <h3 className="font-serif text-2xl sm:text-3xl font-bold text-foreground">
-                Siap Menemukan Bacaan Pertamamu?
-              </h3>
-              <p className="font-sans text-xs sm:text-sm text-muted leading-relaxed">
-                Ratusan judul buku sastra, sejarah, sains, novel, dan buku cerita anak sedang menunggumu di rak katalog kami.
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="p-6 border-2 border-foreground bg-surface space-y-3 font-mono">
+              <div className="text-[10px] uppercase tracking-wider text-muted font-bold">PERTANYAAN 01</div>
+              <h4 className="font-serif text-lg font-bold text-foreground">
+                Apakah saya harus punya KTP Blora atau kartu anggota resmi?
+              </h4>
+              <p className="font-sans text-xs text-muted leading-relaxed">
+                <strong>Sama sekali tidak!</strong> Siapa pun yang sedang tinggal, belajar, atau singgah di Blora boleh meminjam.
+                Kami tidak menahan KTP fisik atau meminta fotokopi kartu identitas. Cukup daftarkan akun web atau berikan nomor WA aktif.
               </p>
             </div>
 
-            <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
-              <Link
-                href="/buku"
-                className="h-10 px-6 bg-foreground text-background font-mono text-xs uppercase tracking-wider inline-flex items-center gap-2 hover:opacity-90 transition-opacity font-semibold"
-              >
-                <span>Jelajahi Katalog Buku</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
-              <Link
-                href="/dashboard/pinjaman"
-                className="h-10 px-5 border border-foreground bg-background text-foreground font-mono text-xs uppercase tracking-wider inline-flex items-center gap-2 hover:bg-surface-muted transition-colors font-semibold"
-              >
-                <span>Pantau Dasbor Pinjaman</span>
-              </Link>
+            <div className="p-6 border-2 border-foreground bg-surface space-y-3 font-mono">
+              <div className="text-[10px] uppercase tracking-wider text-muted font-bold">PERTANYAAN 02</div>
+              <h4 className="font-serif text-lg font-bold text-foreground">
+                Bagaimana kalau buku yang ingin saya baca sedang dipinjam orang?
+              </h4>
+              <p className="font-sans text-xs text-muted leading-relaxed">
+                Di halaman buku, klik tombol <strong>&ldquo;Gabung Antrean / Waitlist&rdquo;</strong>. Sistem web kami akan mencatat antreanmu
+                secara transparan. Ketika buku tersebut dikembalikan ke lapak, kamu akan menjadi orang pertama yang dihubungi oleh relawan.
+              </p>
+            </div>
+
+            <div className="p-6 border-2 border-foreground bg-surface space-y-3 font-mono">
+              <div className="text-[10px] uppercase tracking-wider text-muted font-bold">PERTANYAAN 03</div>
+              <h4 className="font-serif text-lg font-bold text-foreground">
+                Apakah ada sanksi denda jika terlambat mengembalikan?
+              </h4>
+              <p className="font-sans text-xs text-muted leading-relaxed">
+                <strong>Nol rupiah.</strong> Kami menolak konsep denda finansial dalam literasi. Yang kami minta hanyalah tanggung jawab moral.
+                Jika masa pinjam 7 hari hampir habis dan kamu belum selesai, minta perpanjangan via web atau chat relawan kami.
+              </p>
+            </div>
+
+            <div className="p-6 border-2 border-foreground bg-surface space-y-3 font-mono">
+              <div className="text-[10px] uppercase tracking-wider text-muted font-bold">PERTANYAAN 04</div>
+              <h4 className="font-serif text-lg font-bold text-foreground">
+                Bolehkah saya langsung datang ke terpal tanpa memesan lewat web?
+              </h4>
+              <p className="font-sans text-xs text-muted leading-relaxed">
+                <strong>Sangat boleh!</strong> Website ini adalah alat bantu katalog. Jika kamu sedang lewat di Car Free Day Alun-Alun
+                atau Taman Tirtonadi, langsung saja pilih buku yang digelar di atas terpal. Relawan kami akan dengan senang hati mencatatkannya langsung di tempat.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* ========================================================= */}
+        {/* 7. BROADSHEET CALL TO ACTION                              */}
+        {/* ========================================================= */}
+        <section className="max-w-7xl mx-auto px-4 sm:px-8 pt-6">
+          <div className="border-4 border-foreground bg-foreground text-background p-8 sm:p-14 text-center space-y-6 relative overflow-hidden">
+            {/* Subtle retro background watermark */}
+            <div className="absolute right-4 -bottom-10 opacity-10 select-none pointer-events-none font-serif text-[120px] font-black uppercase tracking-tighter">
+              BACA
+            </div>
+
+            <div className="max-w-2xl mx-auto space-y-4 relative z-10">
+              <div className="inline-block border border-background/40 px-3 py-1 font-mono text-[10px] uppercase tracking-widest">
+                LANGKAH PERTAMA // JELAJAHI BUKU
+              </div>
+
+              <h2 className="font-serif text-3xl sm:text-5xl font-black uppercase tracking-tight leading-tight">
+                Koleksi Buku Menunggumu di Atas Terpal.
+              </h2>
+
+              <p className="font-serif italic text-base sm:text-lg text-background/80 leading-relaxed">
+                Dari novel sastra, filsafat, sejarah Blora, hingga komik anak-anak. Semua gratis, milik bersama seluruh warga.
+              </p>
+
+              <div className="pt-4 flex flex-wrap items-center justify-center gap-4 font-mono text-xs">
+                <Link
+                  href="/buku"
+                  className="px-6 py-3 bg-background text-foreground uppercase tracking-wider font-bold inline-flex items-center gap-2 hover:bg-surface-muted transition-colors shadow-lg"
+                >
+                  <BookOpen className="w-4 h-4" />
+                  <span>BUKA KATALOG BUKU SEKARANG</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+
+                <Link
+                  href="/dashboard/pinjaman"
+                  className="px-6 py-3 border border-background text-background uppercase tracking-wider font-semibold hover:bg-background/10 transition-colors"
+                >
+                  <span>CEK STATUS PINJAMAN SAYA</span>
+                </Link>
+              </div>
             </div>
           </div>
         </section>
