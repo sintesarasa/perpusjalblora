@@ -41,7 +41,7 @@ export class SearchService {
           { excerpt: { contains: trimmed, mode: 'insensitive' } },
           { author: { name: { contains: trimmed, mode: 'insensitive' } } },
           { category: { name: { contains: trimmed, mode: 'insensitive' } } },
-          { tags: { some: { tag: { name: { contains: trimmed, mode: 'insensitive' } } } } },
+          { tags: { some: { name: { contains: trimmed, mode: 'insensitive' } } } },
         ],
       };
 

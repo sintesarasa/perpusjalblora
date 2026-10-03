@@ -1,118 +1,105 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { Logo } from '@/components/logo';
-import { BrandStamp } from '@/components/ui/brand-stamp';
+import { ArrowUpRight } from 'lucide-react';
 
 export function Footer() {
   return (
-    <footer className="mt-auto border-t-2 border-foreground bg-surface text-foreground transition-colors">
-      {/* 1. TOP COLOPHON TITLE STRIP */}
-      <div className="border-b border-border-hairline px-4 sm:px-8 py-3 text-[10px] font-mono uppercase tracking-ultra text-muted max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-        <div className="flex items-center gap-2">
-          <span>[ KOLOFON &amp; ARSIP DISTRIBUSI // PERPUSTAKAAN JALANAN BLORA ]</span>
-        </div>
-        <div>SWADAYA • AKAR RUMPUT • TERBUKA UNTUK PUBLIK</div>
-      </div>
-
-      {/* 2. MAIN EDITORIAL INFORMATION GRID */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-8 py-12 grid grid-cols-1 lg:grid-cols-12 gap-10 border-b border-border-hairline">
-        {/* Left: Statement of Independence */}
-        <div className="lg:col-span-5 space-y-5">
-          <Link href="/" className="inline-block">
-            <Logo className="h-8 w-auto text-foreground" />
-          </Link>
-          <div className="font-serif text-2xl font-bold tracking-tight uppercase">
-            MEMBACA DAN BERBAHAGIA.
-          </div>
-          <p className="font-serif text-sm sm:text-base text-foreground/80 leading-relaxed max-w-md">
-            Ruang literasi independen di Kabupaten Blora. Kami meminjamkan buku tanpa denda rupiah,
-            menggelar lapak baca di jalanan umum, dan menyediakan wadah bagi setiap warga untuk
-            menulis esai, resensi, dan opini kritis.
-          </p>
-          <div className="pt-2">
-            <BrandStamp edition="EDISI KOLEKTIF" year="2026" />
-          </div>
-        </div>
-
-        {/* Center: Jadwal & Koordinat Lapak (Tabular Ledger Format) */}
-        <div className="lg:col-span-4 space-y-3 font-mono">
-          <div className="text-xs uppercase tracking-widest font-bold pb-1 border-b border-foreground">
-            JADWAL SERAH TERIMA &amp; LAPAK
-          </div>
-          <div className="text-xs space-y-4 text-foreground/90">
-            <div className="border-l-2 border-foreground pl-3 py-0.5">
-              <span className="font-bold block uppercase tracking-wider">MINGGU PAGI — CAR FREE DAY</span>
-              <span className="text-muted block text-[11px]">06.00 – 09.00 WIB</span>
-              <span className="block text-foreground/80">Alun-Alun Blora (Depan Pendopo)</span>
+    <footer className="mt-auto border-t-2 border-foreground bg-surface text-foreground transition-colors print:hidden">
+      {/* MAIN COMPACT EDITORIAL FOOTER */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
+          {/* Col 1: Logo & Manifesto Statement (Left, 5 cols) */}
+          <div className="md:col-span-5 space-y-3">
+            <div className="flex items-center gap-3">
+              <Link href="/" className="inline-block group" aria-label="Beranda Perpusjal Blora">
+                <Logo className="h-6 sm:h-7 w-auto text-foreground group-hover:opacity-80 transition-opacity" />
+              </Link>
+              <span className="text-[10px] font-mono uppercase tracking-widest text-muted border-l border-border-hairline pl-3">
+                Sirkulasi Bebas
+              </span>
             </div>
-            <div className="border-l-2 border-foreground pl-3 py-0.5">
-              <span className="font-bold block uppercase tracking-wider">BASECAMP BACA &amp; KOLEKSI</span>
-              <span className="text-muted block text-[11px]">Setiap Hari, 16.00 – 21.00 WIB</span>
-              <span className="block text-foreground/80">Sekretariat Perpusjal Blora</span>
+            <p className="font-serif text-xs sm:text-sm text-foreground/80 leading-relaxed max-w-sm">
+              Gerakan literasi akar rumput di atas terpal Alun-Alun Blora. Bebas baca, bebas pinjam tanpa jaminan dan tanpa denda sepeser pun.
+            </p>
+            <div className="font-mono text-[10px] text-muted uppercase tracking-wider flex items-center gap-2 pt-0.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
+              <span>CFD Minggu (06.00–09.00) &bull; Basecamp (16.00–21.00)</span>
             </div>
           </div>
-        </div>
 
-        {/* Right: Directory Index */}
-        <div className="lg:col-span-3 space-y-3 font-mono">
-          <div className="text-xs uppercase tracking-widest font-bold pb-1 border-b border-foreground">
-            DIREKTORI HALAMAN
+          {/* Col 2: Navigasi Indeks (Center, 4 cols) */}
+          <div className="md:col-span-4 space-y-2.5 font-mono">
+            <span className="text-[10px] uppercase font-bold tracking-widest text-muted block border-b border-border-hairline pb-1">
+              INDEX PUSTAKA &amp; ARSIP
+            </span>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
+              <Link href="/buku" className="text-foreground/80 hover:text-foreground hover:underline transition-colors">
+                Katalog Buku
+              </Link>
+              <Link href="/artikel" className="text-foreground/80 hover:text-foreground hover:underline transition-colors">
+                Artikel &amp; Warta
+              </Link>
+              <Link href="/kegiatan" className="text-foreground/80 hover:text-foreground hover:underline transition-colors">
+                Agenda Lapak
+              </Link>
+              <Link href="/cara-meminjam" className="text-foreground/80 hover:text-foreground hover:underline transition-colors">
+                Cara Meminjam
+              </Link>
+              <Link href="/surat-pembaca" className="text-foreground/80 hover:text-foreground hover:underline transition-colors">
+                Surat Pembaca
+              </Link>
+              <Link href="/tentang" className="text-foreground/80 hover:text-foreground hover:underline transition-colors">
+                Tentang Kami
+              </Link>
+            </div>
           </div>
-          <ul className="text-xs space-y-2 uppercase tracking-wider">
-            <li>
-              <Link href="/artikel" className="hover:underline">
-                [ 01 ] Arsip Tulisan
+
+          {/* Col 3: Aksi & Komunitas (Right, 3 cols) */}
+          <div className="md:col-span-3 space-y-2.5 font-mono">
+            <span className="text-[10px] uppercase font-bold tracking-widest text-muted block border-b border-border-hairline pb-1">
+              RUANG PARTISIPASI
+            </span>
+            <div className="space-y-2 text-xs">
+              <Link
+                href="/tulis"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-foreground bg-foreground text-background font-bold uppercase tracking-wider text-[11px] hover:bg-background hover:text-foreground transition-colors cursor-pointer"
+              >
+                <span>+ Tulis Tulisan</span>
+                <ArrowUpRight className="w-3.5 h-3.5" />
               </Link>
-            </li>
-            <li>
-              <Link href="/buku" className="hover:underline">
-                [ 02 ] Katalog Buku Fisik
-              </Link>
-            </li>
-            <li>
-              <Link href="/kegiatan" className="hover:underline">
-                [ 03 ] Agenda Kegiatan
-              </Link>
-            </li>
-            <li>
-              <Link href="/cara-meminjam" className="hover:underline">
-                [ 04 ] Panduan Peminjaman
-              </Link>
-            </li>
-            <li>
-              <Link href="/surat-pembaca" className="hover:underline">
-                [ 05 ] Surat Pembaca
-              </Link>
-            </li>
-            <li>
-              <Link href="/tentang" className="hover:underline">
-                [ 06 ] Profil &amp; Sejarah
-              </Link>
-            </li>
-            <li>
-              <Link href="/kebijakan-privasi" className="hover:underline">
-                [ 07 ] Kebijakan Privasi
-              </Link>
-            </li>
-          </ul>
+              <p className="font-serif text-[11px] text-muted leading-tight">
+                Punya naskah, cerita, atau refleksi tentang Blora? Kirimkan tulisanmu untuk dikurasi terbuka.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* 3. BOTTOM TICKER FOOTNOTE */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-8 py-5 flex flex-col sm:flex-row items-center justify-between text-[10px] font-mono tracking-widest text-muted uppercase gap-3">
-        <div>© {new Date().getFullYear()} PERPUSTAKAAN JALANAN BLORA — GERAKAN LITERASI SWADAYA</div>
-        <div className="flex items-center space-x-6">
-          <Link href="/styleguide" className="hover:text-foreground underline">
-            [ STYLEGUIDE ARSIP ]
-          </Link>
-          <a
-            href="https://instagram.com"
-            target="_blank"
-            rel="noreferrer"
-            className="hover:text-foreground"
-          >
-            INSTAGRAM: @PERPUSJAL_BLORA
-          </a>
+      {/* COMPACT BOTTOM COPYRIGHT STRIP */}
+      <div className="border-t border-border-hairline bg-surface-muted/30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-col sm:flex-row items-center justify-between font-mono text-[10px] text-muted uppercase tracking-wider gap-2">
+          <div>
+            &copy; {new Date().getFullYear()} PERPUSTAKAAN JALANAN BLORA &bull; SWADAYA MURNI
+          </div>
+          <div className="flex items-center gap-4">
+            <a
+              href="https://instagram.com/perpusjal_blora"
+              target="_blank"
+              rel="noreferrer"
+              className="hover:text-foreground hover:underline transition-colors"
+            >
+              @perpusjal_blora
+            </a>
+            <span>&bull;</span>
+            <Link href="/kebijakan-privasi" className="hover:text-foreground hover:underline transition-colors">
+              Privasi
+            </Link>
+            <span>&bull;</span>
+            <Link href="/styleguide" className="hover:text-foreground hover:underline transition-colors">
+              Styleguide
+            </Link>
+          </div>
         </div>
       </div>
     </footer>

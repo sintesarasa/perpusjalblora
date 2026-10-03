@@ -111,14 +111,6 @@ export function UserMenu() {
   // AUTHENTICATED STATE
   return (
     <div className="flex items-center gap-2">
-      <Link
-        href="/dashboard"
-        className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 border border-foreground bg-foreground text-background font-mono text-[11px] uppercase tracking-wider font-semibold hover:bg-foreground/90 transition-colors"
-      >
-        <LayoutDashboard className="w-3.5 h-3.5" />
-        <span>Dasbor</span>
-      </Link>
-
       <div className="relative inline-block text-left" ref={menuRef}>
         <button
           onClick={() => setIsOpen(!isOpen)}

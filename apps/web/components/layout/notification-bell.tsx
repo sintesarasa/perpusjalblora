@@ -10,6 +10,7 @@ export function NotificationBell() {
   const [isOpen, setIsOpen] = React.useState(false);
   const [notifications, setNotifications] = React.useState<NotificationItem[]>([]);
   const [unreadCount, setUnreadCount] = React.useState(0);
+  const [isAuthenticated, setIsAuthenticated] = React.useState<boolean | null>(null);
   const [loading, setLoading] = React.useState(false);
   const dropdownRef = React.useRef<HTMLDivElement>(null);
 
@@ -17,10 +18,13 @@ export function NotificationBell() {
     try {
       const res = await apiClient<{ unreadCount: number }>('/notifications/unread-count');
       if (res.data) {
+        setIsAuthenticated(true);
         setUnreadCount(res.data.unreadCount || 0);
+      } else {
+        setIsAuthenticated(false);
       }
     } catch {
-      // User might be unauthenticated, silence
+      setIsAuthenticated(false);
     }
   }, []);
 
@@ -90,6 +94,10 @@ export function NotificationBell() {
       console.error(err);
     }
   };
+
+  if (isAuthenticated === false) {
+    return null;
+  }
 
   return (
     <div className="relative inline-block text-left" ref={dropdownRef}>
