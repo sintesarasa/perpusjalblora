@@ -4,6 +4,8 @@ import { Playfair_Display, Inter } from 'next/font/google';
 import './globals.css';
 import { ThemeProvider } from '@/components/theme-provider';
 import { AuthProvider } from '@/contexts/auth-context';
+import { NotificationsProvider } from '@/contexts/notifications-context';
+import { NotificationToast } from '@/components/notifications/notification-toast';
 import { PageProgressBar } from '@/components/ui/page-progress-bar';
 
 const playfair = Playfair_Display({
@@ -42,10 +44,13 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <AuthProvider>
-            <React.Suspense fallback={null}>
-              <PageProgressBar />
-            </React.Suspense>
-            {children}
+            <NotificationsProvider>
+              <React.Suspense fallback={null}>
+                <PageProgressBar />
+              </React.Suspense>
+              {children}
+              <NotificationToast />
+            </NotificationsProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>

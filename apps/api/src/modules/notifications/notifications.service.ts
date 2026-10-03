@@ -1,8 +1,27 @@
+import { EventEmitter } from 'events';
 import { prisma } from '../../lib/prisma.js';
 import { HttpError } from '../../utils/errors.js';
 import { NotificationItem, NotificationListResponse } from '@perpusjal/types';
 
 export class NotificationsService {
+  private emitter = new EventEmitter();
+
+  constructor() {
+    // Allow multiple clients per user without warning
+    this.emitter.setMaxListeners(100);
+  }
+
+  /**
+   * Subscribe to real-time notifications for a specific user
+   */
+  subscribe(userId: string, listener: (notification: NotificationItem) => void): () => void {
+    const eventName = `notification:${userId}`;
+    this.emitter.on(eventName, listener);
+    return () => {
+      this.emitter.off(eventName, listener);
+    };
+  }
+
   async createNotification(
     userId: string,
     data: {
@@ -23,7 +42,7 @@ export class NotificationsService {
       return null;
     }
 
-    return prisma.notification.create({
+    const created = await prisma.notification.create({
       data: {
         userId,
         type: data.type,
@@ -34,6 +53,25 @@ export class NotificationsService {
         entityId: data.entityId,
       },
     });
+
+    const item: NotificationItem = {
+      id: created.id,
+      userId: created.userId,
+      type: created.type,
+      title: created.title,
+      body: created.body,
+      actionUrl: created.actionUrl,
+      entityType: created.entityType,
+      entityId: created.entityId,
+      isRead: created.isRead,
+      readAt: created.readAt ? created.readAt.toISOString() : null,
+      createdAt: created.createdAt.toISOString(),
+    };
+
+    // Emit live event to any active SSE subscribers
+    this.emitter.emit(`notification:${userId}`, item);
+
+    return created;
   }
 
   async getNotifications(

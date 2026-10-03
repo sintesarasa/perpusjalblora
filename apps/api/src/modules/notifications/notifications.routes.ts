@@ -6,6 +6,7 @@ export const notificationsRouter = Router();
 
 notificationsRouter.use(requireAuth);
 
+notificationsRouter.get('/stream', (req, res, next) => notificationsController.streamNotifications(req, res, next));
 notificationsRouter.get('/', (req, res, next) => notificationsController.getNotifications(req, res, next));
 notificationsRouter.get('/unread-count', (req, res, next) => notificationsController.getUnreadCount(req, res, next));
 notificationsRouter.post('/mark-all-read', (req, res, next) => notificationsController.markAllAsRead(req, res, next));
