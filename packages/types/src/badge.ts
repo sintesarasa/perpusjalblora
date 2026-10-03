@@ -6,7 +6,18 @@ export enum BadgeCriteria {
   LOANS_RETURNED = 'LOANS_RETURNED',
   ONTIME_STREAK = 'ONTIME_STREAK',
   ACCOUNT_AGE_DAYS = 'ACCOUNT_AGE_DAYS',
+  BOOKS_DONATED = 'BOOKS_DONATED',
   MANUAL = 'MANUAL',
+}
+
+export enum BadgeCategory {
+  WACANA = 'WACANA',
+  TINTA = 'TINTA',
+  DIALEKTIKA = 'DIALEKTIKA',
+  AMANAH = 'AMANAH',
+  PRESENSI = 'PRESENSI',
+  DONATUR = 'DONATUR',
+  GENERAL = 'GENERAL',
 }
 
 export interface BadgeItem {
@@ -17,6 +28,9 @@ export interface BadgeItem {
   iconName: string;
   criteriaType: BadgeCriteria;
   criteriaValue: number;
+  tier: number;
+  category: string;
+  titleReward?: string | null;
   order: number;
   isActive: boolean;
   createdAt: string;
@@ -34,5 +48,21 @@ export interface UserBadgeProgress {
 export interface UserBadgeListResponse {
   earnedCount: number;
   totalCount: number;
+  equippedTitle?: string | null;
+  availableTitles: string[];
+  totalTitlesEarned: number;
   badges: UserBadgeProgress[];
+  stats?: {
+    articlesRead: number;
+    articlesPublished: number;
+    commentsCount: number;
+    loansReturned: number;
+    onTimeStreak: number;
+    eventsAttended: number;
+    booksDonated: number;
+  };
+}
+
+export interface EquipTitleInput {
+  title: string | null;
 }

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { PublicUserProfile } from '@perpusjal/types';
+import { PublicUserProfile, BadgeCategory } from '@perpusjal/types';
 import {
   BookOpen,
   Calendar,
@@ -12,7 +12,11 @@ import {
   Feather,
   ArrowRight,
   ShieldCheck,
+  Sparkles,
+  Gift,
+  MessageSquare,
 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
 
@@ -33,6 +37,25 @@ async function fetchUserProfile(username: string): Promise<PublicUserProfile | n
   }
 }
 
+function getPillarIcon(category?: string) {
+  switch (category) {
+    case BadgeCategory.WACANA:
+      return <BookOpen className="w-4 h-4" />;
+    case BadgeCategory.TINTA:
+      return <Feather className="w-4 h-4" />;
+    case BadgeCategory.DIALEKTIKA:
+      return <MessageSquare className="w-4 h-4" />;
+    case BadgeCategory.AMANAH:
+      return <ShieldCheck className="w-4 h-4" />;
+    case BadgeCategory.PRESENSI:
+      return <Calendar className="w-4 h-4" />;
+    case BadgeCategory.DONATUR:
+      return <Gift className="w-4 h-4" />;
+    default:
+      return <Award className="w-4 h-4" />;
+  }
+}
+
 export default async function UserProfilePage({
   params,
 }: {
@@ -49,26 +72,30 @@ export default async function UserProfilePage({
 
   return (
     <div className="min-h-screen bg-background text-foreground pb-20">
-      {/* 1. TOP EDITORIAL FOLIO / BREADCRUMB */}
+      {/* ── 1. Top Editorial Folio Breadcrumb ── */}
       <div className="border-b border-border-hairline py-3 px-4 sm:px-8 bg-surface-muted/30">
         <div className="max-w-5xl mx-auto flex items-center justify-between text-[11px] font-mono uppercase tracking-wider text-muted">
           <div className="flex items-center gap-2">
-            <Link href="/" className="hover:text-foreground">Beranda</Link>
+            <Link href="/" className="hover:text-foreground">
+              Beranda
+            </Link>
             <span>/</span>
-            <Link href="/kontributor" className="hover:text-foreground">Kontributor</Link>
+            <Link href="/kontributor" className="hover:text-foreground">
+              Warga & Kontributor
+            </Link>
             <span>/</span>
             <span className="text-foreground font-semibold">@{user.username}</span>
           </div>
-          <span>ARSIP IDENTITAS WARGA</span>
+          <span>FOLIO IDENTITAS & PRESTASI LITERASI</span>
         </div>
       </div>
 
-      <main className="max-w-5xl mx-auto px-4 sm:px-8 pt-8 sm:pt-12">
-        {/* 2. PROFILE HERO BANNER */}
-        <section className="border border-border-hairline bg-surface p-6 sm:p-10 mb-10 relative">
+      <main className="max-w-5xl mx-auto px-4 sm:px-8 pt-8 sm:pt-12 space-y-10">
+        {/* ── 2. Profile Dossier Banner ── */}
+        <section className="border-2 border-foreground bg-surface p-6 sm:p-10 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.9)] relative">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 sm:gap-8 pb-8 border-b border-border-hairline">
             {/* Avatar / Monogram */}
-            <div className="w-20 h-20 sm:w-24 sm:h-24 border-2 border-foreground bg-foreground text-background flex items-center justify-center font-serif text-3xl font-bold uppercase select-none">
+            <div className="w-20 h-20 sm:w-24 sm:h-24 border-2 border-foreground bg-foreground text-background flex items-center justify-center font-serif text-3xl font-bold uppercase select-none shrink-0 shadow-sm">
               {user.avatarUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -83,7 +110,7 @@ export default async function UserProfilePage({
 
             {/* Core Info */}
             <div className="flex-1 min-w-0">
-              <div className="flex flex-wrap items-center gap-2 mb-1.5">
+              <div className="flex flex-wrap items-center gap-2 mb-2">
                 <span className="font-mono text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 border border-foreground bg-foreground text-background">
                   {user.role}
                 </span>
@@ -91,17 +118,25 @@ export default async function UserProfilePage({
                   LEVEL {user.trustLevel}
                 </span>
                 <span className="font-mono text-[10px] text-muted flex items-center gap-1 ml-auto">
-                  <Calendar className="w-3 h-3" /> Sejak {joinedYear}
+                  <Calendar className="w-3 h-3" /> Warga Sejak {joinedYear}
                 </span>
               </div>
 
-              <h1 className="font-serif text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+              <h1 className="font-serif text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
                 {user.name}
               </h1>
-              <p className="font-mono text-xs text-muted mt-0.5">
-                @{user.username}
-              </p>
 
+              {/* Equipped Primary Title */}
+              {user.equippedTitle ? (
+                <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 border-2 border-foreground bg-foreground text-background font-mono text-xs font-bold uppercase tracking-wider">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>{user.equippedTitle}</span>
+                </div>
+              ) : (
+                <p className="font-mono text-xs text-muted mt-1">@{user.username}</p>
+              )}
+
+              {/* Bio */}
               {user.isProfilePublic && user.bio && (
                 <p className="font-serif text-sm sm:text-base text-foreground/90 mt-3 leading-relaxed max-w-2xl">
                   {user.bio}
@@ -116,7 +151,7 @@ export default async function UserProfilePage({
                       href={user.instagramUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="hover:text-foreground inline-flex items-center gap-1.5"
+                      className="hover:text-foreground inline-flex items-center gap-1.5 underline decoration-dotted"
                     >
                       <Instagram className="w-3.5 h-3.5" /> Instagram
                     </a>
@@ -126,7 +161,7 @@ export default async function UserProfilePage({
                       href={user.websiteUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="hover:text-foreground inline-flex items-center gap-1.5"
+                      className="hover:text-foreground inline-flex items-center gap-1.5 underline decoration-dotted"
                     >
                       <Globe className="w-3.5 h-3.5" /> Situs Web
                     </a>
@@ -136,140 +171,166 @@ export default async function UserProfilePage({
             </div>
           </div>
 
-          {/* PRIVACY NOTICE IF PRIVATE */}
+          {/* Privacy Notice or Metric Bar */}
           {!user.isProfilePublic ? (
             <div className="pt-6 flex items-center gap-3 text-muted font-mono text-xs">
               <Lock className="w-4 h-4 shrink-0" />
               <span>
-                Pengguna ini menyetel profil ke mode privat. Hanya daftar karya tulis publik yang ditampilkan sesuai ketentuan keterbukaan atribusi kearsipan (BR-PROF-01).
+                Pengguna ini menyetel profil ke mode privat. Hanya daftar karya tulis publik yang ditampilkan untuk kepentingan atribusi kearsipan.
               </span>
             </div>
           ) : (
-            /* STATS METRIC BAR */
             <div className="pt-6 grid grid-cols-2 sm:grid-cols-4 gap-4 divide-x divide-border-hairline font-mono">
               <div className="pr-4">
-                <span className="text-[10px] text-muted uppercase tracking-wider block">Tulisan Terbit</span>
-                <span className="font-serif text-2xl font-bold text-foreground">{user.stats.totalArticles}</span>
+                <span className="text-[10px] text-muted uppercase tracking-wider block">
+                  Tulisan Terbit
+                </span>
+                <span className="font-serif text-2xl font-bold text-foreground">
+                  {user.stats.totalArticles}
+                </span>
               </div>
               <div className="pl-4 pr-4">
-                <span className="text-[10px] text-muted uppercase tracking-wider block">Lencana Diraih</span>
-                <span className="font-serif text-2xl font-bold text-foreground">{user.stats.badgesCount}</span>
+                <span className="text-[10px] text-muted uppercase tracking-wider block">
+                  Lencana Apresiasi
+                </span>
+                <span className="font-serif text-2xl font-bold text-foreground">
+                  {user.stats.badgesCount}
+                </span>
               </div>
-              <div className="pl-4 pr-4 hidden sm:block">
-                <span className="text-[10px] text-muted uppercase tracking-wider block">Afiliasi</span>
-                <span className="text-xs font-bold text-foreground">Warga Komunitas</span>
+              <div className="pl-4 pr-4">
+                <span className="text-[10px] text-muted uppercase tracking-wider block">
+                  Buku Dipinjam
+                </span>
+                <span className="font-serif text-2xl font-bold text-foreground">
+                  {user.stats.loansCount ?? 0}
+                </span>
               </div>
-              <div className="pl-4 hidden sm:block">
-                <span className="text-[10px] text-muted uppercase tracking-wider block">Status Berkas</span>
-                <span className="text-xs font-bold text-foreground flex items-center gap-1">
-                  <ShieldCheck className="w-3.5 h-3.5 text-foreground" /> Terverifikasi
+              <div className="pl-4">
+                <span className="text-[10px] text-muted uppercase tracking-wider block">
+                  Buku Didonasikan
+                </span>
+                <span className="font-serif text-2xl font-bold text-foreground">
+                  {user.stats.booksDonated ?? 0}
                 </span>
               </div>
             </div>
           )}
         </section>
 
-        {/* 3. LENCANA PRESTASI / BADGES SHOWCASE (if public & showBadges) */}
-        {user.isProfilePublic && user.showBadges && user.badges.length > 0 && (
-          <section className="mb-12">
-            <div className="flex items-baseline justify-between border-b border-foreground pb-2 mb-6">
+        {/* ── 3. Paspor Lencana & Prestasi (Showcase Badges) ── */}
+        {user.isProfilePublic && user.showBadges && (
+          <section className="space-y-4">
+            <div className="flex items-baseline justify-between border-b-2 border-foreground pb-2">
               <div className="flex items-center gap-2">
                 <Award className="w-4 h-4 text-foreground" />
-                <h2 className="font-serif text-lg font-bold uppercase tracking-wider">
-                  Lencana Apresiasi ({user.badges.length})
+                <h2 className="font-serif text-xl font-bold uppercase tracking-wider">
+                  Paspor Prestasi Literasi ({user.badges.length})
                 </h2>
               </div>
               <span className="font-mono text-[10px] text-muted uppercase tracking-wider">
-                Penghargaan Kontribusi Literasi
+                Stempel Penghargaan Komunitas
               </span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-              {user.badges.map((b) => (
-                <div
-                  key={b.badge.id}
-                  className="border border-border-hairline bg-surface p-4 flex items-start gap-3 hover:border-foreground transition-colors"
-                >
-                  <div className="w-9 h-9 border border-foreground bg-surface-muted flex items-center justify-center shrink-0">
-                    <Award className="w-4 h-4 text-foreground" />
+            {user.badges.length === 0 ? (
+              <div className="border border-dashed border-border-hairline p-8 text-center bg-surface">
+                <p className="font-mono text-xs text-muted">
+                  Warga ini belum menyematkan lencana publik.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                {user.badges.map((b) => (
+                  <div
+                    key={b.badge.id}
+                    className="border-2 border-foreground bg-surface p-4 flex items-start gap-3.5 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,0.9)]"
+                  >
+                    <div className="w-10 h-10 border-2 border-foreground bg-foreground text-background flex items-center justify-center shrink-0">
+                      {getPillarIcon(b.badge.category)}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between font-mono text-[9px] text-muted uppercase tracking-wider mb-0.5">
+                        <span>TIER {b.badge.tier || 1}</span>
+                        <span>{b.badge.category}</span>
+                      </div>
+                      <h3 className="font-serif text-base font-bold text-foreground truncate">
+                        {b.badge.name}
+                      </h3>
+                      <p className="text-[11px] text-foreground/80 font-sans line-clamp-2 mt-0.5 leading-snug">
+                        {b.badge.description}
+                      </p>
+                      {b.earnedAt && (
+                        <span className="font-mono text-[9px] text-muted block mt-2">
+                          Diraih: {new Date(b.earnedAt).toLocaleDateString('id-ID', {
+                            day: 'numeric',
+                            month: 'short',
+                            year: 'numeric',
+                          })}
+                        </span>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-serif text-sm font-bold text-foreground truncate">
-                      {b.badge.name}
-                    </h3>
-                    <p className="text-[11px] text-muted font-sans line-clamp-2 mt-0.5 leading-snug">
-                      {b.badge.description}
-                    </p>
-                    {b.earnedAt && (
-                      <span className="font-mono text-[9px] text-muted block mt-1.5 uppercase">
-                        Diraih: {new Date(b.earnedAt).toLocaleDateString('id-ID', { year: 'numeric', month: 'short' })}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </section>
         )}
 
-        {/* 4. DAFTAR ARTIKEL TERBIT */}
-        <section>
-          <div className="flex items-baseline justify-between border-b border-foreground pb-2 mb-6">
+        {/* ── 4. Karya Tulisan Publik ── */}
+        <section className="space-y-4">
+          <div className="flex items-baseline justify-between border-b-2 border-foreground pb-2">
             <div className="flex items-center gap-2">
               <Feather className="w-4 h-4 text-foreground" />
-              <h2 className="font-serif text-lg font-bold uppercase tracking-wider">
+              <h2 className="font-serif text-xl font-bold uppercase tracking-wider">
                 Karya Tulisan Terbit ({user.articles.length})
               </h2>
             </div>
             <span className="font-mono text-[10px] text-muted uppercase tracking-wider">
-              Arsip Kronologis
+              Arsip Naskah Warga
             </span>
           </div>
 
           {user.articles.length === 0 ? (
-            <div className="border border-dashed border-border-hairline p-8 text-center bg-surface-muted/20">
-              <BookOpen className="w-8 h-8 text-muted mx-auto mb-2 opacity-50" />
+            <div className="border border-dashed border-border-hairline p-8 text-center bg-surface">
               <p className="font-mono text-xs text-muted">
-                Belum ada tulisan yang diterbitkan oleh penulis ini.
+                Belum ada karya tulis yang diterbitkan oleh warga ini.
               </p>
             </div>
           ) : (
-            <div className="divide-y divide-border-hairline border-t border-b border-border-hairline">
-              {user.articles.map((art) => (
-                <article key={art.id} className="py-5 sm:py-6 group flex flex-col sm:flex-row sm:items-baseline justify-between gap-4">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1.5">
-                      {art.category && (
-                        <span className="font-mono text-[10px] uppercase font-bold tracking-wider text-muted">
-                          {art.category.name}
-                        </span>
-                      )}
-                      <span className="text-[10px] text-muted font-mono">•</span>
-                      <time className="font-mono text-[10px] text-muted">
-                        {new Date(art.publishedAt).toLocaleDateString('id-ID', {
+            <div className="divide-y divide-border-hairline border border-border-hairline bg-surface">
+              {user.articles.map((article) => (
+                <article
+                  key={article.id}
+                  className="p-5 hover:bg-surface-muted/40 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                >
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2 font-mono text-[10px] text-muted uppercase">
+                      {article.category && <span>{article.category.name}</span>}
+                      <span>•</span>
+                      <time dateTime={article.publishedAt}>
+                        {new Date(article.publishedAt).toLocaleDateString('id-ID', {
                           day: 'numeric',
                           month: 'long',
                           year: 'numeric',
                         })}
                       </time>
                     </div>
-
-                    <h3 className="font-serif text-lg sm:text-xl font-bold text-foreground group-hover:underline">
-                      <Link href={`/artikel/${art.slug}`}>{art.title}</Link>
+                    <h3 className="font-serif text-lg font-bold text-foreground hover:underline">
+                      <Link href={`/artikel/${article.slug}`}>{article.title}</Link>
                     </h3>
-
-                    {art.excerpt && (
-                      <p className="font-serif text-xs sm:text-sm text-muted mt-1 line-clamp-2 leading-relaxed">
-                        {art.excerpt}
+                    {article.excerpt && (
+                      <p className="font-serif text-xs text-muted line-clamp-2 max-w-2xl">
+                        {article.excerpt}
                       </p>
                     )}
                   </div>
 
                   <Link
-                    href={`/artikel/${art.slug}`}
-                    className="font-mono text-xs text-foreground group-hover:underline inline-flex items-center gap-1 shrink-0 self-end sm:self-center"
+                    href={`/artikel/${article.slug}`}
+                    className="font-mono text-xs uppercase tracking-wider font-semibold inline-flex items-center gap-1 text-foreground hover:underline shrink-0"
                   >
-                    Baca Tulisan <ArrowRight className="w-3 h-3" />
+                    <span>Baca Naskah</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
                   </Link>
                 </article>
               ))}

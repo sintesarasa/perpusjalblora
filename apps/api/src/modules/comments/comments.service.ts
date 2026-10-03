@@ -67,6 +67,20 @@ export class CommentsService {
               avatarUrl: true,
               role: true,
               trustLevel: true,
+              equippedTitle: true,
+              badges: {
+                where: { earnedAt: { not: null } },
+                select: {
+                  badge: {
+                    select: {
+                      code: true,
+                      name: true,
+                      iconName: true,
+                      tier: true,
+                    },
+                  },
+                },
+              },
             },
           },
           replies: {
@@ -81,6 +95,20 @@ export class CommentsService {
                   avatarUrl: true,
                   role: true,
                   trustLevel: true,
+                  equippedTitle: true,
+                  badges: {
+                    where: { earnedAt: { not: null } },
+                    select: {
+                      badge: {
+                        select: {
+                          code: true,
+                          name: true,
+                          iconName: true,
+                          tier: true,
+                        },
+                      },
+                    },
+                  },
                 },
               },
             },
@@ -119,6 +147,9 @@ export class CommentsService {
           avatarUrl: c.author.avatarUrl,
           role: c.author.role as unknown as Role,
           trustLevel: c.author.trustLevel as unknown as TrustLevel,
+          equippedTitle: c.author.equippedTitle,
+          earnedBadgesCount: c.author.badges?.length || 0,
+          badges: c.author.badges?.map((ub: any) => ub.badge) || [],
         },
         replies: c.replies ? c.replies.map(formatComment) : [],
       };

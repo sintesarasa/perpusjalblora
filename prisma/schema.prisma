@@ -178,6 +178,7 @@ enum BadgeCriteria {
   LOANS_RETURNED
   ONTIME_STREAK
   ACCOUNT_AGE_DAYS
+  BOOKS_DONATED
   MANUAL
 }
 
@@ -220,6 +221,8 @@ model User {
   suspensionReason     String?
   noShowCount          Int        @default(0)
   onTimeStreak         Int        @default(0)
+  booksDonatedCount    Int        @default(0)
+  equippedTitle        String?    @db.VarChar(60)
 
   // Privasi
   isProfilePublic      Boolean    @default(true)
@@ -748,6 +751,9 @@ model Badge {
   iconName      String
   criteriaType  BadgeCriteria
   criteriaValue Int           @default(1)
+  tier          Int           @default(1)
+  category      String        @default("GENERAL") @db.VarChar(30)
+  titleReward   String?       @db.VarChar(60)
   order         Int           @default(0)
   isActive      Boolean       @default(true)
   createdAt     DateTime      @default(now())

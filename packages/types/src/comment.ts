@@ -58,6 +58,9 @@ export interface CommentAuthor {
   avatarUrl: string | null;
   role: Role;
   trustLevel: TrustLevel;
+  equippedTitle?: string | null;
+  earnedBadgesCount?: number;
+  badges?: Array<{ code: string; name: string; iconName: string; tier: number }>;
 }
 
 export interface CommentItem {

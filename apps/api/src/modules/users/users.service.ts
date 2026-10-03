@@ -81,6 +81,15 @@ export class UsersService {
       };
     }
 
+    const [loansCount, eventsCount] = await Promise.all([
+      prisma.loan.count({
+        where: { userId: user.id, status: { in: ['RETURNED', 'RETURNED_LOST', 'BORROWED'] as any[] } },
+      }),
+      prisma.eventRegistration.count({
+        where: { userId: user.id, status: 'ATTENDED' as any },
+      }),
+    ]);
+
     return {
       id: user.id,
       name: user.name,
@@ -89,15 +98,18 @@ export class UsersService {
       bio: user.bio,
       instagramUrl: user.instagramUrl,
       websiteUrl: user.websiteUrl,
-      phoneNumber: user.phoneNumber,
       role: user.role as Role,
       trustLevel: user.trustLevel as TrustLevel,
+      equippedTitle: user.equippedTitle,
       createdAt: user.createdAt.toISOString(),
       isProfilePublic: user.isProfilePublic,
       showBadges: user.showBadges,
       stats: {
         totalArticles,
         badgesCount: userBadges.length,
+        loansCount,
+        eventsAttended: eventsCount,
+        booksDonated: user.booksDonatedCount,
       },
       badges: userBadges,
       articles: user.articles.map((a) => ({

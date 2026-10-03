@@ -4,6 +4,7 @@ import * as React from 'react';
 import { apiClient } from '@/lib/api';
 import { CommentItem, CommentStatus, ReportReason } from '@perpusjal/types';
 import { CommentForm } from './comment-form';
+import { UserHonorBadge } from '@/components/gamification/user-honor-badge';
 import {
   CornerDownRight,
   Edit2,
@@ -151,6 +152,14 @@ export function CommentItemComponent({
           <span className="font-mono text-[11px] text-muted">
             @{comment.author.username}
           </span>
+
+          {/* User Honor Title & Badges */}
+          <UserHonorBadge
+            equippedTitle={comment.author.equippedTitle}
+            earnedBadgesCount={comment.author.earnedBadgesCount}
+            badges={comment.author.badges}
+            username={comment.author.username}
+          />
 
           {/* Role / Trust Level Badge */}
           {comment.author.role === 'KURATOR' || comment.author.role === 'ADMIN' ? (

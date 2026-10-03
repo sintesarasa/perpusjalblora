@@ -1,11 +1,13 @@
 import { prisma } from '../../lib/prisma.js';
 import {
   BadgeCriteria,
+  BadgeCategory,
   BadgeItem,
   UserBadgeProgress,
   UserBadgeListResponse,
 } from '@perpusjal/types';
 import { notificationsService } from '../notifications/notifications.service.js';
+import { HttpError } from '../../utils/errors.js';
 
 export const CANONICAL_BADGES: Array<{
   code: string;
@@ -14,115 +16,453 @@ export const CANONICAL_BADGES: Array<{
   iconName: string;
   criteriaType: BadgeCriteria;
   criteriaValue: number;
+  tier: number;
+  category: BadgeCategory;
+  titleReward: string;
   order: number;
 }> = [
+  // ── 1. PILAR WACANA (Membaca Artikel) ──
   {
-    code: 'PEMBACA_PERTAMA',
-    name: 'Pembaca Pertama',
-    description: 'Menyelesaikan bacaan 1 artikel secara utuh.',
-    iconName: 'seedling',
-    criteriaType: BadgeCriteria.ARTICLES_READ,
-    criteriaValue: 1,
-    order: 1,
-  },
-  {
-    code: 'PEMBACA_AKTIF',
-    name: 'Pembaca Aktif',
-    description: 'Membaca 10 artikel pilihan di ruang baca Perpusjal.',
+    code: 'WACANA_T1',
+    name: 'Perintis Lembaran',
+    description: 'Menyelesaikan pembacaan 1 artikel secara utuh.',
     iconName: 'book-open',
     criteriaType: BadgeCriteria.ARTICLES_READ,
-    criteriaValue: 10,
-    order: 2,
+    criteriaValue: 1,
+    tier: 1,
+    category: BadgeCategory.WACANA,
+    titleReward: 'Perintis Lembaran',
+    order: 101,
   },
   {
-    code: 'KUTU_BUKU',
-    name: 'Kutu Buku',
-    description: 'Menyelesaikan pembacaan 50 artikel pustaka.',
-    iconName: 'owl',
+    code: 'WACANA_T2',
+    name: 'Pencari Sabda',
+    description: 'Membaca tuntas 25 artikel pustaka & opini warga.',
+    iconName: 'book-open',
     criteriaType: BadgeCriteria.ARTICLES_READ,
-    criteriaValue: 50,
-    order: 3,
+    criteriaValue: 25,
+    tier: 2,
+    category: BadgeCategory.WACANA,
+    titleReward: 'Pencari Sabda',
+    order: 102,
   },
   {
-    code: 'PENULIS_PERTAMA',
-    name: 'Penulis Pertama',
-    description: 'Tulisan perdana lolos meja kurasi dan terbit ke publik.',
+    code: 'WACANA_T3',
+    name: 'Kutu Buku Lapak',
+    description: 'Menyelesaikan pembacaan 100 artikel tulisan warga.',
+    iconName: 'bookmark',
+    criteriaType: BadgeCriteria.ARTICLES_READ,
+    criteriaValue: 100,
+    tier: 3,
+    category: BadgeCategory.WACANA,
+    titleReward: 'Kutu Buku Lapak',
+    order: 103,
+  },
+  {
+    code: 'WACANA_T4',
+    name: 'Pelahap Aksara',
+    description: 'Membaca 250 artikel khazanah literasi Perpusjal.',
+    iconName: 'flame',
+    criteriaType: BadgeCriteria.ARTICLES_READ,
+    criteriaValue: 250,
+    tier: 4,
+    category: BadgeCategory.WACANA,
+    titleReward: 'Pelahap Aksara',
+    order: 104,
+  },
+  {
+    code: 'WACANA_T5',
+    name: 'Resi Pustaka',
+    description: 'Membaca 500 artikel pemikiran dan kearsipan rakyat.',
+    iconName: 'award',
+    criteriaType: BadgeCriteria.ARTICLES_READ,
+    criteriaValue: 500,
+    tier: 5,
+    category: BadgeCategory.WACANA,
+    titleReward: 'Resi Pustaka',
+    order: 105,
+  },
+  {
+    code: 'WACANA_T6',
+    name: 'Begawan Sastra',
+    description: 'Tingkat tertinggi: Menuntaskan 1.000 artikel wacana.',
+    iconName: 'crown',
+    criteriaType: BadgeCriteria.ARTICLES_READ,
+    criteriaValue: 1000,
+    tier: 6,
+    category: BadgeCategory.WACANA,
+    titleReward: 'Begawan Sastra',
+    order: 106,
+  },
+
+  // ── 2. PILAR TINTA (Menulis Karya Terbit) ──
+  {
+    code: 'TINTA_T1',
+    name: 'Pena Perdana',
+    description: 'Tulisan perdana berhasil lolos meja kurasi dan terbit.',
     iconName: 'feather',
     criteriaType: BadgeCriteria.ARTICLES_PUBLISHED,
     criteriaValue: 1,
-    order: 4,
+    tier: 1,
+    category: BadgeCategory.TINTA,
+    titleReward: 'Pena Perdana',
+    order: 201,
   },
   {
-    code: 'KONTRIBUTOR',
-    name: 'Kontributor Warta',
-    description: 'Menerbitkan 5 karya tulis untuk kearsipan komunitas.',
-    iconName: 'pen-tool',
+    code: 'TINTA_T2',
+    name: 'Pencatat Realitas',
+    description: 'Menerbitkan 5 karya tulis reflektif dan warta warga.',
+    iconName: 'feather',
     criteriaType: BadgeCriteria.ARTICLES_PUBLISHED,
     criteriaValue: 5,
-    order: 5,
+    tier: 2,
+    category: BadgeCategory.TINTA,
+    titleReward: 'Pencatat Realitas',
+    order: 202,
   },
   {
-    code: 'KOLUMNIS',
-    name: 'Kolumnis Perpusjal',
-    description: 'Menerbitkan 15 tulisan reflektif dan kritik berbobot.',
+    code: 'TINTA_T3',
+    name: 'Wartawan Rakyat',
+    description: 'Menerbitkan 15 tulisan opini, esai, atau cerita rakyat.',
     iconName: 'newspaper',
     criteriaType: BadgeCriteria.ARTICLES_PUBLISHED,
     criteriaValue: 15,
-    order: 6,
+    tier: 3,
+    category: BadgeCategory.TINTA,
+    titleReward: 'Wartawan Rakyat',
+    order: 203,
   },
   {
-    code: 'TEMAN_DISKUSI',
-    name: 'Teman Diskusi',
-    description: 'Menuliskan 10 tanggapan argumentatif yang terbit di ruang komentar.',
+    code: 'TINTA_T4',
+    name: 'Kolumnis Garis Depan',
+    description: 'Menerbitkan 35 karya tulis berbobot di ruang publik.',
+    iconName: 'edit-3',
+    criteriaType: BadgeCriteria.ARTICLES_PUBLISHED,
+    criteriaValue: 35,
+    tier: 4,
+    category: BadgeCategory.TINTA,
+    titleReward: 'Kolumnis Garis Depan',
+    order: 204,
+  },
+  {
+    code: 'TINTA_T5',
+    name: 'Mpu Gubahan',
+    description: 'Menerbitkan 75 karya sastra & kritik sosial yang menginspirasi.',
+    iconName: 'scroll',
+    criteriaType: BadgeCriteria.ARTICLES_PUBLISHED,
+    criteriaValue: 75,
+    tier: 5,
+    category: BadgeCategory.TINTA,
+    titleReward: 'Mpu Gubahan',
+    order: 205,
+  },
+  {
+    code: 'TINTA_T6',
+    name: 'Pujangga Arus Bawah',
+    description: 'Maestro literasi: Menerbitkan 150 karya tulis rakyat.',
+    iconName: 'crown',
+    criteriaType: BadgeCriteria.ARTICLES_PUBLISHED,
+    criteriaValue: 150,
+    tier: 6,
+    category: BadgeCategory.TINTA,
+    titleReward: 'Pujangga Arus Bawah',
+    order: 206,
+  },
+
+  // ── 3. PILAR DIALEKTIKA (Komentar & Diskusi) ──
+  {
+    code: 'DIALEKTIKA_T1',
+    name: 'Pemberi Suara',
+    description: 'Menuliskan 1 komentar perdana di ruang diskusi tulisan.',
     iconName: 'message-square',
     criteriaType: BadgeCriteria.COMMENTS_PUBLISHED,
-    criteriaValue: 10,
-    order: 7,
+    criteriaValue: 1,
+    tier: 1,
+    category: BadgeCategory.DIALEKTIKA,
+    titleReward: 'Pemberi Suara',
+    order: 301,
   },
   {
-    code: 'PENGGERAK_LITERASI',
-    name: 'Penggerak Literasi',
-    description: 'Hadir langsung di 3 forum diskusi atau lapak baca terbuka.',
-    iconName: 'flame',
-    criteriaType: BadgeCriteria.EVENTS_ATTENDED,
-    criteriaValue: 3,
-    order: 8,
+    code: 'DIALEKTIKA_T2',
+    name: 'Teman Berbincang',
+    description: 'Mengirimkan 20 komentar tanggapan yang membangun.',
+    iconName: 'message-circle',
+    criteriaType: BadgeCriteria.COMMENTS_PUBLISHED,
+    criteriaValue: 20,
+    tier: 2,
+    category: BadgeCategory.DIALEKTIKA,
+    titleReward: 'Teman Berbincang',
+    order: 302,
   },
   {
-    code: 'BOOK_EXPLORER',
-    name: 'Penjelajah Pustaka',
-    description: 'Menuntaskan peminjaman dan pengembalian 5 buku koleksi lapak.',
+    code: 'DIALEKTIKA_T3',
+    name: 'Penjaga Logika',
+    description: 'Aktif berdiskusi dengan 50 komentar argumentatif.',
+    iconName: 'messages-square',
+    criteriaType: BadgeCriteria.COMMENTS_PUBLISHED,
+    criteriaValue: 50,
+    tier: 3,
+    category: BadgeCategory.DIALEKTIKA,
+    titleReward: 'Penjaga Logika',
+    order: 303,
+  },
+  {
+    code: 'DIALEKTIKA_T4',
+    name: 'Juru Debat Lapak',
+    description: 'Menyumbang 150 buah pemikiran di kolom diskusi publik.',
+    iconName: 'zap',
+    criteriaType: BadgeCriteria.COMMENTS_PUBLISHED,
+    criteriaValue: 150,
+    tier: 4,
+    category: BadgeCategory.DIALEKTIKA,
+    titleReward: 'Juru Debat Lapak',
+    order: 304,
+  },
+  {
+    code: 'DIALEKTIKA_T5',
+    name: 'Penjaga Dialektika',
+    description: 'Menuliskan 300 komentar bernas yang merawat nalar sehat.',
+    iconName: 'shield',
+    criteriaType: BadgeCriteria.COMMENTS_PUBLISHED,
+    criteriaValue: 300,
+    tier: 5,
+    category: BadgeCategory.DIALEKTIKA,
+    titleReward: 'Penjaga Dialektika',
+    order: 305,
+  },
+  {
+    code: 'DIALEKTIKA_T6',
+    name: 'Mursyid Diskusi',
+    description: 'Menuliskan 500+ komentar bermutu tinggi di ruang wacana.',
+    iconName: 'crown',
+    criteriaType: BadgeCriteria.COMMENTS_PUBLISHED,
+    criteriaValue: 500,
+    tier: 6,
+    category: BadgeCategory.DIALEKTIKA,
+    titleReward: 'Mursyid Diskusi',
+    order: 306,
+  },
+
+  // ── 4. PILAR AMANAH (Peminjaman & Streak On-Time) ──
+  {
+    code: 'AMANAH_T1',
+    name: 'Penjelajah Rak',
+    description: 'Menuntaskan peminjaman 1 buku fisik koleksi lapak.',
     iconName: 'compass',
     criteriaType: BadgeCriteria.LOANS_RETURNED,
-    criteriaValue: 5,
-    order: 9,
+    criteriaValue: 1,
+    tier: 1,
+    category: BadgeCategory.AMANAH,
+    titleReward: 'Penjelajah Rak',
+    order: 401,
   },
   {
-    code: 'PENJAGA_AMANAH',
+    code: 'AMANAH_T2',
+    name: 'Pemegang Janji',
+    description: '5x berturut-turut mengembalikan buku tepat waktu.',
+    iconName: 'check-circle-2',
+    criteriaType: BadgeCriteria.ONTIME_STREAK,
+    criteriaValue: 5,
+    tier: 2,
+    category: BadgeCategory.AMANAH,
+    titleReward: 'Pemegang Janji',
+    order: 402,
+  },
+  {
+    code: 'AMANAH_T3',
     name: 'Penjaga Amanah',
-    description: '10 kali pengembalian buku tepat waktu tanpa pernah terlambat.',
+    description: '15x streak tepat waktu; teladan kedisiplinan peminjaman.',
+    iconName: 'shield-check',
+    criteriaType: BadgeCriteria.ONTIME_STREAK,
+    criteriaValue: 15,
+    tier: 3,
+    category: BadgeCategory.AMANAH,
+    titleReward: 'Penjaga Amanah',
+    order: 403,
+  },
+  {
+    code: 'AMANAH_T4',
+    name: 'Benteng Integritas',
+    description: '35x streak pengembalian buku tepat waktu tanpa celah.',
     iconName: 'shield',
     criteriaType: BadgeCriteria.ONTIME_STREAK,
-    criteriaValue: 10,
-    order: 10,
+    criteriaValue: 35,
+    tier: 4,
+    category: BadgeCategory.AMANAH,
+    titleReward: 'Benteng Integritas',
+    order: 404,
   },
   {
-    code: 'SAHABAT_LAPAK',
-    name: 'Sahabat Lapak',
-    description: 'Telah terdaftar selama 1 tahun dan aktif dalam ekosistem Perpusjal.',
-    iconName: 'landmark',
-    criteriaType: BadgeCriteria.ACCOUNT_AGE_DAYS,
-    criteriaValue: 365,
-    order: 11,
+    code: 'AMANAH_T5',
+    name: 'Ksatria Pustaka',
+    description: '60x streak pengembalian tepat waktu koleksi lapak.',
+    iconName: 'award',
+    criteriaType: BadgeCriteria.ONTIME_STREAK,
+    criteriaValue: 60,
+    tier: 5,
+    category: BadgeCategory.AMANAH,
+    titleReward: 'Ksatria Pustaka',
+    order: 405,
   },
   {
-    code: 'DONATUR_BUKU',
-    name: 'Donatur Pustaka',
-    description: 'Menghibahkan buku fisik untuk dirawat dan dibaca bersama di lapak.',
-    iconName: 'gift',
-    criteriaType: BadgeCriteria.MANUAL,
+    code: 'AMANAH_T6',
+    name: 'Wali Amanah Buku',
+    description: 'Menuntaskan 100+ peminjaman buku fisik dengan sempurna.',
+    iconName: 'crown',
+    criteriaType: BadgeCriteria.LOANS_RETURNED,
+    criteriaValue: 100,
+    tier: 6,
+    category: BadgeCategory.AMANAH,
+    titleReward: 'Wali Amanah Buku',
+    order: 406,
+  },
+
+  // ── 5. PILAR PRESENSI (Kehadiran Acara / Lapak Fisik via QR) ──
+  {
+    code: 'PRESENSI_T1',
+    name: 'Penyapa Lapak',
+    description: 'Hadir langsung 1x di kegiatan atau lapak baca terbuka.',
+    iconName: 'map-pin',
+    criteriaType: BadgeCriteria.EVENTS_ATTENDED,
     criteriaValue: 1,
-    order: 12,
+    tier: 1,
+    category: BadgeCategory.PRESENSI,
+    titleReward: 'Penyapa Lapak',
+    order: 501,
+  },
+  {
+    code: 'PRESENSI_T2',
+    name: 'Kawan Kumpul',
+    description: 'Hadir dalam 5 agenda diskusi atau lapak baca mingguan.',
+    iconName: 'users',
+    criteriaType: BadgeCriteria.EVENTS_ATTENDED,
+    criteriaValue: 5,
+    tier: 2,
+    category: BadgeCategory.PRESENSI,
+    titleReward: 'Kawan Kumpul',
+    order: 502,
+  },
+  {
+    code: 'PRESENSI_T3',
+    name: 'Penggerak Lapak',
+    description: 'Hadir dalam 12 kegiatan temu literasi & gelar buku.',
+    iconName: 'calendar',
+    criteriaType: BadgeCriteria.EVENTS_ATTENDED,
+    criteriaValue: 12,
+    tier: 3,
+    category: BadgeCategory.PRESENSI,
+    titleReward: 'Penggerak Lapak',
+    order: 503,
+  },
+  {
+    code: 'PRESENSI_T4',
+    name: 'Garda Gelaran',
+    description: 'Menghadiri 25 kegiatan fisik; motor penggerak literasi.',
+    iconName: 'flame',
+    criteriaType: BadgeCriteria.EVENTS_ATTENDED,
+    criteriaValue: 25,
+    tier: 4,
+    category: BadgeCategory.PRESENSI,
+    titleReward: 'Garda Gelaran',
+    order: 504,
+  },
+  {
+    code: 'PRESENSI_T5',
+    name: 'Saksi Sejarah',
+    description: 'Menghadiri 50 kegiatan komunitas di berbagai sudut Blora.',
+    iconName: 'landmark',
+    criteriaType: BadgeCriteria.EVENTS_ATTENDED,
+    criteriaValue: 50,
+    tier: 5,
+    category: BadgeCategory.PRESENSI,
+    titleReward: 'Saksi Sejarah',
+    order: 505,
+  },
+  {
+    code: 'PRESENSI_T6',
+    name: 'Jiwa Perpusjal',
+    description: 'Menghadiri 100+ kegiatan lapak; sosok legenda hidup.',
+    iconName: 'crown',
+    criteriaType: BadgeCriteria.EVENTS_ATTENDED,
+    criteriaValue: 100,
+    tier: 6,
+    category: BadgeCategory.PRESENSI,
+    titleReward: 'Jiwa Perpusjal',
+    order: 506,
+  },
+
+  // ── 6. PILAR DONATUR (Hibah Buku Fisik Koleksi) ──
+  {
+    code: 'DONATUR_T1',
+    name: 'Penyemai Benih',
+    description: 'Menghibahkan 1 buku fisik pertama untuk dibaca bersama.',
+    iconName: 'gift',
+    criteriaType: BadgeCriteria.BOOKS_DONATED,
+    criteriaValue: 1,
+    tier: 1,
+    category: BadgeCategory.DONATUR,
+    titleReward: 'Penyemai Benih',
+    order: 601,
+  },
+  {
+    code: 'DONATUR_T2',
+    name: 'Kawan Berderma',
+    description: 'Menghibahkan 5 buku fisik memperkaya khazanah lapak.',
+    iconName: 'heart',
+    criteriaType: BadgeCriteria.BOOKS_DONATED,
+    criteriaValue: 5,
+    tier: 2,
+    category: BadgeCategory.DONATUR,
+    titleReward: 'Kawan Berderma',
+    order: 602,
+  },
+  {
+    code: 'DONATUR_T3',
+    name: 'Donatur Setia',
+    description: 'Menghibahkan 15 buku koleksi fisik untuk warga.',
+    iconName: 'package',
+    criteriaType: BadgeCriteria.BOOKS_DONATED,
+    criteriaValue: 15,
+    tier: 3,
+    category: BadgeCategory.DONATUR,
+    titleReward: 'Donatur Setia',
+    order: 603,
+  },
+  {
+    code: 'DONATUR_T4',
+    name: 'Pembangun Rak',
+    description: 'Menghibahkan 30 buku bermutu ke perpustakaan rakyat.',
+    iconName: 'layers',
+    criteriaType: BadgeCriteria.BOOKS_DONATED,
+    criteriaValue: 30,
+    tier: 4,
+    category: BadgeCategory.DONATUR,
+    titleReward: 'Pembangun Rak',
+    order: 604,
+  },
+  {
+    code: 'DONATUR_T5',
+    name: 'Penyokong Pustaka',
+    description: 'Menghibahkan 60 buku fisik; penopang sirkulasi buku gratis.',
+    iconName: 'award',
+    criteriaType: BadgeCriteria.BOOKS_DONATED,
+    criteriaValue: 60,
+    tier: 5,
+    category: BadgeCategory.DONATUR,
+    titleReward: 'Penyokong Pustaka',
+    order: 605,
+  },
+  {
+    code: 'DONATUR_T6',
+    name: 'Bapak/Ibu Asuh Pustaka',
+    description: 'Menghibahkan 100+ buku fisik koleksi bagi rakyat Blora.',
+    iconName: 'crown',
+    criteriaType: BadgeCriteria.BOOKS_DONATED,
+    criteriaValue: 100,
+    tier: 6,
+    category: BadgeCategory.DONATUR,
+    titleReward: 'Bapak/Ibu Asuh Pustaka',
+    order: 606,
   },
 ];
 
@@ -138,6 +478,9 @@ export class BadgesService {
           iconName: b.iconName,
           criteriaType: b.criteriaType as any,
           criteriaValue: b.criteriaValue,
+          tier: b.tier,
+          category: b.category,
+          titleReward: b.titleReward,
           order: b.order,
           isActive: true,
         },
@@ -147,6 +490,9 @@ export class BadgesService {
           iconName: b.iconName,
           criteriaType: b.criteriaType as any,
           criteriaValue: b.criteriaValue,
+          tier: b.tier,
+          category: b.category,
+          titleReward: b.titleReward,
           order: b.order,
         },
       });
@@ -168,6 +514,9 @@ export class BadgesService {
       iconName: b.iconName,
       criteriaType: b.criteriaType as BadgeCriteria,
       criteriaValue: b.criteriaValue,
+      tier: b.tier,
+      category: b.category,
+      titleReward: b.titleReward,
       order: b.order,
       isActive: b.isActive,
       createdAt: b.createdAt.toISOString(),
@@ -177,42 +526,63 @@ export class BadgesService {
   async getUserBadgeProgress(userId: string): Promise<UserBadgeListResponse> {
     await this.ensureBadgesSeeded();
 
-    const [user, badges, userBadges, readCount, pubArticlesCount, pubCommentsCount, attendedEventsCount, returnedLoansCount] =
-      await Promise.all([
-        prisma.user.findUnique({
-          where: { id: userId },
-          select: { id: true, createdAt: true, onTimeStreak: true },
-        }),
-        prisma.badge.findMany({
-          where: { isActive: true },
-          orderBy: { order: 'asc' },
-        }),
-        prisma.userBadge.findMany({
-          where: { userId },
-          include: { badge: true },
-        }),
-        prisma.readingLog.count({
-          where: { userId, counted: true },
-        }),
-        prisma.article.count({
-          where: { authorId: userId, status: 'PUBLISHED' as any },
-        }),
-        prisma.comment.count({
-          where: { authorId: userId, status: 'PUBLISHED' as any },
-        }),
-        prisma.eventRegistration.count({
-          where: { userId, status: 'ATTENDED' as any },
-        }),
-        prisma.loan.count({
-          where: {
-            userId,
-            status: { in: ['RETURNED', 'RETURNED_LOST'] as any[] },
-          },
-        }),
-      ]);
+    const [
+      user,
+      badges,
+      userBadges,
+      readCount,
+      pubArticlesCount,
+      pubCommentsCount,
+      attendedEventsCount,
+      returnedLoansCount,
+    ] = await Promise.all([
+      prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+          id: true,
+          createdAt: true,
+          onTimeStreak: true,
+          equippedTitle: true,
+          booksDonatedCount: true,
+        },
+      }),
+      prisma.badge.findMany({
+        where: { isActive: true },
+        orderBy: { order: 'asc' },
+      }),
+      prisma.userBadge.findMany({
+        where: { userId },
+        include: { badge: true },
+      }),
+      prisma.readingLog.count({
+        where: { userId, counted: true },
+      }),
+      prisma.article.count({
+        where: { authorId: userId, status: 'PUBLISHED' as any },
+      }),
+      prisma.comment.count({
+        where: { authorId: userId, status: 'PUBLISHED' as any },
+      }),
+      prisma.eventRegistration.count({
+        where: { userId, status: 'ATTENDED' as any },
+      }),
+      prisma.loan.count({
+        where: {
+          userId,
+          status: { in: ['RETURNED', 'RETURNED_LOST'] as any[] },
+        },
+      }),
+    ]);
 
     if (!user) {
-      return { earnedCount: 0, totalCount: badges.length, badges: [] };
+      return {
+        earnedCount: 0,
+        totalCount: badges.length,
+        equippedTitle: null,
+        availableTitles: [],
+        totalTitlesEarned: 0,
+        badges: [],
+      };
     }
 
     const now = new Date();
@@ -224,6 +594,7 @@ export class BadgesService {
 
     const results: UserBadgeProgress[] = [];
     let earnedCount = 0;
+    const availableTitles: string[] = [];
 
     for (const b of badges) {
       let currentValue = 0;
@@ -246,6 +617,9 @@ export class BadgesService {
         case BadgeCriteria.ONTIME_STREAK:
           currentValue = user.onTimeStreak;
           break;
+        case BadgeCriteria.BOOKS_DONATED:
+          currentValue = user.booksDonatedCount;
+          break;
         case BadgeCriteria.ACCOUNT_AGE_DAYS:
           currentValue = daysSinceJoined;
           break;
@@ -255,13 +629,14 @@ export class BadgesService {
       }
 
       const existingUB = userBadgeMap.get(b.id);
-      const isEligible = b.criteriaType === BadgeCriteria.MANUAL
-        ? !!existingUB?.earnedAt
-        : currentValue >= b.criteriaValue;
+      const isEligible =
+        b.criteriaType === BadgeCriteria.MANUAL
+          ? !!existingUB?.earnedAt
+          : currentValue >= b.criteriaValue;
 
-      // If newly earned, save in DB and create notification!
       let earnedAt = existingUB?.earnedAt ? existingUB.earnedAt.toISOString() : null;
 
+      // Newly earned badge! Record in DB & push notification
       if (isEligible && !existingUB?.earnedAt) {
         const earnedDate = new Date();
         earnedAt = earnedDate.toISOString();
@@ -279,11 +654,11 @@ export class BadgesService {
           },
         });
 
-        // Send Notification
+        // Send Live Real-Time Notification
         await notificationsService.createNotification(userId, {
           type: 'BADGE_EARNED',
-          title: `Lencana Baru Diraih: ${b.name}`,
-          body: `Selamat! Kamu telah memperoleh lencana "${b.name}" atas kontribusi apresiasi literasi.`,
+          title: `Lencana & Gelar Baru: ${b.name}`,
+          body: `Selamat! Kamu meraih gelar kehormatan "${b.titleReward || b.name}" (Tier ${b.tier}). Pasang gelarmu di dasbor lencana!`,
           actionUrl: '/dashboard/badge',
           entityType: 'BADGE',
           entityId: b.id,
@@ -291,7 +666,12 @@ export class BadgesService {
       }
 
       const earned = isEligible || !!existingUB?.earnedAt;
-      if (earned) earnedCount++;
+      if (earned) {
+        earnedCount++;
+        if (b.titleReward) {
+          availableTitles.push(b.titleReward);
+        }
+      }
 
       const cappedValue = Math.min(currentValue, b.criteriaValue);
       const percent = Math.min(100, Math.round((cappedValue / b.criteriaValue) * 100));
@@ -305,6 +685,9 @@ export class BadgesService {
           iconName: b.iconName,
           criteriaType: b.criteriaType as BadgeCriteria,
           criteriaValue: b.criteriaValue,
+          tier: b.tier,
+          category: b.category,
+          titleReward: b.titleReward,
           order: b.order,
           isActive: b.isActive,
           createdAt: b.createdAt.toISOString(),
@@ -320,8 +703,99 @@ export class BadgesService {
     return {
       earnedCount,
       totalCount: badges.length,
+      equippedTitle: user.equippedTitle,
+      availableTitles,
+      totalTitlesEarned: availableTitles.length,
       badges: results,
+      stats: {
+        articlesRead: readCount,
+        articlesPublished: pubArticlesCount,
+        commentsCount: pubCommentsCount,
+        loansReturned: returnedLoansCount,
+        onTimeStreak: user.onTimeStreak,
+        eventsAttended: attendedEventsCount,
+        booksDonated: user.booksDonatedCount,
+      },
     };
+  }
+
+  /**
+   * Set user's primary equipped title
+   */
+  async equipTitle(userId: string, titleReward: string | null) {
+    if (titleReward === null || titleReward === '') {
+      // Unequip
+      return prisma.user.update({
+        where: { id: userId },
+        data: { equippedTitle: null },
+        select: { id: true, equippedTitle: true },
+      });
+    }
+
+    // Verify title belongs to an earned badge
+    const earnedBadges = await prisma.userBadge.findMany({
+      where: {
+        userId,
+        earnedAt: { not: null },
+      },
+      include: { badge: true },
+    });
+
+    const isAvailable = earnedBadges.some(
+      (ub) => ub.badge.titleReward === titleReward || ub.badge.name === titleReward
+    );
+
+    if (!isAvailable) {
+      throw HttpError.forbidden('Kamu belum membuka gelar kehormatan ini.');
+    }
+
+    return prisma.user.update({
+      where: { id: userId },
+      data: { equippedTitle: titleReward },
+      select: { id: true, equippedTitle: true },
+    });
+  }
+
+  /**
+   * Admin / Curator: Record physical book donation by member
+   */
+  async recordBookDonation(
+    adminUserId: string,
+    targetUserId: string,
+    count: number,
+    note?: string
+  ) {
+    if (count <= 0) {
+      throw HttpError.badRequest('Jumlah buku donasi harus lebih dari 0.');
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id: targetUserId },
+      data: {
+        booksDonatedCount: { increment: count },
+      },
+      select: {
+        id: true,
+        name: true,
+        username: true,
+        booksDonatedCount: true,
+      },
+    });
+
+    // Notify user
+    await notificationsService.createNotification(targetUserId, {
+      type: 'GENERAL_INFO',
+      title: 'Hibah Buku Terverifikasi!',
+      body: `Relawan lapak telah mencatat penerimaan ${count} buku fisik dari Anda. Terima kasih atas kedermawananmu untuk warga!`,
+      actionUrl: '/dashboard/badge',
+      entityType: 'USER',
+      entityId: targetUserId,
+    });
+
+    // Re-evaluate progress to auto-award badges
+    await this.getUserBadgeProgress(targetUserId);
+
+    return updatedUser;
   }
 }
 

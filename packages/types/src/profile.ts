@@ -9,15 +9,18 @@ export interface PublicUserProfile {
   bio: string | null;
   instagramUrl: string | null;
   websiteUrl: string | null;
-  phoneNumber?: string | null;
   role: Role;
   trustLevel: TrustLevel;
+  equippedTitle?: string | null;
   createdAt: string;
   isProfilePublic: boolean;
   showBadges: boolean;
   stats: {
     totalArticles: number;
     badgesCount: number;
+    loansCount?: number;
+    eventsAttended?: number;
+    booksDonated?: number;
   };
   badges: UserBadgeProgress[];
   articles: Array<{
