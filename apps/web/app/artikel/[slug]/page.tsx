@@ -293,6 +293,7 @@ function ArticleDetailContent() {
                     earnedBadgesCount={article.author.earnedBadgesCount}
                     badges={article.author.badges}
                     username={article.author.username}
+                    size="md"
                   />
                 )}
                 <span className="text-muted/60">&bull;</span>

@@ -65,6 +65,7 @@ export function AuthorCard({ author, className }: AuthorCardProps) {
             earnedBadgesCount={author.earnedBadgesCount}
             badges={author.badges}
             username={author.username}
+            size="md"
           />
         </div>
 

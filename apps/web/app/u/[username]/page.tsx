@@ -17,6 +17,7 @@ import {
   MessageSquare,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { BadgeInsignia } from '@/components/gamification/badge-insignia';
 
 export const dynamic = 'force-dynamic';
 
@@ -245,9 +246,13 @@ export default async function UserProfilePage({
                     key={b.badge.id}
                     className="border-2 border-foreground bg-surface p-4 flex items-start gap-3.5 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,0.9)]"
                   >
-                    <div className="w-10 h-10 border-2 border-foreground bg-foreground text-background flex items-center justify-center shrink-0">
-                      {getPillarIcon(b.badge.category)}
-                    </div>
+                    <BadgeInsignia
+                      code={b.badge.code}
+                      tier={b.badge.tier}
+                      category={b.badge.category}
+                      earned={true}
+                      size="md"
+                    />
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between font-mono text-[9px] text-muted uppercase tracking-wider mb-0.5">
                         <span>TIER {b.badge.tier || 1}</span>
@@ -256,7 +261,12 @@ export default async function UserProfilePage({
                       <h3 className="font-serif text-base font-bold text-foreground truncate">
                         {b.badge.name}
                       </h3>
-                      <p className="text-[11px] text-foreground/80 font-sans line-clamp-2 mt-0.5 leading-snug">
+                      {b.badge.titleReward && (
+                        <span className="font-mono text-[9.5px] font-bold text-foreground block">
+                          Julukan: "{b.badge.titleReward}"
+                        </span>
+                      )}
+                      <p className="text-[11px] text-muted font-sans line-clamp-2 mt-1 leading-snug">
                         {b.badge.description}
                       </p>
                       {b.earnedAt && (

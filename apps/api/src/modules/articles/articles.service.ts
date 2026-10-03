@@ -468,16 +468,59 @@ export class ArticlesService {
 
     // If read for more than 10 seconds, record reading log
     if (payload.secondsSpent && payload.secondsSpent >= 10) {
-      await prisma.readingLog.create({
-        data: {
-          userId: payload.userId,
-          anonId: payload.anonId,
-          articleId,
-          secondsSpent: payload.secondsSpent,
-          scrollDepth: payload.scrollDepth || 0,
-          counted: true,
-        },
-      }).catch(() => {});
+      if (payload.userId) {
+        // Check if article is written by reader themselves
+        const article = await prisma.article.findUnique({
+          where: { id: articleId },
+          select: { authorId: true },
+        });
+
+        const isAuthor = article?.authorId === payload.userId;
+
+        // Check if user already has an existing reading log for this article
+        const existingLog = await prisma.readingLog.findFirst({
+          where: { userId: payload.userId, articleId },
+        });
+
+        if (existingLog) {
+          // Update read time without creating duplicate counted row
+          await prisma.readingLog
+            .update({
+              where: { id: existingLog.id },
+              data: {
+                secondsSpent: existingLog.secondsSpent + (payload.secondsSpent || 0),
+                scrollDepth: Math.max(existingLog.scrollDepth, payload.scrollDepth || 0),
+                counted: !isAuthor,
+              },
+            })
+            .catch(() => {});
+        } else {
+          await prisma.readingLog
+            .create({
+              data: {
+                userId: payload.userId,
+                anonId: payload.anonId,
+                articleId,
+                secondsSpent: payload.secondsSpent,
+                scrollDepth: payload.scrollDepth || 0,
+                counted: !isAuthor, // Authors reading own articles do not count towards badges
+              },
+            })
+            .catch(() => {});
+        }
+      } else {
+        await prisma.readingLog
+          .create({
+            data: {
+              anonId: payload.anonId,
+              articleId,
+              secondsSpent: payload.secondsSpent,
+              scrollDepth: payload.scrollDepth || 0,
+              counted: false,
+            },
+          })
+          .catch(() => {});
+      }
     }
   }
 

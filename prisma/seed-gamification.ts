@@ -17,7 +17,7 @@ async function main() {
   const user1 = await prisma.user.upsert({
     where: { username: 'pembacablora' },
     update: {
-      onTimeStreak: 16,
+      onTimeStreak: 20,
       equippedTitle: 'Penjaga Amanah',
       isProfilePublic: true,
       showBadges: true,
@@ -31,7 +31,7 @@ async function main() {
       status: UserStatus.ACTIVE,
       trustLevel: TrustLevel.TL2,
       bio: 'Penikmat wacana sastra dan sejarah lokal. Menjaga amanah buku bersama dengan penuh ketertiban.',
-      onTimeStreak: 16,
+      onTimeStreak: 20,
       equippedTitle: 'Penjaga Amanah',
       isProfilePublic: true,
       showBadges: true,
@@ -67,7 +67,7 @@ async function main() {
   const user3 = await prisma.user.upsert({
     where: { username: 'kawanlapak' },
     update: {
-      booksDonatedCount: 32,
+      booksDonatedCount: 30,
       equippedTitle: 'Penggerak Lapak',
       isProfilePublic: true,
       showBadges: true,
@@ -81,7 +81,7 @@ async function main() {
       status: UserStatus.ACTIVE,
       trustLevel: TrustLevel.TL2,
       bio: 'Relawan jalanan. Gemar menggelar terpal buku fisik dan menghibahkan koleksi bacaan untuk warga.',
-      booksDonatedCount: 32,
+      booksDonatedCount: 30,
       equippedTitle: 'Penggerak Lapak',
       isProfilePublic: true,
       showBadges: true,
@@ -91,54 +91,13 @@ async function main() {
 
   // Ambil sample buku, artikel, dan event yang sudah ada di database untuk relasi
   const sampleBook = await prisma.book.findFirst();
-  const sampleArticle = await prisma.article.findFirst();
   const sampleCategory = await prisma.category.findFirst({ where: { type: { in: ['ARTICLE', 'BOTH'] } } });
-  const sampleEvent = await prisma.event.findFirst();
 
-  // Seed reading logs for user1 (105 logs -> triggers Tier 1, 2, 3 Wacana)
-  if (sampleArticle) {
-    const existingLogs = await prisma.readingLog.count({ where: { userId: user1.id } });
-    if (existingLogs < 105) {
-      const logsToCreate = [];
-      for (let i = 0; i < 105 - existingLogs; i++) {
-        logsToCreate.push({
-          userId: user1.id,
-          articleId: sampleArticle.id,
-          secondsSpent: 120,
-          scrollDepth: 100,
-          counted: true,
-        });
-      }
-      await prisma.readingLog.createMany({ data: logsToCreate });
-    }
-  }
-
-  // Seed returned loans for user1 (16 loans -> triggers Tier 1 Amanah)
-  if (sampleBook) {
-    const existingLoans = await prisma.loan.count({ where: { userId: user1.id } });
-    if (existingLoans < 16) {
-      for (let i = 0; i < 16 - existingLoans; i++) {
-        await prisma.loan.create({
-          data: {
-            loanCode: `PJ${i}${Date.now().toString().slice(-8)}`,
-            userId: user1.id,
-            bookId: sampleBook.id,
-            pickupPoint: 'Lapak Alun-Alun Blora',
-            status: LoanStatus.RETURNED,
-            borrowedAt: new Date(Date.now() - 30 * 86400000),
-            dueDate: new Date(Date.now() - 16 * 86400000),
-            returnedAt: new Date(Date.now() - 17 * 86400000), // on time!
-          },
-        });
-      }
-    }
-  }
-
-  // Seed published articles for user2 (16 articles -> triggers Tier 1, 2, 3 Tinta)
+  // 1. Seed published articles for user2 (12 articles -> triggers Tier 1, 2, 3 Tinta)
   if (sampleCategory) {
     const existingArticles = await prisma.article.count({ where: { authorId: user2.id } });
-    if (existingArticles < 16) {
-      for (let i = existingArticles + 1; i <= 16; i++) {
+    if (existingArticles < 12) {
+      for (let i = existingArticles + 1; i <= 12; i++) {
         await prisma.article.create({
           data: {
             authorId: user2.id,
@@ -155,15 +114,61 @@ async function main() {
     }
   }
 
-  // Seed comments for user2 (52 comments -> triggers Tier 1, 2, 3 Dialektika)
-  if (sampleArticle) {
+  // Ambil artikel milik penulis lain (bukan user1) untuk dibaca user1
+  const nonUser1Articles = await prisma.article.findMany({
+    where: { authorId: { not: user1.id } },
+    select: { id: true },
+    take: 100,
+  });
+
+  // Seed reading logs for user1 (80 distinct articles -> triggers Tier 1, 2, 3 Wacana)
+  for (let i = 0; i < Math.min(80, nonUser1Articles.length); i++) {
+    const art = nonUser1Articles[i];
+    await prisma.readingLog.upsert({
+      where: { id: `seed-log-user1-${art.id}` },
+      update: { counted: true, secondsSpent: 120 },
+      create: {
+        id: `seed-log-user1-${art.id}`,
+        userId: user1.id,
+        articleId: art.id,
+        secondsSpent: 120,
+        scrollDepth: 100,
+        counted: true,
+      },
+    });
+  }
+
+  // Seed returned loans for user1 (10 loans -> triggers Tier 1 Amanah)
+  if (sampleBook) {
+    const existingLoans = await prisma.loan.count({ where: { userId: user1.id } });
+    if (existingLoans < 10) {
+      for (let i = 0; i < 10 - existingLoans; i++) {
+        await prisma.loan.create({
+          data: {
+            loanCode: `PJ${i}${Date.now().toString().slice(-8)}`,
+            userId: user1.id,
+            bookId: sampleBook.id,
+            pickupPoint: 'Lapak Alun-Alun Blora',
+            status: LoanStatus.RETURNED,
+            borrowedAt: new Date(Date.now() - 30 * 86400000),
+            dueDate: new Date(Date.now() - 16 * 86400000),
+            returnedAt: new Date(Date.now() - 17 * 86400000), // on time!
+          },
+        });
+      }
+    }
+  }
+
+  // Seed comments for user2 (80 comments -> triggers Tier 1, 2, 3 Dialektika)
+  const anyArticle = await prisma.article.findFirst();
+  if (anyArticle) {
     const existingComments = await prisma.comment.count({ where: { authorId: user2.id } });
-    if (existingComments < 52) {
+    if (existingComments < 80) {
       const commentsToCreate = [];
-      for (let i = 0; i < 52 - existingComments; i++) {
+      for (let i = 0; i < 80 - existingComments; i++) {
         commentsToCreate.push({
           authorId: user2.id,
-          articleId: sampleArticle.id,
+          articleId: anyArticle.id,
           content: `Tanggapan dialektis #${i + 1}: Saya sepakat bahwa ruang literasi harus tetap independen dan berpihak pada rakyat jelata.`,
           status: CommentStatus.PUBLISHED,
         });
@@ -172,22 +177,21 @@ async function main() {
     }
   }
 
-  // Seed event attendance for user3 (14 events attended -> triggers Tier 1, 2, 3 Presensi)
-  if (sampleEvent) {
-    const existingReg = await prisma.eventRegistration.findUnique({
-      where: { eventId_userId: { eventId: sampleEvent.id, userId: user3.id } },
+  // Seed event attendance for user3 (16 events -> triggers Tier 1, 2, 3 Presensi)
+  const existingEvents = await prisma.event.findMany({ take: 20 });
+  for (let i = 0; i < Math.min(16, existingEvents.length); i++) {
+    const ev = existingEvents[i];
+    await prisma.eventRegistration.upsert({
+      where: { eventId_userId: { eventId: ev.id, userId: user3.id } },
+      update: { status: RegistrationStatus.ATTENDED },
+      create: {
+        eventId: ev.id,
+        userId: user3.id,
+        status: RegistrationStatus.ATTENDED,
+        attendanceCode: `HD${i}`,
+        checkedInAt: new Date(),
+      },
     });
-    if (!existingReg) {
-      await prisma.eventRegistration.create({
-        data: {
-          eventId: sampleEvent.id,
-          userId: user3.id,
-          status: RegistrationStatus.ATTENDED,
-          attendanceCode: 'HADIR1',
-          checkedInAt: new Date(),
-        },
-      });
-    }
   }
 
   // Evaluasi seluruh progress untuk ketiga user tersebut
