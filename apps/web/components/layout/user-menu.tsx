@@ -16,13 +16,16 @@ import {
   Layers,
   Users,
   LayoutDashboard,
+  Bell,
 } from 'lucide-react';
 import { Role } from '@perpusjal/types';
 import { useAuth } from '@/contexts/auth-context';
+import { useNotifications } from '@/contexts/notifications-context';
 
 export function UserMenu() {
   const router = useRouter();
   const { user, isLoading: loading, logout } = useAuth();
+  const { unreadCount } = useNotifications();
   const [isOpen, setIsOpen] = React.useState(false);
   const menuRef = React.useRef<HTMLDivElement>(null);
 
@@ -132,6 +135,22 @@ export function UserMenu() {
               >
                 <LayoutDashboard className="w-3.5 h-3.5 text-foreground" />
                 <span>Ikhtisar Dasbor</span>
+              </Link>
+
+              <Link
+                href="/dashboard/notifikasi"
+                onClick={() => setIsOpen(false)}
+                className="flex items-center justify-between px-3 py-1.5 text-foreground hover:bg-surface-muted transition-colors"
+              >
+                <div className="flex items-center gap-2">
+                  <Bell className="w-3.5 h-3.5 text-muted" />
+                  <span>Warta & Notifikasi</span>
+                </div>
+                {unreadCount > 0 && (
+                  <span className="font-mono text-[9px] bg-foreground text-background px-1.5 py-0.2 font-bold leading-tight">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
               </Link>
 
               <Link

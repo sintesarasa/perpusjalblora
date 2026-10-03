@@ -19,10 +19,12 @@ import {
   UserCheck,
   CalendarCheck,
   BarChart3,
+  Bell,
 } from 'lucide-react';
 import { Role } from '@perpusjal/types';
 import { cn } from '@/lib/utils';
 import { apiClient } from '@/lib/api';
+import { useNotifications } from '@/contexts/notifications-context';
 
 interface DashboardSidebarProps {
   user: {
@@ -39,6 +41,7 @@ interface DashboardSidebarProps {
 export function DashboardSidebar({ user, onNavigate }: DashboardSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const { unreadCount } = useNotifications();
 
   const handleLogout = async () => {
     try {
@@ -56,36 +59,49 @@ export function DashboardSidebar({ user, onNavigate }: DashboardSidebarProps) {
       label: 'Ikhtisar Personal',
       icon: LayoutDashboard,
       exact: true,
+      badge: 0,
+    },
+    {
+      href: '/dashboard/notifikasi',
+      label: 'Warta & Notifikasi',
+      icon: Bell,
+      exact: false,
+      badge: unreadCount,
     },
     {
       href: '/dashboard/pinjaman',
       label: 'Pinjaman Buku',
       icon: BookOpen,
       exact: false,
+      badge: 0,
     },
     {
       href: '/dashboard/kartu-anggota',
       label: 'Kartu Anggota Digital',
       icon: CreditCard,
       exact: false,
+      badge: 0,
     },
     {
       href: '/dashboard/tulisan',
       label: 'Karya Tulisan Saya',
       icon: Feather,
       exact: false,
+      badge: 0,
     },
     {
       href: '/dashboard/badge',
       label: 'Lencana Apresiasi',
       icon: Award,
       exact: false,
+      badge: 0,
     },
     {
       href: '/dashboard/profil',
       label: 'Pengaturan & Privasi',
       icon: Settings,
       exact: false,
+      badge: 0,
     },
   ];
 
@@ -145,7 +161,21 @@ export function DashboardSidebar({ user, onNavigate }: DashboardSidebarProps) {
                     <Icon className={cn('w-4 h-4', isActive ? 'text-background' : 'text-muted')} />
                     <span>{item.label}</span>
                   </div>
-                  {isActive && <ChevronRight className="w-3 h-3 text-background" />}
+                  <div className="flex items-center gap-1.5">
+                    {item.badge > 0 && (
+                      <span
+                        className={cn(
+                          'font-mono text-[9px] px-1.5 py-0.2 font-bold leading-tight',
+                          isActive
+                            ? 'bg-background text-foreground'
+                            : 'bg-foreground text-background shadow-[1px_1px_0px_0px_rgba(0,0,0,0.4)]'
+                        )}
+                      >
+                        {item.badge > 9 ? '9+' : item.badge}
+                      </span>
+                    )}
+                    {isActive && <ChevronRight className="w-3 h-3 text-background" />}
+                  </div>
                 </Link>
               );
             })}

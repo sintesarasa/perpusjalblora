@@ -191,7 +191,7 @@ export function NotificationBell() {
           {/* Footer */}
           <div className="p-2.5 border-t border-border-hairline bg-surface-muted/30 text-center">
             <Link
-              href="/notifikasi"
+              href="/dashboard/notifikasi"
               onClick={() => setIsOpen(false)}
               className="font-mono text-[10px] uppercase font-bold tracking-wider text-foreground hover:underline block py-0.5"
             >
