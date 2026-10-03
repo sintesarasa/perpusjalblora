@@ -6,17 +6,21 @@ import {
   Bell,
   Check,
   ExternalLink,
-  Filter,
   BookOpen,
   Feather,
   MessageSquare,
   Award,
   Calendar,
   Radio,
+  Clock,
+  ArrowRight,
 } from 'lucide-react';
 import { NotificationItem } from '@perpusjal/types';
 import { useNotifications } from '@/contexts/notifications-context';
 import { apiClient } from '@/lib/api';
+import { CustomLoader } from '@/components/ui/custom-loader';
+import { EmptyState } from '@/components/ui/empty-state';
+import { cn } from '@/lib/utils';
 
 function getNotificationCategoryIcon(type: string) {
   if (type.startsWith('LOAN_') || type.startsWith('WAITLIST_')) {
@@ -45,8 +49,8 @@ export default function DashboardNotificationsPage() {
     isConnected,
   } = useNotifications();
 
+  const [activeTab, setActiveTab] = React.useState<'semua' | 'unread'>('semua');
   const [notifications, setNotifications] = React.useState<NotificationItem[]>([]);
-  const [unreadOnly, setUnreadOnly] = React.useState(false);
   const [loading, setLoading] = React.useState(true);
   const [page, setPage] = React.useState(1);
   const [totalPages, setTotalPages] = React.useState(1);
@@ -54,7 +58,8 @@ export default function DashboardNotificationsPage() {
   const fetchNotifications = React.useCallback(async () => {
     setLoading(true);
     try {
-      const url = `/notifications?page=${page}&limit=20${unreadOnly ? '&unreadOnly=true' : ''}`;
+      const unreadParam = activeTab === 'unread' ? '&unreadOnly=true' : '';
+      const url = `/notifications?page=${page}&limit=15${unreadParam}`;
       const res = await apiClient<{ items: NotificationItem[]; totalPages: number; unreadCount: number }>(url);
       if (res.data) {
         setNotifications(res.data.items || []);
@@ -65,7 +70,7 @@ export default function DashboardNotificationsPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, unreadOnly]);
+  }, [page, activeTab]);
 
   React.useEffect(() => {
     fetchNotifications();
@@ -92,184 +97,214 @@ export default function DashboardNotificationsPage() {
   };
 
   return (
-    <div className="space-y-6">
-      {/* 1. EDITORIAL HEADER SECTION */}
-      <div className="border-b-2 border-foreground pb-6">
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-muted mb-2">
-              <Bell className="w-3.5 h-3.5" />
-              <span>KOTAK WARTA PERSONAL</span>
-              {isConnected && (
-                <span className="inline-flex items-center gap-1 text-[10px] text-emerald-600 dark:text-emerald-400 font-bold ml-2">
-                  <Radio className="w-3 h-3 animate-pulse" />
-                  SIARAN LANGSUNG
-                </span>
-              )}
-            </div>
-            <h1 className="font-serif text-3xl font-bold tracking-tight text-foreground">
-              Warta & Pemberitahuan
-            </h1>
-            <p className="font-serif text-sm text-muted mt-1 max-w-2xl leading-relaxed">
-              Catatan sirkulasi peminjaman buku, perkembangan kurasi tulisan warga, komentar, dan agenda kegiatan komunitas yang relevan untukmu.
-            </p>
+    <div className="p-4 sm:p-8 space-y-6 sm:space-y-8 max-w-6xl">
+      {/* ── 1. Masthead ── */}
+      <div className="border-b-2 border-foreground pb-4 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2 font-mono text-xs text-muted uppercase tracking-widest">
+            <span>KOTAK MASUK ANGGOTA</span>
+            <span>// WARTA & PEMBERITAHUAN</span>
+            {isConnected && (
+              <span className="inline-flex items-center gap-1 font-mono text-[10px] text-emerald-600 dark:text-emerald-400 font-bold ml-2">
+                <Radio className="w-3 h-3 animate-pulse" />
+                LIVE STREAM
+              </span>
+            )}
           </div>
-
-          {unreadCount > 0 && (
-            <button
-              onClick={handleMarkAllRead}
-              className="font-mono text-xs uppercase tracking-wider font-semibold border-2 border-foreground bg-foreground text-background px-3.5 py-2 hover:opacity-90 transition-opacity self-start sm:self-auto flex items-center gap-1.5 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] dark:shadow-[3px_3px_0px_0px_rgba(255,255,255,0.9)]"
-            >
-              <Check className="w-3.5 h-3.5" />
-              Tandai Semua Terbaca ({unreadCount})
-            </button>
-          )}
+          <h1 className="font-serif text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
+            Kotak Warta Anggota
+          </h1>
+          <p className="font-sans text-xs sm:text-sm text-muted max-w-2xl">
+            Catatan sirkulasi peminjaman buku, hasil kurasi tulisan warga, diskusi komentar, dan agenda komunitas.
+          </p>
         </div>
+
+        {unreadCount > 0 && (
+          <button
+            onClick={handleMarkAllRead}
+            className="px-4 py-2 bg-foreground text-background font-mono text-xs uppercase tracking-wider font-semibold hover:bg-foreground/90 transition-colors inline-flex items-center gap-1.5 self-start sm:self-auto shrink-0 shadow-sm"
+          >
+            <Check className="w-3.5 h-3.5" />
+            <span>Tandai Semua Dibaca ({unreadCount})</span>
+          </button>
+        )}
       </div>
 
-      {/* 2. FILTER & COUNT BAR */}
-      <div className="flex flex-wrap items-center justify-between border-b border-border-hairline pb-4 gap-3">
+      {/* ── 2. Tab Switchers ── */}
+      <div className="flex items-center justify-between border-b border-border-hairline pb-px font-mono text-xs uppercase tracking-wider">
         <div className="flex items-center gap-2">
-          <Filter className="w-3.5 h-3.5 text-muted" />
-          <div className="flex items-center space-x-1 font-mono text-xs uppercase tracking-wider">
-            <button
-              onClick={() => {
-                setUnreadOnly(false);
-                setPage(1);
-              }}
-              className={`px-3 py-1 border transition-colors ${
-                !unreadOnly
-                  ? 'border-foreground bg-foreground text-background font-bold'
-                  : 'border-border-hairline text-muted hover:text-foreground'
-              }`}
-            >
-              Semua
-            </button>
-            <button
-              onClick={() => {
-                setUnreadOnly(true);
-                setPage(1);
-              }}
-              className={`px-3 py-1 border transition-colors ${
-                unreadOnly
-                  ? 'border-foreground bg-foreground text-background font-bold'
-                  : 'border-border-hairline text-muted hover:text-foreground'
-              }`}
-            >
-              Belum Dibaca {unreadCount > 0 && `(${unreadCount})`}
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={() => {
+              setActiveTab('semua');
+              setPage(1);
+            }}
+            className={cn(
+              'px-4 py-2 border-b-2 transition-colors',
+              activeTab === 'semua'
+                ? 'border-foreground text-foreground font-bold'
+                : 'border-transparent text-muted hover:text-foreground'
+            )}
+          >
+            Semua Warta
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setActiveTab('unread');
+              setPage(1);
+            }}
+            className={cn(
+              'px-4 py-2 border-b-2 transition-colors inline-flex items-center gap-1.5',
+              activeTab === 'unread'
+                ? 'border-foreground text-foreground font-bold'
+                : 'border-transparent text-muted hover:text-foreground'
+            )}
+          >
+            <span>Belum Dibaca</span>
+            {unreadCount > 0 && (
+              <span className="px-1.5 py-0.2 bg-foreground text-background text-[10px] font-bold font-mono">
+                {unreadCount}
+              </span>
+            )}
+          </button>
         </div>
 
-        <span className="font-mono text-xs text-muted">
-          Halaman {page} dari {totalPages}
+        <span className="hidden sm:inline font-mono text-xs text-muted">
+          Halaman {page} dari {totalPages || 1}
         </span>
       </div>
 
-      {/* 3. NOTIFICATIONS FEED */}
+      {/* ── 3. Notification Feed ── */}
       {loading ? (
-        <div className="p-12 text-center font-mono text-xs text-muted border border-border-hairline bg-surface">
-          Memuat kotak warta...
+        <div className="py-16 flex items-center justify-center">
+          <CustomLoader size="md" label="MEMUAT KOTAK WARTA ANGGOTA..." />
         </div>
       ) : notifications.length === 0 ? (
-        <div className="border-2 border-dashed border-border-hairline p-12 text-center bg-surface">
-          <Bell className="w-8 h-8 text-muted mx-auto mb-2 opacity-40" />
-          <p className="font-mono text-xs text-muted">
-            {unreadOnly ? 'Tidak ada warta baru yang belum dibaca.' : 'Kotak warta kosong.'}
-          </p>
-        </div>
+        <EmptyState
+          title={activeTab === 'unread' ? 'Semua Warta Telah Dibaca' : 'Kotak Warta Masih Bersih'}
+          description={
+            activeTab === 'unread'
+              ? 'Tidak ada warta baru yang belum dibaca saat ini. Kamu selalu dapat meninjau warta terdahulu di tab Semua Warta.'
+              : 'Belum ada warta atau catatan kegiatan yang dikirimkan ke kotak masukmu. Warta peminjaman dan kurasi akan tercatat otomatis di sini.'
+          }
+          actionLabel={activeTab === 'unread' ? 'Lihat Semua Warta' : undefined}
+          onAction={activeTab === 'unread' ? () => setActiveTab('semua') : undefined}
+        />
       ) : (
-        <div className="divide-y divide-border-hairline border-2 border-foreground bg-surface shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.9)]">
+        <div className="divide-y divide-border-hairline border border-border-hairline bg-surface">
           {notifications.map((item) => (
-            <div
+            <article
               key={item.id}
-              className={`p-5 transition-colors flex items-start gap-4 ${
-                item.isRead ? 'opacity-70 bg-transparent' : 'bg-surface-muted/40 font-medium'
-              } hover:bg-surface-muted/70`}
+              className={cn(
+                'p-4 sm:p-5 transition-colors flex items-start gap-4',
+                item.isRead
+                  ? 'bg-surface opacity-80 hover:opacity-100 hover:bg-surface-muted/40'
+                  : 'bg-surface-muted/40 hover:bg-surface-muted/80'
+              )}
             >
-              {/* Category Icon Badge */}
+              {/* Category Icon Container */}
               <div
-                className={`p-2 border border-border-hairline shrink-0 mt-0.5 ${
-                  item.isRead ? 'bg-surface-muted/50' : 'bg-surface border-foreground shadow-[2px_2px_0px_0px_rgba(0,0,0,0.8)]'
-                }`}
+                className={cn(
+                  'w-9 h-9 border flex items-center justify-center shrink-0 mt-0.5',
+                  item.isRead
+                    ? 'border-border-hairline bg-surface-muted/30 text-muted'
+                    : 'border-foreground bg-surface text-foreground shadow-xs'
+                )}
               >
                 {getNotificationCategoryIcon(item.type)}
               </div>
 
+              {/* Main Content */}
               <div className="flex-1 min-w-0">
+                {/* Meta Header */}
                 <div className="flex flex-wrap items-center justify-between gap-2 mb-1">
                   <div className="flex items-center gap-2">
                     {!item.isRead && (
-                      <span className="w-1.5 h-1.5 bg-foreground inline-block" />
+                      <span
+                        className="w-2 h-2 bg-foreground shrink-0"
+                        title="Belum dibaca"
+                      />
                     )}
                     <span className="font-mono text-[10px] uppercase font-bold tracking-widest text-muted">
                       {item.type.replace(/_/g, ' ')}
                     </span>
                   </div>
 
-                  <time className="font-mono text-[10px] text-muted">
-                    {new Date(item.createdAt).toLocaleDateString('id-ID', {
-                      day: 'numeric',
-                      month: 'short',
-                      year: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })}
-                  </time>
+                  <div className="flex items-center gap-1 font-mono text-[11px] text-muted">
+                    <Clock className="w-3 h-3 text-muted" />
+                    <time dateTime={item.createdAt}>
+                      {new Date(item.createdAt).toLocaleDateString('id-ID', {
+                        day: 'numeric',
+                        month: 'short',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </time>
+                  </div>
                 </div>
 
-                <h3 className="font-serif text-base font-bold text-foreground">
+                {/* Title */}
+                <h3 className="font-serif text-base font-bold text-foreground leading-snug">
                   {item.title}
                 </h3>
 
-                <p className="font-serif text-xs sm:text-sm text-foreground/85 mt-1 leading-relaxed">
+                {/* Body Text */}
+                <p className="font-sans text-xs sm:text-sm text-foreground/80 mt-1 leading-relaxed">
                   {item.body}
                 </p>
 
-                <div className="mt-3 flex items-center gap-4">
+                {/* Action Links & Read Toggle */}
+                <div className="mt-3.5 flex flex-wrap items-center gap-4 font-mono text-xs">
                   {item.actionUrl && (
                     <Link
                       href={item.actionUrl}
-                      className="font-mono text-xs text-foreground font-semibold hover:underline inline-flex items-center gap-1"
+                      className="font-semibold text-foreground hover:underline inline-flex items-center gap-1.5"
                     >
-                      Buka Tautan <ExternalLink className="w-3 h-3" />
+                      <span>Buka Tautan Rincian</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
                     </Link>
                   )}
 
                   {!item.isRead && (
                     <button
                       onClick={() => handleMarkAsRead(item.id)}
-                      className="font-mono text-xs text-muted hover:text-foreground inline-flex items-center gap-1 hover:underline"
+                      className="text-muted hover:text-foreground inline-flex items-center gap-1 hover:underline"
                     >
-                      <Check className="w-3.5 h-3.5" /> Tandai Dibaca
+                      <Check className="w-3.5 h-3.5" />
+                      <span>Tandai Sudah Dibaca</span>
                     </button>
                   )}
                 </div>
               </div>
-            </div>
+            </article>
           ))}
         </div>
       )}
 
-      {/* 4. PAGINATION */}
+      {/* ── 4. Pagination Bar ── */}
       {totalPages > 1 && (
-        <div className="flex justify-between items-center pt-2 font-mono text-xs">
+        <div className="flex items-center justify-between pt-2 border-t border-border-hairline font-mono text-xs">
           <button
             disabled={page <= 1}
             onClick={() => setPage((p) => Math.max(1, p - 1))}
-            className="px-4 py-2 border border-border-hairline disabled:opacity-30 hover:border-foreground"
+            className="px-4 py-2 border border-border-hairline disabled:opacity-30 disabled:pointer-events-none hover:border-foreground transition-colors"
           >
-            ← Sebelumnya
+            ← Halaman Sebelumnya
           </button>
-          <span>
+
+          <span className="text-muted">
             Halaman {page} dari {totalPages}
           </span>
+
           <button
             disabled={page >= totalPages}
             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-            className="px-4 py-2 border border-border-hairline disabled:opacity-30 hover:border-foreground"
+            className="px-4 py-2 border border-border-hairline disabled:opacity-30 disabled:pointer-events-none hover:border-foreground transition-colors"
           >
-            Selanjutnya →
+            Halaman Berikutnya →
           </button>
         </div>
       )}
