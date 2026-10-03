@@ -95,9 +95,16 @@ export function ArticleFeatured({
 
           <div className="pt-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-t border-border-hairline">
             <div className="font-mono text-xs uppercase tracking-wider text-muted space-y-0.5">
-              <p className="text-foreground font-semibold">
-                Oleh {article.author?.name || 'Redaksi Perpusjal'}
-              </p>
+              <div className="flex items-center gap-2 flex-wrap">
+                <p className="text-foreground font-semibold">
+                  Oleh {article.author?.name || 'Redaksi Perpusjal'}
+                </p>
+                {article.author?.equippedTitle && (
+                  <span className="px-1.5 py-0.5 border border-foreground bg-surface text-foreground font-bold text-[9px] uppercase tracking-wider shadow-xs">
+                    ★ {article.author.equippedTitle}
+                  </span>
+                )}
+              </div>
               <div className="flex items-center gap-3 text-[10px]">
                 <span>{formattedDate}</span>
                 <span>•</span>

@@ -79,6 +79,9 @@ export interface ArticleAuthor {
   username: string;
   avatarUrl: string | null;
   bio?: string | null;
+  equippedTitle?: string | null;
+  earnedBadgesCount?: number;
+  badges?: Array<{ code: string; name: string; iconName: string; tier: number; category?: string }>;
 }
 
 export interface ArticleCategory {

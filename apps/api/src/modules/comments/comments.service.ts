@@ -254,6 +254,20 @@ export class CommentsService {
             avatarUrl: true,
             role: true,
             trustLevel: true,
+            equippedTitle: true,
+            badges: {
+              where: { earnedAt: { not: null } },
+              select: {
+                badge: {
+                  select: {
+                    code: true,
+                    name: true,
+                    iconName: true,
+                    tier: true,
+                  },
+                },
+              },
+            },
           },
         },
       },
@@ -305,6 +319,9 @@ export class CommentsService {
         avatarUrl: created.author.avatarUrl,
         role: created.author.role as unknown as Role,
         trustLevel: created.author.trustLevel as unknown as TrustLevel,
+        equippedTitle: created.author.equippedTitle,
+        earnedBadgesCount: created.author.badges?.length || 0,
+        badges: created.author.badges?.map((ub: any) => ub.badge) || [],
       },
       replies: [],
     };

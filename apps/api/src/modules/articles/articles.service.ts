@@ -83,6 +83,21 @@ export class ArticlesService {
               username: true,
               avatarUrl: true,
               bio: true,
+              equippedTitle: true,
+              badges: {
+                where: { earnedAt: { not: null } },
+                select: {
+                  badge: {
+                    select: {
+                      code: true,
+                      name: true,
+                      iconName: true,
+                      tier: true,
+                      category: true,
+                    },
+                  },
+                },
+              },
             },
           },
           category: {
@@ -107,6 +122,16 @@ export class ArticlesService {
       data: articles.map((a) => ({
         ...a,
         publishedAt: a.publishedAt?.toISOString() || null,
+        author: {
+          id: a.author.id,
+          name: a.author.name,
+          username: a.author.username,
+          avatarUrl: a.author.avatarUrl,
+          bio: a.author.bio,
+          equippedTitle: a.author.equippedTitle,
+          earnedBadgesCount: a.author.badges?.length || 0,
+          badges: a.author.badges?.map((ub: any) => ub.badge) || [],
+        },
       })),
       meta: {
         page,
@@ -134,6 +159,21 @@ export class ArticlesService {
             username: true,
             avatarUrl: true,
             bio: true,
+            equippedTitle: true,
+            badges: {
+              where: { earnedAt: { not: null } },
+              select: {
+                badge: {
+                  select: {
+                    code: true,
+                    name: true,
+                    iconName: true,
+                    tier: true,
+                    category: true,
+                  },
+                },
+              },
+            },
           },
         },
         category: {
@@ -165,6 +205,21 @@ export class ArticlesService {
               username: true,
               avatarUrl: true,
               bio: true,
+              equippedTitle: true,
+              badges: {
+                where: { earnedAt: { not: null } },
+                select: {
+                  badge: {
+                    select: {
+                      code: true,
+                      name: true,
+                      iconName: true,
+                      tier: true,
+                      category: true,
+                    },
+                  },
+                },
+              },
             },
           },
           category: {
@@ -241,7 +296,16 @@ export class ArticlesService {
       isFeatured: article.isFeatured,
       allowComments: article.allowComments,
       status: article.status as unknown as ArticleStatus,
-      author: article.author,
+      author: {
+        id: article.author.id,
+        name: article.author.name,
+        username: article.author.username,
+        avatarUrl: article.author.avatarUrl,
+        bio: article.author.bio,
+        equippedTitle: article.author.equippedTitle,
+        earnedBadgesCount: article.author.badges?.length || 0,
+        badges: article.author.badges?.map((ub: any) => ub.badge) || [],
+      },
       category: article.category,
       tags: article.tags,
       previewToken: canSeePreviewToken ? previewToken : undefined,

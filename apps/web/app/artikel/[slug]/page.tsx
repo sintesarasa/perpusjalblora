@@ -10,6 +10,7 @@ import { AuthorCard } from '@/components/articles/author-card';
 import { ArticleCard } from '@/components/articles/article-card';
 import { ArticleReaderToolbar, TextScale } from '@/components/articles/article-reader-toolbar';
 import { CommentsSection } from '@/components/comments/comments-section';
+import { UserHonorBadge } from '@/components/gamification/user-honor-badge';
 import { CustomLoader } from '@/components/ui/custom-loader';
 import { BrandStamp } from '@/components/ui/brand-stamp';
 import { ScrollProgress } from '@/components/ui/scroll-progress';
@@ -286,6 +287,14 @@ function ArticleDetailContent() {
                 <span className="text-foreground font-semibold">
                   Oleh {article.author?.name || 'Redaksi'}
                 </span>
+                {article.author && (
+                  <UserHonorBadge
+                    equippedTitle={article.author.equippedTitle}
+                    earnedBadgesCount={article.author.earnedBadgesCount}
+                    badges={article.author.badges}
+                    username={article.author.username}
+                  />
+                )}
                 <span className="text-muted/60">&bull;</span>
                 <span className="flex items-center gap-1.5">
                   <Calendar className="w-3 h-3 text-muted" />

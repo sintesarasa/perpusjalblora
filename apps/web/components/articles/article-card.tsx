@@ -93,6 +93,11 @@ export function ArticleCard({
               <span className="text-foreground font-semibold">
                 Oleh {article.author?.name || 'Redaksi'}
               </span>
+              {article.author?.equippedTitle && (
+                <span className="px-1.5 py-0.5 border border-border-hairline bg-surface-muted text-foreground font-bold text-[9px]">
+                  {article.author.equippedTitle}
+                </span>
+              )}
               <span className="text-border-hairline">|</span>
               <span className="flex items-center gap-1 text-[10px]">
                 <Eye className="w-3 h-3" /> {article.viewCount || 0}
@@ -184,9 +189,19 @@ export function ArticleCard({
       {/* Footer Byline & Quick Action */}
       <div className="pt-4 mt-6 border-t border-border-hairline flex flex-col gap-3">
         <div className="flex items-center justify-between font-mono text-[11px] uppercase tracking-wider text-muted">
-          <span className="text-foreground/90 font-medium truncate max-w-[65%]">
-            Oleh {article.author?.name || 'Redaksi'}
-          </span>
+          <div className="flex items-center gap-1.5 truncate max-w-[70%]">
+            <span className="text-foreground/90 font-medium truncate">
+              Oleh {article.author?.name || 'Redaksi'}
+            </span>
+            {article.author?.equippedTitle && (
+              <span
+                className="px-1 py-0.2 border border-border-hairline bg-surface-muted text-foreground font-bold text-[8.5px] shrink-0"
+                title={`Gelar: ${article.author.equippedTitle}`}
+              >
+                {article.author.equippedTitle}
+              </span>
+            )}
+          </div>
           <span className="text-[10px] shrink-0">{formattedDate}</span>
         </div>
 
