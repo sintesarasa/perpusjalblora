@@ -166,7 +166,7 @@ export default function AdminDashboardPage() {
 
                 {/* 4. Surat Pembaca */}
                 <Link
-                  href="/surat-pembaca"
+                  href="/admin/kurasi"
                   className={`p-5 border transition-all block group ${
                     stats.pendingLetters > 0
                       ? 'border-foreground bg-surface shadow-sm'

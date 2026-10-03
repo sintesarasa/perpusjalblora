@@ -14,56 +14,36 @@ import {
   Menu,
   X,
   Search,
-  ChevronDown,
-  ArrowRight,
   BookOpen,
   FileText,
   Calendar,
   Compass,
-  MessageSquare,
   Sparkles,
 } from 'lucide-react';
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const [searchModalOpen, setSearchModalOpen] = React.useState(false);
-  const [lapakDropdownOpen, setLapakDropdownOpen] = React.useState(false);
 
   const pathname = usePathname();
-  const dropdownRef = React.useRef<HTMLDivElement>(null);
 
-  // Close mobile drawer and dropdown on route change
+  // Close mobile drawer on route change
   React.useEffect(() => {
     setMobileMenuOpen(false);
-    setLapakDropdownOpen(false);
   }, [pathname]);
-
-  // Click outside to close lapak dropdown
-  React.useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setLapakDropdownOpen(false);
-      }
-    }
-    if (lapakDropdownOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [lapakDropdownOpen]);
 
   // Close mobile drawer on Escape key
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         setMobileMenuOpen(false);
-        setLapakDropdownOpen(false);
       }
     };
-    if (mobileMenuOpen || lapakDropdownOpen) {
+    if (mobileMenuOpen) {
       window.addEventListener('keydown', handleKeyDown);
       return () => window.removeEventListener('keydown', handleKeyDown);
     }
-  }, [mobileMenuOpen, lapakDropdownOpen]);
+  }, [mobileMenuOpen]);
 
   // Global shortcut (Cmd+K / Ctrl+K or '/') to open GlobalSearchModal
   React.useEffect(() => {
@@ -90,12 +70,6 @@ export function Header() {
     return () => window.removeEventListener('keydown', handleGlobalSearchKey);
   }, []);
 
-  const isLapakActive =
-    pathname === '/cara-meminjam' ||
-    pathname?.startsWith('/cara-meminjam/') ||
-    pathname === '/surat-pembaca' ||
-    pathname?.startsWith('/surat-pembaca/');
-
   return (
     <>
       <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-md border-b border-border-hairline transition-colors print:hidden shadow-2xs">
@@ -113,7 +87,7 @@ export function Header() {
             </span>
           </div>
 
-          {/* 2. CENTER: STREAMLINED & BALANCED DESKTOP NAVIGATION */}
+          {/* 2. CENTER: STREAMLINED & BALANCED DESKTOP NAVIGATION (5 DIRECT LINKS) */}
           <nav className="hidden lg:flex items-center space-x-1 font-mono text-[11px] uppercase tracking-wider">
             {/* Artikel */}
             <Link
@@ -157,79 +131,19 @@ export function Header() {
               Kegiatan
             </Link>
 
-            {/* Lapak & Panduan Dropdown */}
-            <div className="relative group/lapak" ref={dropdownRef}>
-              <button
-                type="button"
-                onClick={() => setLapakDropdownOpen((prev) => !prev)}
-                aria-expanded={lapakDropdownOpen}
-                className={cn(
-                  'px-3 py-1.5 transition-colors border-b-2 font-mono text-[11px] uppercase tracking-wider inline-flex items-center gap-1 cursor-pointer',
-                  isLapakActive
-                    ? 'font-bold text-foreground bg-surface-muted border-foreground'
-                    : 'text-foreground/75 hover:text-foreground hover:bg-surface-muted/50 border-transparent'
-                )}
-              >
-                <span>Lapak</span>
-                <ChevronDown className="w-3 h-3 text-muted group-hover/lapak:text-foreground group-hover/lapak:rotate-180 transition-transform duration-150" />
-              </button>
-
-              {/* Dropdown Panel (Hover & Click supported) */}
-              <div
-                className={cn(
-                  'absolute left-0 top-full pt-1.5 z-50',
-                  lapakDropdownOpen ? 'block' : 'hidden group-hover/lapak:block'
-                )}
-              >
-                <div className="w-64 bg-surface border-2 border-foreground shadow-2xl p-2 space-y-1 font-mono animate-in fade-in-50 duration-150">
-                  <Link
-                    href="/cara-meminjam"
-                    onClick={() => setLapakDropdownOpen(false)}
-                    className={cn(
-                      'block p-2.5 hover:bg-surface-muted transition-colors border',
-                      pathname === '/cara-meminjam'
-                        ? 'border-foreground bg-surface-muted font-bold'
-                        : 'border-transparent'
-                    )}
-                  >
-                    <div className="flex items-center justify-between text-xs text-foreground">
-                      <span className="font-bold flex items-center gap-1.5">
-                        <Compass className="w-3.5 h-3.5 text-foreground" />
-                        Cara Meminjam
-                      </span>
-                      <ArrowRight className="w-3 h-3 text-muted" />
-                    </div>
-                    <p className="font-serif text-[11px] text-muted normal-case mt-1 leading-snug">
-                      Pedoman peminjaman koleksi di lapak terpal tanpa kartu &amp; nol denda.
-                    </p>
-                  </Link>
-
-                  <div className="border-t border-border-hairline" />
-
-                  <Link
-                    href="/surat-pembaca"
-                    onClick={() => setLapakDropdownOpen(false)}
-                    className={cn(
-                      'block p-2.5 hover:bg-surface-muted transition-colors border',
-                      pathname === '/surat-pembaca'
-                        ? 'border-foreground bg-surface-muted font-bold'
-                        : 'border-transparent'
-                    )}
-                  >
-                    <div className="flex items-center justify-between text-xs text-foreground">
-                      <span className="font-bold flex items-center gap-1.5">
-                        <MessageSquare className="w-3.5 h-3.5 text-foreground" />
-                        Surat Pembaca
-                      </span>
-                      <ArrowRight className="w-3 h-3 text-muted" />
-                    </div>
-                    <p className="font-serif text-[11px] text-muted normal-case mt-1 leading-snug">
-                      Ruang suara warga, saran buku bacaan, dan korespondensi terbuka.
-                    </p>
-                  </Link>
-                </div>
-              </div>
-            </div>
+            {/* Cara Meminjam */}
+            <Link
+              href="/cara-meminjam"
+              aria-current={pathname === '/cara-meminjam' || pathname?.startsWith('/cara-meminjam/') ? 'page' : undefined}
+              className={cn(
+                'px-3 py-1.5 transition-colors border-b-2 font-mono text-[11px] uppercase tracking-wider',
+                pathname === '/cara-meminjam' || pathname?.startsWith('/cara-meminjam/')
+                  ? 'font-bold text-foreground bg-surface-muted border-foreground'
+                  : 'text-foreground/75 hover:text-foreground hover:bg-surface-muted/50 border-transparent'
+              )}
+            >
+              Cara Meminjam
+            </Link>
 
             {/* Tentang */}
             <Link
@@ -360,6 +274,19 @@ export function Header() {
                 </Link>
 
                 <Link
+                  href="/cara-meminjam"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={cn(
+                    'block py-2 px-3 transition-colors border-l-2',
+                    pathname === '/cara-meminjam' || pathname?.startsWith('/cara-meminjam/')
+                      ? 'bg-surface-muted font-bold text-foreground border-foreground'
+                      : 'text-foreground/80 hover:bg-surface-muted/50 border-transparent'
+                  )}
+                >
+                  Cara Meminjam (Nol Denda)
+                </Link>
+
+                <Link
                   href="/tentang"
                   onClick={() => setMobileMenuOpen(false)}
                   className={cn(
@@ -372,39 +299,6 @@ export function Header() {
                   Tentang Perpustakaan Jalanan
                 </Link>
               </nav>
-
-              {/* Lapak & Community Links */}
-              <div className="py-3 border-t border-border-hairline space-y-1">
-                <span className="text-[9px] uppercase tracking-widest text-muted font-bold block mb-1">
-                  LAPAK &amp; SIRKULASI
-                </span>
-
-                <Link
-                  href="/cara-meminjam"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={cn(
-                    'block py-2 px-3 transition-colors border-l-2',
-                    pathname === '/cara-meminjam'
-                      ? 'bg-surface-muted font-bold text-foreground border-foreground'
-                      : 'text-foreground/80 hover:bg-surface-muted/50 border-transparent'
-                  )}
-                >
-                  Cara Meminjam (Nol Denda)
-                </Link>
-
-                <Link
-                  href="/surat-pembaca"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={cn(
-                    'block py-2 px-3 transition-colors border-l-2',
-                    pathname === '/surat-pembaca'
-                      ? 'bg-surface-muted font-bold text-foreground border-foreground'
-                      : 'text-foreground/80 hover:bg-surface-muted/50 border-transparent'
-                  )}
-                >
-                  Surat Pembaca &amp; Warga
-                </Link>
-              </div>
 
               {/* User Shortcuts in Mobile Drawer */}
               <div className="pt-3 border-t border-border-hairline flex flex-col gap-2">

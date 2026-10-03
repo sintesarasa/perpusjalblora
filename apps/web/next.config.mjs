@@ -21,6 +21,20 @@ const nextConfig = {
       },
     ];
   },
+  async redirects() {
+    return [
+      {
+        source: '/surat-pembaca',
+        destination: '/artikel',
+        permanent: false,
+      },
+      {
+        source: '/surat-pembaca/:slug*',
+        destination: '/artikel',
+        permanent: false,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

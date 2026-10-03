@@ -15,6 +15,7 @@ import {
   Shield,
   Layers,
   Sparkles,
+  Compass,
 } from 'lucide-react';
 import { CustomLoader } from '@/components/ui/custom-loader';
 import { apiClient } from '@/lib/api';
@@ -171,13 +172,13 @@ export default function DashboardOverviewPage() {
           </Link>
 
           <Link
-            href="/surat-pembaca"
+            href="/cara-meminjam"
             className="p-4 border border-border-hairline bg-surface hover:border-foreground transition-colors flex flex-col justify-between group"
           >
-            <Sparkles className="w-5 h-5 text-muted group-hover:text-foreground mb-3" />
+            <Compass className="w-5 h-5 text-muted group-hover:text-foreground mb-3" />
             <div>
-              <span className="font-bold text-foreground block">Surat Pembaca</span>
-              <span className="text-[10px] text-muted">Suarakan aspirasi warga</span>
+              <span className="font-bold text-foreground block">Cara Meminjam</span>
+              <span className="text-[10px] text-muted">Pedoman tanpa kartu &amp; nol denda</span>
             </div>
           </Link>
 

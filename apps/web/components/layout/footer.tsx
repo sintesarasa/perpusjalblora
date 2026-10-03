@@ -46,8 +46,8 @@ export function Footer() {
               <Link href="/cara-meminjam" className="text-foreground/80 hover:text-foreground hover:underline transition-colors">
                 Cara Meminjam
               </Link>
-              <Link href="/surat-pembaca" className="text-foreground/80 hover:text-foreground hover:underline transition-colors">
-                Surat Pembaca
+              <Link href="/tulis" className="text-foreground/80 hover:text-foreground hover:underline transition-colors">
+                Kirim Tulisan
               </Link>
               <Link href="/tentang" className="text-foreground/80 hover:text-foreground hover:underline transition-colors">
                 Tentang Kami

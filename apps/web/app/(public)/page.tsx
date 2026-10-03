@@ -334,14 +334,14 @@ export default function HomePage() {
               karyamu untuk dikurasi oleh relawan kami dan terbit di bawah namamu sendiri.
             </p>
             <div className="pt-4 flex flex-wrap justify-center gap-4">
-              <Link href="/dashboard/tulisan/baru">
+              <Link href="/tulis">
                 <Button size="lg" variant="solid">
-                  TULIS ARTIKEL PANJANG
+                  MULAI MENULIS KARYA
                 </Button>
               </Link>
-              <Link href="/surat-pembaca">
+              <Link href="/artikel">
                 <Button size="lg" variant="outline">
-                  KIRIM SURAT PEMBACA SINGKAT
+                  BACA ARTIKEL &amp; WARTA
                 </Button>
               </Link>
             </div>
