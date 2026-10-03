@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { Role, UserStatus, UserSessionPayload } from '@perpusjal/types';
+import { Role, UserStatus, TrustLevel, UserSessionPayload } from '@perpusjal/types';
 
 declare global {
   namespace Express {
@@ -12,7 +12,9 @@ declare global {
 
 const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-jwt-key-replace-in-production-min-32-chars';
 
-export function authMiddleware(req: Request, res: Response, next: NextFunction) {
+import { prisma } from '../lib/prisma.js';
+
+export async function authMiddleware(req: Request, res: Response, next: NextFunction) {
   // 1. Check HTTP-only cookie first, then Bearer token
   const token = req.cookies?.perpusjal_session || req.headers.authorization?.replace('Bearer ', '');
 
@@ -22,6 +24,44 @@ export function authMiddleware(req: Request, res: Response, next: NextFunction) 
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as UserSessionPayload;
+
+    // 2. Validate DB session revocation and user active status
+    if (decoded.sessionId) {
+      const dbSession = await prisma.session.findUnique({
+        where: { id: decoded.sessionId },
+        include: {
+          user: {
+            select: {
+              id: true,
+              role: true,
+              status: true,
+              trustLevel: true,
+            },
+          },
+        },
+      });
+
+      if (!dbSession || dbSession.expiresAt < new Date()) {
+        req.user = undefined;
+        return next();
+      }
+
+      // Reject suspended or deactivated accounts immediately
+      if (
+        dbSession.user.status === UserStatus.SUSPENDED ||
+        dbSession.user.status === UserStatus.DEACTIVATED ||
+        dbSession.user.status === UserStatus.DELETED
+      ) {
+        req.user = undefined;
+        return next();
+      }
+
+      // Sync role, status & trustLevel from DB
+      decoded.role = dbSession.user.role as unknown as Role;
+      decoded.status = dbSession.user.status as unknown as UserStatus;
+      decoded.trustLevel = dbSession.user.trustLevel as unknown as TrustLevel;
+    }
+
     req.user = decoded;
   } catch (err) {
     // Invalid/expired token: clear user and continue

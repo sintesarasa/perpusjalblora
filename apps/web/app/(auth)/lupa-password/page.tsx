@@ -2,13 +2,14 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { CheckCircle2, AlertCircle, ArrowLeft } from 'lucide-react';
+import { CheckCircle2, AlertCircle, ArrowLeft, ArrowRight } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { apiClient } from '@/lib/api';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = React.useState('');
+  const [websiteHoneypot, setWebsiteHoneypot] = React.useState('');
   const [isLoading, setIsLoading] = React.useState(false);
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
   const [isSuccess, setIsSuccess] = React.useState(false);
@@ -17,7 +18,7 @@ export default function ForgotPasswordPage() {
     e.preventDefault();
     setErrorMessage(null);
 
-    if (!email) {
+    if (!email.trim()) {
       setErrorMessage('Alamat email wajib diisi.');
       return;
     }
@@ -27,7 +28,10 @@ export default function ForgotPasswordPage() {
     try {
       const res = await apiClient<{ message: string }>('/auth/forgot-password', {
         method: 'POST',
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({
+          email: email.trim().toLowerCase(),
+          website: websiteHoneypot,
+        }),
       });
 
       if (res.error) {
@@ -37,14 +41,14 @@ export default function ForgotPasswordPage() {
 
       setIsSuccess(true);
     } catch {
-      setErrorMessage('Gagal menghubungi server. Periksa koneksi internetmu.');
+      setErrorMessage('Tidak dapat terhubung ke server perpusjal. Periksa koneksi internetmu.');
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 animate-in fade-in-50 duration-200">
       {/* Editorial Heading */}
       <div className="space-y-2">
         <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-muted">
@@ -55,56 +59,70 @@ export default function ForgotPasswordPage() {
         <h1 className="font-serif text-3xl sm:text-4xl font-normal tracking-tight">
           Lupa Kata Sandi?
         </h1>
-        <p className="text-sm text-muted font-sans pt-1">
-          Masukkan alamat email yang terdaftar untuk menerima tautan pemulihan kata sandi.
+        <p className="text-xs sm:text-sm text-muted font-sans pt-0.5 leading-relaxed">
+          Masukkan alamat email yang terdaftar untuk menerima instruksi pemulihan kata sandi.
         </p>
       </div>
 
       {/* Error Message */}
       {errorMessage && (
-        <div className="p-4 border-2 border-foreground bg-surface text-foreground space-y-1">
+        <div
+          role="alert"
+          className="p-4 border-2 border-foreground bg-surface text-foreground space-y-1 animate-in fade-in-50 duration-150"
+        >
           <div className="flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-wider">
-            <AlertCircle className="w-4 h-4 text-foreground" />
-            <span>Permintaan Gagal</span>
+            <AlertCircle className="w-4 h-4 text-foreground shrink-0" />
+            <span>Permintaan Ditolak</span>
           </div>
-          <p className="text-xs font-sans text-foreground/80 pl-6">
-            {errorMessage}
-          </p>
+          <p className="text-xs font-sans text-foreground/85 pl-6">{errorMessage}</p>
         </div>
       )}
 
       {/* Success View */}
       {isSuccess ? (
-        <div className="space-y-6 border border-foreground p-8 bg-surface">
+        <div className="space-y-6 border-2 border-foreground p-8 bg-surface animate-in fade-in-50 duration-150">
           <div className="flex items-center gap-3">
             <CheckCircle2 className="w-8 h-8 text-foreground shrink-0" />
             <div>
               <span className="font-mono text-[10px] uppercase tracking-widest text-muted">
                 INSTRUKSI DIKIRIMKAN
               </span>
-              <h2 className="font-serif text-2xl font-normal">Periksa Email Masuk</h2>
+              <h2 className="font-serif text-2xl font-normal">Periksa Kotak Masukmu</h2>
             </div>
           </div>
 
           <p className="text-sm font-sans text-foreground/85 leading-relaxed">
-            Jika alamat <strong className="font-mono font-bold text-foreground">{email}</strong> terdaftar di sistem kami, tautan pengaturan ulang kata sandi telah dikirimkan. Tautan hanya berlaku selama 1 jam.
+            Jika alamat <strong className="font-mono font-bold text-foreground">{email}</strong> terdaftar di sistem kami, tautan pengaturan ulang kata sandi telah dikirimkan. Tautan hanya berlaku selama 1 jam demi alasan keamanan.
           </p>
 
           <div className="pt-4 border-t border-border-hairline">
             <Link href="/masuk">
-              <Button variant="outline" size="md" className="w-full">
+              <Button variant="solid" size="md" className="w-full font-mono tracking-wider">
                 Kembali ke Halaman Masuk
               </Button>
             </Link>
           </div>
         </div>
       ) : (
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+          {/* Honeypot field */}
+          <input
+            type="text"
+            name="website"
+            value={websiteHoneypot}
+            onChange={(e) => setWebsiteHoneypot(e.target.value)}
+            tabIndex={-1}
+            autoComplete="off"
+            style={{ position: 'absolute', opacity: 0, height: 0, width: 0, zIndex: -1, pointerEvents: 'none' }}
+            aria-hidden="true"
+          />
+
           <Input
             label="Alamat Email Terdaftar"
             type="email"
             name="email"
             autoComplete="email"
+            autoFocus
             placeholder="nama@domain.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -117,10 +135,11 @@ export default function ForgotPasswordPage() {
               type="submit"
               variant="solid"
               size="lg"
-              className="w-full"
+              className="w-full flex items-center justify-center gap-2 cursor-pointer font-mono tracking-wider"
               isLoading={isLoading}
             >
-              Kirim Tautan Pemulihan
+              <span>Kirim Tautan Pemulihan</span>
+              {!isLoading && <ArrowRight className="w-4 h-4" />}
             </Button>
           </div>
         </form>

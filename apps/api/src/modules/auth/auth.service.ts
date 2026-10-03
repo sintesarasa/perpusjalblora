@@ -18,6 +18,7 @@ import {
 
 const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-jwt-key-replace-in-production-min-32-chars';
 const BCRYPT_SALT_ROUNDS = process.env.NODE_ENV === 'production' ? 12 : 10;
+const DUMMY_BCRYPT_HASH = '$2a$10$wT2oO0K2f8xH7Xz5u5R.E.eG9yKzS9y6M6j3vH4fB1g7i4a8k9m0q';
 
 function hashToken(rawToken: string): string {
   return crypto.createHash('sha256').update(rawToken).digest('hex');
@@ -99,6 +100,19 @@ export class AuthService {
     const genericInvalidError = HttpError.unauthorized('Email atau password salah.', 'INVALID_CREDENTIALS');
 
     if (!user || !user.passwordHash) {
+      // Timing attack mitigation: perform dummy bcrypt compare so response duration is consistent
+      await bcrypt.compare(input.password, DUMMY_BCRYPT_HASH).catch(() => false);
+      throw genericInvalidError;
+    }
+
+    // Check account status
+    if (user.status === UserStatus.SUSPENDED) {
+      throw HttpError.forbidden(
+        'Akunmu sedang ditangguhkan oleh pengurus. Silakan hubungi relawan perpusjal.',
+        'ACCOUNT_SUSPENDED'
+      );
+    }
+    if (user.status === UserStatus.DEACTIVATED || user.status === UserStatus.DELETED) {
       throw genericInvalidError;
     }
 

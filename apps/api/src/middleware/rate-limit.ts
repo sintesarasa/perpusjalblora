@@ -1,0 +1,66 @@
+import { rateLimit } from 'express-rate-limit';
+
+/**
+ * General auth endpoints rate limiter (15 requests per 15 minutes per IP)
+ */
+export const authGeneralLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  limit: 30, // 30 requests per window
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  message: {
+    error: {
+      code: 'RATE_LIMIT_EXCEEDED',
+      message: 'Terlalu banyak permintaan dari perangkat ini. Silakan tunggu beberapa saat.',
+    },
+  },
+});
+
+/**
+ * Strict login rate limiter (Anti Brute-Force: max 8 attempts per 15 minutes per IP)
+ */
+export const loginBruteForceLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  limit: 8, // max 8 login attempts per IP per 15 minutes
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  skipSuccessfulRequests: true, // Only count failed logins towards the rate limit
+  message: {
+    error: {
+      code: 'TOO_MANY_LOGIN_ATTEMPTS',
+      message: 'Terlalu banyak percobaan masuk yang gagal dari jaringan ini. Demi keamanan, silakan tunggu 15 menit sebelum mencoba kembali.',
+    },
+  },
+});
+
+/**
+ * Registration rate limiter (Anti Spam/Sybil: max 5 registrations per hour per IP)
+ */
+export const registerLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  limit: 5,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  message: {
+    error: {
+      code: 'REGISTRATION_LIMIT_EXCEEDED',
+      message: 'Batas pembuatan akun baru dari jaringan ini tercapai. Silakan coba lagi dalam 1 jam.',
+    },
+  },
+});
+
+/**
+ * Password reset request rate limiter (Anti Enumeration/Flooding: max 4 requests per hour per IP)
+ */
+export const passwordResetLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  limit: 4,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  message: {
+    error: {
+      code: 'RESET_LIMIT_EXCEEDED',
+      message: 'Permintaan reset password terlalu sering. Silakan tunggu 1 jam sebelum mengajukan kembali.',
+    },
+  },
+});

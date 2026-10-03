@@ -5,11 +5,14 @@ export const registerSchema = z
   .object({
     name: z
       .string()
+      .trim()
       .min(2, 'Nama minimal 2 karakter.')
       .max(60, 'Nama maksimal 60 karakter.')
       .regex(/^[a-zA-Z\s.'’]+$/, 'Nama hanya boleh berisi huruf, spasi, titik, atau tanda petik.'),
     username: z
       .string()
+      .trim()
+      .toLowerCase()
       .min(3, 'Username minimal 3 karakter.')
       .max(20, 'Username maksimal 20 karakter.')
       .regex(/^[a-z0-9_]+$/, 'Username hanya boleh huruf kecil, angka, dan underscore.')
@@ -18,10 +21,11 @@ export const registerSchema = z
       }),
     email: z
       .string()
+      .trim()
+      .toLowerCase()
       .email('Format email tidak valid.')
-      .max(120, 'Email terlalu panjang.')
-      .toLowerCase(),
-    phoneNumber: z.string().max(20, 'Nomor telepon maksimal 20 karakter.').optional().nullable(),
+      .max(120, 'Email terlalu panjang.'),
+    phoneNumber: z.string().trim().max(20, 'Nomor telepon maksimal 20 karakter.').optional().nullable(),
     password: z
       .string()
       .min(8, 'Password minimal 8 karakter.')
@@ -31,6 +35,7 @@ export const registerSchema = z
     agreeTerms: z.literal(true, {
       errorMap: () => ({ message: 'Kamu perlu menyetujui ketentuan.' }),
     }),
+    website: z.string().max(0, 'Spam bot terdeteksi.').optional().or(z.literal('')),
   })
   .refine((data) => data.password === data.passwordConfirm, {
     message: 'Konfirmasi password tidak cocok.',
@@ -40,9 +45,10 @@ export const registerSchema = z
 export type RegisterInput = z.infer<typeof registerSchema>;
 
 export const loginSchema = z.object({
-  email: z.string().email('Format email tidak valid.').toLowerCase(),
+  email: z.string().trim().toLowerCase().email('Format email tidak valid.'),
   password: z.string().min(1, 'Password wajib diisi.'),
   rememberMe: z.boolean().optional().default(false),
+  website: z.string().max(0, 'Spam bot terdeteksi.').optional().or(z.literal('')),
 });
 
 export type LoginInput = z.infer<typeof loginSchema>;
@@ -54,7 +60,8 @@ export const verifyEmailSchema = z.object({
 export type VerifyEmailInput = z.infer<typeof verifyEmailSchema>;
 
 export const forgotPasswordSchema = z.object({
-  email: z.string().email('Format email tidak valid.').toLowerCase(),
+  email: z.string().trim().toLowerCase().email('Format email tidak valid.'),
+  website: z.string().max(0, 'Spam bot terdeteksi.').optional().or(z.literal('')),
 });
 
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;

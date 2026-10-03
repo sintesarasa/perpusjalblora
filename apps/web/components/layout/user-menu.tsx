@@ -18,43 +18,13 @@ import {
   LayoutDashboard,
 } from 'lucide-react';
 import { Role } from '@perpusjal/types';
-import { apiClient } from '@/lib/api';
-
-interface CurrentUser {
-  id: string;
-  name: string;
-  username: string;
-  email: string;
-  role: Role;
-  avatarUrl?: string | null;
-}
+import { useAuth } from '@/contexts/auth-context';
 
 export function UserMenu() {
   const router = useRouter();
-  const [user, setUser] = React.useState<CurrentUser | null>(null);
-  const [loading, setLoading] = React.useState(true);
+  const { user, isLoading: loading, logout } = useAuth();
   const [isOpen, setIsOpen] = React.useState(false);
   const menuRef = React.useRef<HTMLDivElement>(null);
-
-  const fetchCurrentUser = React.useCallback(async () => {
-    try {
-      const res = await apiClient<any>('/auth/me');
-      const u = res.data?.user || (res.data?.id ? res.data : null);
-      if (u) {
-        setUser(u);
-      } else {
-        setUser(null);
-      }
-    } catch {
-      setUser(null);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  React.useEffect(() => {
-    fetchCurrentUser();
-  }, [fetchCurrentUser]);
 
   // Click outside to close
   React.useEffect(() => {
@@ -71,15 +41,9 @@ export function UserMenu() {
 
   const handleLogout = async () => {
     setIsOpen(false);
-    try {
-      await apiClient('/auth/logout', { method: 'POST' });
-    } catch {
-      // Ignored
-    } finally {
-      setUser(null);
-      router.push('/masuk');
-      router.refresh();
-    }
+    await logout();
+    router.push('/masuk');
+    router.refresh();
   };
 
   if (loading) {
