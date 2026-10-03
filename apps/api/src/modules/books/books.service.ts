@@ -81,6 +81,7 @@ export class BooksService {
       tahunMax,
       sort = 'terbaru',
       includeDraft = false,
+      featured,
       page = 1,
       perPage = 24,
     } = query;
@@ -92,6 +93,10 @@ export class BooksService {
 
     if (!includeDraft) {
       where.isPublished = true;
+    }
+
+    if (featured === true) {
+      where.isFeatured = true;
     }
 
     if (q && q.trim()) {
@@ -148,8 +153,12 @@ export class BooksService {
           availableCopies: true,
           isBorrowable: true,
           isPublished: true,
+          isFeatured: true,
+          curatorNote: true,
+          description: true,
           shelfLocation: true,
           publicationYear: true,
+          borrowCount: true,
           category: {
             select: {
               id: true,
@@ -174,8 +183,12 @@ export class BooksService {
       isBorrowable: b.isBorrowable,
       availability: computeAvailability(b.availableCopies, b.isBorrowable),
       isPublished: b.isPublished,
+      isFeatured: b.isFeatured,
+      curatorNote: b.curatorNote,
+      description: b.description,
       shelfLocation: b.shelfLocation,
       publicationYear: b.publicationYear,
+      borrowCount: b.borrowCount,
     }));
 
     return {
@@ -311,6 +324,8 @@ export class BooksService {
       isBorrowable: book.isBorrowable,
       availability: computeAvailability(book.availableCopies, book.isBorrowable),
       borrowCount: book.borrowCount,
+      isFeatured: book.isFeatured,
+      curatorNote: book.curatorNote,
       createdAt: book.createdAt.toISOString(),
       category: book.category,
       copies: book.copies.map((c) => ({
@@ -558,6 +573,34 @@ export class BooksService {
       message: updated.isPublished
         ? `Buku "${updated.title}" berhasil diterbitkan ke katalog publik.`
         : `Buku "${updated.title}" ditarik ke status Draft (disembunyikan dari publik).`,
+    };
+  }
+
+  /**
+   * Toggle featured / curator's recommendation status (FR-LIB-SPOTLIGHT)
+   */
+  async toggleFeatured(id: string, isFeatured: boolean, curatorNote?: string | null) {
+    const existing = await prisma.book.findUnique({ where: { id } });
+    if (!existing || existing.deletedAt) {
+      throw HttpError.notFound('Buku tidak ditemukan.');
+    }
+
+    const updated = await prisma.book.update({
+      where: { id },
+      data: {
+        isFeatured,
+        curatorNote: isFeatured ? (curatorNote?.trim() || null) : null,
+      },
+    });
+
+    return {
+      id: updated.id,
+      title: updated.title,
+      isFeatured: updated.isFeatured,
+      curatorNote: updated.curatorNote,
+      message: updated.isFeatured
+        ? `Buku "${updated.title}" berhasil diangkat sebagai Sorotan Rekomendasi Lapak.`
+        : `Buku "${updated.title}" telah dihapus dari Sorotan Lapak.`,
     };
   }
 

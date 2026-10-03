@@ -1,9 +1,10 @@
 import { redirect } from 'next/navigation';
 
 interface Props {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
-export default function DashboardTulisIdRedirect({ params }: Props) {
-  redirect(`/dashboard/tulisan/tulis/${params.id}`);
+export default async function DashboardTulisIdRedirect({ params }: Props) {
+  const { id } = await params;
+  redirect(`/dashboard/tulisan/tulis/${id}`);
 }

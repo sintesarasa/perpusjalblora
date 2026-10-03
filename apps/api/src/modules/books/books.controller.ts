@@ -6,6 +6,7 @@ import {
   bookCopyCreateSchema,
   bookCopyUpdateSchema,
   createBookReviewSchema,
+  bookFeaturedSchema,
 } from '@perpusjal/types';
 import { booksService } from './books.service.js';
 
@@ -65,6 +66,17 @@ export class BooksController {
     try {
       const id = req.params.id as string;
       const result = await booksService.togglePublish(id);
+      res.status(200).json({ data: result, message: result.message });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async toggleFeatured(req: Request, res: Response, next: NextFunction) {
+    try {
+      const id = req.params.id as string;
+      const input = bookFeaturedSchema.parse(req.body);
+      const result = await booksService.toggleFeatured(id, input.isFeatured, input.curatorNote);
       res.status(200).json({ data: result, message: result.message });
     } catch (error) {
       next(error);

@@ -32,9 +32,13 @@ import {
   Download,
   CheckSquare,
   Square,
+  Star,
+  Sparkles,
+  X,
 } from 'lucide-react';
 import { usePrintQueue } from '@/lib/print-queue-context';
 import { StickerPrintQueueDrawer } from '@/components/admin/sticker-print-queue-drawer';
+import { cn } from '@/lib/utils';
 
 interface CategoryItem {
   id: string;
@@ -64,7 +68,8 @@ export default function DashboardBookManagementPage() {
   const [debouncedSearch, setDebouncedSearch] = React.useState('');
   const [selectedCategory, setSelectedCategory] = React.useState('');
   const [availabilityFilter, setAvailabilityFilter] = React.useState<string>('all');
-  const [publishFilter, setPublishFilter] = React.useState<string>('all'); // 'all' | 'published' | 'draft'
+  const [publishFilter, setPublishFilter] = React.useState<string>('all'); // 'all' | 'published' | 'draft' | 'featured'
+  const [featuredTotal, setFeaturedTotal] = React.useState<number>(0);
 
   // Pagination state
   const [currentPage, setCurrentPage] = React.useState(1);
@@ -79,6 +84,12 @@ export default function DashboardBookManagementPage() {
   const [actionMessage, setActionMessage] = React.useState<string | null>(null);
   const [actionError, setActionError] = React.useState<string | null>(null);
   const [togglingBookId, setTogglingBookId] = React.useState<string | null>(null);
+  const [togglingFeaturedId, setTogglingFeaturedId] = React.useState<string | null>(null);
+
+  // Spotlight Modal State
+  const [spotlightModalBook, setSpotlightModalBook] = React.useState<BookItem | null>(null);
+  const [spotlightNoteInput, setSpotlightNoteInput] = React.useState('');
+  const [isSubmittingSpotlight, setIsSubmittingSpotlight] = React.useState(false);
 
   // Modals States
   const [isAddModalOpen, setIsAddModalOpen] = React.useState(false);
@@ -219,7 +230,22 @@ export default function DashboardBookManagementPage() {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  // 3. Fetch Books with Curatorial Draft Support & Pagination
+  // 3. Fetch Total Featured Books Count for Curator Badge
+  const fetchFeaturedCount = React.useCallback(async () => {
+    try {
+      const res = await apiClient<{ data: BookItem[]; meta: PaginationMeta }>(
+        '/books?featured=true&includeDraft=true&perPage=1'
+      );
+      const total = res.data?.meta?.total;
+      if (typeof total === 'number') {
+        setFeaturedTotal(total);
+      }
+    } catch {
+      // Ignore error
+    }
+  }, []);
+
+  // 3b. Fetch Books with Curatorial Draft Support & Pagination
   const fetchBooks = React.useCallback(async () => {
     setLoading(true);
     setActionError(null);
@@ -228,6 +254,7 @@ export default function DashboardBookManagementPage() {
       if (debouncedSearch.trim()) params.set('q', debouncedSearch.trim());
       if (selectedCategory) params.set('kategori', selectedCategory);
       if (availabilityFilter === 'available') params.set('tersedia', 'true');
+      if (publishFilter === 'featured') params.set('featured', 'true');
 
       // Curators should be able to view drafts
       params.set('includeDraft', 'true');
@@ -246,11 +273,13 @@ export default function DashboardBookManagementPage() {
         rawData = (booksRes.data as any).data;
       }
 
-      // Filter client-side if draft filter is chosen
+      // Filter client-side if draft or featured filter is chosen
       if (publishFilter === 'published') {
         rawData = rawData.filter((b) => b.isPublished !== false);
       } else if (publishFilter === 'draft') {
         rawData = rawData.filter((b) => b.isPublished === false);
+      } else if (publishFilter === 'featured') {
+        rawData = rawData.filter((b) => b.isFeatured === true);
       }
 
       setBooks(rawData);
@@ -275,8 +304,9 @@ export default function DashboardBookManagementPage() {
   React.useEffect(() => {
     if (!authLoading) {
       fetchBooks();
+      fetchFeaturedCount();
     }
-  }, [fetchBooks, authLoading]);
+  }, [fetchBooks, fetchFeaturedCount, authLoading]);
 
   // 4. Quick Publish / Unpublish Toggle
   const handleTogglePublish = async (book: BookItem) => {
@@ -299,6 +329,45 @@ export default function DashboardBookManagementPage() {
       setActionError('Terjadi kendala saat mengubah status publikasi.');
     } finally {
       setTogglingBookId(null);
+    }
+  };
+
+  // 4b. Toggle Featured / Curator's Spotlight
+  const handleOpenSpotlightModal = (book: BookItem) => {
+    setSpotlightModalBook(book);
+    setSpotlightNoteInput(book.curatorNote || '');
+  };
+
+  const handleSaveSpotlight = async (isFeatured: boolean) => {
+    if (!spotlightModalBook) return;
+    setIsSubmittingSpotlight(true);
+    setActionError(null);
+    setActionMessage(null);
+
+    try {
+      const res = await apiClient<{ message: string }>(
+        `/books/${spotlightModalBook.id}/featured`,
+        {
+          method: 'PATCH',
+          body: JSON.stringify({
+            isFeatured,
+            curatorNote: isFeatured ? spotlightNoteInput.trim() : null,
+          }),
+        }
+      );
+
+      if (res.error) {
+        setActionError(res.error.message);
+      } else {
+        setActionMessage(res.data?.message || 'Status sorotan buku berhasil diperbarui.');
+        setSpotlightModalBook(null);
+        fetchBooks();
+        fetchFeaturedCount();
+      }
+    } catch {
+      setActionError('Gagal memperbarui status sorotan buku.');
+    } finally {
+      setIsSubmittingSpotlight(false);
     }
   };
 
@@ -496,8 +565,44 @@ export default function DashboardBookManagementPage() {
           />
         </div>
 
-        {/* Filters */}
+        {/* Filters & Sorotan Button */}
         <div className="flex items-center gap-3 w-full md:w-auto flex-wrap">
+          {/* Quick Button: Kelola Sorotan Lapak */}
+          <button
+            type="button"
+            onClick={() => {
+              setPublishFilter((prev) => (prev === 'featured' ? 'all' : 'featured'));
+              setCurrentPage(1);
+            }}
+            className={cn(
+              "px-3 py-2 border font-mono text-xs uppercase tracking-wider font-bold inline-flex items-center gap-1.5 transition-colors cursor-pointer",
+              publishFilter === 'featured'
+                ? "bg-foreground text-background border-foreground shadow-xs"
+                : "bg-surface text-foreground border-border-hairline hover:border-foreground"
+            )}
+            title="Saring hanya buku yang tampil di slider etalase sorotan lapak"
+          >
+            <Star
+              className={cn(
+                "w-3.5 h-3.5",
+                publishFilter === 'featured' ? "fill-background text-background" : "text-amber-500 fill-amber-500"
+              )}
+            />
+            <span>Sorotan Lapak</span>
+            {featuredTotal > 0 && (
+              <span
+                className={cn(
+                  "px-1.5 py-0.2 text-[10px] font-mono font-bold",
+                  publishFilter === 'featured'
+                    ? "bg-background text-foreground"
+                    : "bg-surface-muted text-foreground border border-border-hairline"
+                )}
+              >
+                {featuredTotal}
+              </span>
+            )}
+          </button>
+
           {/* Status Publikasi Filter */}
           <select
             value={publishFilter}
@@ -507,7 +612,8 @@ export default function DashboardBookManagementPage() {
             }}
             className="px-3 py-2 border border-border-hairline bg-surface text-foreground font-mono text-xs focus:border-foreground focus:outline-none"
           >
-            <option value="all">Semua Status (Publik & Draft)</option>
+            <option value="all">Semua Status (Publik &amp; Draft)</option>
+            <option value="featured">★ Pilihan Sorotan Lapak ({featuredTotal})</option>
             <option value="published">Hanya Terbit</option>
             <option value="draft">Hanya Draft</option>
           </select>
@@ -555,6 +661,37 @@ export default function DashboardBookManagementPage() {
           </button>
         </div>
       </div>
+
+      {/* 4b. GUIDANCE BANNER FOR CURATOR SPOTLIGHT MODE */}
+      {publishFilter === 'featured' && (
+        <div className="p-4 border-2 border-foreground bg-surface flex flex-col sm:flex-row sm:items-center justify-between gap-4 font-mono text-xs animate-editorial-slide shadow-xs">
+          <div className="flex items-start sm:items-center gap-3">
+            <div className="w-8 h-8 bg-foreground text-background flex items-center justify-center shrink-0">
+              <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
+            </div>
+            <div className="space-y-0.5">
+              <div className="flex items-center gap-2 flex-wrap">
+                <strong className="text-foreground uppercase tracking-widest text-xs">
+                  PENGATURAN ETALASE SOROTAN LAPAK (SLIDER UTAMA)
+                </strong>
+                <span className="px-2 py-0.5 bg-foreground text-background text-[10px] font-bold">
+                  {featuredTotal} BUKU AKTIF
+                </span>
+              </div>
+              <p className="font-serif text-muted text-xs normal-case max-w-3xl leading-relaxed">
+                Buku-buku bertanda bintang ini akan tampil secara bergiliran pada <em>Slider Etalase Sorotan</em> di bagian atas halaman katalog publik (<code className="font-mono text-foreground font-bold">/buku</code>). Kurator dapat mengklik tombol <strong>&ldquo;Sorotan&rdquo;</strong> pada tiap baris buku untuk mengubah catatan/kutipan kurator, atau mencabutnya dari slider. Untuk menambahkan buku baru ke dalam slider, pilih status filter &ldquo;Semua Status&rdquo; dan klik tombol <strong>&ldquo;+ Sorot&rdquo;</strong> pada buku yang diinginkan.
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setPublishFilter('all')}
+            className="px-3.5 py-2 border border-foreground bg-surface hover:bg-foreground hover:text-background text-[11px] uppercase tracking-wider font-bold transition-colors cursor-pointer shrink-0"
+          >
+            Tampilkan Semua Buku
+          </button>
+        </div>
+      )}
 
       {/* 5. BOOKS TABLE */}
       {loading ? (
@@ -697,6 +834,13 @@ export default function DashboardBookManagementPage() {
                           </span>
                         )}
 
+                        {book.isFeatured && (
+                          <span className="px-1.5 py-0.5 border border-foreground bg-foreground text-background font-bold uppercase inline-flex items-center gap-1">
+                            <Star className="w-2.5 h-2.5 fill-current" />
+                            SOROTAN LAPAK
+                          </span>
+                        )}
+
                         <span className="px-1.5 py-0.5 border border-border-hairline bg-surface-muted uppercase text-muted">
                           {book.category?.name || 'Umum'}
                         </span>
@@ -775,6 +919,21 @@ export default function DashboardBookManagementPage() {
                     >
                       <Layers className="w-3.5 h-3.5" />
                       <span>Eksemplar ({total})</span>
+                    </button>
+
+                    {/* Tombol Kurasi Sorotan Lapak */}
+                    <button
+                      type="button"
+                      onClick={() => handleOpenSpotlightModal(book)}
+                      className={`px-2.5 py-1.5 border text-[11px] font-semibold uppercase tracking-wider inline-flex items-center gap-1.5 transition-colors ${
+                        book.isFeatured
+                          ? 'border-foreground bg-foreground text-background'
+                          : 'border-border-hairline hover:border-foreground text-muted hover:text-foreground'
+                      }`}
+                      title={book.isFeatured ? 'Sunting catatan sorotan lapak' : 'Jadikan sorotan rekomendasi kurator lapak'}
+                    >
+                      <Star className={`w-3.5 h-3.5 ${book.isFeatured ? 'fill-current' : ''}`} />
+                      <span>{book.isFeatured ? 'Sorotan' : '+ Sorot'}</span>
                     </button>
 
                     {/* Tombol Cepat Tambah ke Antrean Stiker */}
@@ -941,6 +1100,92 @@ export default function DashboardBookManagementPage() {
         onClose={() => setDeleteTarget(null)}
         onConfirm={handleConfirmDelete}
       />
+
+      {/* 11. CURATOR SPOTLIGHT MODAL */}
+      {spotlightModalBook && (
+        <div className="fixed inset-0 z-50 overflow-y-auto" role="dialog" aria-modal="true">
+          <div
+            className="fixed inset-0 bg-background/80 backdrop-blur-xs transition-opacity"
+            onClick={() => setSpotlightModalBook(null)}
+            aria-hidden="true"
+          />
+          <div className="flex min-h-full items-center justify-center p-4">
+            <div className="relative w-full max-w-lg bg-surface border-2 border-foreground p-6 sm:p-8 shadow-2xl space-y-5 animate-in fade-in zoom-in-95 duration-200">
+              <div className="flex items-center justify-between border-b-2 border-foreground pb-3">
+                <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-widest font-bold text-foreground">
+                  <Star className="w-4 h-4 fill-foreground" />
+                  <span>KURASI SOROTAN LAPAK PEKAN INI</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setSpotlightModalBook(null)}
+                  className="p-1 border border-border-hairline hover:border-foreground text-foreground"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="space-y-2">
+                <span className="font-mono text-[10px] uppercase text-muted tracking-wider block">
+                  BUKU YANG DIKURASI:
+                </span>
+                <h3 className="font-serif text-xl font-bold uppercase text-foreground">
+                  {spotlightModalBook.title}
+                </h3>
+                <p className="font-mono text-xs text-muted">Karya {spotlightModalBook.author}</p>
+              </div>
+
+              <div className="space-y-2">
+                <label className="block font-mono text-[10px] uppercase tracking-wider font-bold text-foreground">
+                  CATATAN / KUTIPAN KURATOR UNTUK WARGA (MAKS. 300 KARAKTER):
+                </label>
+                <textarea
+                  rows={4}
+                  maxLength={300}
+                  value={spotlightNoteInput}
+                  onChange={(e) => setSpotlightNoteInput(e.target.value)}
+                  placeholder="Contoh: Naskah penting Pramoedya yang membuka cakrawala sejarah pergerakan rakyat Blora..."
+                  className="w-full p-3 bg-surface-muted border border-border-hairline focus:border-foreground focus:outline-none rounded-none text-xs font-serif leading-relaxed"
+                />
+                <span className="text-[10px] font-mono text-muted block text-right">
+                  {spotlightNoteInput.length} / 300 karakter
+                </span>
+              </div>
+
+              <div className="pt-3 border-t border-border-hairline flex flex-wrap items-center justify-between gap-3 font-mono text-xs">
+                {spotlightModalBook.isFeatured && (
+                  <button
+                    type="button"
+                    disabled={isSubmittingSpotlight}
+                    onClick={() => handleSaveSpotlight(false)}
+                    className="px-4 py-2 border border-destructive text-destructive hover:bg-destructive hover:text-white uppercase tracking-wider font-bold transition-colors cursor-pointer"
+                  >
+                    Hapus dari Sorotan
+                  </button>
+                )}
+
+                <div className="flex items-center gap-2 ml-auto">
+                  <button
+                    type="button"
+                    onClick={() => setSpotlightModalBook(null)}
+                    className="px-4 py-2 border border-border-hairline text-muted hover:text-foreground uppercase tracking-wider"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    type="button"
+                    disabled={isSubmittingSpotlight}
+                    onClick={() => handleSaveSpotlight(true)}
+                    className="px-5 py-2 border-2 border-foreground bg-foreground text-background uppercase tracking-wider font-bold hover:bg-background hover:text-foreground transition-colors cursor-pointer disabled:opacity-50"
+                  >
+                    {isSubmittingSpotlight ? 'Menyimpan...' : 'Simpan Sorotan'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

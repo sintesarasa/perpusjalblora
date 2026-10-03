@@ -16,6 +16,9 @@ export const bookQuerySchema = z.object({
   includeDraft: z
     .union([z.boolean(), z.string().transform((v) => v === 'true' || v === '1')])
     .optional(),
+  featured: z
+    .union([z.boolean(), z.string().transform((v) => v === 'true' || v === '1')])
+    .optional(),
   page: z.coerce.number().int().positive().default(1),
   perPage: z.coerce.number().int().positive().max(50).default(24),
 });
@@ -37,6 +40,8 @@ export const bookCreateSchema = z.object({
   donatedBy: z.string().max(120).optional().nullable(),
   isPublished: z.boolean().default(true),
   isBorrowable: z.boolean().default(true),
+  isFeatured: z.boolean().default(false),
+  curatorNote: z.string().max(300).optional().nullable(),
   initialCopies: z.number().int().min(0).max(20).default(1),
 });
 
@@ -44,6 +49,12 @@ export type BookCreateInput = z.infer<typeof bookCreateSchema>;
 
 export const bookUpdateSchema = bookCreateSchema.partial().omit({ initialCopies: true });
 export type BookUpdateInput = z.infer<typeof bookUpdateSchema>;
+
+export const bookFeaturedSchema = z.object({
+  isFeatured: z.boolean(),
+  curatorNote: z.string().max(300).optional().nullable(),
+});
+export type BookFeaturedInput = z.infer<typeof bookFeaturedSchema>;
 
 export const bookCopyCreateSchema = z.object({
   inventoryCode: z.string().max(20).optional(),
@@ -78,9 +89,13 @@ export interface BookItem {
   isBorrowable: boolean;
   availability: BookAvailabilityStatus;
   isPublished?: boolean;
+  isFeatured?: boolean;
+  curatorNote?: string | null;
   shelfLocation?: string | null;
   publicationYear?: number | null;
   isbn?: string | null;
+  description?: string | null;
+  borrowCount?: number;
 }
 
 export interface BookCopyItem {

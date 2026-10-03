@@ -399,3 +399,35 @@ body.editor-focus-mode nav {
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
+/* ── Smooth Editorial Slider Transition ───────────────────────────────────── */
+@keyframes editorialSliderFade {
+  0% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.992);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-editorial-slide {
+  animation: editorialSliderFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ── Smooth Slider Countdown Progress Bar ─────────────────────────────────── */
+@keyframes sliderProgressBar {
+  0% {
+    width: 0%;
+  }
+  100% {
+    width: 100%;
+  }
+}
+
+.animate-slider-progress {
+  animation-name: sliderProgressBar;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+

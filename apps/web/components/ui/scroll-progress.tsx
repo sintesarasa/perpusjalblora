@@ -1,8 +1,9 @@
 'use client';
 
 import * as React from 'react';
+import { cn } from '@/lib/utils';
 
-export function ScrollProgress() {
+export function ScrollProgress({ className }: { className?: string }) {
   const [progress, setProgress] = React.useState(0);
 
   React.useEffect(() => {
@@ -20,7 +21,12 @@ export function ScrollProgress() {
   }, []);
 
   return (
-    <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-transparent pointer-events-none overflow-hidden z-10">
+    <div
+      className={cn(
+        'absolute bottom-0 left-0 right-0 h-[2px] bg-transparent pointer-events-none overflow-hidden z-10',
+        className
+      )}
+    >
       <div
         className="h-full bg-foreground transition-all duration-75 ease-out"
         style={{ width: `${progress}%` }}
