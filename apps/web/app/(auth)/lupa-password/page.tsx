@@ -9,7 +9,6 @@ import { apiClient } from '@/lib/api';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = React.useState('');
-  const [websiteHoneypot, setWebsiteHoneypot] = React.useState('');
   const [isLoading, setIsLoading] = React.useState(false);
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
   const [isSuccess, setIsSuccess] = React.useState(false);
@@ -30,7 +29,6 @@ export default function ForgotPasswordPage() {
         method: 'POST',
         body: JSON.stringify({
           email: email.trim().toLowerCase(),
-          website: websiteHoneypot,
         }),
       });
 
@@ -105,18 +103,6 @@ export default function ForgotPasswordPage() {
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-5" noValidate>
-          {/* Honeypot field */}
-          <input
-            type="text"
-            name="website"
-            value={websiteHoneypot}
-            onChange={(e) => setWebsiteHoneypot(e.target.value)}
-            tabIndex={-1}
-            autoComplete="off"
-            style={{ position: 'absolute', opacity: 0, height: 0, width: 0, zIndex: -1, pointerEvents: 'none' }}
-            aria-hidden="true"
-          />
-
           <Input
             label="Alamat Email Terdaftar"
             type="email"

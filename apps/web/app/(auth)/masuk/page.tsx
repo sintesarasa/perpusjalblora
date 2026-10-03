@@ -25,7 +25,6 @@ function LoginForm() {
   const [password, setPassword] = React.useState('');
   const [rememberMe, setRememberMe] = React.useState(false);
   const [showPassword, setShowPassword] = React.useState(false);
-  const [websiteHoneypot, setWebsiteHoneypot] = React.useState('');
 
   const [isLoading, setIsLoading] = React.useState(false);
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
@@ -71,7 +70,6 @@ function LoginForm() {
           email: email.trim().toLowerCase(),
           password,
           rememberMe,
-          website: websiteHoneypot,
         }),
       });
 
@@ -150,18 +148,6 @@ function LoginForm() {
 
       {/* Login Form */}
       <form onSubmit={handleSubmit} className="space-y-5" noValidate>
-        {/* Invisible Honeypot Anti-Bot Field */}
-        <input
-          type="text"
-          name="website"
-          value={websiteHoneypot}
-          onChange={(e) => setWebsiteHoneypot(e.target.value)}
-          tabIndex={-1}
-          autoComplete="off"
-          style={{ position: 'absolute', opacity: 0, height: 0, width: 0, zIndex: -1, pointerEvents: 'none' }}
-          aria-hidden="true"
-        />
-
         {/* Email Field */}
         <div className="space-y-1">
           <Input

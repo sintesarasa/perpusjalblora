@@ -16,7 +16,6 @@ function ResetPasswordForm() {
   const [password, setPassword] = React.useState('');
   const [passwordConfirm, setPasswordConfirm] = React.useState('');
   const [showPassword, setShowPassword] = React.useState(false);
-  const [websiteHoneypot, setWebsiteHoneypot] = React.useState('');
 
   const [isLoading, setIsLoading] = React.useState(false);
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
@@ -67,7 +66,6 @@ function ResetPasswordForm() {
           token: token.trim(),
           password,
           passwordConfirm,
-          website: websiteHoneypot,
         }),
       });
 
@@ -148,18 +146,6 @@ function ResetPasswordForm() {
 
       {/* Reset Password Form */}
       <form onSubmit={handleSubmit} className="space-y-5" noValidate>
-        {/* Honeypot */}
-        <input
-          type="text"
-          name="website"
-          value={websiteHoneypot}
-          onChange={(e) => setWebsiteHoneypot(e.target.value)}
-          tabIndex={-1}
-          autoComplete="off"
-          style={{ position: 'absolute', opacity: 0, height: 0, width: 0, zIndex: -1, pointerEvents: 'none' }}
-          aria-hidden="true"
-        />
-
         {!tokenFromUrl && (
           <Input
             label="Token Pemulihan"

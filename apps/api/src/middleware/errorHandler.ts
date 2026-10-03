@@ -14,20 +14,26 @@ export function errorHandler(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   next: NextFunction
 ) {
-  const statusCode = err.statusCode || (err instanceof ZodError ? 400 : 500);
+  const isZod =
+    err instanceof ZodError ||
+    err.name === 'ZodError' ||
+    (Boolean(err && typeof err === 'object' && 'issues' in err && Array.isArray((err as any).issues)));
 
-  if (err instanceof ZodError) {
+  if (isZod) {
+    const issues = (err as any).issues || (err as any).errors || [];
     return res.status(400).json({
       error: {
         code: 'VALIDATION_ERROR',
-        message: 'Payload tidak valid.',
-        details: err.errors.map((e) => ({
-          field: e.path.join('.'),
+        message: 'Isian formulir tidak valid.',
+        details: issues.map((e: any) => ({
+          field: Array.isArray(e.path) ? e.path.join('.') : String(e.path || ''),
           message: e.message,
         })),
       },
     });
   }
+
+  const statusCode = err.statusCode || 500;
 
   const response = {
     error: {

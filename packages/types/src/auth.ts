@@ -35,7 +35,6 @@ export const registerSchema = z
     agreeTerms: z.literal(true, {
       errorMap: () => ({ message: 'Kamu perlu menyetujui ketentuan.' }),
     }),
-    website: z.string().max(0, 'Spam bot terdeteksi.').optional().or(z.literal('')),
   })
   .refine((data) => data.password === data.passwordConfirm, {
     message: 'Konfirmasi password tidak cocok.',
@@ -48,7 +47,6 @@ export const loginSchema = z.object({
   email: z.string().trim().toLowerCase().email('Format email tidak valid.'),
   password: z.string().min(1, 'Password wajib diisi.'),
   rememberMe: z.boolean().optional().default(false),
-  website: z.string().max(0, 'Spam bot terdeteksi.').optional().or(z.literal('')),
 });
 
 export type LoginInput = z.infer<typeof loginSchema>;
@@ -61,7 +59,6 @@ export type VerifyEmailInput = z.infer<typeof verifyEmailSchema>;
 
 export const forgotPasswordSchema = z.object({
   email: z.string().trim().toLowerCase().email('Format email tidak valid.'),
-  website: z.string().max(0, 'Spam bot terdeteksi.').optional().or(z.literal('')),
 });
 
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;

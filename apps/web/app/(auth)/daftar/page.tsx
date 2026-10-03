@@ -36,7 +36,6 @@ function RegisterForm() {
     passwordConfirm: '',
     agreeTerms: false,
   });
-  const [websiteHoneypot, setWebsiteHoneypot] = React.useState('');
 
   const [showPassword, setShowPassword] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
@@ -120,7 +119,6 @@ function RegisterForm() {
           password: formData.password,
           passwordConfirm: formData.passwordConfirm,
           agreeTerms: formData.agreeTerms,
-          website: websiteHoneypot,
         }),
       });
 
@@ -235,18 +233,6 @@ function RegisterForm() {
 
       {/* Register Form */}
       <form onSubmit={handleSubmit} className="space-y-4" noValidate>
-        {/* Invisible Honeypot Anti-Bot Field */}
-        <input
-          type="text"
-          name="website"
-          value={websiteHoneypot}
-          onChange={(e) => setWebsiteHoneypot(e.target.value)}
-          tabIndex={-1}
-          autoComplete="off"
-          style={{ position: 'absolute', opacity: 0, height: 0, width: 0, zIndex: -1, pointerEvents: 'none' }}
-          aria-hidden="true"
-        />
-
         {/* Nama Lengkap */}
         <Input
           label="Nama Lengkap"
