@@ -69,7 +69,7 @@ export function CitizenContributorsSidebar({
   }, [articles]);
 
   return (
-    <aside className={cn('space-y-6 sm:space-y-8 select-none', className)}>
+    <aside className={cn('space-y-6 sm:space-y-8', className)}>
       {/* ========================================================= */}
       {/* 1. KOTAK POS REDAKSI WARGA (SUBMISSION CALLOUT)           */}
       {/* ========================================================= */}

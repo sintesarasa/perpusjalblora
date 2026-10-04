@@ -33,7 +33,7 @@ export function ArticleCard({
     return (
       <article
         className={cn(
-          'group p-6 sm:p-7 bg-surface border-2 border-foreground transition-all duration-200 hover:-translate-y-1 hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[5px_5px_0px_0px_rgba(255,255,255,0.9)] relative flex flex-col md:flex-row gap-6 items-start select-none',
+          'group p-6 sm:p-7 bg-surface border-2 border-foreground transition-all duration-200 hover:-translate-y-1 hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[5px_5px_0px_0px_rgba(255,255,255,0.9)] relative flex flex-col md:flex-row gap-6 items-start',
           className
         )}
       >
@@ -159,7 +159,7 @@ export function ArticleCard({
   return (
     <article
       className={cn(
-        'group flex flex-col justify-between p-6 bg-surface border-2 border-foreground transition-all duration-200 hover:-translate-y-1 hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[5px_5px_0px_0px_rgba(255,255,255,0.9)] relative select-none',
+        'group flex flex-col justify-between p-6 bg-surface border-2 border-foreground transition-all duration-200 hover:-translate-y-1 hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[5px_5px_0px_0px_rgba(255,255,255,0.9)] relative',
         className
       )}
     >

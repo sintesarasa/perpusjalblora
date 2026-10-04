@@ -28,7 +28,7 @@ export function ArticleFeatured({
   return (
     <section
       className={cn(
-        'border-2 border-foreground bg-surface p-6 sm:p-9 lg:p-10 relative overflow-hidden shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.9)] select-none space-y-6 sm:space-y-8',
+        'border-2 border-foreground bg-surface p-6 sm:p-9 lg:p-10 relative overflow-hidden shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.9)] space-y-6 sm:space-y-8',
         className
       )}
     >
