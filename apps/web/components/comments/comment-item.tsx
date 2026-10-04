@@ -152,7 +152,7 @@ export function CommentItemComponent({
           {/* Header Identitas & Waktu Terbit */}
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
             <Link
-              href={`/u/${comment.author.username}`}
+              href={`/warga/${comment.author.username}`}
               className="font-serif font-bold text-sm sm:text-base text-foreground hover:underline tracking-tight"
             >
               {comment.author.name}

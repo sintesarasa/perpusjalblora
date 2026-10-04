@@ -90,7 +90,7 @@ export function UserAvatar({
   if (linkToProfile && username) {
     return (
       <Link
-        href={`/u/${username}`}
+        href={`/warga/${username}`}
         className="inline-block transition-transform duration-150 hover:scale-105 hover:opacity-95 focus:outline-none"
         title={`Buka profil ${name || `@${username}`}`}
         onClick={(e) => e.stopPropagation()}

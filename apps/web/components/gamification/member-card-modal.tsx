@@ -66,7 +66,7 @@ export function MemberCardModal({ user, triggerClassName }: MemberCardModalProps
   }, [isOpen]);
 
   const handleCopyLink = async () => {
-    const url = typeof window !== 'undefined' ? `${window.location.origin}/u/${user.username}` : '';
+    const url = typeof window !== 'undefined' ? `${window.location.origin}/warga/${user.username}` : '';
     try {
       await navigator.clipboard.writeText(url);
       setCopied(true);

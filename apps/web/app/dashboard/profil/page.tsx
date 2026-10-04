@@ -816,7 +816,7 @@ export default function DashboardProfileSettingsPage() {
                         Profil Terbuka untuk Publik
                       </span>
                       <span className="font-serif text-xs text-muted leading-relaxed block mt-0.5">
-                        Jika dimatikan, halaman /u/{profile.username} hanya akan menampilkan nama dan daftar artikel yang sudah terbit demi kearsipan karya warga.
+                        Jika dimatikan, halaman /warga/{profile.username} hanya akan menampilkan nama dan daftar artikel yang sudah terbit demi kearsipan karya warga.
                       </span>
                     </div>
                   </label>

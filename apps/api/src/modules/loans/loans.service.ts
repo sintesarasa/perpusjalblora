@@ -1411,7 +1411,7 @@ export class LoansService {
       try {
         const url = new URL(trimmed);
         const pathSegments = url.pathname.split('/').filter(Boolean);
-        if (pathSegments.length >= 2 && pathSegments[0] === 'u') {
+        if (pathSegments.length >= 2 && (pathSegments[0] === 'u' || pathSegments[0] === 'warga')) {
           trimmed = `@${pathSegments[1]}`;
         }
       } catch {

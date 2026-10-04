@@ -38,7 +38,7 @@ export function AuthorCard({ author, className }: AuthorCardProps) {
 
         {/* Primary Identity: Name + Username + Honor Badge */}
         <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
-          <Link href={`/u/${author.username}`} className="group">
+          <Link href={`/warga/${author.username}`} className="group">
             <h4 className="font-serif text-lg sm:text-xl font-bold text-foreground group-hover:underline tracking-tight">
               {author.name}
             </h4>
@@ -70,7 +70,7 @@ export function AuthorCard({ author, className }: AuthorCardProps) {
 
         <div className="pt-1">
           <Link
-            href={`/u/${author.username}`}
+            href={`/warga/${author.username}`}
             className="font-mono text-[11px] uppercase tracking-wider text-foreground font-bold hover:underline inline-flex items-center gap-1.5"
           >
             <span>Buka Folio &amp; Koleksi Prestasi</span>

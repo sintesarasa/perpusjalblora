@@ -326,7 +326,7 @@ export function DashboardSidebar({ user, onNavigate }: DashboardSidebarProps) {
       <div className="p-4 border-t border-border-hairline bg-surface-muted/20 space-y-2">
         {user && (
           <Link
-            href={`/u/${user.username}`}
+            href={`/warga/${user.username}`}
             target="_blank"
             className="flex items-center justify-between px-3 py-1.5 text-muted hover:text-foreground hover:bg-surface-muted transition-colors text-[11px]"
           >

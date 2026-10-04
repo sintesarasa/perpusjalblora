@@ -183,7 +183,7 @@ export function ArticleQuickReadDrawer({
               />
               <div className="space-y-0.5">
                 <Link
-                  href={article.author?.username ? `/u/${article.author.username}` : '#'}
+                  href={article.author?.username ? `/warga/${article.author.username}` : '#'}
                   className="font-serif text-sm font-bold text-foreground hover:underline block leading-tight"
                 >
                   {article.author?.name || 'Redaksi Perpusjal'}

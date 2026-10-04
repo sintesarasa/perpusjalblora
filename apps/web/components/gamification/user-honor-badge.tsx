@@ -229,7 +229,7 @@ export function UserHonorBadge({
           {username && (
             <div className="pt-2.5 border-t border-border-hairline text-center">
               <Link
-                href={`/u/${username}`}
+                href={`/warga/${username}`}
                 onClick={() => setIsOpen(false)}
                 className="w-full py-1.5 border border-foreground bg-foreground text-background font-mono text-[10px] uppercase font-bold hover:bg-foreground/90 transition-colors inline-flex items-center justify-center gap-1.5"
               >
