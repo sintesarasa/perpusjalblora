@@ -42,41 +42,45 @@ export async function authMiddleware(req: Request, res: Response, next: NextFunc
     const decoded = jwt.verify(token, JWT_SECRET) as UserSessionPayload;
 
     // 2. Validate DB session revocation and user active status
-    if (decoded.sessionId) {
-      const dbSession = await prisma.session.findUnique({
-        where: { id: decoded.sessionId },
-        include: {
-          user: {
-            select: {
-              id: true,
-              role: true,
-              status: true,
-              trustLevel: true,
-            },
+    // Require valid sessionId to prevent bypass of session revocation and status checks
+    if (!decoded.sessionId) {
+      req.user = undefined;
+      return next();
+    }
+
+    const dbSession = await prisma.session.findUnique({
+      where: { id: decoded.sessionId },
+      include: {
+        user: {
+          select: {
+            id: true,
+            role: true,
+            status: true,
+            trustLevel: true,
           },
         },
-      });
+      },
+    });
 
-      if (!dbSession || dbSession.expiresAt < new Date()) {
-        req.user = undefined;
-        return next();
-      }
-
-      // Reject suspended or deactivated accounts immediately
-      if (
-        dbSession.user.status === UserStatus.SUSPENDED ||
-        dbSession.user.status === UserStatus.DEACTIVATED ||
-        dbSession.user.status === UserStatus.DELETED
-      ) {
-        req.user = undefined;
-        return next();
-      }
-
-      // Sync role, status & trustLevel from DB
-      decoded.role = dbSession.user.role as unknown as Role;
-      decoded.status = dbSession.user.status as unknown as UserStatus;
-      decoded.trustLevel = dbSession.user.trustLevel as unknown as TrustLevel;
+    if (!dbSession || dbSession.expiresAt < new Date()) {
+      req.user = undefined;
+      return next();
     }
+
+    // Reject suspended or deactivated accounts immediately
+    if (
+      dbSession.user.status === UserStatus.SUSPENDED ||
+      dbSession.user.status === UserStatus.DEACTIVATED ||
+      dbSession.user.status === UserStatus.DELETED
+    ) {
+      req.user = undefined;
+      return next();
+    }
+
+    // Sync role, status & trustLevel from DB
+    decoded.role = dbSession.user.role as unknown as Role;
+    decoded.status = dbSession.user.status as unknown as UserStatus;
+    decoded.trustLevel = dbSession.user.trustLevel as unknown as TrustLevel;
 
     if (decoded.userId && !decoded.id) {
       decoded.id = decoded.userId;
