@@ -291,9 +291,53 @@ function EventCatalogContent() {
               </div>
             </div>
 
-            {/* Grid Layout: Left Narrative & Details (7 cols) + Right Tactile Photo Mockup (5 cols) */}
+            {/* Grid Layout: Left Tactile Photo Mockup (5 cols) + Right Narrative & Details (7 cols) */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-              {/* Left Column: Event Context */}
+              {/* Left Column: Tactile Editorial Photography Mockup (5 cols) */}
+              <div className="lg:col-span-5 flex justify-center w-full">
+                <div className="relative w-full max-w-sm sm:max-w-md bg-surface border-2 border-foreground p-3.5 shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] dark:shadow-[5px_5px_0px_0px_rgba(255,255,255,0.9)] select-none">
+                  {/* Top Photo Strip */}
+                  <div className="flex items-center justify-between pb-2 mb-2 border-b border-border-hairline font-mono text-[9px] uppercase tracking-widest text-muted">
+                    <span>[ DOKUMENTASI TROTOAR // LAPAK CFD ]</span>
+                    <span className="font-bold text-amber-600 dark:text-amber-400">2026</span>
+                  </div>
+
+                  {/* Image Canvas Container */}
+                  <div className="relative aspect-[4/3] w-full overflow-hidden border border-foreground/30 bg-zinc-950">
+                    <img
+                      src={
+                        spotlightEvent?.coverImage ||
+                        'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=1000&q=80'
+                      }
+                      alt={spotlightEvent?.title || 'Suasana Lapak Baca Terpal Perpusjal Blora'}
+                      className="w-full h-full object-cover grayscale contrast-110 hover:grayscale-0 transition-all duration-500"
+                    />
+
+                    {/* Gradient Overlay for Mood */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-transparent pointer-events-none" />
+
+                    {/* Vintage Corner Badge on Photo */}
+                    <div className="absolute top-2.5 right-2.5 px-2 py-0.5 bg-amber-500 text-black font-mono text-[8px] font-extrabold uppercase tracking-widest border border-black shadow-xs">
+                      ✦ TERPAL RAKYAT ✦
+                    </div>
+
+                    {/* Photo Caption Overlay */}
+                    <div className="absolute bottom-2.5 left-3 right-3 text-white">
+                      <p className="font-serif italic text-xs leading-snug drop-shadow-md">
+                        &ldquo;Buku menemukan jiwanya saat disentuh jemari dan diperbincangkan di trotoar.&rdquo;
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Bottom Photo Metadata */}
+                  <div className="pt-2.5 flex items-center justify-between font-mono text-[9.5px] text-muted">
+                    <span>Lesehan Alun-Alun Blora</span>
+                    <span className="font-bold text-foreground">RUANG BACA SWADAYA</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Column: Event Narrative & Details (7 cols) */}
               <div className="lg:col-span-7 space-y-4">
                 <div className="inline-block px-2.5 py-0.5 border border-amber-500/50 bg-amber-500/10 text-amber-600 dark:text-amber-400 font-mono text-[9px] uppercase font-bold tracking-widest">
                   <span>✦ SOROTAN SESI TERDEKAT ✦</span>
@@ -338,50 +382,6 @@ function EventCatalogContent() {
                         ? `${spotlightEvent.registeredCount}/${spotlightEvent.quota} Terdaftar`
                         : 'Terbuka Umum'}
                     </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Right Column: Tactile Editorial Photography Mockup (5 cols) */}
-              <div className="lg:col-span-5 flex justify-center">
-                <div className="relative w-full max-w-sm sm:max-w-md bg-surface border-2 border-foreground p-3.5 shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] dark:shadow-[5px_5px_0px_0px_rgba(255,255,255,0.9)] select-none">
-                  {/* Top Photo Strip */}
-                  <div className="flex items-center justify-between pb-2 mb-2 border-b border-border-hairline font-mono text-[9px] uppercase tracking-widest text-muted">
-                    <span>[ DOKUMENTASI TROTOAR // LAPAK CFD ]</span>
-                    <span className="font-bold text-amber-600 dark:text-amber-400">2026</span>
-                  </div>
-
-                  {/* Image Canvas Container */}
-                  <div className="relative aspect-[4/3] w-full overflow-hidden border border-foreground/30 bg-zinc-950">
-                    <img
-                      src={
-                        spotlightEvent?.coverImage ||
-                        'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=1000&q=80'
-                      }
-                      alt={spotlightEvent?.title || 'Suasana Lapak Baca Terpal Perpusjal Blora'}
-                      className="w-full h-full object-cover grayscale contrast-110 hover:grayscale-0 transition-all duration-500"
-                    />
-
-                    {/* Gradient Overlay for Mood */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-transparent pointer-events-none" />
-
-                    {/* Vintage Corner Badge on Photo */}
-                    <div className="absolute top-2.5 right-2.5 px-2 py-0.5 bg-amber-500 text-black font-mono text-[8px] font-extrabold uppercase tracking-widest border border-black shadow-xs">
-                      ✦ TERPAL RAKYAT ✦
-                    </div>
-
-                    {/* Photo Caption Overlay */}
-                    <div className="absolute bottom-2.5 left-3 right-3 text-white">
-                      <p className="font-serif italic text-xs leading-snug drop-shadow-md">
-                        &ldquo;Buku menemukan jiwanya saat disentuh jemari dan diperbincangkan di trotoar.&rdquo;
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Bottom Photo Metadata */}
-                  <div className="pt-2.5 flex items-center justify-between font-mono text-[9.5px] text-muted">
-                    <span>Lesehan Alun-Alun Blora</span>
-                    <span className="font-bold text-foreground">RUANG BACA SWADAYA</span>
                   </div>
                 </div>
               </div>
