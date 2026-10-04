@@ -24,8 +24,19 @@ import {
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const [searchModalOpen, setSearchModalOpen] = React.useState(false);
+  const [isScrolled, setIsScrolled] = React.useState(false);
 
   const pathname = usePathname();
+
+  // Track scroll position for adaptive navbar elevation
+  React.useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 15);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   // Close mobile drawer on route change
   React.useEffect(() => {
@@ -72,7 +83,14 @@ export function Header() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-md border-b border-border-hairline transition-colors print:hidden shadow-2xs">
+      <header
+        className={cn(
+          'sticky top-0 z-50 transition-all duration-300 print:hidden',
+          isScrolled
+            ? 'bg-background/90 backdrop-blur-xl border-b border-foreground/25 dark:border-white/25 shadow-[0_4px_24px_rgba(0,0,0,0.08)] dark:shadow-[0_6px_30px_rgba(0,0,0,0.9)]'
+            : 'bg-background/80 backdrop-blur-md border-b border-border-hairline dark:border-white/10'
+        )}
+      >
         {/* Scroll reading progress indicator at bottom hairline */}
         <ScrollProgress />
 
