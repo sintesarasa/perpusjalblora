@@ -97,6 +97,43 @@
   border-bottom: 3px solid currentColor;
 }
 
+/* Studio Slot-Roller Keyframes (Dual-Track 60FPS Broadsheet Typography) */
+@keyframes slotRollerOut {
+  0% {
+    transform: translate3d(0, 0%, 0);
+    opacity: 1;
+    filter: blur(0px);
+  }
+  100% {
+    transform: translate3d(0, -115%, 0);
+    opacity: 0;
+    filter: blur(1.5px);
+  }
+}
+
+@keyframes slotRollerIn {
+  0% {
+    transform: translate3d(0, 115%, 0);
+    opacity: 0;
+    filter: blur(1.5px);
+  }
+  100% {
+    transform: translate3d(0, 0%, 0);
+    opacity: 1;
+    filter: blur(0px);
+  }
+}
+
+.animate-slot-roller-out {
+  animation: slotRollerOut 650ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity, filter;
+}
+
+.animate-slot-roller-in {
+  animation: slotRollerIn 650ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity, filter;
+}
+
 /* Editorial Drop Cap */
 .drop-cap::first-letter {
   font-family: var(--font-playfair), Georgia, serif;

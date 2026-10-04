@@ -144,6 +144,51 @@ const ROTATING_WORDS = [
   'BERBAHAGIA.',
 ];
 
+/**
+ * The Studio Slot-Roller:
+ * Dual-track concurrent transition (Apple / Awwwards standard)
+ * Outgoing word glides up while incoming word concurrently glides in from bottom
+ * powered by cubic-bezier(0.16, 1, 0.3, 1) at 60FPS.
+ */
+function StudioSlotRoller() {
+  const [currentIdx, setCurrentIdx] = React.useState(0);
+  const [prevIdx, setPrevIdx] = React.useState<number | null>(null);
+
+  React.useEffect(() => {
+    const timer = setInterval(() => {
+      setPrevIdx(currentIdx);
+      setCurrentIdx((prev) => (prev + 1) % ROTATING_WORDS.length);
+    }, 2000);
+
+    return () => clearInterval(timer);
+  }, [currentIdx]);
+
+  return (
+    <span className="relative inline-block overflow-hidden align-baseline h-[1.15em] min-w-[270px] sm:min-w-[430px]">
+      {/* Outgoing Word */}
+      {prevIdx !== null && (
+        <span
+          key={`prev-${prevIdx}-${currentIdx}`}
+          className="absolute inset-0 block italic font-serif font-normal text-foreground animate-slot-roller-out select-none pointer-events-none"
+        >
+          {ROTATING_WORDS[prevIdx]}
+        </span>
+      )}
+
+      {/* Incoming / Active Word */}
+      <span
+        key={`curr-${currentIdx}`}
+        className={cn(
+          'block italic font-serif font-normal text-foreground',
+          prevIdx !== null ? 'animate-slot-roller-in' : ''
+        )}
+      >
+        {ROTATING_WORDS[currentIdx]}
+      </span>
+    </span>
+  );
+}
+
 interface BooksApiResponse {
   data: BookItem[];
   meta: {
@@ -156,22 +201,6 @@ interface BooksApiResponse {
 
 export default function HomePage() {
   const router = useRouter();
-
-  // Rotating words state (1.8s tempo)
-  const [wordIndex, setWordIndex] = React.useState(0);
-  const [isWordExiting, setIsWordExiting] = React.useState(false);
-
-  React.useEffect(() => {
-    const interval = setInterval(() => {
-      setIsWordExiting(true);
-      setTimeout(() => {
-        setWordIndex((prev) => (prev + 1) % ROTATING_WORDS.length);
-        setIsWordExiting(false);
-      }, 260);
-    }, 1800);
-
-    return () => clearInterval(interval);
-  }, []);
 
   // Books from API
   const [books, setBooks] = React.useState<BookItem[]>([]);
@@ -299,21 +328,10 @@ export default function HomePage() {
                     <span>RUANG PERJUMPAAN MERDEKA</span>
                   </div>
 
-                  {/* Monumental Headline: MEMBACA DAN [ROTATING VERB] */}
+                  {/* Monumental Headline: MEMBACA DAN [STUDIO SLOT-ROLLER] */}
                   <h1 className="font-serif font-black uppercase text-foreground leading-[1.02] sm:leading-[0.92] tracking-tight text-4xl sm:text-6xl md:text-7xl lg:text-8xl break-words">
                     MEMBACA DAN <br />
-                    <span className="inline-block overflow-hidden align-bottom">
-                      <span
-                        className={cn(
-                          'italic font-serif font-normal text-foreground inline-block transition-all duration-300 transform',
-                          isWordExiting
-                            ? '-translate-y-full opacity-0 blur-[1px]'
-                            : 'translate-y-0 opacity-100 blur-0'
-                        )}
-                      >
-                        {ROTATING_WORDS[wordIndex]}
-                      </span>
-                    </span>
+                    <StudioSlotRoller />
                   </h1>
 
                   <p className="drop-cap font-serif text-lg sm:text-xl text-foreground/90 leading-relaxed max-w-2xl">
