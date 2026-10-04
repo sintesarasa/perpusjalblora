@@ -9,7 +9,6 @@ import { BrandStamp } from '@/components/ui/brand-stamp';
 import { RevealOnScroll } from '@/components/ui/reveal-on-scroll';
 import { StatusPill } from '@/components/ui/status-pill';
 import { Logo } from '@/components/logo';
-import { EventCountdown } from '@/components/events/event-countdown';
 import { apiClient } from '@/lib/api';
 import { BookItem } from '@perpusjal/types';
 import {
@@ -19,130 +18,119 @@ import {
   Feather,
   Sparkles,
   ShieldCheck,
-  Calendar,
-  Clock,
   Quote,
   Search,
   MapPin,
   Flame,
   Award,
   BookMarked,
-  CheckCircle2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-// High-fidelity fallback books for initial render before API responds
+// High-fidelity fallback books with authentic cover images for instant render
 const INITIAL_CURATED_BOOKS = [
   {
     id: 'b-01',
     code: 'PJ-2026-0001',
+    slug: 'bumi-manusia',
     title: 'Bumi Manusia',
     author: 'Pramoedya Ananta Toer',
+    coverImage: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80',
     category: { id: 'c1', name: 'Sastra & Roman', slug: 'sastra' },
     status: 'AVAILABLE' as const,
     publicationYear: 1980,
     shelfLocation: 'RAK-SAS-01',
-    spineColor: 'bg-amber-800',
-    coverBg: 'from-[#2b1810] to-[#120a06]',
-    textColor: 'text-amber-100',
     description: 'Roman sejarah monumental tentang kebangkitan kesadaran manusia merdeka di Hindia Belanda.',
   },
   {
     id: 'b-02',
     code: 'PJ-2026-0024',
+    slug: 'madilog',
     title: 'Madilog',
     author: 'Tan Malaka',
+    coverImage: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=600&q=80',
     category: { id: 'c2', name: 'Sosial & Filsafat', slug: 'sosial' },
     status: 'AVAILABLE' as const,
     publicationYear: 1943,
     shelfLocation: 'RAK-FIL-03',
-    spineColor: 'bg-rose-900',
-    coverBg: 'from-[#280d12] to-[#120508]',
-    textColor: 'text-rose-100',
     description: 'Materialisme, Dialektika, dan Logika sebagai fondasi berpikir merdeka rakyat jelata.',
   },
   {
     id: 'b-03',
     code: 'PJ-2026-0045',
+    slug: 'gadis-pantai',
     title: 'Gadis Pantai',
     author: 'Pramoedya Ananta Toer',
+    coverImage: 'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&w=600&q=80',
     category: { id: 'c1', name: 'Sastra & Roman', slug: 'sastra' },
     status: 'AVAILABLE' as const,
     publicationYear: 1982,
     shelfLocation: 'RAK-SAS-02',
-    spineColor: 'bg-teal-900',
-    coverBg: 'from-[#0b2528] to-[#041214]',
-    textColor: 'text-teal-100',
     description: 'Kisah pilu penindasan feodalisme Jawa terhadap perempuan bersahaja dari kampung nelayan.',
   },
   {
     id: 'b-04',
     code: 'PJ-2026-0089',
-    title: 'Orang-Orang di Tikungan Jalan',
-    author: 'Pramoedya Ananta Toer',
-    category: { id: 'c3', name: 'Sejarah & Samin', slug: 'sejarah' },
-    status: 'BORROWED' as const,
-    publicationYear: 1954,
-    shelfLocation: 'RAK-SEJ-01',
-    spineColor: 'bg-stone-800',
-    coverBg: 'from-[#211f1d] to-[#0e0e0c]',
-    textColor: 'text-stone-200',
-    description: 'Dua lakon sandiwara tentang pergulatan revolusi dan manusia di persimpangan zaman.',
+    slug: 'laut-bercerita',
+    title: 'Laut Bercerita',
+    author: 'Leila S. Chudori',
+    coverImage: '/uploads/books/book-1790203215111-9786024246945-laut-bercerita-c.jpg',
+    category: { id: 'c1', name: 'Sastra & Roman', slug: 'sastra' },
+    status: 'AVAILABLE' as const,
+    publicationYear: 2017,
+    shelfLocation: 'RAK-SAS-03',
+    description: 'Kisah kehilangan, persahabatan, dan penegakan keadilan bagi korban penghilangan paksa.',
   },
   {
     id: 'b-05',
     code: 'PJ-2026-0112',
+    slug: 'pendidikan-kaum-tertindas',
     title: 'Pendidikan Kaum Tertindas',
     author: 'Paulo Freire',
+    coverImage: 'https://images.unsplash.com/photo-1495446815901-a7297e633e8d?auto=format&fit=crop&w=600&q=80',
     category: { id: 'c4', name: 'Pedagogi Kritis', slug: 'pendidikan' },
     status: 'AVAILABLE' as const,
     publicationYear: 1968,
     shelfLocation: 'RAK-PED-01',
-    spineColor: 'bg-emerald-900',
-    coverBg: 'from-[#0c2618] to-[#04120a]',
-    textColor: 'text-emerald-100',
     description: 'Pedagogi pembebasan yang mengubah pendidikan dari sistem perbankan pasif menjadi dialog kritis.',
   },
   {
     id: 'b-06',
     code: 'PJ-2026-0140',
+    slug: 'jalan-tak-ada-ujung',
     title: 'Jalan Tak Ada Ujung',
     author: 'Mochtar Lubis',
+    coverImage: 'https://images.unsplash.com/photo-1532012164546-f432f2e3777f?auto=format&fit=crop&w=600&q=80',
     category: { id: 'c1', name: 'Sastra & Roman', slug: 'sastra' },
-    status: 'AVAILABLE' as const,
+    status: 'BORROWED' as const,
     publicationYear: 1952,
     shelfLocation: 'RAK-SAS-04',
-    spineColor: 'bg-indigo-900',
-    coverBg: 'from-[#12152e] to-[#070817]',
-    textColor: 'text-indigo-100',
     description: 'Eksplorasi psikologis mendalam tentang ketakutan batin, martabat, dan idealisme masa revolusi.',
   },
   {
     id: 'b-07',
     code: 'PJ-2026-0165',
+    slug: 'cerita-rakyat-nusantara',
     title: 'Cerita Rakyat Nusantara & Fabel Jawa',
     author: 'Koleksi Dongeng Rakyat',
+    coverImage: 'https://images.unsplash.com/photo-1516979187457-637abb4f9353?auto=format&fit=crop&w=600&q=80',
     category: { id: 'c5', name: 'Buku Anak & Fabel', slug: 'anak' },
     status: 'AVAILABLE' as const,
     publicationYear: 2019,
     shelfLocation: 'RAK-ANK-02',
-    spineColor: 'bg-amber-700',
-    coverBg: 'from-[#2a1d07] to-[#120c02]',
-    textColor: 'text-amber-200',
     description: 'Dongeng bergambar pengantar imajinasi dan kearifan lokal untuk anak-anak pembaca trotoar.',
   },
   {
     id: 'b-08',
     code: 'PJ-2026-0188',
+    slug: 'samin-surosentiko',
     title: 'Samin Surosentiko & Gerakan Petani',
     author: 'Kajian Sejarah Budaya',
+    coverImage: 'https://images.unsplash.com/photo-1457369804613-52c61a468e7d?auto=format&fit=crop&w=600&q=80',
     category: { id: 'c3', name: 'Sejarah & Samin', slug: 'sejarah' },
     status: 'AVAILABLE' as const,
     publicationYear: 2015,
     shelfLocation: 'RAK-SEJ-02',
-    spineColor: 'bg-yellow-900',
-    coverBg: 'from-[#2b200b] to-[#120d04]',
-    textColor: 'text-yellow-100',
     description: 'Ajaran Sedulur Sikep, perlawanan tanpa kekerasan, dan kedaulatan tanah adat di bumi Blora.',
   },
 ];
@@ -218,7 +206,6 @@ export default function HomePage() {
           setBooks(res.data.data);
         }
       } catch (err) {
-        // Fallback remains in place
         console.error('Failed to load books from API:', err);
       } finally {
         if (isMounted) setLoadingBooks(false);
@@ -248,7 +235,7 @@ export default function HomePage() {
 
       <main className="flex-1">
         {/* ========================================================= */}
-        {/* 1. FRONT-PAGE HERO: THE BROADSHEET MASTHEAD (STANDAR TENTANG) */}
+        {/* 1. FRONT-PAGE HERO: THE BROADSHEET MASTHEAD               */}
         {/* ========================================================= */}
         <section
           onMouseMove={handleHeroMouseMove}
@@ -279,8 +266,8 @@ export default function HomePage() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 relative z-10 items-start">
-            {/* Left Big Lead (8 cols) */}
-            <div className="lg:col-span-8 flex flex-col justify-between space-y-8">
+            {/* Left Big Lead (7 cols) */}
+            <div className="lg:col-span-7 flex flex-col justify-between space-y-8">
               <RevealOnScroll variant="fade-up" delayMs={100}>
                 <div className="space-y-5 sm:space-y-7">
                   <div className="inline-flex items-center gap-2 px-3 py-1 border border-foreground font-mono text-[9px] sm:text-[10px] tracking-widest uppercase font-bold bg-foreground text-background">
@@ -326,16 +313,16 @@ export default function HomePage() {
               </RevealOnScroll>
             </div>
 
-            {/* Right Side Editorial Callout (4 cols) */}
-            <div className="lg:col-span-4 border-t-2 lg:border-t-0 lg:border-l-2 border-foreground pt-8 lg:pt-0 lg:pl-8 flex flex-col justify-between space-y-6">
-              {/* Quote Card */}
-              <RevealOnScroll variant="slide-right" delayMs={250}>
+            {/* Right Side Editorial Callout & Chronicle Dossier (5 cols) */}
+            <div className="lg:col-span-5 border-t-2 lg:border-t-0 lg:border-l-2 border-foreground pt-8 lg:pt-0 lg:pl-8 flex flex-col justify-between space-y-6">
+              {/* Quote Card (Catatan Pinggir Falsafah) */}
+              <RevealOnScroll variant="slide-right" delayMs={200}>
                 <div className="space-y-4">
                   <div className="text-[10px] font-mono uppercase tracking-ultra text-muted flex items-center gap-1.5">
                     <Quote className="w-3.5 h-3.5 text-foreground" />
                     <span>[ CATATAN PINGGIR // FALSAFAH ]</span>
                   </div>
-                  <blockquote className="font-serif italic text-xl sm:text-2xl text-foreground leading-snug">
+                  <blockquote className="font-serif italic text-2xl sm:text-3xl text-foreground leading-snug">
                     &ldquo;Buku tidak bernilai jika hanya berdebu di lemari kaca. Ia hidup saat disentuh
                     jemari dan diperdebatkan di lapak trotoar.&rdquo;
                   </blockquote>
@@ -345,42 +332,27 @@ export default function HomePage() {
                 </div>
               </RevealOnScroll>
 
-              {/* Dynamic Live CFD Lapak Board */}
-              <RevealOnScroll variant="fade-up" delayMs={350}>
-                <div className="border-2 border-foreground p-5 bg-surface font-mono shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.9)] space-y-4">
-                  <div className="flex items-center justify-between pb-2 border-b border-border-hairline text-[10px] uppercase tracking-widest text-muted">
-                    <div className="flex items-center gap-1.5">
-                      <Calendar className="w-3.5 h-3.5 text-foreground" />
-                      <span>SESI LAPAK BERIKUTNYA</span>
-                    </div>
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              {/* Chronicle Movement Manifesto Card */}
+              <RevealOnScroll variant="fade-up" delayMs={300}>
+                <div className="border-2 border-foreground p-5 sm:p-6 bg-surface font-mono space-y-3.5 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.9)]">
+                  <div className="flex items-center justify-between pb-2.5 border-b border-border-hairline text-[10px] uppercase tracking-widest text-muted">
+                    <span>KRONIK GERAKAN // BLORA</span>
+                    <span className="font-bold text-foreground">SWADAYA RAKYAT</span>
                   </div>
 
-                  <div className="space-y-1">
-                    <div className="text-sm font-black uppercase text-foreground">
-                      MINGGU PAGI &bull; CFD ALUN-ALUN
-                    </div>
-                    <div className="text-xs text-muted flex items-center gap-1.5">
-                      <Clock className="w-3 h-3" />
-                      <span>06.00 – 09.00 WIB (Depan Pendopo)</span>
-                    </div>
-                  </div>
-
-                  {/* Real-time Dynamic Countdown Integration */}
-                  <div className="pt-2 border-t border-border-hairline">
-                    <EventCountdown variant="embedded" />
-                  </div>
-
-                  <p className="font-serif text-xs text-foreground/80 leading-relaxed border-t border-border-hairline pt-3">
-                    Bawa senyuman dan rasa ingin tahumu. Buku pesanan daringmu siap diambil langsung di hamparan terpal.
+                  <p className="font-serif text-sm text-foreground/85 leading-relaxed">
+                    Tumbuh di tanah kelahiran Pramoedya Ananta Toer dan ajaran Sedulur Sikep Samin Surosentiko.
+                    Sebuah ruang perjumpaan literasi yang dirawat bersama warga untuk merawat nalar sehat dan
+                    kemerdekaan berpikir.
                   </p>
 
-                  <div className="pt-1">
+                  <div className="pt-2.5 border-t border-border-hairline flex items-center justify-between text-[11px] font-bold">
+                    <span className="text-muted text-[10px] uppercase tracking-wider">&bull; 100% BEBAS BIAYA</span>
                     <Link
-                      href="/tentang#lapak"
-                      className="font-mono text-[10.5px] uppercase font-bold text-foreground hover:underline inline-flex items-center gap-1.5"
+                      href="/tentang"
+                      className="text-foreground hover:underline inline-flex items-center gap-1 uppercase tracking-wider text-[10.5px]"
                     >
-                      <span>PETA &amp; JADWAL LENGKAP LAPAK</span>
+                      <span>KENALI KISAH KAMI</span>
                       <ArrowRight className="w-3 h-3" />
                     </Link>
                   </div>
@@ -691,15 +663,15 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Book Jackets Grid (Tactile Editorial Covers with Live DB Status) */}
+          {/* Book Cards Grid with Real Book Covers */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {displayBooks.slice(0, 8).map((book, idx) => {
-              // Determine shelf and status
               const shelf = ('shelfLocation' in book && book.shelfLocation) ? book.shelfLocation : 'RAK-CFD';
               const availability = ('availability' in book) ? book.availability : (('status' in book && book.status === 'BORROWED') ? 'BORROWED' : 'AVAILABLE');
               const bookYear = ('publicationYear' in book && book.publicationYear) ? book.publicationYear : 2024;
               const categoryName = typeof book.category === 'object' && book.category ? book.category.name : 'Pustaka Terpal';
               const bookSlug = ('slug' in book && book.slug) ? book.slug : (('code' in book) ? book.code : book.id);
+              const coverImg = ('coverImage' in book && book.coverImage) ? book.coverImage : null;
 
               return (
                 <RevealOnScroll key={book.id || idx} variant="fade-up" delayMs={idx * 75}>
@@ -711,31 +683,44 @@ export default function HomePage() {
                         <StatusPill status={availability === 'AVAILABLE' ? 'available' : 'borrowed'} />
                       </div>
 
-                      {/* Tactile Book Jacket Graphic */}
-                      <div className="relative border-2 border-foreground/30 bg-gradient-to-br from-[#1c1917] to-[#0c0a09] text-stone-100 h-52 mb-4 p-4 flex flex-col justify-between text-left transition-all duration-300 shadow-md group-hover:border-foreground rounded-xs overflow-hidden">
-                        {/* Left Spine Fold Line */}
-                        <div className="absolute left-0 top-0 bottom-0 w-3.5 bg-foreground border-r border-white/20" />
+                      {/* Real Book Cover Showcase Container (Aspect 2/3 Book Proportion) */}
+                      <Link href={`/buku/${bookSlug}`} className="block relative aspect-[2/3] w-full mb-4 overflow-hidden border-2 border-foreground bg-surface-muted rounded-xs group/cover shadow-xs">
+                        {coverImg ? (
+                          <>
+                            {/* Realistic Left Spine Fold Shadow */}
+                            <div className="absolute left-0 top-0 bottom-0 w-3.5 bg-gradient-to-r from-black/40 via-black/15 to-transparent z-10 pointer-events-none" />
+                            {/* Paper Gloss Line Highlight */}
+                            <div className="absolute left-3.5 top-0 bottom-0 w-px bg-white/25 z-10 pointer-events-none" />
 
-                        {/* Thin vintage border frame inside cover */}
-                        <div className="absolute inset-2 border border-white/10 pointer-events-none rounded-xs" />
-
-                        <div className="pl-2 font-mono text-[9px] uppercase tracking-widest opacity-75 truncate">
-                          [ {categoryName} &bull; {bookYear} ]
-                        </div>
-
-                        <div className="pl-2 relative z-10 space-y-1">
-                          <div className="font-serif text-lg font-black uppercase leading-tight line-clamp-2 drop-shadow-sm text-white">
-                            {book.title}
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={coverImg}
+                              alt={book.title}
+                              className="w-full h-full object-cover group-hover/cover:scale-105 transition-transform duration-500"
+                            />
+                          </>
+                        ) : (
+                          /* Authentic Broadsheet Fallback Jacket */
+                          <div className="w-full h-full p-4 flex flex-col justify-between border-2 border-foreground/30 bg-[#f4f4ee] dark:bg-[#141414] text-foreground select-none relative">
+                            <div className="absolute left-0 top-0 bottom-0 w-3 bg-foreground border-r border-white/20" />
+                            <div className="pl-2 font-mono text-[8.5px] uppercase tracking-widest text-muted truncate">
+                              PERPUSJAL &bull; {categoryName}
+                            </div>
+                            <div className="pl-2 space-y-1 my-auto">
+                              <BookOpen className="w-6 h-6 text-foreground/30 mb-2" />
+                              <h4 className="font-serif font-black text-sm uppercase leading-tight line-clamp-3 text-foreground">
+                                {book.title}
+                              </h4>
+                              <p className="font-mono text-[10.5px] text-muted line-clamp-1 italic">
+                                {book.author}
+                              </p>
+                            </div>
+                            <div className="pl-2 font-mono text-[8px] text-muted uppercase tracking-widest border-t border-border-hairline pt-1.5">
+                              {shelf} &bull; {bookYear}
+                            </div>
                           </div>
-                          <div className="font-mono text-[11px] opacity-90 font-medium text-stone-300">
-                            {book.author}
-                          </div>
-                        </div>
-
-                        <div className="pl-2 font-mono text-[8px] opacity-70 uppercase tracking-widest text-stone-400">
-                          PERPUSJAL &bull; {shelf}
-                        </div>
-                      </div>
+                        )}
+                      </Link>
 
                       <h3 className="font-serif text-xl font-bold text-foreground mb-1 leading-snug group-hover:underline line-clamp-1 transition-colors">
                         <Link href={`/buku/${bookSlug}`}>{book.title}</Link>
