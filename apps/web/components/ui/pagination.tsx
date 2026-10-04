@@ -7,6 +7,7 @@ interface PaginationProps {
   totalPages: number;
   createPageUrl: (page: number) => string;
   className?: string;
+  scroll?: boolean;
 }
 
 export function Pagination({
@@ -14,6 +15,7 @@ export function Pagination({
   totalPages,
   createPageUrl,
   className,
+  scroll = true,
 }: PaginationProps) {
   if (totalPages <= 1) {
     return null;
@@ -53,6 +55,7 @@ export function Pagination({
       {currentPage > 1 ? (
         <Link
           href={createPageUrl(currentPage - 1)}
+          scroll={scroll}
           className="h-9 px-3.5 border border-foreground inline-flex items-center justify-center hover:bg-foreground hover:text-background transition-colors uppercase tracking-wider"
         >
           &larr; Sebelumnya
@@ -79,6 +82,7 @@ export function Pagination({
             <Link
               key={`page-${p}`}
               href={createPageUrl(p)}
+              scroll={scroll}
               className={cn(
                 'w-9 h-9 border inline-flex items-center justify-center transition-colors font-medium',
                 isActive
@@ -96,6 +100,7 @@ export function Pagination({
       {currentPage < totalPages ? (
         <Link
           href={createPageUrl(currentPage + 1)}
+          scroll={scroll}
           className="h-9 px-3.5 border border-foreground inline-flex items-center justify-center hover:bg-foreground hover:text-background transition-colors uppercase tracking-wider"
         >
           Selanjutnya &rarr;

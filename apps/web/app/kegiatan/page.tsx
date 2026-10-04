@@ -120,7 +120,7 @@ function EventCatalogContent() {
     if (!('page' in newParams)) {
       next.delete('page');
     }
-    router.push(`/kegiatan?${next.toString()}`);
+    router.push(`/kegiatan?${next.toString()}`, { scroll: false });
   };
 
   // The featured spotlight event (first upcoming event or automatic Sunday Lapak CFD)
@@ -439,7 +439,7 @@ function EventCatalogContent() {
         {/* ========================================================= */}
         {/* 4. KATALOG AGENDA LENGKAP & DOKUMENTASI ARSIP             */}
         {/* ========================================================= */}
-        <section className="border-t-2 border-foreground pt-10 sm:pt-14 space-y-8">
+        <section id="daftar-kegiatan" className="border-t-2 border-foreground pt-10 sm:pt-14 space-y-8 scroll-mt-20">
           {/* Header & Tabs */}
           <div className="space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-end justify-between pb-3 border-b-2 border-foreground gap-4">
@@ -672,6 +672,7 @@ function EventCatalogContent() {
                   <Pagination
                     currentPage={meta.page}
                     totalPages={meta.totalPages}
+                    scroll={false}
                     createPageUrl={(p) => {
                       const next = new URLSearchParams(searchParams.toString());
                       next.set('page', p.toString());
