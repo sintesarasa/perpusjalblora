@@ -21,6 +21,7 @@ import {
   Calendar,
   Check,
   Zap,
+  X,
 } from 'lucide-react';
 import { UserAvatar } from '@/components/ui/user-avatar';
 import { UserHonorBadge } from '@/components/gamification/user-honor-badge';
@@ -29,8 +30,10 @@ import { CircleCropModal } from '@/components/ui/circle-crop-modal';
 import { getTierInfo, inferTierFromTitle } from '@/lib/badge-tier-styles';
 import { cn } from '@/lib/utils';
 import { apiClient } from '@/lib/api';
+import { useAuth } from '@/contexts/auth-context';
 
 export default function DashboardProfileSettingsPage() {
+  const { refreshUser } = useAuth();
   const [profile, setProfile] = React.useState({
     name: '',
     username: '',
@@ -78,6 +81,50 @@ export default function DashboardProfileSettingsPage() {
   const [cropModalOpen, setCropModalOpen] = React.useState(false);
   const [selectedFileForCrop, setSelectedFileForCrop] = React.useState<File | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  // Success Pop-up Modal & Floating Toast States
+  const [successModalOpen, setSuccessModalOpen] = React.useState(false);
+  const [toastNotification, setToastNotification] = React.useState<{
+    title: string;
+    description: string;
+    type: 'success' | 'error' | 'info';
+  } | null>(null);
+  const toastTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+
+  const showToast = React.useCallback(
+    (title: string, description: string, type: 'success' | 'error' | 'info' = 'success') => {
+      if (toastTimeoutRef.current) {
+        clearTimeout(toastTimeoutRef.current);
+      }
+      setToastNotification({ title, description, type });
+      toastTimeoutRef.current = setTimeout(() => {
+        setToastNotification(null);
+      }, 5000);
+    },
+    []
+  );
+
+  const dismissToast = React.useCallback(() => {
+    if (toastTimeoutRef.current) {
+      clearTimeout(toastTimeoutRef.current);
+    }
+    setToastNotification(null);
+  }, []);
+
+  // Close success modal on ESC key
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (successModalOpen) setSuccessModalOpen(false);
+        if (toastNotification) dismissToast();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
+    };
+  }, [successModalOpen, toastNotification, dismissToast]);
 
   // Fetch current user and badges progress
   React.useEffect(() => {
@@ -244,9 +291,27 @@ export default function DashboardProfileSettingsPage() {
         // Non-blocking if gamification is optional
       }
 
-      setMessage({ text: 'Perubahan profil, gelar kehormatan, dan preferensi berhasil disimpan.', type: 'success' });
+      // 3. Refresh global auth context to immediately sync navbar, sidebar avatar & name
+      try {
+        await refreshUser();
+      } catch {
+        // Non-blocking
+      }
+
+      const successMsg = 'Perubahan profil, gelar kehormatan, dan preferensi berhasil disimpan.';
+      setMessage({ text: successMsg, type: 'success' });
+
+      // Open Success Pop-up Modal & trigger floating toast
+      setSuccessModalOpen(true);
+      showToast(
+        'Pengaturan Profil Disimpan',
+        'Identitas publik, foto profil, dan preferensi akun Anda telah disinkronkan ke seluruh sistem.',
+        'success'
+      );
     } catch (err: any) {
-      setMessage({ text: err.message, type: 'error' });
+      const errMsg = err.message || 'Gagal menyimpan profil.';
+      setMessage({ text: errMsg, type: 'error' });
+      showToast('Gagal Menyimpan Profil', errMsg, 'error');
     } finally {
       setSavingProfile(false);
     }
@@ -258,12 +323,16 @@ export default function DashboardProfileSettingsPage() {
     setMessage(null);
 
     if (passwordState.newPassword !== passwordState.confirmPassword) {
-      setMessage({ text: 'Konfirmasi kata sandi baru tidak cocok.', type: 'error' });
+      const errMsg = 'Konfirmasi kata sandi baru tidak cocok.';
+      setMessage({ text: errMsg, type: 'error' });
+      showToast('Validasi Gagal', errMsg, 'error');
       return;
     }
 
     if (passwordState.newPassword.length < 8) {
-      setMessage({ text: 'Kata sandi baru minimal 8 karakter.', type: 'error' });
+      const errMsg = 'Kata sandi baru minimal 8 karakter.';
+      setMessage({ text: errMsg, type: 'error' });
+      showToast('Validasi Gagal', errMsg, 'error');
       return;
     }
 
@@ -286,8 +355,11 @@ export default function DashboardProfileSettingsPage() {
 
       setMessage({ text: 'Kata sandi akun Anda berhasil diperbarui.', type: 'success' });
       setPasswordState({ currentPassword: '', newPassword: '', confirmPassword: '' });
+      showToast('Kata Sandi Diperbarui', 'Kata sandi akun Anda telah berhasil diperbarui.', 'success');
     } catch (err: any) {
-      setMessage({ text: err.message, type: 'error' });
+      const errMsg = err.message || 'Gagal mengubah kata sandi.';
+      setMessage({ text: errMsg, type: 'error' });
+      showToast('Gagal Mengubah Sandi', errMsg, 'error');
     } finally {
       setSavingPassword(false);
     }
@@ -987,6 +1059,183 @@ export default function DashboardProfileSettingsPage() {
         }}
         onCropComplete={handleCropComplete}
       />
+
+      {/* ── 5. SUCCESS CONFIRMATION POP-UP MODAL ── */}
+      {successModalOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="success-modal-title"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-xs animate-in fade-in duration-150"
+          onClick={() => setSuccessModalOpen(false)}
+        >
+          <div
+            className="relative w-full max-w-md bg-surface border-2 border-foreground shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.9)] animate-in zoom-in-95 duration-150 overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Editorial Top Ribbon / Header */}
+            <div className="flex items-center justify-between border-b-2 border-foreground bg-foreground text-background px-4 py-2">
+              <div className="flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-widest">
+                <span className="inline-block w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
+                <span>PEMBARUAN BERHASIL &bull; PERPUSJAL</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSuccessModalOpen(false)}
+                aria-label="Tutup popup"
+                className="text-background hover:opacity-75 transition-opacity p-0.5 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-5">
+              {/* Celebration Header */}
+              <div className="flex items-start gap-3.5">
+                <div className="w-10 h-10 rounded-full bg-emerald-500/10 border border-emerald-500 flex items-center justify-center shrink-0 mt-0.5">
+                  <CheckCircle className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h3 id="success-modal-title" className="font-serif text-lg font-bold text-foreground leading-tight">
+                    Pengaturan Profil Disimpan!
+                  </h3>
+                  <p className="font-sans text-xs text-muted leading-relaxed mt-1">
+                    Data identitas, foto profil, dan preferensi akun Anda telah berhasil diperbarui ke seluruh sistem.
+                  </p>
+                </div>
+              </div>
+
+              {/* Updated Persona Preview Card */}
+              <div className="border border-border-hairline bg-surface-muted/30 p-3.5 space-y-3">
+                <div className="flex items-center gap-3">
+                  <UserAvatar
+                    src={profile.avatarUrl}
+                    name={profile.name}
+                    username={profile.username}
+                    size="md"
+                    shape="circle"
+                    className="ring-2 ring-emerald-500/40 shrink-0"
+                  />
+                  <div className="min-w-0 flex-1 space-y-0.5">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="font-serif font-bold text-sm text-foreground truncate">
+                        {profile.name || 'Nama Warga'}
+                      </span>
+                      {profile.equippedTitle && (
+                        <span
+                          className={cn(
+                            'font-mono text-[8.5px] px-2 py-0.5 rounded-full border font-bold uppercase tracking-wider',
+                            tierInfo.honorBadgeClass
+                          )}
+                        >
+                          {profile.equippedTitle}
+                        </span>
+                      )}
+                    </div>
+                    <span className="font-mono text-xs text-muted block">
+                      @{profile.username}
+                    </span>
+                  </div>
+                </div>
+
+                {profile.bio && (
+                  <p className="font-serif italic text-xs text-foreground/80 leading-relaxed border-t border-border-hairline pt-2 line-clamp-2">
+                    "{profile.bio}"
+                  </p>
+                )}
+
+                {/* Configuration Summary Pills */}
+                <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border-hairline font-mono text-[10px]">
+                  <div className="flex items-center gap-1.5 text-muted">
+                    <span className={cn('w-1.5 h-1.5 rounded-full', profile.isProfilePublic ? 'bg-emerald-500' : 'bg-amber-500')} />
+                    <span>Visibilitas: <strong className="text-foreground">{profile.isProfilePublic ? 'Publik' : 'Privat'}</strong></span>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-muted">
+                    <span className={cn('w-1.5 h-1.5 rounded-full', profile.showBadges ? 'bg-emerald-500' : 'bg-muted')} />
+                    <span>Lencana: <strong className="text-foreground">{profile.showBadges ? 'Aktif' : 'Nonaktif'}</strong></span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex flex-col-reverse sm:flex-row items-center gap-2.5 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setSuccessModalOpen(false)}
+                  className="w-full sm:w-auto flex-1 font-mono text-xs uppercase tracking-wider py-2.5 px-4 border border-foreground bg-transparent text-foreground hover:bg-surface-muted transition-colors font-bold text-center cursor-pointer"
+                >
+                  Tutup &amp; Lanjutkan
+                </button>
+                <Link
+                  href={`/warga/${profile.username}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full sm:w-auto flex-1 inline-flex items-center justify-center gap-1.5 font-mono text-xs uppercase tracking-wider py-2.5 px-4 bg-foreground text-background hover:bg-foreground/90 transition-colors font-bold shadow-xs text-center cursor-pointer"
+                >
+                  <span>Lihat Profil Publik</span>
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── 6. FLOATING SYSTEM TOAST NOTIFICATION ── */}
+      {toastNotification && (
+        <aside
+          role="status"
+          aria-live="polite"
+          className="fixed bottom-5 right-5 z-50 max-w-sm sm:max-w-md w-[calc(100vw-2.5rem)] bg-surface border-2 border-foreground shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.9)] animate-in slide-in-from-bottom-5 fade-in duration-200"
+        >
+          {/* Header Ribbon */}
+          <div
+            className={cn(
+              'flex items-center justify-between px-3 py-1.5 border-b border-foreground font-mono text-[10px] font-bold uppercase tracking-widest',
+              toastNotification.type === 'error'
+                ? 'bg-red-600 text-white'
+                : 'bg-foreground text-background'
+            )}
+          >
+            <div className="flex items-center gap-2">
+              <span
+                className={cn(
+                  'inline-block w-2 h-2 rounded-full animate-pulse',
+                  toastNotification.type === 'error' ? 'bg-white' : 'bg-emerald-400'
+                )}
+              />
+              <span>
+                {toastNotification.type === 'error' ? 'PERINGATAN SISTEM' : 'PEMBERITAHUAN SISTEM'}
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={dismissToast}
+              aria-label="Tutup pemberitahuan"
+              className="text-inherit hover:opacity-75 transition-opacity p-0.5 cursor-pointer"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
+          {/* Body */}
+          <div className="p-4 flex items-start gap-3">
+            {toastNotification.type === 'error' ? (
+              <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
+            ) : (
+              <CheckCircle className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+            )}
+            <div className="min-w-0 flex-1 space-y-1">
+              <h4 className="font-serif text-sm font-bold text-foreground leading-snug">
+                {toastNotification.title}
+              </h4>
+              <p className="font-sans text-xs text-foreground/80 leading-relaxed">
+                {toastNotification.description}
+              </p>
+            </div>
+          </div>
+        </aside>
+      )}
     </div>
   );
 }
