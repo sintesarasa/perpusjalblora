@@ -297,6 +297,8 @@ export class EventsService {
         registrationCloseAt: input.registrationCloseAt ? new Date(input.registrationCloseAt) : null,
         isParticipantListPublic: input.isParticipantListPublic ?? false,
         status: input.status as unknown as any,
+        summary: input.summary ? input.summary.trim() : null,
+        gallery: input.gallery ? (input.gallery as any) : null,
         organizerId: user.userId,
       },
     });
@@ -350,6 +352,8 @@ export class EventsService {
         ...(input.registrationCloseAt !== undefined ? { registrationCloseAt: input.registrationCloseAt ? new Date(input.registrationCloseAt) : null } : {}),
         ...(input.isParticipantListPublic !== undefined ? { isParticipantListPublic: input.isParticipantListPublic } : {}),
         ...(input.status ? { status: input.status as unknown as any } : {}),
+        ...(input.summary !== undefined ? { summary: input.summary ? input.summary.trim() : null } : {}),
+        ...(input.gallery !== undefined ? { gallery: input.gallery ? (input.gallery as any) : null } : {}),
       },
     });
 

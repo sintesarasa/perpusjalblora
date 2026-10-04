@@ -17,7 +17,9 @@ import {
   Trash2,
   CheckCircle2,
   AlertCircle,
-  FileSpreadsheet,
+  Archive,
+  Sparkles,
+  Image as ImageIcon,
 } from 'lucide-react';
 import { CustomLoader } from '@/components/ui/custom-loader';
 import { apiClient } from '@/lib/api';
@@ -47,6 +49,7 @@ export default function DashboardKegiatanPage() {
 
   // Modals
   const [isFormModalOpen, setIsFormModalOpen] = React.useState(false);
+  const [formModalMode, setFormModalMode] = React.useState<'upcoming' | 'archive'>('upcoming');
   const [editingEvent, setEditingEvent] = React.useState<EventItem | null>(null);
 
   const [isCompleteModalOpen, setIsCompleteModalOpen] = React.useState(false);
@@ -107,11 +110,24 @@ export default function DashboardKegiatanPage() {
     }
   };
 
+  // Find the current spotlight event (first upcoming non-completed event)
+  const nowTime = Date.now();
+  const spotlightEventId = React.useMemo(() => {
+    const upcoming = events.find(
+      (e) =>
+        e.status !== EventStatus.COMPLETED &&
+        e.status !== EventStatus.CANCELLED &&
+        new Date(e.startAt).getTime() >= nowTime
+    );
+    return upcoming?.id || null;
+  }, [events, nowTime]);
+
   // Metrics
   const totalEvents = events.length;
   const activeEvents = events.filter(
     (e) => e.status === EventStatus.PUBLISHED || e.status === EventStatus.OPEN
   ).length;
+  const completedEvents = events.filter((e) => e.status === EventStatus.COMPLETED).length;
   const totalRegistrations = events.reduce((acc, curr) => acc + (curr.registeredCount || 0), 0);
   const totalAttended = events.reduce((acc, curr) => acc + (curr.attendedCount || 0), 0);
 
@@ -120,20 +136,20 @@ export default function DashboardKegiatanPage() {
       case EventStatus.PUBLISHED:
       case EventStatus.OPEN:
         return (
-          <span className="px-2 py-0.5 border border-foreground bg-foreground text-background font-mono text-[9px] uppercase font-bold tracking-wider">
-            TERBUKA
+          <span className="px-2 py-0.5 border border-amber-500/60 bg-amber-500/10 text-amber-600 dark:text-amber-400 font-mono text-[9px] uppercase font-bold tracking-wider">
+            TERBUKA UMUM
           </span>
         );
       case EventStatus.FULL:
         return (
-          <span className="px-2 py-0.5 border border-amber-600 bg-amber-500/10 text-amber-700 font-mono text-[9px] uppercase font-bold tracking-wider">
+          <span className="px-2 py-0.5 bg-foreground text-background font-mono text-[9px] uppercase font-bold tracking-wider">
             KUOTA PENUH
           </span>
         );
       case EventStatus.COMPLETED:
         return (
           <span className="px-2 py-0.5 border border-border-hairline bg-surface-muted text-muted font-mono text-[9px] uppercase font-bold tracking-wider">
-            SELESAI
+            SELESAI (ARSIP)
           </span>
         );
       case EventStatus.DRAFT:
@@ -158,40 +174,61 @@ export default function DashboardKegiatanPage() {
   };
 
   return (
-    <div className="p-6 sm:p-10 space-y-8 max-w-7xl font-sans text-foreground">
-      {/* 1. Header Masthead */}
+    <div className="p-4 sm:p-8 lg:p-10 space-y-8 max-w-7xl font-sans text-foreground">
+      {/* 1. Header Masthead with Dual Actions */}
       <div className="border-b-2 border-foreground pb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-muted mb-1">
             <span>OPERASIONAL LAPAK</span>
             <span>//</span>
-            <span className="text-foreground font-bold">MEJA AGENDA & PRESENSI</span>
+            <span className="text-foreground font-bold">MEJA AGENDA &amp; ARSIP KEGIATAN</span>
           </div>
           <h1 className="font-serif text-2xl sm:text-4xl font-bold tracking-tight text-foreground">
-            Agenda Kegiatan & Presensi Lapak
+            Agenda Kegiatan &amp; Presensi Lapak
           </h1>
-          <p className="font-serif text-xs sm:text-sm text-muted mt-1 max-w-2xl">
-            Kelola jadwal lapak baca ruang terbuka Blora, kelas literasi, diskusi sastra warga, dan presensi partisipan di lokasi kegiatan.
+          <p className="font-serif text-xs sm:text-sm text-foreground/80 mt-1 max-w-2xl leading-relaxed">
+            Pusat kendali lapak baca ruang terbuka Blora, kelas literasi, diskusi sastra warga, serta rekam arsip kegiatan lampau dan presensi partisipan.
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={() => {
-            setEditingEvent(null);
-            setIsFormModalOpen(true);
-          }}
-          className="self-start md:self-auto px-4 py-2.5 border-2 border-foreground bg-foreground text-background font-mono text-xs uppercase tracking-wider font-bold hover:bg-foreground/90 transition-colors flex items-center gap-2 shrink-0 shadow-xs"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Buat Agenda Baru</span>
-        </button>
+        {/* Dual Actions: Upcoming Event vs Past Event Archive */}
+        <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+          {/* Action 1: Add Historical Past Event */}
+          <button
+            type="button"
+            onClick={() => {
+              setEditingEvent(null);
+              setFormModalMode('archive');
+              setIsFormModalOpen(true);
+            }}
+            className="px-3.5 py-2.5 border-2 border-foreground bg-surface text-foreground hover:bg-surface-muted font-mono text-xs uppercase tracking-wider font-bold transition-colors flex items-center gap-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,0.9)]"
+            title="Tambah dokumentasi kegiatan yang sudah selesai di masa lampau"
+          >
+            <Archive className="w-3.5 h-3.5 text-amber-500" />
+            <span>+ Rekam Arsip Lampau</span>
+          </button>
+
+          {/* Action 2: Add Upcoming Event */}
+          <button
+            type="button"
+            onClick={() => {
+              setEditingEvent(null);
+              setFormModalMode('upcoming');
+              setIsFormModalOpen(true);
+            }}
+            className="px-4 py-2.5 border-2 border-foreground bg-foreground text-background font-mono text-xs uppercase tracking-wider font-bold hover:bg-foreground/90 transition-colors flex items-center gap-2 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] dark:shadow-[3px_3px_0px_0px_rgba(255,255,255,0.9)]"
+            title="Terbitkan agenda baru yang akan diselenggarakan"
+          >
+            <Plus className="w-4 h-4" />
+            <span>+ Terbitkan Agenda Baru</span>
+          </button>
+        </div>
       </div>
 
       {/* 2. Metric Stat Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="p-4 bg-surface border border-border-hairline space-y-1">
-          <span className="font-mono text-[10px] uppercase text-muted tracking-widest block">
+        <div className="p-4 bg-surface border-2 border-foreground space-y-1 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] dark:shadow-[3px_3px_0px_0px_rgba(255,255,255,0.9)]">
+          <span className="font-mono text-[10px] uppercase text-muted tracking-widest block font-bold">
             TOTAL AGENDA
           </span>
           <div className="font-mono text-2xl sm:text-3xl font-bold text-foreground">
@@ -200,9 +237,9 @@ export default function DashboardKegiatanPage() {
           <span className="text-[11px] text-muted block">Agenda terdata di sistem</span>
         </div>
 
-        <div className="p-4 bg-surface border border-border-hairline space-y-1">
-          <span className="font-mono text-[10px] uppercase text-muted tracking-widest block">
-            AGENDA TERBUKA
+        <div className="p-4 bg-surface border-2 border-foreground space-y-1 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] dark:shadow-[3px_3px_0px_0px_rgba(255,255,255,0.9)]">
+          <span className="font-mono text-[10px] uppercase text-amber-600 dark:text-amber-400 tracking-widest block font-bold">
+            AGENDA AKTIF
           </span>
           <div className="font-mono text-2xl sm:text-3xl font-bold text-foreground">
             {activeEvents}
@@ -210,39 +247,37 @@ export default function DashboardKegiatanPage() {
           <span className="text-[11px] text-muted block">Menerima pendaftaran warga</span>
         </div>
 
-        <div className="p-4 bg-surface border border-border-hairline space-y-1">
-          <span className="font-mono text-[10px] uppercase text-muted tracking-widest block">
-            WARGA TERDAFTAR
+        <div className="p-4 bg-surface border-2 border-foreground space-y-1 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] dark:shadow-[3px_3px_0px_0px_rgba(255,255,255,0.9)]">
+          <span className="font-mono text-[10px] uppercase text-muted tracking-widest block font-bold">
+            ARSIP LAMPAU
+          </span>
+          <div className="font-mono text-2xl sm:text-3xl font-bold text-foreground">
+            {completedEvents}
+          </div>
+          <span className="text-[11px] text-muted block">Kegiatan selesai diselenggarakan</span>
+        </div>
+
+        <div className="p-4 bg-surface border-2 border-foreground space-y-1 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] dark:shadow-[3px_3px_0px_0px_rgba(255,255,255,0.9)]">
+          <span className="font-mono text-[10px] uppercase text-muted tracking-widest block font-bold">
+            TOTAL PARTISIPASI
           </span>
           <div className="font-mono text-2xl sm:text-3xl font-bold text-foreground">
             {totalRegistrations}
           </div>
-          <span className="text-[11px] text-muted block">Total tiket kegiatan diterbitkan</span>
-        </div>
-
-        <div className="p-4 bg-surface border border-border-hairline space-y-1">
-          <span className="font-mono text-[10px] uppercase text-muted tracking-widest block">
-            KEHADIRAN LAPAK
-          </span>
-          <div className="font-mono text-2xl sm:text-3xl font-bold text-foreground">
-            {totalAttended}
-          </div>
           <span className="text-[11px] text-muted block">
-            {totalRegistrations > 0
-              ? `${Math.round((totalAttended / totalRegistrations) * 100)}% rasio kehadiran`
-              : 'Presensi tercatat di lapak'}
+            {totalAttended} hadir fisik di lapak
           </span>
         </div>
       </div>
 
       {/* 3. Filter & Search Controls */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 bg-surface border border-border-hairline">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 bg-surface border-2 border-foreground shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] dark:shadow-[3px_3px_0px_0px_rgba(255,255,255,0.9)]">
         {/* Status Tabs */}
         <div className="flex flex-wrap items-center gap-1 font-mono text-xs">
           {[
             { id: 'all', label: 'SEMUA' },
-            { id: 'mendatang', label: 'AKAN DATANG' },
-            { id: 'selesai', label: 'SELESAI' },
+            { id: 'mendatang', label: 'MENDATANG (AKTIF)' },
+            { id: 'selesai', label: 'ARSIP LAMPAU' },
             { id: 'draft', label: 'DRAF' },
           ].map((tab) => (
             <button
@@ -265,7 +300,7 @@ export default function DashboardKegiatanPage() {
           <select
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value)}
-            className="px-2.5 py-1.5 bg-surface border border-border-hairline font-mono text-xs uppercase focus:outline-hidden"
+            className="px-2.5 py-1.5 bg-surface border border-foreground font-mono text-xs uppercase focus:outline-hidden"
           >
             <option value="ALL">Semua Tipe</option>
             <option value={EventType.LAPAK}>Lapak Baca</option>
@@ -282,7 +317,7 @@ export default function DashboardKegiatanPage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Cari judul / lokasi..."
-              className="pl-8 pr-3 py-1.5 bg-surface border border-border-hairline font-mono text-xs focus:outline-hidden w-40 sm:w-56"
+              className="pl-8 pr-3 py-1.5 bg-surface border border-foreground font-mono text-xs focus:outline-hidden w-40 sm:w-56"
             />
           </div>
         </div>
@@ -294,7 +329,7 @@ export default function DashboardKegiatanPage() {
           <CustomLoader size="md" label="MEMUAT AGENDA KEGIATAN..." />
         </div>
       ) : errorMsg ? (
-        <div className="p-8 border border-destructive bg-surface text-center space-y-3 font-mono text-xs">
+        <div className="p-8 border-2 border-destructive bg-surface text-center space-y-3 font-mono text-xs">
           <AlertCircle className="w-6 h-6 text-destructive mx-auto" />
           <p className="text-foreground">{errorMsg}</p>
           <button
@@ -314,17 +349,17 @@ export default function DashboardKegiatanPage() {
           <p className="font-sans text-xs text-muted max-w-sm mx-auto">
             {searchQuery || typeFilter !== 'ALL' || statusFilter !== 'all'
               ? 'Tidak ada agenda yang cocok dengan filter pencarian Anda.'
-              : 'Belum ada agenda lapak yang dijadwalkan. Klik tombol di atas untuk membuat kegiatan baru.'}
+              : 'Belum ada agenda lapak yang tercatat. Klik tombol di atas untuk membuat kegiatan baru atau merekam arsip kegiatan lampau.'}
           </p>
         </div>
       ) : (
-        <div className="border border-border-hairline bg-surface overflow-x-auto shadow-xs">
+        <div className="border-2 border-foreground bg-surface overflow-x-auto shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.9)]">
           <table className="w-full text-left font-sans text-xs">
             <thead>
-              <tr className="border-b-2 border-foreground bg-surface-muted/60 font-mono text-[10px] uppercase tracking-wider text-muted select-none">
-                <th className="py-3 px-4">Status & Tipe</th>
-                <th className="py-3 px-4">Judul Agenda</th>
-                <th className="py-3 px-4">Jadwal & Tempat</th>
+              <tr className="border-b-2 border-foreground bg-surface-muted/80 font-mono text-[10px] uppercase tracking-wider text-muted select-none">
+                <th className="py-3 px-4">Status &amp; Tipe</th>
+                <th className="py-3 px-4">Judul &amp; Sampul</th>
+                <th className="py-3 px-4">Jadwal &amp; Tempat</th>
                 <th className="py-3 px-4">Partisipasi</th>
                 <th className="py-3 px-4">Penyelenggara</th>
                 <th className="py-3 px-4 text-right">Aksi</th>
@@ -333,6 +368,9 @@ export default function DashboardKegiatanPage() {
             <tbody className="divide-y divide-border-hairline">
               {events.map((ev) => {
                 const startDate = new Date(ev.startAt);
+                const isSpotlight = ev.id === spotlightEventId;
+                const isCompleted = ev.status === EventStatus.COMPLETED;
+
                 const dateStr = startDate.toLocaleDateString('id-ID', {
                   weekday: 'short',
                   day: 'numeric',
@@ -345,36 +383,65 @@ export default function DashboardKegiatanPage() {
                 });
 
                 return (
-                  <tr key={ev.id} className="hover:bg-surface-muted/30 transition-colors">
+                  <tr
+                    key={ev.id}
+                    className={`hover:bg-surface-muted/30 transition-colors ${
+                      isSpotlight ? 'bg-amber-500/5' : ''
+                    }`}
+                  >
                     {/* Status & Type */}
                     <td className="py-3.5 px-4 align-top space-y-1.5 whitespace-nowrap">
                       <div>{getStatusBadge(ev.status)}</div>
                       <span className="font-mono text-[9px] text-muted uppercase tracking-wider block">
                         // {ev.type}
                       </span>
+                      {isSpotlight && (
+                        <div className="inline-flex items-center gap-1 px-1.5 py-0.5 border border-amber-500 bg-amber-500 text-black font-mono text-[8px] font-extrabold uppercase tracking-widest shadow-2xs">
+                          <Sparkles className="w-2.5 h-2.5" />
+                          <span>SOROTAN UTAMA</span>
+                        </div>
+                      )}
                     </td>
 
-                    {/* Title */}
+                    {/* Title & Cover Thumbnail */}
                     <td className="py-3.5 px-4 align-top max-w-xs sm:max-w-sm">
-                      <div className="font-serif font-bold text-sm text-foreground leading-snug">
-                        {ev.title}
-                      </div>
-                      <div className="flex items-center gap-2 mt-1">
-                        <Link
-                          href={`/kegiatan/${ev.slug}`}
-                          target="_blank"
-                          className="font-mono text-[10px] text-muted hover:text-foreground inline-flex items-center gap-1 hover:underline"
-                        >
-                          <span>Halaman Publik</span>
-                          <ExternalLink className="w-2.5 h-2.5" />
-                        </Link>
+                      <div className="flex items-start gap-3">
+                        {ev.coverImage ? (
+                          <div className="w-12 h-9 border border-foreground shrink-0 overflow-hidden bg-zinc-900 hidden sm:block">
+                            <img
+                              src={ev.coverImage}
+                              alt={ev.title}
+                              className="w-full h-full object-cover grayscale contrast-110"
+                            />
+                          </div>
+                        ) : (
+                          <div className="w-12 h-9 border border-border-hairline shrink-0 bg-surface-muted flex items-center justify-center text-muted hidden sm:block">
+                            <ImageIcon className="w-4 h-4" />
+                          </div>
+                        )}
+
+                        <div className="space-y-1">
+                          <div className="font-serif font-bold text-sm text-foreground leading-snug">
+                            {ev.title}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Link
+                              href={`/kegiatan/${ev.slug}`}
+                              target="_blank"
+                              className="font-mono text-[10px] text-muted hover:text-foreground inline-flex items-center gap-1 hover:underline"
+                            >
+                              <span>Halaman Publik</span>
+                              <ExternalLink className="w-2.5 h-2.5" />
+                            </Link>
+                          </div>
+                        </div>
                       </div>
                     </td>
 
                     {/* Schedule & Location */}
                     <td className="py-3.5 px-4 align-top whitespace-nowrap">
                       <div className="font-mono text-xs font-bold text-foreground flex items-center gap-1.5">
-                        <Clock className="w-3 h-3 text-muted" />
+                        <Clock className="w-3 h-3 text-amber-500" />
                         <span>{dateStr} • {timeStr}</span>
                       </div>
                       <div className="text-[11px] text-muted flex items-center gap-1 mt-0.5 truncate max-w-xs">
@@ -438,7 +505,11 @@ export default function DashboardKegiatanPage() {
                             setCompletingEvent(ev);
                             setIsCompleteModalOpen(true);
                           }}
-                          className="p-1.5 border border-border-hairline hover:border-foreground bg-surface text-foreground transition-colors"
+                          className={`p-1.5 border transition-colors ${
+                            isCompleted
+                              ? 'border-amber-500/50 bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                              : 'border-border-hairline hover:border-foreground bg-surface text-foreground'
+                          }`}
                           title="Dokumentasi & Selesaikan Kegiatan"
                         >
                           <Camera className="w-3.5 h-3.5" />
@@ -463,7 +534,7 @@ export default function DashboardKegiatanPage() {
         </div>
       )}
 
-      {/* Form Modal (Create / Edit) */}
+      {/* Form Modal (Create / Edit with Upcoming & Archive Mode) */}
       <EventFormModal
         isOpen={isFormModalOpen}
         onClose={() => {
@@ -472,6 +543,7 @@ export default function DashboardKegiatanPage() {
         }}
         onSuccess={loadEvents}
         initialData={editingEvent}
+        initialMode={formModalMode}
       />
 
       {/* Complete & Document Modal */}

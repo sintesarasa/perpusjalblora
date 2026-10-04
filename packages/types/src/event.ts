@@ -28,6 +28,8 @@ export const eventCreateSchema = z.object({
   registrationCloseAt: z.string().optional().nullable(),
   isParticipantListPublic: z.boolean().default(false),
   status: z.nativeEnum(EventStatus).default(EventStatus.PUBLISHED),
+  summary: z.string().optional().nullable(),
+  gallery: z.array(z.string()).optional().nullable(),
 });
 
 export type EventCreateInput = z.infer<typeof eventCreateSchema>;
