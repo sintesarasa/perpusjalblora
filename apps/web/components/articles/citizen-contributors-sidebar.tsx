@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { ArticleSummary } from '@perpusjal/types';
+import { ArticleSummary, ArticleCategory } from '@perpusjal/types';
 import { UserAvatar } from '@/components/ui/user-avatar';
 import { UserHonorBadge } from '@/components/gamification/user-honor-badge';
 import { cn } from '@/lib/utils';
@@ -14,14 +14,16 @@ import {
   ArrowRight,
   BookOpen,
   Feather,
-  FileText,
   Mail,
   Compass,
 } from 'lucide-react';
 
 interface CitizenContributorsSidebarProps {
   articles: ArticleSummary[];
+  categories?: ArticleCategory[];
+  currentCategory?: string;
   onSelectAuthor?: (authorName: string) => void;
+  onSelectCategory?: (categorySlug: string) => void;
   className?: string;
 }
 
@@ -38,9 +40,57 @@ interface ContributorInfo {
   articleCount: number;
 }
 
+const OFFICIAL_RUBRICS = [
+  {
+    name: 'Suara Lapak',
+    slug: 'suara-lapak',
+    description: 'Catatan dari jalanan & perjumpaan buku di ruang terbuka.',
+    num: '01',
+  },
+  {
+    name: 'Pojok Blora',
+    slug: 'pojok-blora',
+    description: 'Sketsa sosial, tradisi, & denyut kehidupan lokal Blora.',
+    num: '02',
+  },
+  {
+    name: 'Opini Warga',
+    slug: 'opini-warga',
+    description: 'Pikiran kritis, suara aspirasi, & gagasan perbaikan daerah.',
+    num: '03',
+  },
+  {
+    name: 'Lingkungan',
+    slug: 'lingkungan',
+    description: 'Hutan jati, ekologi bumi, krisis air, & kelestarian alam.',
+    num: '04',
+  },
+  {
+    name: 'Sejarah',
+    slug: 'sejarah',
+    description: 'Memori masa lalu, falsafah Samin, & jejak Pramoedya.',
+    num: '05',
+  },
+  {
+    name: 'Puisi',
+    slug: 'puisi',
+    description: 'Bait sastra, sajak liris, karya puisi, & ekspresi rasa.',
+    num: '06',
+  },
+  {
+    name: 'Refleksi Diri',
+    slug: 'refleksi-diri',
+    description: 'Kontemplasi batin, renungan personal, & pencarian makna.',
+    num: '07',
+  },
+];
+
 export function CitizenContributorsSidebar({
   articles,
+  categories = [],
+  currentCategory = '',
   onSelectAuthor,
+  onSelectCategory,
   className,
 }: CitizenContributorsSidebarProps) {
   // Aggregate unique contributors from the current articles collection
@@ -97,7 +147,7 @@ export function CitizenContributorsSidebar({
               Punya Pemikiran, Resensi, atau Catatan Lapak?
             </h3>
             <p className="font-serif text-xs sm:text-sm text-background/85 leading-relaxed">
-              Ruang warta ini milik seluruh warga. Tanpa syarat gelar akademis, tanpa kurasi komersial. Naskah yang disetujui kurator akan terbit di lembaran warta kolektif.
+              Ruang warta ini milik seluruh warga. Tanpa kurasi elitis. Naskah yang disetujui kurator akan terbit di lembaran warta kolektif.
             </p>
           </div>
 
@@ -182,7 +232,7 @@ export function CitizenContributorsSidebar({
                   <button
                     type="button"
                     onClick={() => onSelectAuthor(author.name)}
-                    className="shrink-0 p-1.5 border border-border-hairline hover:border-foreground hover:bg-foreground hover:text-background text-muted transition-colors"
+                    className="shrink-0 p-1.5 border border-border-hairline hover:border-foreground hover:bg-foreground hover:text-background text-muted transition-colors cursor-pointer"
                     title={`Filter naskah karya ${author.name}`}
                   >
                     <BookOpen className="w-3 h-3" />
@@ -229,33 +279,47 @@ export function CitizenContributorsSidebar({
       </div>
 
       {/* ========================================================= */}
-      {/* 4. PEDOMAN RUBRIKASI TERPAL                                */}
+      {/* 4. PEDOMAN 7 RUBRIK RESMI SISTEM (INTERAKTIF)             */}
       {/* ========================================================= */}
-      <div className="border border-foreground/40 bg-surface p-4 space-y-3 font-mono text-xs">
-        <div className="flex items-center gap-2 font-bold text-foreground text-[11px] uppercase tracking-wider pb-1.5 border-b border-border-hairline">
-          <Compass className="w-3.5 h-3.5 text-foreground" />
-          <span>RUBRIKASI LEMBARAN</span>
+      <div className="border-2 border-foreground bg-surface p-4 sm:p-5 space-y-3 font-mono text-xs shadow-xs">
+        <div className="flex items-center justify-between font-bold text-foreground text-[11px] uppercase tracking-wider pb-2 border-b-2 border-foreground">
+          <div className="flex items-center gap-1.5">
+            <Compass className="w-3.5 h-3.5 text-foreground" />
+            <span>7 RUBRIK RESMI WARGA</span>
+          </div>
+          <span className="text-[10px] text-muted">Klik untuk Filter</span>
         </div>
 
-        <div className="space-y-2 text-[11px] text-muted leading-relaxed">
-          <div className="flex items-start gap-2">
-            <span className="font-bold text-foreground font-mono">01.</span>
-            <div>
-              <strong className="text-foreground">Esai &amp; Catatan Kritis:</strong> Refleksi sosial, kebudayaan, dan dinamika ruang hidup Blora.
-            </div>
-          </div>
-          <div className="flex items-start gap-2">
-            <span className="font-bold text-foreground font-mono">02.</span>
-            <div>
-              <strong className="text-foreground">Resensi Buku Lapak:</strong> Ulasan jujur dari buku-buku yang pernah dibaca di atas terpal.
-            </div>
-          </div>
-          <div className="flex items-start gap-2">
-            <span className="font-bold text-foreground font-mono">03.</span>
-            <div>
-              <strong className="text-foreground">Kronik Trotoar:</strong> Reportase sederhana seputar giat literasi jalanan dan perjumpaan warga.
-            </div>
-          </div>
+        <div className="space-y-1.5 pt-1">
+          {OFFICIAL_RUBRICS.map((rubric) => {
+            const isActive = currentCategory === rubric.slug;
+            return (
+              <button
+                key={rubric.slug}
+                type="button"
+                onClick={() => onSelectCategory?.(rubric.slug)}
+                className={cn(
+                  'w-full text-left p-2.5 border transition-all cursor-pointer flex items-start gap-2.5',
+                  isActive
+                    ? 'bg-foreground text-background border-foreground font-bold shadow-xs'
+                    : 'bg-surface hover:bg-surface-muted/60 text-foreground border-border-hairline hover:border-foreground'
+                )}
+              >
+                <span className={cn('font-mono font-bold text-[10px] shrink-0 mt-0.5', isActive ? 'text-background' : 'text-muted')}>
+                  {rubric.num}.
+                </span>
+                <div className="min-w-0 flex-1">
+                  <div className="font-bold text-xs leading-snug flex items-center justify-between gap-2">
+                    <span>{rubric.name}</span>
+                    {isActive && <span className="text-[9px] uppercase tracking-widest">[AKTIF]</span>}
+                  </div>
+                  <p className={cn('text-[10.5px] leading-relaxed mt-0.5 line-clamp-1 font-sans', isActive ? 'text-background/85' : 'text-muted')}>
+                    {rubric.description}
+                  </p>
+                </div>
+              </button>
+            );
+          })}
         </div>
       </div>
     </aside>

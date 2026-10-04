@@ -4,6 +4,7 @@ import { ArticleSummary } from '@perpusjal/types';
 import { BookOpen, Clock, Calendar, Eye, MessageSquare, ArrowRight, Quote } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { UserHonorBadge } from '@/components/gamification/user-honor-badge';
+import { UserAvatar } from '@/components/ui/user-avatar';
 
 interface ArticleFeaturedProps {
   article: ArticleSummary;
@@ -27,59 +28,49 @@ export function ArticleFeatured({
   return (
     <section
       className={cn(
-        'border-2 border-foreground bg-surface p-6 sm:p-10 lg:p-12 relative overflow-hidden shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.9)] select-none',
+        'border-2 border-foreground bg-surface p-6 sm:p-9 lg:p-10 relative overflow-hidden shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.9)] select-none space-y-6 sm:space-y-8',
         className
       )}
     >
-      {/* Top Gazette Rule */}
-      <div className="flex flex-wrap items-center justify-between font-mono text-[10px] sm:text-xs uppercase tracking-[0.2em] text-muted border-b-2 border-foreground pb-4 mb-8 gap-3">
+      {/* ── Top Gazette Status Bar (Minimal, No Date Duplication) ── */}
+      <div className="flex flex-wrap items-center justify-between font-mono text-[10px] sm:text-xs uppercase tracking-[0.2em] border-b-2 border-foreground pb-3.5 gap-3">
         <div className="flex items-center gap-2">
-          <span className="inline-block w-2.5 h-2.5 bg-foreground" />
+          <span className="w-2.5 h-2.5 bg-foreground inline-block shrink-0" />
           <span className="font-black text-foreground tracking-widest">
-            TAJUK UTAMA LEMBARAN INI
+            TAJUK UTAMA LEMBARAN
           </span>
           <span className="text-border-hairline">//</span>
-          <span className="text-foreground font-bold bg-surface-muted px-2 py-0.5 border border-foreground/30">
+          <span className="font-bold text-foreground bg-surface-muted px-2 py-0.5 border border-foreground/30">
             {article.category?.name || 'WARTA & ESAI'}
           </span>
         </div>
 
-        <div className="flex items-center gap-4 text-muted font-bold">
-          <span className="flex items-center gap-1 text-foreground">
+        <div className="flex items-center gap-2.5 text-foreground font-bold">
+          {article.isFeatured && (
+            <span className="px-2 py-0.5 border border-foreground bg-surface-muted font-mono text-[9px] uppercase tracking-wider">
+              ★ PILIHAN KURATOR
+            </span>
+          )}
+          <span className="flex items-center gap-1 font-mono text-[10px]">
             <Clock className="w-3.5 h-3.5" />
             {article.readingTime} MENIT BACA
-          </span>
-          <span className="hidden sm:inline">&bull;</span>
-          <span className="hidden sm:inline flex items-center gap-1">
-            <Calendar className="w-3.5 h-3.5 text-foreground" />
-            {formattedDate}
           </span>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+      {/* ── Grid: Left Narrative + Right Visual Frame ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
         {/* Left Column: Headlines & Excerpt (7 cols) */}
-        <div className="lg:col-span-7 space-y-6">
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <span className="px-2 py-0.5 bg-foreground text-background font-mono text-[10px] uppercase tracking-widest font-bold">
-                EDISI KHUSUS
-              </span>
-              {article.isFeatured && (
-                <span className="px-2 py-0.5 border border-foreground bg-surface-muted text-foreground font-mono text-[10px] uppercase tracking-wider font-bold">
-                  ★ PILIHAN KURATOR
-                </span>
-              )}
-            </div>
-
+        <div className="lg:col-span-7 space-y-5">
+          <div className="space-y-2.5">
             <Link href={`/artikel/${article.slug}`} className="block group focus:outline-none">
-              <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-black leading-[1.12] tracking-tight text-foreground group-hover:underline decoration-2 underline-offset-8">
+              <h2 className="font-serif text-2xl sm:text-4xl lg:text-5xl font-black leading-[1.1] tracking-tight text-foreground group-hover:underline decoration-2 underline-offset-8">
                 {article.title}
               </h2>
             </Link>
 
             {article.subtitle && (
-              <p className="font-serif italic text-lg sm:text-xl text-foreground/80 font-normal leading-snug">
+              <p className="font-serif italic text-base sm:text-lg text-foreground/85 leading-snug">
                 {article.subtitle}
               </p>
             )}
@@ -92,63 +83,12 @@ export function ArticleFeatured({
               </p>
             </div>
           )}
-
-          <div className="pt-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-t border-border-hairline">
-            <div className="font-mono text-xs uppercase tracking-wider text-muted space-y-1">
-              <div className="flex items-center gap-2 flex-wrap">
-                <p className="text-foreground font-bold">
-                  Oleh {article.author?.name || 'Redaksi Perpusjal'}
-                </p>
-                {article.author && (
-                  <UserHonorBadge
-                    equippedTitle={article.author.equippedTitle}
-                    equippedBadge={article.author.equippedBadge}
-                    earnedBadgesCount={article.author.earnedBadgesCount}
-                    badges={article.author.badges}
-                    username={article.author.username}
-                    size="sm"
-                  />
-                )}
-              </div>
-              <div className="flex items-center gap-3 text-[10px]">
-                <span>{formattedDate}</span>
-                <span>&bull;</span>
-                <span className="flex items-center gap-1">
-                  <Eye className="w-3 h-3" /> {article.viewCount || 0} Pembaca
-                </span>
-                <span>&bull;</span>
-                <span className="flex items-center gap-1">
-                  <MessageSquare className="w-3 h-3" /> {article.commentCount || 0} Tanggapan
-                </span>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2.5 w-full sm:w-auto">
-              {onQuickRead && (
-                <button
-                  type="button"
-                  onClick={() => onQuickRead(article)}
-                  className="flex-1 sm:flex-initial px-4 py-2.5 border-2 border-foreground bg-surface hover:bg-foreground hover:text-background text-foreground font-mono text-xs uppercase tracking-wider font-bold transition-colors flex items-center justify-center gap-1.5 shadow-2xs active:translate-x-0.5 active:translate-y-0.5"
-                >
-                  <BookOpen className="w-3.5 h-3.5" />
-                  <span>Baca Kilas</span>
-                </button>
-              )}
-
-              <Link href={`/artikel/${article.slug}`} className="flex-1 sm:flex-initial">
-                <span className="px-5 py-2.5 bg-foreground text-background font-mono text-xs uppercase tracking-wider font-bold hover:bg-foreground/90 transition-colors flex items-center justify-center gap-2 shadow-xs active:translate-x-0.5 active:translate-y-0.5">
-                  <span>Lembaran Penuh</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </span>
-              </Link>
-            </div>
-          </div>
         </div>
 
-        {/* Right Column: Cover Image Frame (5 cols) */}
+        {/* Right Column: Visual Frame (5 cols) */}
         <div className="lg:col-span-5">
           {article.coverImage ? (
-            <div className="border-2 border-foreground p-3 bg-surface shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.9)]">
+            <div className="border-2 border-foreground p-2.5 bg-surface shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.9)]">
               <div className="aspect-[4/3] overflow-hidden bg-zinc-950 relative group border border-foreground/30">
                 <img
                   src={article.coverImage}
@@ -156,7 +96,7 @@ export function ArticleFeatured({
                   className="w-full h-full object-cover grayscale contrast-110 group-hover:grayscale-0 group-hover:contrast-100 transition-all duration-500"
                 />
                 <div className="absolute top-2 right-2 px-2 py-0.5 bg-foreground text-background font-mono text-[8px] font-black uppercase tracking-widest border border-background shadow-xs">
-                  ✦ LEMBARAN TERPAL ✦
+                  ✦ FOTO LEMBARAN ✦
                 </div>
               </div>
               {article.coverCredit && (
@@ -166,17 +106,86 @@ export function ArticleFeatured({
               )}
             </div>
           ) : (
-            <div className="border-2 border-foreground p-8 bg-surface-muted flex flex-col items-center justify-center text-center space-y-4 min-h-[300px] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.9)]">
-              <Quote className="w-8 h-8 text-foreground/40" />
-              <span className="font-serif italic text-2xl text-foreground font-bold">
+            <div className="border-2 border-foreground p-7 bg-surface-muted flex flex-col items-center justify-center text-center space-y-3 min-h-[260px] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.9)]">
+              <Quote className="w-7 h-7 text-foreground/40" />
+              <span className="font-serif italic text-xl text-foreground font-bold">
                 Perpustakaan Jalanan Blora
               </span>
-              <div className="w-16 h-0.5 bg-foreground mx-auto" />
+              <div className="w-12 h-0.5 bg-foreground mx-auto" />
               <p className="font-mono text-[10px] uppercase tracking-widest text-muted max-w-xs">
-                Lembaran Terbitan Swadaya Warga &bull; Dicetak &amp; Didiskusikan di Trotoar
+                Lembaran Swadaya Warga &bull; Ditulis &amp; Didiskusikan di Ruang Terbuka
               </p>
             </div>
           )}
+        </div>
+      </div>
+
+      {/* ── Dedicated Bottom Control Bar: Byline on Left, Buttons on Right ── */}
+      <div className="pt-5 border-t-2 border-foreground flex flex-col md:flex-row md:items-center justify-between gap-5">
+        {/* Left Area: Author Byline & Metrics */}
+        <div className="flex items-center gap-3 min-w-0">
+          <UserAvatar
+            src={article.author?.avatarUrl}
+            name={article.author?.name || 'Redaksi'}
+            username={article.author?.username}
+            size="md"
+            shape="square"
+            className="border-2 border-foreground shrink-0 shadow-2xs"
+          />
+
+          <div className="space-y-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="font-serif text-sm sm:text-base font-bold text-foreground truncate">
+                Oleh {article.author?.name || 'Redaksi Perpusjal'}
+              </span>
+              {article.author && (
+                <UserHonorBadge
+                  equippedTitle={article.author.equippedTitle}
+                  equippedBadge={article.author.equippedBadge}
+                  earnedBadgesCount={article.author.earnedBadgesCount}
+                  badges={article.author.badges}
+                  username={article.author.username}
+                  size="sm"
+                />
+              )}
+            </div>
+
+            <div className="flex items-center gap-3 font-mono text-[10.5px] text-muted flex-wrap">
+              <span className="flex items-center gap-1 font-semibold text-foreground">
+                <Calendar className="w-3 h-3 text-foreground" />
+                {formattedDate}
+              </span>
+              <span>&bull;</span>
+              <span className="flex items-center gap-1">
+                <Eye className="w-3 h-3" /> {article.viewCount || 0} Pembaca
+              </span>
+              <span>&bull;</span>
+              <span className="flex items-center gap-1">
+                <MessageSquare className="w-3 h-3" /> {article.commentCount || 0} Tanggapan
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Area: Clean, Spacious Action Buttons (No collisions) */}
+        <div className="flex items-center gap-3 shrink-0">
+          {onQuickRead && (
+            <button
+              type="button"
+              onClick={() => onQuickRead(article)}
+              className="px-4 py-2.5 border-2 border-foreground bg-surface hover:bg-surface-muted text-foreground font-mono text-xs uppercase tracking-wider font-bold transition-all flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer active:translate-x-0.5 active:translate-y-0.5"
+            >
+              <BookOpen className="w-3.5 h-3.5" />
+              <span>Baca Kilas</span>
+            </button>
+          )}
+
+          <Link href={`/artikel/${article.slug}`}>
+            <span className="px-5 py-2.5 bg-foreground text-background font-mono text-xs uppercase tracking-wider font-bold hover:bg-foreground/90 transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer active:translate-x-0.5 active:translate-y-0.5">
+              <span>Lembaran Penuh</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </span>
+          </Link>
         </div>
       </div>
     </section>

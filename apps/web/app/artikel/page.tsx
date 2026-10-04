@@ -267,22 +267,9 @@ function ArticlesCatalogContent() {
               </p>
 
               <div className="pt-4 flex flex-wrap items-center justify-between gap-4 border-t border-border-hairline">
-                <div className="flex flex-wrap items-center gap-x-6 gap-y-2 font-mono text-xs text-muted uppercase tracking-wider">
-                  <div className="flex items-center gap-1.5">
-                    <Feather className="w-3.5 h-3.5 text-foreground" />
-                    <span className="font-bold text-foreground">Tanpa Syarat Gelar</span>
-                  </div>
-                  <span>&bull;</span>
-                  <div className="flex items-center gap-1.5">
-                    <BookOpen className="w-3.5 h-3.5 text-foreground" />
-                    <span>Resensi Buku Lapak</span>
-                  </div>
-                  <span>&bull;</span>
-                  <div className="flex items-center gap-1.5">
-                    <Sparkles className="w-3.5 h-3.5 text-foreground" />
-                    <span>100% Bebas Iklan</span>
-                  </div>
-                </div>
+                <span className="font-mono text-xs text-muted uppercase tracking-wider">
+                  MIMBAR BEBAS &bull; TANAH SASTRA &amp; AKAR RUMPUT BLORA
+                </span>
 
                 <Link
                   href="/dashboard/tulisan"
@@ -576,8 +563,13 @@ function ArticlesCatalogContent() {
             <div className="lg:col-span-4 space-y-8">
               <CitizenContributorsSidebar
                 articles={articles}
+                categories={categories}
+                currentCategory={currentCategory}
                 onSelectAuthor={(authorName) => {
                   updateQueryParams({ q: authorName }, { scrollToSearch: true });
+                }}
+                onSelectCategory={(categorySlug) => {
+                  updateQueryParams({ kategori: categorySlug }, { scrollToSearch: true });
                 }}
               />
             </div>
