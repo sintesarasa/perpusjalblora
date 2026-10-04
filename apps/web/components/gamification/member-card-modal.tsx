@@ -339,26 +339,26 @@ export function MemberCardModal({ user, triggerClassName }: MemberCardModalProps
               </div>
 
               {/* 1. Card Top Ribbon / Masthead */}
-              <div className="relative z-10 flex items-center justify-between border-b border-amber-500/30 pb-3 gap-3">
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <LogoIcon className="h-6 w-auto text-amber-400 shrink-0" />
-                  <div className="h-6 w-[1px] bg-amber-500/30 shrink-0" />
-                  <div className="min-w-0">
-                    <span className="font-mono text-[8.5px] uppercase font-bold tracking-[0.2em] text-amber-400 block truncate">
-                      KARTU KEHORMATAN WARGA
+              <div className="relative z-10 border-b border-amber-500/30 pb-2.5 space-y-2">
+                <div className="flex items-center justify-between gap-4">
+                  <Logo className="h-7 sm:h-8 w-auto text-amber-400 shrink-0" />
+
+                  <div className="text-right shrink-0">
+                    <span className="font-mono text-[7.5px] uppercase font-bold tracking-widest text-zinc-400 block mb-0.5">
+                      NO. REGISTRASI
                     </span>
-                    <h3 className="font-serif italic text-sm sm:text-base text-zinc-100 font-medium tracking-wide leading-tight truncate">
-                      Membaca dan Berbahagia.
-                    </h3>
+                    <span className="font-mono text-[11px] font-bold text-amber-300 tracking-wider px-2.5 py-0.5 bg-amber-500/10 border border-amber-500/30 rounded-xs inline-block">
+                      {memberRegNo}
+                    </span>
                   </div>
                 </div>
 
-                <div className="text-right shrink-0">
-                  <span className="font-mono text-[7.5px] uppercase font-bold tracking-widest text-zinc-400 block mb-0.5">
-                    NO. REGISTRASI
+                <div className="flex items-center justify-between gap-2 pt-1.5 border-t border-zinc-800/70">
+                  <span className="font-mono text-[8.5px] uppercase font-bold tracking-[0.2em] text-amber-400">
+                    KARTU KEHORMATAN WARGA
                   </span>
-                  <span className="font-mono text-[11px] font-bold text-amber-300 tracking-wider px-2.5 py-0.5 bg-amber-500/10 border border-amber-500/30 rounded-xs inline-block">
-                    {memberRegNo}
+                  <span className="font-serif italic text-xs text-zinc-200">
+                    Membaca dan Berbahagia.
                   </span>
                 </div>
               </div>
