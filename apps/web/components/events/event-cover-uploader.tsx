@@ -37,6 +37,10 @@ const COVER_PRESETS = [
     name: 'Kemah Tepi Hutan Jati',
     url: 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&w=1000&q=80',
   },
+  {
+    name: 'Nobar & Bedah Film',
+    url: 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=1000&q=80',
+  },
 ];
 
 const MAX_TARGET_BYTES = 200 * 1024; // Strict limit: < 200 KB

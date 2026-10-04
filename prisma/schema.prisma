@@ -139,6 +139,7 @@ enum EventType {
   DISKUSI
   WORKSHOP
   LAPAK
+  NOBAR
   LAINNYA
 }
 

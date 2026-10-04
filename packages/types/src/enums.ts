@@ -108,6 +108,7 @@ export enum EventType {
   DISKUSI = 'DISKUSI',
   WORKSHOP = 'WORKSHOP',
   LAPAK = 'LAPAK',
+  NOBAR = 'NOBAR',
   LAINNYA = 'LAINNYA',
 }
 

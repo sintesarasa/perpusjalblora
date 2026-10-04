@@ -200,6 +200,12 @@ function EventCatalogContent() {
           border: 'border-l-4 border-l-indigo-600',
           badge: 'bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border-indigo-500/40',
         };
+      case EventType.NOBAR:
+        return {
+          label: 'Nonton Bareng & Bedah Film',
+          border: 'border-l-4 border-l-purple-600',
+          badge: 'bg-purple-500/15 text-purple-600 dark:text-purple-400 border-purple-500/40',
+        };
       default:
         return {
           label: 'Agenda Khusus',
@@ -503,6 +509,7 @@ function EventCatalogContent() {
                 { val: EventType.DISKUSI, label: 'Diskusi Buku' },
                 { val: EventType.WORKSHOP, label: 'Workshop Kriya' },
                 { val: EventType.KELAS, label: 'Kelas Belajar' },
+                { val: EventType.NOBAR, label: 'Nobar & Film' },
               ].map((chip) => (
                 <button
                   key={chip.val}

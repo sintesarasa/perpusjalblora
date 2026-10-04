@@ -307,6 +307,7 @@ export default function DashboardKegiatanPage() {
             <option value={EventType.DISKUSI}>Diskusi Sastra</option>
             <option value={EventType.WORKSHOP}>Workshop</option>
             <option value={EventType.KELAS}>Kelas Literasi</option>
+            <option value={EventType.NOBAR}>Nonton Bareng &amp; Bedah Film</option>
             <option value={EventType.LAINNYA}>Lainnya</option>
           </select>
 

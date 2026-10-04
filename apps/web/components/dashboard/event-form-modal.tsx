@@ -472,6 +472,7 @@ export function EventFormModal({
                   <option value={EventType.DISKUSI}>Diskusi Sastra & Bedah Buku</option>
                   <option value={EventType.WORKSHOP}>Workshop / Lokakarya Kriya</option>
                   <option value={EventType.KELAS}>Kelas Literasi Warga</option>
+                  <option value={EventType.NOBAR}>Nonton Bareng &amp; Bedah Film</option>
                   <option value={EventType.LAINNYA}>Agenda Khusus / Kemah</option>
                 </select>
               </div>
