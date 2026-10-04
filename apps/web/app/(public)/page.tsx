@@ -145,62 +145,39 @@ const ROTATING_WORDS = [
 ];
 
 /**
- * Underline / Highlight Sweep (Refined Broadsheet Polish):
- * - Snappy 480ms sweep with comfortable 2.8s reading dwell time.
- * - Dynamic width wrapping with tailored padding (no awkward trailing empty space).
- * - Proper descender clearance for letters (g, y, p) so underline never collides with glyphs.
- * - Gentle micro-crossfade for flawless rendering across all display refresh rates.
+ * Single Editorial Loading Progress Underline:
+ * - One clean horizontal track with an active ink indicator filling from 0% to 100%.
+ * - Word updates in sync right when progress reaches 100% (2.4s cadence).
+ * - Zero double-lines, zero highlight background box.
  */
-function HighlightSweepHeadline() {
+function LoadingUnderlineHeadline() {
   const [currentIdx, setCurrentIdx] = React.useState(0);
-  const [isSweeping, setIsSweeping] = React.useState(false);
 
   React.useEffect(() => {
     const timer = setInterval(() => {
-      setIsSweeping(true);
-
-      // At the exact peak of the sweep (240ms), swap word instantly
-      const midTimer = setTimeout(() => {
-        setCurrentIdx((prev) => (prev + 1) % ROTATING_WORDS.length);
-      }, 240);
-
-      // Sweep finishes cleanly at 480ms
-      const endTimer = setTimeout(() => {
-        setIsSweeping(false);
-      }, 480);
-
-      return () => {
-        clearTimeout(midTimer);
-        clearTimeout(endTimer);
-      };
-    }, 2800); // 2.8s relaxed reading cadence
+      setCurrentIdx((prev) => (prev + 1) % ROTATING_WORDS.length);
+    }, 2400);
 
     return () => clearInterval(timer);
   }, []);
 
   return (
-    <span className="relative inline-block align-baseline py-0.5 px-1.5 my-0.5 rounded-xs transition-all duration-300">
-      {/* Active Word (Solid 100% Opacity) */}
+    <span className="relative inline-block align-baseline px-1 py-0.5">
+      {/* Active Word (Solid Broadsheet Typography) */}
       <span className="italic font-serif font-normal text-foreground inline-block tracking-tight pr-1.5">
         {ROTATING_WORDS[currentIdx]}
       </span>
 
-      {/* Broadsheet Highlighter Tinted Sweep Bar */}
-      {isSweeping && (
-        <span
-          aria-hidden="true"
-          className="absolute inset-y-0.5 inset-x-0 bg-foreground/15 dark:bg-white/20 animate-highlight-sweep pointer-events-none rounded-xs"
-        />
-      )}
-
-      {/* Underline Ink Strike positioned with descender clearance */}
+      {/* Single Clean Editorial Loading Underline */}
       <span
         aria-hidden="true"
-        className={cn(
-          'absolute bottom-0 translate-y-1.5 sm:translate-y-2.5 left-1.5 right-1.5 h-[2.5px] sm:h-[3px] bg-foreground transition-all duration-300 rounded-full',
-          isSweeping ? 'animate-underline-sweep' : 'scale-x-100 opacity-90'
-        )}
-      />
+        className="absolute bottom-0 translate-y-2 sm:translate-y-2.5 left-1 right-1 h-[2.5px] sm:h-[3px] bg-foreground/15 dark:bg-white/15 rounded-full overflow-hidden"
+      >
+        <span
+          key={currentIdx}
+          className="block h-full w-full bg-foreground origin-left animate-underline-progress rounded-full"
+        />
+      </span>
     </span>
   );
 }
@@ -344,10 +321,10 @@ export default function HomePage() {
                     <span>RUANG PERJUMPAAN MERDEKA</span>
                   </div>
 
-                  {/* Monumental Headline: MEMBACA DAN [HIGHLIGHT SWEEP] */}
+                  {/* Monumental Headline: MEMBACA DAN [LOADING UNDERLINE] */}
                   <h1 className="font-serif font-black uppercase text-foreground leading-[1.02] sm:leading-[0.92] tracking-tight text-4xl sm:text-6xl md:text-7xl lg:text-8xl break-words">
                     MEMBACA DAN <br />
-                    <HighlightSweepHeadline />
+                    <LoadingUnderlineHeadline />
                   </h1>
 
                   <p className="drop-cap font-serif text-lg sm:text-xl text-foreground/90 leading-relaxed max-w-2xl">

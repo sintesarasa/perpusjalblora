@@ -234,6 +234,21 @@
   will-change: transform, opacity;
 }
 
+/* Loading Underline Progress Keyframes (Single Clean Editorial Loading Line) */
+@keyframes underlineProgress {
+  0% {
+    transform: scaleX(0);
+  }
+  100% {
+    transform: scaleX(1);
+  }
+}
+
+.animate-underline-progress {
+  animation: underlineProgress 2400ms linear forwards;
+  will-change: transform;
+}
+
 /* Editorial Drop Cap */
 .drop-cap::first-letter {
   font-family: var(--font-playfair), Georgia, serif;
