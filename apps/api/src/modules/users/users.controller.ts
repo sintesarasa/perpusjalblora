@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { usersService } from './users.service.js';
 import { Role, UserStatus } from '@perpusjal/types';
+import { HttpError } from '../../utils/errors.js';
 
 export class UsersController {
   async getPublicProfile(req: Request, res: Response, next: NextFunction) {
@@ -28,7 +29,10 @@ export class UsersController {
 
   async updateMyProfile(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = (req as any).user.id;
+      const userId = req.user?.userId || req.user?.id;
+      if (!userId) {
+        throw HttpError.unauthorized('Sesi login telah kedaluwarsa atau tidak valid.');
+      }
       const updated = await usersService.updateMyProfile(userId, req.body);
       res.json({ success: true, data: updated });
     } catch (err) {
@@ -38,7 +42,10 @@ export class UsersController {
 
   async changePassword(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = (req as any).user.id;
+      const userId = req.user?.userId || req.user?.id;
+      if (!userId) {
+        throw HttpError.unauthorized('Sesi login telah kedaluwarsa atau tidak valid.');
+      }
       const result = await usersService.changePassword(userId, req.body);
       res.json({ success: true, data: result });
     } catch (err) {
@@ -48,7 +55,10 @@ export class UsersController {
 
   async exportMyData(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = (req as any).user.id;
+      const userId = req.user?.userId || req.user?.id;
+      if (!userId) {
+        throw HttpError.unauthorized('Sesi login telah kedaluwarsa atau tidak valid.');
+      }
       const data = await usersService.exportMyData(userId);
       res.setHeader('Content-Type', 'application/json');
       res.setHeader('Content-Disposition', `attachment; filename=perpusjal-data-${userId}.json`);
@@ -76,7 +86,10 @@ export class UsersController {
 
   async adminUpdateRole(req: Request, res: Response, next: NextFunction) {
     try {
-      const actorId = (req as any).user.id;
+      const actorId = req.user?.userId || req.user?.id;
+      if (!actorId) {
+        throw HttpError.unauthorized('Sesi login telah kedaluwarsa atau tidak valid.');
+      }
       const id = String(req.params.id);
       const { role } = req.body;
       const result = await usersService.adminUpdateRole(actorId, id, role);
@@ -88,7 +101,10 @@ export class UsersController {
 
   async adminSuspendUser(req: Request, res: Response, next: NextFunction) {
     try {
-      const actorId = (req as any).user.id;
+      const actorId = req.user?.userId || req.user?.id;
+      if (!actorId) {
+        throw HttpError.unauthorized('Sesi login telah kedaluwarsa atau tidak valid.');
+      }
       const id = String(req.params.id);
       const result = await usersService.adminSuspendUser(actorId, id, req.body);
       res.json({ success: true, data: result });

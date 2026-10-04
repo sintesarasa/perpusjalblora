@@ -82,6 +82,7 @@ export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
 
 export interface UserSessionPayload {
   userId: string;
+  id?: string;
   sessionId?: string;
   email: string;
   username: string;

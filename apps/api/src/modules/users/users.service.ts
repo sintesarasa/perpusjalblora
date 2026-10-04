@@ -177,6 +177,9 @@ export class UsersService {
   }
 
   async updateMyProfile(userId: string, input: UpdateProfileInput) {
+    if (!userId) {
+      throw HttpError.unauthorized('Sesi login telah kedaluwarsa atau tidak valid.');
+    }
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) {
       throw HttpError.notFound('Pengguna tidak ditemukan');
@@ -213,6 +216,9 @@ export class UsersService {
   }
 
   async changePassword(userId: string, input: ChangePasswordInput) {
+    if (!userId) {
+      throw HttpError.unauthorized('Sesi login telah kedaluwarsa atau tidak valid.');
+    }
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user || !user.passwordHash) {
       throw HttpError.badRequest('Akun tidak valid untuk penggantian kata sandi');
@@ -237,6 +243,9 @@ export class UsersService {
   }
 
   async exportMyData(userId: string): Promise<UserDataExport> {
+    if (!userId) {
+      throw HttpError.unauthorized('Sesi login telah kedaluwarsa atau tidak valid.');
+    }
     const [user, articles, loans, comments, eventRegistrations, userBadges] =
       await Promise.all([
         prisma.user.findUnique({ where: { id: userId } }),
@@ -380,6 +389,9 @@ export class UsersService {
   }
 
   async adminUpdateRole(actorId: string, targetUserId: string, newRole: Role) {
+    if (!actorId) {
+      throw HttpError.unauthorized('Sesi login telah kedaluwarsa atau tidak valid.');
+    }
     const target = await prisma.user.findUnique({ where: { id: targetUserId } });
     if (!target) {
       throw HttpError.notFound('Pengguna target tidak ditemukan');
@@ -420,6 +432,9 @@ export class UsersService {
     targetUserId: string,
     payload: { suspend: boolean; reason?: string; until?: string }
   ) {
+    if (!actorId) {
+      throw HttpError.unauthorized('Sesi login telah kedaluwarsa atau tidak valid.');
+    }
     const target = await prisma.user.findUnique({ where: { id: targetUserId } });
     if (!target) {
       throw HttpError.notFound('Pengguna tidak ditemukan');

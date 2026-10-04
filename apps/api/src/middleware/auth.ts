@@ -62,6 +62,10 @@ export async function authMiddleware(req: Request, res: Response, next: NextFunc
       decoded.trustLevel = dbSession.user.trustLevel as unknown as TrustLevel;
     }
 
+    if (decoded.userId && !decoded.id) {
+      decoded.id = decoded.userId;
+    }
+
     req.user = decoded;
   } catch (err) {
     // Invalid/expired token: clear user and continue
