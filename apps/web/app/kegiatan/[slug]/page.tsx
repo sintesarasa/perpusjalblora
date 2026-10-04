@@ -6,9 +6,10 @@ import { useParams } from 'next/navigation';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { CustomLoader } from '@/components/ui/custom-loader';
+import { BrandStamp } from '@/components/ui/brand-stamp';
 import { RichTextRenderer } from '@/components/articles/rich-text-renderer';
 import { apiClient } from '@/lib/api';
-import { EventDetail, EventRegistrationItem } from '@perpusjal/types';
+import { EventDetail, EventRegistrationItem, EventStatus, EventType } from '@perpusjal/types';
 import { EventCountdown } from '@/components/events/event-countdown';
 import QRCode from 'qrcode';
 import {
@@ -26,7 +27,33 @@ import {
   FileText,
   AlertCircle,
   QrCode as QrIcon,
+  MessageCircle,
+  Share2,
+  Sparkles,
+  Archive,
 } from 'lucide-react';
+
+function generateGoogleCalendarUrl(
+  title: string,
+  start: Date,
+  end: Date,
+  location: string,
+  details: string
+) {
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const formatIso = (d: Date) =>
+    `${d.getUTCFullYear()}${pad(d.getUTCMonth() + 1)}${pad(d.getUTCDate())}T${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}00Z`;
+
+  const dates = `${formatIso(start)}/${formatIso(end)}`;
+  const params = new URLSearchParams({
+    action: 'TEMPLATE',
+    text: title,
+    dates,
+    details,
+    location,
+  });
+  return `https://calendar.google.com/calendar/render?${params.toString()}`;
+}
 
 export default function EventDetailPage() {
   const params = useParams();
@@ -131,7 +158,7 @@ export default function EventDetailPage() {
       <div className="flex flex-col min-h-screen bg-background">
         <Header />
         <main className="flex-1 flex items-center justify-center p-12">
-          <CustomLoader size="lg" label="MEMBUKA LEMBAR AGENDA KEGIATAN..." />
+          <CustomLoader size="lg" label="MEMBUKA LEMBAR DOKUMEN AGENDA..." />
         </main>
         <Footer />
       </div>
@@ -140,23 +167,26 @@ export default function EventDetailPage() {
 
   if (error || !event) {
     return (
-      <div className="flex flex-col min-h-screen bg-background">
+      <div className="flex flex-col min-h-screen bg-background text-foreground font-sans editorial-grain">
         <Header />
         <main className="flex-1 max-w-3xl mx-auto w-full px-4 sm:px-8 py-20 text-center space-y-6">
-          <div className="border-2 border-foreground p-12 bg-surface space-y-4">
+          <div className="border-2 border-foreground p-10 sm:p-14 bg-surface space-y-4 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.9)]">
             <span className="font-mono text-xs uppercase tracking-widest text-muted">
-              KODE // 404
+              DOKUMEN AGENDA // 404
             </span>
-            <h1 className="font-serif text-3xl font-normal text-foreground">Kegiatan Tidak Ditemukan</h1>
-            <p className="font-sans text-sm text-muted max-w-md mx-auto">
-              {error || 'Agenda yang Anda cari tidak tersedia atau tautan tidak valid.'}
+            <h1 className="font-serif text-3xl sm:text-4xl font-black text-foreground">
+              Agenda Tidak Ditemukan
+            </h1>
+            <p className="font-serif text-sm text-foreground/80 max-w-md mx-auto leading-relaxed">
+              {error || 'Agenda yang Anda cari tidak tersedia atau tautan telah kedaluwarsa.'}
             </p>
             <div className="pt-4">
               <Link
                 href="/kegiatan"
-                className="font-mono text-xs uppercase tracking-wider text-foreground underline underline-offset-4"
+                className="px-5 py-2.5 bg-foreground text-background font-mono text-xs uppercase tracking-wider font-bold inline-flex items-center gap-2 hover:bg-foreground/90 transition-colors"
               >
-                &larr; Kembali ke Kalender Kegiatan
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span>Kembali ke Kalender Kegiatan</span>
               </Link>
             </div>
           </div>
@@ -178,84 +208,219 @@ export default function EventDetailPage() {
   const endTime = endDate.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
 
   const isFull = event.quota ? event.registeredCount >= event.quota : false;
-  const isPast = endDate < new Date();
+  const isPast = endDate < new Date() || event.status === EventStatus.COMPLETED;
   const myReg = event.myRegistration;
 
+  const googleCalUrl = generateGoogleCalendarUrl(
+    event.title,
+    startDate,
+    endDate,
+    event.locationName,
+    'Kegiatan literasi merdeka Perpustakaan Jalanan Blora.'
+  );
+
+  // WhatsApp Share URL
+  const shareText = `📖 *${event.title}* - Perpustakaan Jalanan Blora\n🗓 ${formattedDate} • ${startTime} - ${endTime} WIB\n📍 ${event.locationName}\n\nMari bersila membaca dan merawat ruang temu warga tanpa syarat:\n👉 ${typeof window !== 'undefined' ? window.location.href : `https://perpusjalblora.org/kegiatan/${event.slug}`}`;
+  const whatsappShareUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
+
+  const getStatusBadge = (status: EventStatus) => {
+    if (status === EventStatus.COMPLETED || isPast) {
+      return (
+        <span className="font-mono text-[9px] uppercase tracking-wider px-2.5 py-0.5 border border-border-hairline bg-surface-muted text-muted font-bold">
+          SELESAI (ARSIP KEGIATAN)
+        </span>
+      );
+    }
+    if (isFull) {
+      return (
+        <span className="font-mono text-[9px] uppercase tracking-wider px-2.5 py-0.5 bg-foreground text-background font-bold">
+          KUOTA PENUH
+        </span>
+      );
+    }
+    return (
+      <span className="font-mono text-[9px] uppercase tracking-wider px-2.5 py-0.5 border border-amber-500/60 bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold">
+        TERBUKA UMUM
+      </span>
+    );
+  };
+
   return (
-    <div className="flex flex-col min-h-screen bg-background text-foreground font-sans">
+    <div className="flex flex-col min-h-screen bg-background text-foreground font-sans editorial-grain selection:bg-foreground selection:text-background">
       <Header />
 
-      <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-8 py-8 sm:py-12 space-y-12">
-        {/* Back Link */}
-        <div>
-          <Link
-            href="/kegiatan"
-            className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-muted hover:text-foreground transition-colors"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Kembali ke Kalender Kegiatan</span>
-          </Link>
-        </div>
-
-        {/* Top Header Section */}
-        <div className="border-b-2 border-foreground pb-6 space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-3 font-mono text-xs uppercase tracking-widest text-muted">
-            <span className="px-2 py-0.5 border border-foreground text-foreground font-bold">
-              {event.type}
-            </span>
-            <span>STATUS // {event.status}</span>
+      <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-10">
+        {/* Masthead Navigation & Brand Stamp */}
+        <div className="border-b border-border-hairline pb-4 flex flex-wrap items-center justify-between gap-3 text-xs font-mono uppercase tracking-widest text-muted">
+          <div className="flex items-center gap-3">
+            <Link
+              href="/kegiatan"
+              className="inline-flex items-center gap-1.5 text-muted hover:text-foreground font-bold transition-colors group"
+            >
+              <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" />
+              <span>Kalender Kegiatan</span>
+            </Link>
+            <span>//</span>
+            <span className="text-foreground font-bold">DOKUMEN AGENDA</span>
           </div>
 
-          <h1 className="font-serif text-3xl sm:text-5xl font-bold tracking-tight text-foreground leading-tight">
-            {event.title}
-          </h1>
-
-          <p className="font-mono text-xs text-muted">
-            Diselenggarakan oleh <strong className="text-foreground">{event.organizer.name}</strong>
-          </p>
+          <div className="flex items-center gap-2">
+            <BrandStamp edition="KRONIK LAPAK" year="2026" />
+          </div>
         </div>
 
-        {/* Grid: Details Left, Registration Card Right */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
-          {/* LEFT: Info & Description (8 cols) */}
-          <div className="lg:col-span-8 space-y-8">
-            {/* Meta Cards Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-5 bg-surface border border-border-hairline font-mono text-xs">
-              <div className="space-y-1">
-                <span className="text-[10px] text-muted uppercase flex items-center gap-1.5">
-                  <Calendar className="w-3.5 h-3.5 text-foreground" />
-                  WAKTU PELAKSANAAN
-                </span>
-                <p className="font-bold text-foreground text-sm">{formattedDate}</p>
-                <p className="text-muted">
-                  Pukul {startTime} - {endTime} WIB
+        {/* Hero Event Banner Card */}
+        <section className="border-2 border-foreground bg-surface p-6 sm:p-9 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.9)] space-y-6">
+          {/* Top Status Strip */}
+          <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-border-hairline text-xs font-mono">
+            <div className="flex items-center gap-2.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="font-bold text-foreground uppercase tracking-wider text-[11px]">
+                {event.type}
+              </span>
+              <span className="text-muted">&bull;</span>
+              {getStatusBadge(event.status)}
+            </div>
+
+            <div className="flex items-center gap-2">
+              {/* WhatsApp Share Button */}
+              <a
+                href={whatsappShareUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-mono text-[10px] font-bold uppercase tracking-wider inline-flex items-center gap-1.5 transition-colors shadow-2xs"
+                title="Bagikan kabar kegiatan ini ke WhatsApp kawan-kawan"
+              >
+                <MessageCircle className="w-3 h-3" />
+                <span>Bagikan ke WhatsApp</span>
+              </a>
+            </div>
+          </div>
+
+          {/* Grid Layout: Visual Cover (Left 5 cols) + Event Synopsis & Actions (Right 7 cols) */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            {/* Left: Tactile Editorial Photography Cover (5 cols) */}
+            <div className="lg:col-span-5 flex justify-center w-full">
+              <div className="relative w-full max-w-md bg-surface border-2 border-foreground p-3.5 shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] dark:shadow-[5px_5px_0px_0px_rgba(255,255,255,0.9)] select-none">
+                <div className="flex items-center justify-between pb-2 mb-2 border-b border-border-hairline font-mono text-[9px] uppercase tracking-widest text-muted">
+                  <span>[ DOKUMENTASI TERPAL // PERPUSJAL ]</span>
+                  <span className="font-bold text-amber-600 dark:text-amber-400">2026</span>
+                </div>
+
+                <div className="relative aspect-[4/3] w-full overflow-hidden border border-foreground/30 bg-zinc-950">
+                  <img
+                    src={
+                      event.coverImage ||
+                      'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=1000&q=80'
+                    }
+                    alt={event.title}
+                    className="w-full h-full object-cover grayscale contrast-110 hover:grayscale-0 transition-all duration-500"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
+
+                  <div className="absolute top-2.5 right-2.5 px-2 py-0.5 bg-amber-500 text-black font-mono text-[8px] font-extrabold uppercase tracking-widest border border-black shadow-xs">
+                    ✦ TERPAL RAKYAT ✦
+                  </div>
+
+                  <div className="absolute bottom-2.5 left-3 right-3 text-white">
+                    <p className="font-serif italic text-xs leading-snug drop-shadow-md">
+                      &ldquo;Membaca adalah hak warga; merawat perjumpaan adalah kerja kebudayaan.&rdquo;
+                    </p>
+                  </div>
+                </div>
+
+                <div className="pt-2.5 flex items-center justify-between font-mono text-[9.5px] text-muted">
+                  <span>{event.locationName}</span>
+                  <span className="font-bold text-foreground uppercase">RUANG BACA SWADAYA</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Right: Event Headline & Venue Pillars (7 cols) */}
+            <div className="lg:col-span-7 space-y-5">
+              <div className="space-y-2">
+                <div className="inline-block px-2.5 py-0.5 border border-amber-500/50 bg-amber-500/10 text-amber-600 dark:text-amber-400 font-mono text-[9px] uppercase font-bold tracking-widest">
+                  <span>✦ LEMBAR DOKUMEN AGENDA RESMI ✦</span>
+                </div>
+
+                <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl font-black text-foreground leading-[1.1] tracking-tight">
+                  {event.title}
+                </h1>
+
+                <p className="font-mono text-xs text-muted">
+                  Penyelenggara / Inisiator:{' '}
+                  <strong className="text-foreground font-semibold">{event.organizer.name}</strong>
                 </p>
               </div>
 
-              <div className="space-y-1">
-                <span className="text-[10px] text-muted uppercase flex items-center gap-1.5">
-                  <MapPin className="w-3.5 h-3.5 text-foreground" />
-                  LOKASI KEGIATAN
-                </span>
-                <p className="font-bold text-foreground text-sm">{event.locationName}</p>
-                {event.locationDetail && <p className="text-muted text-[11px]">{event.locationDetail}</p>}
+              {/* 3 Key Venue Pillars Strip */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1 font-mono text-xs text-muted">
+                <div className="flex items-center gap-2 p-2.5 bg-surface-muted/60 border border-border-hairline">
+                  <Clock className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                  <div className="truncate">
+                    <span className="text-[10px] text-muted block uppercase">Waktu</span>
+                    <span className="text-foreground font-semibold text-[11px]">
+                      {startTime} – {endTime} WIB
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 p-2.5 bg-surface-muted/60 border border-border-hairline truncate">
+                  <MapPin className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                  <div className="truncate">
+                    <span className="text-[10px] text-muted block uppercase">Lokasi</span>
+                    <span className="text-foreground font-semibold text-[11px] truncate block">
+                      {event.locationName}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 p-2.5 bg-surface-muted/60 border border-border-hairline">
+                  <Users className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                  <div>
+                    <span className="text-[10px] text-muted block uppercase">Partisipasi</span>
+                    <span className="text-foreground font-semibold text-[11px]">
+                      {event.quota ? `${event.registeredCount}/${event.quota}` : 'Terbuka Umum'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Calendar & Map Quick Action Strip */}
+              <div className="flex flex-wrap items-center gap-2.5 pt-2 font-mono text-xs">
+                <a
+                  href={googleCalUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="px-3 py-1.5 border border-border-hairline hover:border-foreground bg-surface text-foreground transition-colors inline-flex items-center gap-1.5"
+                >
+                  <CalendarPlus className="w-3.5 h-3.5 text-amber-500" />
+                  <span>Google Calendar</span>
+                </a>
+
                 {event.mapUrl && (
                   <a
                     href={event.mapUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center gap-1 text-[11px] text-foreground underline underline-offset-2 mt-1"
+                    className="px-3 py-1.5 border border-border-hairline hover:border-foreground bg-surface text-foreground transition-colors inline-flex items-center gap-1.5"
                   >
-                    <span>Buka Peta Petunjuk Arah</span>
-                    <ExternalLink className="w-3 h-3" />
+                    <ExternalLink className="w-3.5 h-3.5 text-amber-500" />
+                    <span>Petunjuk Rute Maps</span>
                   </a>
                 )}
               </div>
             </div>
+          </div>
+        </section>
 
+        {/* 2-Column Content: Left Narrative + Right Registration/Ticket */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+          {/* LEFT: Info & Description & Past Archive (8 cols) */}
+          <div className="lg:col-span-8 space-y-10">
             {/* Online Meeting Link (Only if registered) */}
             {event.isOnline && event.meetingUrl && (
-              <div className="p-4 bg-surface-muted border-2 border-foreground font-mono text-xs space-y-2">
+              <div className="p-4 bg-surface-muted border-2 border-foreground font-mono text-xs space-y-2 shadow-xs">
                 <span className="font-bold text-foreground flex items-center gap-2">
                   <Video className="w-4 h-4 text-foreground" />
                   TAUTAN TEMU DARING (KHUSUS PESERTA TERDAFTAR):
@@ -264,7 +429,7 @@ export default function EventDetailPage() {
                   href={event.meetingUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="block p-2 bg-surface border border-border-hairline text-foreground underline break-all"
+                  className="block p-2 bg-surface border border-border-hairline text-foreground underline break-all font-semibold"
                 >
                   {event.meetingUrl}
                 </a>
@@ -273,47 +438,61 @@ export default function EventDetailPage() {
 
             {/* Description Narrative */}
             <div className="space-y-4">
-              <h2 className="font-mono text-sm uppercase tracking-widest font-bold text-foreground border-b border-border-hairline pb-2">
-                TENTANG KEGIATAN INI
-              </h2>
+              <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-widest font-bold text-foreground border-b-2 border-foreground pb-2">
+                <FileText className="w-4 h-4 text-amber-500" />
+                <span>CATATAN &amp; NARASI KEGIATAN</span>
+              </div>
 
-              <div className="prose max-w-none text-foreground font-sans leading-relaxed">
+              <div className="prose max-w-none text-foreground font-serif leading-relaxed text-base sm:text-lg">
                 {typeof event.description === 'object' ? (
                   <RichTextRenderer content={event.description} />
                 ) : (
-                  <p className="whitespace-pre-line text-sm sm:text-base leading-relaxed">
+                  <p className="whitespace-pre-line leading-relaxed text-foreground/90">
                     {event.description}
                   </p>
                 )}
               </div>
             </div>
 
-            {/* Post-Event Documentation (FR-EVT-05) */}
+            {/* Post-Event Documentation & Reflection (FR-EVT-05 & Arsip Lampau) */}
             {event.summary && (
-              <div className="pt-8 border-t-2 border-foreground space-y-6">
-                <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-widest font-bold text-foreground border-b border-border-hairline pb-2">
-                  <Camera className="w-4 h-4 text-foreground" />
-                  <span>DOKUMENTASI & RINGKASAN KEGIATAN</span>
+              <div className="border-2 border-foreground bg-surface p-6 sm:p-8 space-y-6 shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] dark:shadow-[5px_5px_0px_0px_rgba(255,255,255,0.9)]">
+                <div className="flex items-center justify-between border-b border-border-hairline pb-3">
+                  <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-widest font-bold text-foreground">
+                    <Camera className="w-4 h-4 text-amber-500" />
+                    <span>JEJAK DOKUMENTASI &amp; REFLEKSI LAPAK</span>
+                  </div>
+                  <span className="font-mono text-[9px] uppercase px-2 py-0.5 bg-amber-500/15 text-amber-600 dark:text-amber-400 font-bold border border-amber-500/30">
+                    PASCA-KEGIATAN
+                  </span>
                 </div>
 
-                <div className="p-6 bg-surface border border-border-hairline space-y-4 font-sans text-sm sm:text-base leading-relaxed whitespace-pre-line">
-                  {event.summary}
+                <div className="p-4 sm:p-5 bg-surface-muted/50 border-l-4 border-l-amber-500 font-serif text-base sm:text-lg italic leading-relaxed text-foreground/90 whitespace-pre-line">
+                  &ldquo;{event.summary}&rdquo;
                 </div>
 
                 {event.gallery && event.gallery.length > 0 && (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                    {event.gallery.map((imgUrl, i) => (
-                      <div
-                        key={i}
-                        className="aspect-square bg-surface-muted border border-border-hairline overflow-hidden"
-                      >
-                        <img
-                          src={imgUrl}
-                          alt={`Dokumentasi ${i + 1}`}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    ))}
+                  <div className="space-y-3 pt-2">
+                    <span className="font-mono text-[10px] uppercase tracking-widest text-muted block">
+                      GALERI DOKUMENTASI WARGA ({event.gallery.length} FOTO):
+                    </span>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                      {event.gallery.map((imgUrl, i) => (
+                        <div
+                          key={i}
+                          className="aspect-square bg-zinc-950 border border-foreground/60 overflow-hidden relative group"
+                        >
+                          <img
+                            src={imgUrl}
+                            alt={`Dokumentasi Lapak ${i + 1}`}
+                            className="w-full h-full object-cover grayscale contrast-110 group-hover:grayscale-0 group-hover:scale-105 transition-all duration-300"
+                          />
+                          <div className="absolute bottom-1 right-1 px-1.5 py-0.2 bg-black/80 text-white font-mono text-[8px] uppercase">
+                            #{i + 1}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
@@ -321,14 +500,17 @@ export default function EventDetailPage() {
 
             {/* Public Participants List (FR-EVT-06) */}
             {event.participants && event.participants.length > 0 && (
-              <div className="pt-6 border-t border-border-hairline space-y-3 font-mono text-xs">
-                <h3 className="uppercase tracking-widest font-bold text-foreground">
-                  PESERTA YANG TELAH MENDAFTAR ({event.participants.length})
-                </h3>
-                <div className="p-4 bg-surface border border-border-hairline divide-y divide-border-hairline max-h-60 overflow-y-auto">
+              <div className="border border-border-hairline bg-surface p-5 space-y-3 font-mono text-xs">
+                <div className="flex items-center justify-between border-b border-border-hairline pb-2">
+                  <h3 className="uppercase tracking-widest font-bold text-foreground">
+                    WARGA YANG TELAH MENDAFTAR ({event.participants.length})
+                  </h3>
+                  <span className="text-[10px] text-muted">KOMUNITAS TROTOAR</span>
+                </div>
+                <div className="divide-y divide-border-hairline max-h-60 overflow-y-auto">
                   {event.participants.map((p, idx) => (
                     <div key={idx} className="py-2 flex items-center justify-between">
-                      <span className="text-foreground font-bold">{p.name}</span>
+                      <span className="text-foreground font-semibold">{p.name}</span>
                       <span className="text-muted text-[11px]">
                         {new Date(p.registeredAt).toLocaleDateString('id-ID', {
                           day: 'numeric',
@@ -342,10 +524,11 @@ export default function EventDetailPage() {
             )}
           </div>
 
-          {/* RIGHT: Countdown & Ticket Registration Box (4 cols) */}
+          {/* RIGHT: Countdown Ribbon & Ticket Registration Card (4 cols) */}
           <div className="lg:col-span-4 space-y-6">
             {!isPast && (
               <EventCountdown
+                variant="card"
                 targetDate={event.startAt}
                 endDate={event.endAt}
                 title={event.title}
@@ -353,25 +536,26 @@ export default function EventDetailPage() {
               />
             )}
 
-            <div className="border-2 border-foreground bg-surface p-6 space-y-6 shadow-md font-sans">
+            {/* Ticket & Registration Status Box */}
+            <div className="border-2 border-foreground bg-surface p-6 space-y-6 shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] dark:shadow-[5px_5px_0px_0px_rgba(255,255,255,0.9)] font-sans">
               <div className="border-b border-border-hairline pb-3">
-                <span className="font-mono text-[10px] text-muted uppercase tracking-widest block">
-                  TIKET KEHADIRAN
+                <span className="font-mono text-[10px] text-muted uppercase tracking-widest block font-bold">
+                  [ TIKET KEHADIRAN ]
                 </span>
-                <h3 className="font-serif font-bold text-xl text-foreground mt-1">
+                <h3 className="font-serif font-black text-xl text-foreground mt-0.5">
                   Status Partisipasi
                 </h3>
               </div>
 
               {actionMessage && (
-                <div className="p-3 bg-surface-muted border border-foreground font-mono text-xs text-foreground flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-foreground shrink-0" />
+                <div className="p-3 bg-surface-muted border-2 border-emerald-500 font-mono text-xs text-foreground flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
                   <span>{actionMessage}</span>
                 </div>
               )}
 
               {actionError && (
-                <div className="p-3 bg-surface-muted border border-destructive font-mono text-xs text-destructive flex items-center gap-2">
+                <div className="p-3 bg-surface-muted border-2 border-destructive font-mono text-xs text-destructive flex items-center gap-2">
                   <AlertCircle className="w-4 h-4 text-destructive shrink-0" />
                   <span>{actionError}</span>
                 </div>
@@ -381,37 +565,37 @@ export default function EventDetailPage() {
               {myReg ? (
                 <div className="space-y-5">
                   <div className="p-4 bg-surface-muted border-2 border-foreground text-center space-y-3">
-                    <span className="font-mono text-[10px] uppercase tracking-widest text-muted block">
-                      TIKET & KODE HADIR (CHECK-IN)
+                    <span className="font-mono text-[10px] uppercase tracking-widest text-muted block font-bold">
+                      KODE TIKET &amp; QR HADIR (CHECK-IN)
                     </span>
 
                     {/* QR Code SVG */}
                     {ticketQrSvg && (
                       <div className="flex justify-center py-1">
                         <div
-                          className="bg-white p-2 border border-foreground inline-block shadow-xs"
+                          className="bg-white p-2 border-2 border-foreground inline-block shadow-xs"
                           dangerouslySetInnerHTML={{ __html: ticketQrSvg }}
                           title={`QR Code Hadir: ${myReg.attendanceCode}`}
                         />
                       </div>
                     )}
 
-                    <div className="font-mono text-3xl font-extrabold tracking-widest text-foreground py-1 bg-surface border border-border-hairline">
+                    <div className="font-mono text-3xl font-black tracking-widest text-foreground py-1 bg-surface border border-foreground">
                       {myReg.attendanceCode}
                     </div>
-                    <p className="font-sans text-[11px] text-muted">
-                      Tunjukkan QR Code atau kode 6 digit ini kepada relawan panitia saat tiba di lokasi kegiatan.
+                    <p className="font-sans text-[11px] text-muted leading-relaxed">
+                      Tunjukkan QR Code atau kode 6 digit ini kepada relawan panitia saat tiba di atas terpal lapak.
                     </p>
                   </div>
 
-                  <div className="space-y-3 font-mono text-xs">
+                  <div className="space-y-2.5 font-mono text-xs">
                     <a
                       href={myReg.calendarUrl}
                       download
-                      className="w-full py-2.5 border border-foreground text-foreground hover:bg-foreground hover:text-background font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-2"
+                      className="w-full py-2.5 border-2 border-foreground text-foreground hover:bg-foreground hover:text-background font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-2 shadow-xs"
                     >
-                      <CalendarPlus className="w-4 h-4" />
-                      <span>Simpan ke Kalender (.ics)</span>
+                      <CalendarPlus className="w-4 h-4 text-amber-500" />
+                      <span>Unduh File Kalender (.ics)</span>
                     </a>
 
                     {myReg.canCancel ? (
@@ -419,47 +603,50 @@ export default function EventDetailPage() {
                         type="button"
                         onClick={handleCancelRegistration}
                         disabled={actionLoading}
-                        className="w-full py-2 border border-border-hairline text-muted hover:text-destructive uppercase tracking-wider transition-colors inline-flex items-center justify-center gap-1.5"
+                        className="w-full py-2 border border-border-hairline text-muted hover:text-destructive hover:border-destructive uppercase tracking-wider transition-colors inline-flex items-center justify-center gap-1.5"
                       >
                         <XCircle className="w-3.5 h-3.5" />
                         <span>Batalkan Pendaftaran</span>
                       </button>
                     ) : (
                       <p className="font-sans text-[11px] text-muted text-center italic">
-                        Batas waktu pembatalan mandiri telah berakhir (&le; H-1). Hubungi panitia jika berhalangan hadir.
+                        Batas pembatalan mandiri telah berakhir (&le; H-1). Hubungi panitia jika berhalangan.
                       </p>
                     )}
                   </div>
                 </div>
               ) : isPast ? (
-                /* Status 2: Event Completed / Past */
-                <div className="p-4 bg-surface-muted border border-border-hairline text-center space-y-2 font-mono text-xs">
-                  <span className="font-bold text-foreground block">KEGIATAN INI TELAH SELESAI</span>
-                  <p className="font-sans text-xs text-muted">
-                    Pendaftaran telah ditutup karena kegiatan telah terlaksana.
+                /* Status 2: Event Completed / Past Archive */
+                <div className="p-4 bg-surface-muted border-2 border-border-hairline text-center space-y-2 font-mono text-xs">
+                  <Archive className="w-5 h-5 text-amber-500 mx-auto" />
+                  <span className="font-bold text-foreground block uppercase">
+                    KEGIATAN INI TELAH SELESAI
+                  </span>
+                  <p className="font-sans text-xs text-muted leading-relaxed">
+                    Agenda ini telah terlaksana dan tercatat dalam arsip rekam jejak literasi Perpustakaan Jalanan Blora.
                   </p>
                 </div>
               ) : isFull ? (
                 /* Status 3: Quota Full */
-                <div className="p-4 bg-surface-muted border border-border-hairline text-center space-y-2 font-mono text-xs">
-                  <span className="font-bold text-foreground block">KUOTA PENUH</span>
-                  <p className="font-sans text-xs text-muted">
-                    Kapasitas peserta ({event.quota} orang) telah terisi penuh.
+                <div className="p-4 bg-surface-muted border-2 border-foreground text-center space-y-2 font-mono text-xs">
+                  <span className="font-bold text-foreground block uppercase">KUOTA PENUH</span>
+                  <p className="font-sans text-xs text-muted leading-relaxed">
+                    Kapasitas peserta ({event.quota} orang) telah terisi penuh. Pantau agenda berikutnya di kalender kegiatan.
                   </p>
                 </div>
               ) : (
                 /* Status 4: Available to Register */
                 <div className="space-y-4">
-                  <div className="font-mono text-xs text-muted space-y-1">
+                  <div className="font-mono text-xs text-muted space-y-1.5 p-3 bg-surface-muted/50 border border-border-hairline">
                     <div className="flex justify-between">
-                      <span>Kapasitas:</span>
+                      <span>Batas Kuota:</span>
                       <strong className="text-foreground">
-                        {event.quota ? `${event.quota} Peserta` : 'Terbuka Umum'}
+                        {event.quota ? `${event.quota} Kursi` : 'Terbuka Umum'}
                       </strong>
                     </div>
                     <div className="flex justify-between">
-                      <span>Pendaftar Saat Ini:</span>
-                      <strong className="text-foreground">{event.registeredCount} Peserta</strong>
+                      <span>Warga Terdaftar:</span>
+                      <strong className="text-foreground">{event.registeredCount} Orang</strong>
                     </div>
                   </div>
 
@@ -467,14 +654,14 @@ export default function EventDetailPage() {
                     type="button"
                     onClick={handleRegister}
                     disabled={actionLoading}
-                    className="w-full py-3 bg-foreground text-background font-mono text-xs uppercase tracking-widest font-bold hover:bg-foreground/90 disabled:opacity-40 transition-colors flex items-center justify-center gap-2"
+                    className="w-full py-3.5 bg-foreground text-background border-2 border-foreground font-mono text-xs uppercase tracking-widest font-bold hover:bg-foreground/90 disabled:opacity-40 transition-colors flex items-center justify-center gap-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,0.9)]"
                   >
-                    <CheckCircle2 className="w-4 h-4" />
-                    <span>{actionLoading ? 'Mendaftar...' : 'DAFTAR SEBAGAI PESERTA'}</span>
+                    <CheckCircle2 className="w-4 h-4 text-amber-500" />
+                    <span>{actionLoading ? 'Mendaftarkan...' : 'AMBIL TIKET QR HADIR'}</span>
                   </button>
 
                   <p className="font-sans text-[11px] text-muted text-center leading-relaxed">
-                    Pendaftaran gratis. Pembatalan mandiri dibuka hingga <strong>H-1 acara</strong>.
+                    Tanpa biaya pendaftaran. Bebas hadir bersila di atas terpal.
                   </p>
                 </div>
               )}
