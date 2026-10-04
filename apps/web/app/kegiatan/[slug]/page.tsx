@@ -9,6 +9,7 @@ import { CustomLoader } from '@/components/ui/custom-loader';
 import { RichTextRenderer } from '@/components/articles/rich-text-renderer';
 import { apiClient } from '@/lib/api';
 import { EventDetail, EventRegistrationItem } from '@perpusjal/types';
+import { EventCountdown } from '@/components/events/event-countdown';
 import QRCode from 'qrcode';
 import {
   Calendar,
@@ -341,8 +342,17 @@ export default function EventDetailPage() {
             )}
           </div>
 
-          {/* RIGHT: Ticket / Registration Box (4 cols) */}
+          {/* RIGHT: Countdown & Ticket Registration Box (4 cols) */}
           <div className="lg:col-span-4 space-y-6">
+            {!isPast && (
+              <EventCountdown
+                targetDate={event.startAt}
+                endDate={event.endAt}
+                title={event.title}
+                locationName={event.locationName}
+              />
+            )}
+
             <div className="border-2 border-foreground bg-surface p-6 space-y-6 shadow-md font-sans">
               <div className="border-b border-border-hairline pb-3">
                 <span className="font-mono text-[10px] text-muted uppercase tracking-widest block">
