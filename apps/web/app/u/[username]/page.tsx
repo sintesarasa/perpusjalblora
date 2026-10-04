@@ -104,7 +104,7 @@ export default async function UserProfilePage({
               name={user.name}
               username={user.username}
               size="2xl"
-              shape="square"
+              shape="circle"
               className="border-2 border-foreground shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,0.9)] shrink-0"
             />
 

@@ -24,7 +24,8 @@ import {
 } from 'lucide-react';
 import { UserAvatar } from '@/components/ui/user-avatar';
 import { UserHonorBadge } from '@/components/gamification/user-honor-badge';
-import { compressProfileImage, formatBytes } from '@/lib/image-compression';
+import { compressProfileImage, formatBytes, CompressionResult } from '@/lib/image-compression';
+import { CircleCropModal } from '@/components/ui/circle-crop-modal';
 import { getTierInfo, inferTierFromTitle } from '@/lib/badge-tier-styles';
 import { cn } from '@/lib/utils';
 import { apiClient } from '@/lib/api';
@@ -74,6 +75,8 @@ export default function DashboardProfileSettingsPage() {
   } | null>(null);
   const [savingPassword, setSavingPassword] = React.useState(false);
   const [message, setMessage] = React.useState<{ text: string; type: 'success' | 'error' } | null>(null);
+  const [cropModalOpen, setCropModalOpen] = React.useState(false);
+  const [selectedFileForCrop, setSelectedFileForCrop] = React.useState<File | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   // Fetch current user and badges progress
@@ -136,8 +139,8 @@ export default function DashboardProfileSettingsPage() {
     return Math.min(100, score);
   }, [profile]);
 
-  // Client-Side Compression + Upload Handler
-  const handleAvatarFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  // 1. File Selection triggers interactive Circle Crop Modal
+  const handleAvatarFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const rawFile = e.target.files?.[0];
     if (!rawFile) return;
 
@@ -146,29 +149,25 @@ export default function DashboardProfileSettingsPage() {
       return;
     }
 
-    setCompressingAvatar(true);
+    setSelectedFileForCrop(rawFile);
+    setCropModalOpen(true);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  // 2. Crop & Compression Complete Callback from CircleCropModal
+  const handleCropComplete = async (compressed: CompressionResult) => {
+    setUploadingAvatar(true);
     setMessage(null);
-    setCompressionInfo(null);
+    setCompressionInfo({
+      original: formatBytes(compressed.originalSize),
+      compressed: formatBytes(compressed.compressedSize),
+      savings: compressed.savingsPercent,
+      format: compressed.format,
+    });
 
     try {
-      // 1. Client-Side Image Compression to crisp 400x400 WebP (< 100KB)
-      const compressed = await compressProfileImage(rawFile, {
-        maxDimension: 400,
-        maxSizeBytes: 95 * 1024, // Strictly under 100KB
-        initialQuality: 0.84,
-      });
-
-      setCompressingAvatar(false);
-      setUploadingAvatar(true);
-
-      setCompressionInfo({
-        original: formatBytes(compressed.originalSize),
-        compressed: formatBytes(compressed.compressedSize),
-        savings: compressed.savingsPercent,
-        format: compressed.format,
-      });
-
-      // 2. Upload compressed file
       const formData = new FormData();
       formData.append('file', compressed.file);
       formData.append('folder', 'avatars');
@@ -185,17 +184,13 @@ export default function DashboardProfileSettingsPage() {
 
       setProfile((prev) => ({ ...prev, avatarUrl: json.url }));
       setMessage({
-        text: `Foto berhasil dikompresi (${formatBytes(compressed.compressedSize)}) dan diunggah. Klik "Simpan Perubahan" untuk menyimpan ke profil.`,
+        text: `Foto profil lingkaran berhasil dipotong, dioptimasi (${formatBytes(compressed.compressedSize)}), dan diunggah. Klik "Simpan Perubahan" untuk menyimpan ke profil.`,
         type: 'success',
       });
     } catch (err: any) {
-      setMessage({ text: err.message || 'Gagal memproses foto profil.', type: 'error' });
+      setMessage({ text: err.message || 'Gagal mengunggah foto profil.', type: 'error' });
     } finally {
-      setCompressingAvatar(false);
       setUploadingAvatar(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
     }
   };
 
@@ -353,7 +348,7 @@ export default function DashboardProfileSettingsPage() {
               name={profile.name}
               username={profile.username}
               size="lg"
-              shape="square"
+              shape="circle"
               className="border-2 border-foreground shrink-0 shadow-xs"
             />
             <div className="space-y-1 min-w-0">
@@ -502,14 +497,14 @@ export default function DashboardProfileSettingsPage() {
                         name={profile.name}
                         username={profile.username}
                         size="xl"
-                        shape="square"
+                        shape="circle"
                         className="border-2 border-foreground shadow-sm"
                       />
-                      {(uploadingAvatar || compressingAvatar) && (
-                        <div className="absolute inset-0 bg-background/85 flex flex-col items-center justify-center text-center p-1">
+                      {uploadingAvatar && (
+                        <div className="absolute inset-0 bg-background/85 rounded-full flex flex-col items-center justify-center text-center p-1">
                           <Loader2 className="w-6 h-6 animate-spin text-foreground mb-1" />
                           <span className="font-mono text-[9px] uppercase font-bold text-foreground">
-                            {compressingAvatar ? 'Kompresi...' : 'Mengunggah...'}
+                            Mengunggah...
                           </span>
                         </div>
                       )}
@@ -521,17 +516,17 @@ export default function DashboardProfileSettingsPage() {
                           ref={fileInputRef}
                           type="file"
                           accept="image/png,image/jpeg,image/webp,image/jpg"
-                          onChange={handleAvatarFileChange}
+                          onChange={handleAvatarFileSelect}
                           className="hidden"
                         />
 
                         <button
                           type="button"
-                          disabled={uploadingAvatar || compressingAvatar}
+                          disabled={uploadingAvatar}
                           onClick={() => fileInputRef.current?.click()}
                           className="px-4 py-2 border-2 border-foreground bg-foreground text-background font-mono text-xs font-bold uppercase tracking-wider hover:bg-foreground/90 transition-colors inline-flex items-center gap-2 cursor-pointer disabled:opacity-50"
                         >
-                          {uploadingAvatar || compressingAvatar ? (
+                          {uploadingAvatar ? (
                             <Loader2 className="w-3.5 h-3.5 animate-spin" />
                           ) : (
                             <Camera className="w-3.5 h-3.5" />
@@ -981,6 +976,17 @@ export default function DashboardProfileSettingsPage() {
           </div>
         </div>
       </main>
+
+      {/* ── 4. CIRCLE CROP INTERACTIVE MODAL ── */}
+      <CircleCropModal
+        isOpen={cropModalOpen}
+        imageFile={selectedFileForCrop}
+        onClose={() => {
+          setCropModalOpen(false);
+          setSelectedFileForCrop(null);
+        }}
+        onCropComplete={handleCropComplete}
+      />
     </div>
   );
 }

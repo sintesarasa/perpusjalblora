@@ -118,7 +118,7 @@ export function DashboardSidebar({ user, onNavigate }: DashboardSidebarProps) {
               name={user.name}
               username={user.username}
               size="sm"
-              shape="square"
+              shape="circle"
               className="shrink-0"
             />
             <div className="flex-1 min-w-0">

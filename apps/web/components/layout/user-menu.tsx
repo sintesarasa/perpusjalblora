@@ -91,7 +91,7 @@ export function UserMenu() {
             name={user.name}
             username={user.username}
             size="xs"
-            shape="square"
+            shape="circle"
             className="shrink-0"
           />
 
@@ -118,7 +118,7 @@ export function UserMenu() {
                 name={user.name}
                 username={user.username}
                 size="sm"
-                shape="square"
+                shape="circle"
                 className="shrink-0"
               />
               <div className="min-w-0 flex-1">

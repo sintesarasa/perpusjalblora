@@ -160,7 +160,7 @@ export function MemberCardModal({ user, triggerClassName }: MemberCardModalProps
                   name={user.name}
                   username={user.username}
                   size="lg"
-                  shape="square"
+                  shape="circle"
                   className="border-2 border-foreground shrink-0 shadow-xs"
                 />
 
