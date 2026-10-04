@@ -142,9 +142,9 @@ export function EventCountdown({
   if (!mounted) {
     if (variant === 'embedded') {
       return (
-        <div className={cn('p-4 border border-zinc-800 bg-zinc-950/80 rounded-xs', className)}>
-          <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-amber-400">
-            <Clock className="w-3.5 h-3.5 animate-pulse" />
+        <div className={cn('p-3 sm:p-3.5 border border-border-hairline bg-surface-muted/50 rounded-xs', className)}>
+          <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-amber-600 dark:text-amber-400">
+            <Clock className="w-3.5 h-3.5 animate-pulse text-amber-500" />
             <span>MEMUAT HITUNG MUNDUR...</span>
           </div>
         </div>
@@ -166,12 +166,12 @@ export function EventCountdown({
   if (variant === 'embedded') {
     if (time.isLive) {
       return (
-        <div className={cn('p-4 bg-emerald-950/40 border border-emerald-500/60 rounded-xs flex items-center justify-between gap-4', className)}>
-          <div className="flex items-center gap-2.5 font-mono text-xs text-emerald-400 font-bold uppercase tracking-wider">
+        <div className={cn('p-3 sm:p-3.5 bg-emerald-500/10 border-2 border-emerald-500/70 rounded-xs flex items-center justify-between gap-3 text-emerald-800 dark:text-emerald-300 font-mono select-none', className)}>
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
-            <span>SESI SEDANG BERLANGSUNG DI ALUN-ALUN BLORA SAAT INI</span>
+            <span>SESI SEDANG BERLANGSUNG DI ALUN-ALUN SAAT INI</span>
           </div>
-          <span className="font-mono text-[11px] text-zinc-300">Merapat Langsung &bull; Gratis</span>
+          <span className="text-[11px] font-semibold hidden sm:inline text-muted">Merapat Langsung &bull; Gratis</span>
         </div>
       );
     }
@@ -179,54 +179,54 @@ export function EventCountdown({
     return (
       <div
         className={cn(
-          'p-4 sm:p-5 bg-gradient-to-r from-zinc-950 via-zinc-900 to-zinc-950 border border-amber-500/40 rounded-xs shadow-inner flex flex-col md:flex-row md:items-center justify-between gap-4',
+          'p-3 sm:p-3.5 bg-surface-muted/60 border border-border-hairline rounded-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 select-none transition-colors hover:border-foreground/30',
           className
         )}
       >
-        <div className="space-y-1">
-          <div className="flex items-center gap-2 font-mono text-[10.5px] uppercase font-bold text-amber-400 tracking-wider">
-            <Sparkles className="w-3.5 h-3.5 animate-pulse text-amber-400" />
-            <span>WAKTU TERSISA MENUJU PELAKSANAAN:</span>
+        <div className="space-y-0.5">
+          <div className="flex items-center gap-1.5 font-mono text-[10px] uppercase font-bold text-amber-600 dark:text-amber-400 tracking-wider">
+            <Clock className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+            <span>[ ⏳ WAKTU TERSISA MENUJU TERPAL ]</span>
           </div>
-          <p className="font-serif italic text-xs text-zinc-400">
+          <p className="font-serif italic text-xs text-muted leading-tight">
             {isRecurringSunday ? 'Hitung mundur otomatis ke sesi Minggu pagi terdekat.' : 'Persiapkan kehadiranmu di atas terpal.'}
           </p>
         </div>
 
         {/* 4 Digit Boxes */}
-        <div className="grid grid-cols-4 gap-2 sm:gap-2.5 shrink-0 select-none">
-          <div className="bg-zinc-950 border border-amber-500/40 px-2.5 sm:px-3 py-1.5 sm:py-2 text-center rounded-xs min-w-[54px] sm:min-w-[62px]">
-            <span className="font-mono font-black text-xl sm:text-2xl text-amber-300 block leading-tight">
+        <div className="grid grid-cols-4 gap-1.5 sm:gap-2 shrink-0 select-none">
+          <div className="bg-surface border border-foreground/30 px-2 sm:px-2.5 py-1 text-center rounded-xs min-w-[44px] sm:min-w-[50px] shadow-2xs">
+            <span className="font-mono font-black text-lg sm:text-xl text-foreground block leading-tight">
               {formatUnit(time.days)}
             </span>
-            <span className="font-mono text-[7.5px] sm:text-[8px] uppercase tracking-widest text-zinc-400 block font-bold">
+            <span className="font-mono text-[7px] sm:text-[7.5px] uppercase tracking-widest text-muted block font-bold mt-0.5">
               HARI
             </span>
           </div>
 
-          <div className="bg-zinc-950 border border-amber-500/40 px-2.5 sm:px-3 py-1.5 sm:py-2 text-center rounded-xs min-w-[54px] sm:min-w-[62px]">
-            <span className="font-mono font-black text-xl sm:text-2xl text-amber-300 block leading-tight">
+          <div className="bg-surface border border-foreground/30 px-2 sm:px-2.5 py-1 text-center rounded-xs min-w-[44px] sm:min-w-[50px] shadow-2xs">
+            <span className="font-mono font-black text-lg sm:text-xl text-foreground block leading-tight">
               {formatUnit(time.hours)}
             </span>
-            <span className="font-mono text-[7.5px] sm:text-[8px] uppercase tracking-widest text-zinc-400 block font-bold">
+            <span className="font-mono text-[7px] sm:text-[7.5px] uppercase tracking-widest text-muted block font-bold mt-0.5">
               JAM
             </span>
           </div>
 
-          <div className="bg-zinc-950 border border-amber-500/40 px-2.5 sm:px-3 py-1.5 sm:py-2 text-center rounded-xs min-w-[54px] sm:min-w-[62px]">
-            <span className="font-mono font-black text-xl sm:text-2xl text-amber-300 block leading-tight">
+          <div className="bg-surface border border-foreground/30 px-2 sm:px-2.5 py-1 text-center rounded-xs min-w-[44px] sm:min-w-[50px] shadow-2xs">
+            <span className="font-mono font-black text-lg sm:text-xl text-foreground block leading-tight">
               {formatUnit(time.minutes)}
             </span>
-            <span className="font-mono text-[7.5px] sm:text-[8px] uppercase tracking-widest text-zinc-400 block font-bold">
+            <span className="font-mono text-[7px] sm:text-[7.5px] uppercase tracking-widest text-muted block font-bold mt-0.5">
               MENIT
             </span>
           </div>
 
-          <div className="bg-zinc-950 border border-amber-500/40 px-2.5 sm:px-3 py-1.5 sm:py-2 text-center rounded-xs min-w-[54px] sm:min-w-[62px]">
-            <span className="font-mono font-black text-xl sm:text-2xl text-amber-400 block leading-tight">
+          <div className="bg-surface border border-foreground/30 px-2 sm:px-2.5 py-1 text-center rounded-xs min-w-[44px] sm:min-w-[50px] shadow-2xs">
+            <span className="font-mono font-black text-lg sm:text-xl text-amber-600 dark:text-amber-400 block leading-tight">
               {formatUnit(time.seconds)}
             </span>
-            <span className="font-mono text-[7.5px] sm:text-[8px] uppercase tracking-widest text-zinc-400 block font-bold">
+            <span className="font-mono text-[7px] sm:text-[7.5px] uppercase tracking-widest text-muted block font-bold mt-0.5">
               DETIK
             </span>
           </div>

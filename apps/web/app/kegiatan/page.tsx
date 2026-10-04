@@ -315,8 +315,8 @@ function EventCatalogContent() {
               </div>
             </div>
 
-            {/* Grid Layout: Left Tactile Photo Mockup (5 cols) + Right Narrative & Details (7 cols) */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            {/* Grid Layout: Left Tactile Photo Mockup (5 cols) + Right Narrative, Countdown & Actions (7 cols) */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
               {/* Left Column: Tactile Editorial Photography Mockup (5 cols) */}
               <div className="lg:col-span-5 flex justify-center w-full">
                 <div className="relative w-full max-w-sm sm:max-w-md bg-surface border-2 border-foreground p-3.5 shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] dark:shadow-[5px_5px_0px_0px_rgba(255,255,255,0.9)] select-none">
@@ -361,7 +361,7 @@ function EventCatalogContent() {
                 </div>
               </div>
 
-              {/* Right Column: Event Narrative & Details (7 cols) */}
+              {/* Right Column: Event Narrative, Countdown Ticker & Actions (7 cols) */}
               <div className="lg:col-span-7 space-y-4">
                 <div className="inline-block px-2.5 py-0.5 border border-amber-500/50 bg-amber-500/10 text-amber-600 dark:text-amber-400 font-mono text-[9px] uppercase font-bold tracking-widest">
                   <span>✦ SOROTAN SESI TERDEKAT ✦</span>
@@ -380,7 +380,7 @@ function EventCatalogContent() {
                 </p>
 
                 {/* 3 Key Venue Pillars Strip */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-2 font-mono text-xs text-muted">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1 font-mono text-xs text-muted">
                   <div className="flex items-center gap-2 p-2 bg-surface-muted/60 border border-border-hairline rounded-xs">
                     <Clock className="w-3.5 h-3.5 text-amber-500 shrink-0" />
                     <span className="text-foreground font-semibold text-[11px]">
@@ -408,64 +408,64 @@ function EventCatalogContent() {
                     </span>
                   </div>
                 </div>
-              </div>
-            </div>
 
-            {/* Embedded Countdown Ribbon (Integrated Natural Flow) */}
-            <div>
-              <EventCountdown
-                variant="embedded"
-                targetDate={spotlightEvent ? spotlightEvent.startAt : sundaySession.startAt}
-                endDate={spotlightEvent ? spotlightEvent.endAt : sundaySession.endAt}
-                title={spotlightEvent?.title}
-                locationName={spotlightEvent?.locationName}
-              />
-            </div>
+                {/* Integrated Countdown Ribbon (Directly In-Flow) */}
+                <div className="pt-1">
+                  <EventCountdown
+                    variant="embedded"
+                    targetDate={spotlightEvent ? spotlightEvent.startAt : sundaySession.startAt}
+                    endDate={spotlightEvent ? spotlightEvent.endAt : sundaySession.endAt}
+                    title={spotlightEvent?.title}
+                    locationName={spotlightEvent?.locationName}
+                  />
+                </div>
 
-            {/* Action Bar */}
-            <div className="pt-2 flex flex-wrap items-center justify-between gap-4 border-t border-border-hairline">
-              <div className="flex flex-wrap items-center gap-3">
-                {spotlightEvent ? (
-                  <Link
-                    href={`/kegiatan/${spotlightEvent.slug}`}
-                    className="px-6 py-3.5 bg-foreground text-background font-mono text-xs font-bold uppercase tracking-wider hover:bg-foreground/90 transition-colors inline-flex items-center gap-2 shadow-xs"
-                  >
-                    <span>RINCIAN &amp; TIKET QR</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </Link>
-                ) : (
+                {/* Action Bar (Directly Anchored to Narrative & Countdown) */}
+                <div className="pt-2 flex flex-wrap items-center justify-between gap-3 border-t border-border-hairline">
+                  <div className="flex flex-wrap items-center gap-2.5">
+                    {spotlightEvent ? (
+                      <Link
+                        href={`/kegiatan/${spotlightEvent.slug}`}
+                        className="px-5 py-2.5 bg-foreground text-background font-mono text-xs font-bold uppercase tracking-wider hover:bg-foreground/90 transition-colors inline-flex items-center gap-2 shadow-xs"
+                      >
+                        <span>RINCIAN &amp; TIKET QR</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </Link>
+                    ) : (
+                      <a
+                        href="https://maps.google.com/?q=Alun-Alun+Blora"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-4 py-2.5 bg-foreground text-background font-mono text-xs font-bold uppercase tracking-wider hover:bg-foreground/90 transition-colors inline-flex items-center gap-2 shadow-xs"
+                      >
+                        <MapPin className="w-3.5 h-3.5 text-amber-400" />
+                        <span>PETUNJUK LOKASI DI GOOGLE MAPS</span>
+                        <ExternalLink className="w-3 h-3" />
+                      </a>
+                    )}
+
+                    <a
+                      href={googleCalUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-4 py-2.5 border-2 border-foreground bg-surface hover:bg-foreground hover:text-background font-mono text-xs font-bold uppercase tracking-wider transition-colors inline-flex items-center gap-1.5"
+                    >
+                      <CalendarPlus className="w-3.5 h-3.5 text-amber-500" />
+                      <span>SIMPAN KE GOOGLE CALENDAR</span>
+                    </a>
+                  </div>
+
                   <a
-                    href="https://maps.google.com/?q=Alun-Alun+Blora"
+                    href="https://wa.me/6281234567890?text=Halo%20Perpusjal%20Blora,%20saya%20ingin%20bertanya%20tentang%20sesi%20lapak%20berikutnya"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-5 py-3 bg-foreground text-background font-mono text-xs font-bold uppercase tracking-wider hover:bg-foreground/90 transition-colors inline-flex items-center gap-2 shadow-xs"
+                    className="font-mono text-xs uppercase font-bold text-amber-600 dark:text-amber-400 hover:underline inline-flex items-center gap-1.5"
                   >
-                    <MapPin className="w-3.5 h-3.5 text-amber-400" />
-                    <span>PETUNJUK LOKASI DI GOOGLE MAPS</span>
-                    <ExternalLink className="w-3 h-3" />
+                    <MessageCircle className="w-3.5 h-3.5" />
+                    <span>TANYA RELAWAN &rarr;</span>
                   </a>
-                )}
-
-                <a
-                  href={googleCalUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-4 py-3 border-2 border-foreground bg-surface hover:bg-foreground hover:text-background font-mono text-xs font-bold uppercase tracking-wider transition-colors inline-flex items-center gap-1.5"
-                >
-                  <CalendarPlus className="w-3.5 h-3.5 text-amber-500" />
-                  <span>SIMPAN KE GOOGLE CALENDAR</span>
-                </a>
+                </div>
               </div>
-
-              <a
-                href="https://wa.me/6281234567890?text=Halo%20Perpusjal%20Blora,%20saya%20ingin%20bertanya%20tentang%20sesi%20lapak%20berikutnya"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="font-mono text-xs uppercase font-bold text-amber-600 dark:text-amber-400 hover:underline inline-flex items-center gap-1.5"
-              >
-                <MessageCircle className="w-3.5 h-3.5" />
-                <span>TANYA RELAWAN LAPAK &rarr;</span>
-              </a>
             </div>
           </div>
         </section>
