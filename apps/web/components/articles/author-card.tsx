@@ -73,7 +73,7 @@ export function AuthorCard({ author, className }: AuthorCardProps) {
             href={`/warga/${author.username}`}
             className="font-mono text-[11px] uppercase tracking-wider text-foreground font-bold hover:underline inline-flex items-center gap-1.5"
           >
-            <span>Buka Folio &amp; Koleksi Prestasi</span>
+            <span>Buka Profil &amp; Koleksi Prestasi</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>

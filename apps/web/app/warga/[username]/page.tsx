@@ -38,7 +38,7 @@ export async function generateMetadata({
     title: `${user.name} (@${user.username}) | Warga Perpustakaan Jalanan Blora`,
     description:
       user.bio ||
-      `Folio identitas dan rekam jejak literasi ${user.name} di Perpustakaan Jalanan Blora.`,
+      `Profil identitas dan rekam jejak literasi ${user.name} di Perpustakaan Jalanan Blora.`,
     alternates: {
       canonical: `/warga/${user.username}`,
     },
@@ -97,7 +97,7 @@ export default async function UserProfilePage({
 
   return (
     <div className="min-h-screen bg-background text-foreground pb-20">
-      {/* ── 1. Top Editorial Folio Breadcrumb ── */}
+      {/* ── 1. Top Editorial Breadcrumb ── */}
       <div className="border-b border-border-hairline py-3 px-4 sm:px-8 bg-surface-muted/30">
         <div className="max-w-5xl mx-auto flex items-center justify-between text-[11px] font-mono uppercase tracking-wider text-muted">
           <div className="flex items-center gap-2">
@@ -111,7 +111,7 @@ export default async function UserProfilePage({
             <span>/</span>
             <span className="text-foreground font-semibold">@{user.username}</span>
           </div>
-          <span>FOLIO IDENTITAS & PRESTASI LITERASI</span>
+          <span>IDENTITAS & PRESTASI LITERASI WARGA</span>
         </div>
       </div>
 

@@ -388,7 +388,7 @@ export default function DashboardProfileSettingsPage() {
           <div className="space-y-1">
             <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-muted">
               <User className="w-3.5 h-3.5" />
-              <span>FOLIO PENGATURAN IDENTITAS</span>
+              <span>PENGATURAN IDENTITAS</span>
               <span>//</span>
               <span>KONTRIBUTOR WARGA</span>
             </div>
@@ -401,11 +401,11 @@ export default function DashboardProfileSettingsPage() {
           </div>
 
           <Link
-            href={`/u/${profile.username}`}
+            href={`/warga/${profile.username}`}
             target="_blank"
             className="px-3.5 py-2 border-2 border-foreground bg-surface hover:bg-surface-muted font-mono text-xs font-bold uppercase tracking-wider text-foreground inline-flex items-center gap-1.5 transition-colors shadow-xs shrink-0 self-start md:self-auto"
           >
-            <span>Buka Folio Publik</span>
+            <span>Buka Profil Publik</span>
             <ExternalLink className="w-3.5 h-3.5" />
           </Link>
         </div>
@@ -830,7 +830,7 @@ export default function DashboardProfileSettingsPage() {
                     />
                     <div>
                       <span className="font-serif text-sm font-bold text-foreground block">
-                        Pajang Lencana Prestasi di Folio Profil
+                        Pajang Lencana Prestasi di Halaman Profil
                       </span>
                       <span className="font-serif text-xs text-muted leading-relaxed block mt-0.5">
                         Menampilkan etalase lencana dan stempel pencapaian kontribusi literasi.

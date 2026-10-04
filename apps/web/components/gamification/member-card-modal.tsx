@@ -18,6 +18,7 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Logo, LogoIcon } from '@/components/logo';
 import { BadgeInsignia } from './badge-insignia';
 import { getTierInfo } from '@/lib/badge-tier-styles';
 import { UserAvatar } from '@/components/ui/user-avatar';
@@ -132,15 +133,25 @@ export function MemberCardModal({ user, triggerClassName }: MemberCardModalProps
 
   // Download Image as PNG HD (html-to-image)
   const handleDownloadImage = async () => {
-    if (!cardRef.current) return;
+    const node = cardRef.current;
+    if (!node) return;
     setIsDownloading(true);
 
     try {
-      // Allow DOM to settle, then snapshot at 3x retina scale
-      const dataUrl = await toPng(cardRef.current, {
-        pixelRatio: 3,
+      // Calculate precise dimensions with safety margin so no border is cut off
+      const width = node.offsetWidth;
+      const height = node.scrollHeight;
+
+      const dataUrl = await toPng(node, {
+        width,
+        height: height + 8,
+        pixelRatio: 2,
         cacheBust: true,
-        backgroundColor: '#070809',
+        backgroundColor: '#090a0c',
+        style: {
+          margin: '0',
+          transform: 'none',
+        },
       });
 
       const link = document.createElement('a');
@@ -176,10 +187,20 @@ export function MemberCardModal({ user, triggerClassName }: MemberCardModalProps
         // Try sharing with PNG file if supported
         if (cardRef.current) {
           try {
-            const dataUrl = await toPng(cardRef.current, {
+            const node = cardRef.current;
+            const width = node.offsetWidth;
+            const height = node.scrollHeight;
+
+            const dataUrl = await toPng(node, {
+              width,
+              height: height + 8,
               pixelRatio: 2,
               cacheBust: true,
-              backgroundColor: '#070809',
+              backgroundColor: '#090a0c',
+              style: {
+                margin: '0',
+                transform: 'none',
+              },
             });
             const res = await fetch(dataUrl);
             const blob = await res.blob();
@@ -297,34 +318,37 @@ export function MemberCardModal({ user, triggerClassName }: MemberCardModalProps
             <div
               ref={cardRef}
               id="citizen-social-card"
-              className="relative bg-[#090a0c] text-[#f4f4f0] p-5 sm:p-6 border-2 border-amber-500/70 shadow-[0_15px_40px_rgba(0,0,0,0.9)] overflow-hidden select-none space-y-4"
+              className="relative bg-[#090a0c] text-[#f4f4f0] p-5 sm:p-6 pb-6 sm:pb-7 border-2 border-amber-500/70 shadow-[0_15px_40px_rgba(0,0,0,0.9)] select-none space-y-4 box-border"
               style={{
                 backgroundImage:
                   'radial-gradient(circle at 100% 0%, rgba(245, 158, 11, 0.08) 0%, transparent 40%), radial-gradient(circle at 0% 100%, rgba(245, 158, 11, 0.05) 0%, transparent 35%)',
               }}
             >
-              {/* Corner Ornamental Accents */}
-              <div className="absolute top-2 left-2 w-3 h-3 border-t-2 border-l-2 border-amber-400/60 pointer-events-none" />
-              <div className="absolute top-2 right-2 w-3 h-3 border-t-2 border-r-2 border-amber-400/60 pointer-events-none" />
-              <div className="absolute bottom-2 left-2 w-3 h-3 border-b-2 border-l-2 border-amber-400/60 pointer-events-none" />
-              <div className="absolute bottom-2 right-2 w-3 h-3 border-b-2 border-r-2 border-amber-400/60 pointer-events-none" />
+              {/* Background decorative wrapper (clipped to container bounds) */}
+              <div className="absolute inset-0 overflow-hidden pointer-events-none rounded-none">
+                {/* Corner Ornamental Accents */}
+                <div className="absolute top-2 left-2 w-3 h-3 border-t-2 border-l-2 border-amber-400/60" />
+                <div className="absolute top-2 right-2 w-3 h-3 border-t-2 border-r-2 border-amber-400/60" />
+                <div className="absolute bottom-2 left-2 w-3 h-3 border-b-2 border-l-2 border-amber-400/60" />
+                <div className="absolute bottom-2 right-2 w-3 h-3 border-b-2 border-r-2 border-amber-400/60" />
 
-              {/* Background Watermark */}
-              <div className="absolute right-2 -bottom-4 font-mono font-black text-7xl text-amber-500/[0.04] pointer-events-none select-none tracking-tighter">
-                PERPUSJAL
+                {/* Background Watermark */}
+                <div className="absolute right-2 -bottom-2 font-mono font-black text-7xl text-amber-500/[0.04] select-none tracking-tighter">
+                  PERPUSJAL
+                </div>
               </div>
 
-              {/* 1. Card Top Ribbon / Masthead */}
-              <div className="flex items-start justify-between border-b-2 border-amber-500/40 pb-3 gap-3">
-                <div className="space-y-0.5 min-w-0">
-                  <div className="flex items-center gap-1.5 font-mono text-[9px] uppercase font-bold tracking-widest text-amber-400">
-                    <span>★ FOLIO KEHORMATAN WARGA ★</span>
+              {/* 1. Card Top Ribbon / Masthead with Official Logo & Tagline */}
+              <div className="relative z-10 flex items-start justify-between border-b-2 border-amber-500/40 pb-3 gap-3">
+                <div className="space-y-1.5 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <Logo className="h-5 sm:h-6 w-auto text-amber-400" />
                   </div>
-                  <h3 className="font-serif font-black text-lg sm:text-xl text-white tracking-tight leading-tight uppercase">
-                    Perpustakaan Jalanan Blora
-                  </h3>
-                  <span className="font-mono text-[9px] text-zinc-400 block tracking-wider">
-                    Ruang Perjumpaan Merdeka & Gerakan Literasi Rakyat
+                  <div className="flex items-center gap-1.5 font-mono text-[9px] uppercase font-bold tracking-widest text-amber-400">
+                    <span>★ KARTU KEHORMATAN WARGA LITERASI ★</span>
+                  </div>
+                  <span className="font-serif italic text-[11px] text-zinc-300 block tracking-wide">
+                    "Membaca dan Berbahagia di Bawah Langit Blora"
                   </span>
                 </div>
 
@@ -339,7 +363,7 @@ export function MemberCardModal({ user, triggerClassName }: MemberCardModalProps
               </div>
 
               {/* 2. Hero Persona Identity */}
-              <div className="flex items-center gap-4 py-1.5">
+              <div className="relative z-10 flex items-center gap-4 py-1.5">
                 <div className="relative shrink-0">
                   <UserAvatar
                     src={user.avatarUrl}
@@ -394,7 +418,7 @@ export function MemberCardModal({ user, triggerClassName }: MemberCardModalProps
               </div>
 
               {/* 3. The Bold & Inspiring Quote / Bio Block */}
-              <div className="p-3.5 bg-gradient-to-r from-amber-500/15 via-zinc-900/90 to-zinc-900/60 border-l-3 border-amber-400 relative rounded-xs">
+              <div className="relative z-10 p-3.5 bg-gradient-to-r from-amber-500/15 via-zinc-900/90 to-zinc-900/60 border-l-3 border-amber-400 rounded-xs">
                 <Quote className="w-5 h-5 text-amber-400/25 absolute top-2 right-2 pointer-events-none" />
                 <p className="font-serif italic text-xs sm:text-[13px] text-[#f4f4f0] leading-relaxed pr-5">
                   "{isCustomBio && user.bio ? user.bio : currentQuote.quote}"
@@ -412,7 +436,7 @@ export function MemberCardModal({ user, triggerClassName }: MemberCardModalProps
               </div>
 
               {/* 4. 4 Metric Pillars of Citizen Achievements */}
-              <div className="grid grid-cols-4 gap-2 pt-1 font-mono text-center">
+              <div className="relative z-10 grid grid-cols-4 gap-2 pt-1 font-mono text-center">
                 <div className="p-2 border border-zinc-800/90 bg-zinc-900/80 rounded-xs">
                   <span className="text-[7.5px] uppercase tracking-wider text-zinc-400 block font-semibold">
                     Tulisan
@@ -448,15 +472,13 @@ export function MemberCardModal({ user, triggerClassName }: MemberCardModalProps
               </div>
 
               {/* 5. Bottom Stamp & Clean QR Marketing Hook */}
-              <div className="flex items-center justify-between pt-2 border-t border-zinc-800/80 gap-3">
+              <div className="relative z-10 flex items-center justify-between pt-2 border-t border-zinc-800/80 gap-3">
                 {/* Vintage Circular Seal */}
                 <div className="relative w-16 h-16 rounded-full border border-amber-500/40 flex items-center justify-center p-1 bg-amber-500/5 select-none shrink-0 shadow-xs">
                   <div className="w-full h-full rounded-full border border-dashed border-amber-400/50 flex flex-col items-center justify-center text-center p-0.5">
-                    <span className="font-mono text-[5.5px] uppercase tracking-widest text-amber-400 font-bold leading-tight">
+                    <LogoIcon className="h-2.5 w-auto text-amber-400 mb-0.5" />
+                    <span className="font-serif font-black text-[7.5px] text-white tracking-wider leading-tight">
                       PERPUSJAL
-                    </span>
-                    <span className="font-serif font-black text-[8px] text-white tracking-wider leading-tight">
-                      BLORA
                     </span>
                     <span className="font-mono text-[4.5px] uppercase tracking-wider text-amber-300/80 leading-tight">
                       TERVERIFIKASI
@@ -469,10 +491,10 @@ export function MemberCardModal({ user, triggerClassName }: MemberCardModalProps
                   <span className="font-mono text-[8px] uppercase tracking-wider text-amber-400 block font-bold truncate">
                     perpusjalblora.id/warga/@{user.username}
                   </span>
-                  <p className="font-serif text-[10px] text-zinc-300 leading-snug line-clamp-2">
-                    "Buku Bebas di Trotoar, Suara Merdeka Milik Warga."
+                  <p className="font-serif text-[10.5px] text-zinc-300 leading-snug font-medium">
+                    Membaca dan Berbahagia &bull; Ruang Merdeka Warga
                   </p>
-                  <span className="font-mono text-[7.5px] text-zinc-500 uppercase block tracking-widest">
+                  <span className="font-mono text-[7.5px] text-zinc-400 uppercase block tracking-widest">
                     PINDAI QR &bull; PINJAM BUKU GRATIS
                   </span>
                 </div>
