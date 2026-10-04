@@ -12,6 +12,9 @@ export interface PublicUserProfile {
   role: Role;
   trustLevel: TrustLevel;
   equippedTitle?: string | null;
+  equippedBadge?: { code: string; name: string; titleReward: string; tier: number; category: string } | null;
+  showcaseBadges?: Array<{ code: string; name: string; titleReward?: string | null; tier: number; category: string }>;
+  showcaseBadgeCodes?: string[];
   createdAt: string;
   isProfilePublic: boolean;
   showBadges: boolean;
@@ -21,6 +24,7 @@ export interface PublicUserProfile {
     loansCount?: number;
     eventsAttended?: number;
     booksDonated?: number;
+    onTimeStreak?: number;
   };
   badges: UserBadgeProgress[];
   articles: Array<{

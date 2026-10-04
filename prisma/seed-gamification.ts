@@ -194,15 +194,29 @@ async function main() {
     });
   }
 
+  // Award easter eggs and set showcase badges
+  await badgesService.awardManualBadge(user1.id, 'SECRET_NIGHT_OWL');
+  await badgesService.awardManualBadge(user2.id, 'SECRET_SPEED_COMMENT');
+  await badgesService.awardManualBadge(user3.id, 'SECRET_CURATOR_FAVORITE');
+
   // Evaluasi seluruh progress untuk ketiga user tersebut
   console.log('🔄 Evaluating badge progresses for dummy users...');
   const res1 = await badgesService.getUserBadgeProgress(user1.id);
   const res2 = await badgesService.getUserBadgeProgress(user2.id);
   const res3 = await badgesService.getUserBadgeProgress(user3.id);
 
-  console.log(`✨ User 1 (@${user1.username}): ${res1.earnedCount} Lencana | Gelar: "${res1.equippedTitle}"`);
-  console.log(`✨ User 2 (@${user2.username}): ${res2.earnedCount} Lencana | Gelar: "${res2.equippedTitle}"`);
-  console.log(`✨ User 3 (@${user3.username}): ${res3.earnedCount} Lencana | Gelar: "${res3.equippedTitle}"`);
+  // Set showcase badges from earned badges
+  const earned1 = res1.badges.filter((b) => b.earned).map((b) => b.badge.code).slice(0, 3);
+  const earned2 = res2.badges.filter((b) => b.earned).map((b) => b.badge.code).slice(0, 3);
+  const earned3 = res3.badges.filter((b) => b.earned).map((b) => b.badge.code).slice(0, 3);
+
+  if (earned1.length > 0) await badgesService.updateShowcaseBadges(user1.id, earned1);
+  if (earned2.length > 0) await badgesService.updateShowcaseBadges(user2.id, earned2);
+  if (earned3.length > 0) await badgesService.updateShowcaseBadges(user3.id, earned3);
+
+  console.log(`✨ User 1 (@${user1.username}): ${res1.earnedCount} Lencana | Gelar: "${res1.equippedTitle}" | Etalase: ${earned1.join(', ')}`);
+  console.log(`✨ User 2 (@${user2.username}): ${res2.earnedCount} Lencana | Gelar: "${res2.equippedTitle}" | Etalase: ${earned2.join(', ')}`);
+  console.log(`✨ User 3 (@${user3.username}): ${res3.earnedCount} Lencana | Gelar: "${res3.equippedTitle}" | Etalase: ${earned3.join(', ')}`);
   console.log('🎉 Gamification Seeding Completed Successfully!');
 }
 

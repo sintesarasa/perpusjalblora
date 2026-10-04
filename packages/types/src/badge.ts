@@ -49,8 +49,11 @@ export interface UserBadgeListResponse {
   earnedCount: number;
   totalCount: number;
   equippedTitle?: string | null;
+  equippedBadge?: { code: string; name: string; titleReward: string; tier: number; category: string } | null;
   availableTitles: string[];
   totalTitlesEarned: number;
+  showcaseBadgeCodes?: string[];
+  showcaseBadges?: Array<{ code: string; name: string; titleReward?: string | null; tier: number; category: string }>;
   badges: UserBadgeProgress[];
   stats?: {
     articlesRead: number;
@@ -65,4 +68,8 @@ export interface UserBadgeListResponse {
 
 export interface EquipTitleInput {
   title: string | null;
+}
+
+export interface UpdateShowcaseInput {
+  badgeCodes: string[];
 }

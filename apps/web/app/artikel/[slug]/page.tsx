@@ -11,6 +11,7 @@ import { ArticleCard } from '@/components/articles/article-card';
 import { ArticleReaderToolbar, TextScale } from '@/components/articles/article-reader-toolbar';
 import { CommentsSection } from '@/components/comments/comments-section';
 import { UserHonorBadge } from '@/components/gamification/user-honor-badge';
+import { UserAvatar } from '@/components/ui/user-avatar';
 import { CustomLoader } from '@/components/ui/custom-loader';
 import { BrandStamp } from '@/components/ui/brand-stamp';
 import { ScrollProgress } from '@/components/ui/scroll-progress';
@@ -270,48 +271,63 @@ function ArticleDetailContent() {
               )}
             </div>
 
-            {/* Byline & Read Metrics */}
-            <div className="flex flex-wrap items-center justify-between gap-4 py-3.5 border-y border-border-hairline font-mono text-[11px] uppercase tracking-wider text-muted">
-              <div className="flex items-center gap-2.5">
-                <div className="w-7 h-7 border border-foreground/30 bg-surface-muted flex items-center justify-center font-mono text-[10px] font-bold text-foreground overflow-hidden">
-                  {article.author?.avatarUrl ? (
-                    <img
-                      src={article.author.avatarUrl}
-                      alt={article.author.name}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <span>{article.author?.name?.charAt(0) || 'R'}</span>
-                  )}
-                </div>
-                <span className="text-foreground font-semibold">
-                  Oleh {article.author?.name || 'Redaksi'}
-                </span>
-                {article.author && (
-                  <UserHonorBadge
-                    equippedTitle={article.author.equippedTitle}
-                    earnedBadgesCount={article.author.earnedBadgesCount}
-                    badges={article.author.badges}
-                    username={article.author.username}
-                    size="md"
-                  />
-                )}
-                <span className="text-muted/60">&bull;</span>
-                <span className="flex items-center gap-1.5">
-                  <Calendar className="w-3 h-3 text-muted" />
-                  {formattedDate}
-                </span>
-              </div>
+            {/* Byline & Read Metrics (Editorial 2-Tier Layout) */}
+            <div className="py-4 border-y border-border-hairline flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-3.5">
+                <UserAvatar
+                  src={article.author?.avatarUrl}
+                  name={article.author?.name}
+                  username={article.author?.username}
+                  size="md"
+                  linkToProfile
+                />
 
-              <div className="flex items-center gap-4">
-                <span className="flex items-center gap-1">
-                  <Clock className="w-3 h-3 text-muted" />
-                  {article.readingTime} Menit Baca
-                </span>
-                <span className="flex items-center gap-1">
-                  <Eye className="w-3 h-3 text-muted" />
-                  {article.viewCount} Dibaca
-                </span>
+                <div className="space-y-1 min-w-0">
+                  {/* Baris 1: Nama Penulis & Gelar Kehormatan */}
+                  <div className="flex flex-wrap items-center gap-2">
+                    {article.author?.username ? (
+                      <Link
+                        href={`/u/${article.author.username}`}
+                        className="font-serif font-bold text-base sm:text-lg text-foreground hover:underline tracking-tight"
+                      >
+                        {article.author.name}
+                      </Link>
+                    ) : (
+                      <span className="font-serif font-bold text-base sm:text-lg text-foreground">
+                        {article.author?.name || 'Redaksi Perpusjal'}
+                      </span>
+                    )}
+
+                    {article.author && (
+                      <UserHonorBadge
+                        equippedTitle={article.author.equippedTitle}
+                        equippedBadge={article.author.equippedBadge}
+                        earnedBadgesCount={article.author.earnedBadgesCount}
+                        badges={article.author.badges}
+                        username={article.author.username}
+                        size="sm"
+                      />
+                    )}
+                  </div>
+
+                  {/* Baris 2: Waktu Terbit & Metrik Baca */}
+                  <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 font-mono text-[11px] text-muted uppercase tracking-wider">
+                    <span className="flex items-center gap-1.5">
+                      <Calendar className="w-3 h-3 text-muted" />
+                      {formattedDate}
+                    </span>
+                    <span className="text-muted/40">•</span>
+                    <span className="flex items-center gap-1.5">
+                      <Clock className="w-3 h-3 text-muted" />
+                      {article.readingTime} Menit Baca
+                    </span>
+                    <span className="text-muted/40">•</span>
+                    <span className="flex items-center gap-1.5">
+                      <Eye className="w-3 h-3 text-muted" />
+                      {article.viewCount} Dibaca
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
           </header>

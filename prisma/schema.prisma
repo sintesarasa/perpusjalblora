@@ -223,6 +223,7 @@ model User {
   onTimeStreak         Int        @default(0)
   booksDonatedCount    Int        @default(0)
   equippedTitle        String?    @db.VarChar(60)
+  showcaseBadgeCodes   String[]   @default([])
 
   // Privasi
   isProfilePublic      Boolean    @default(true)

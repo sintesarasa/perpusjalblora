@@ -1,7 +1,8 @@
 'use client';
 
 import * as React from 'react';
-import { User, Shield, KeyRound, Download, Save, CheckCircle, AlertCircle } from 'lucide-react';
+import { User, Shield, KeyRound, Download, Save, CheckCircle, AlertCircle, Camera, Trash2, Loader2, UploadCloud } from 'lucide-react';
+import { UserAvatar } from '@/components/ui/user-avatar';
 
 export default function DashboardProfileSettingsPage() {
   const [profile, setProfile] = React.useState({
@@ -10,6 +11,7 @@ export default function DashboardProfileSettingsPage() {
     email: '',
     phoneNumber: '',
     bio: '',
+    avatarUrl: null as string | null,
     instagramUrl: '',
     websiteUrl: '',
     isProfilePublic: true,
@@ -24,8 +26,10 @@ export default function DashboardProfileSettingsPage() {
 
   const [loading, setLoading] = React.useState(true);
   const [savingProfile, setSavingProfile] = React.useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = React.useState(false);
   const [savingPassword, setSavingPassword] = React.useState(false);
   const [message, setMessage] = React.useState<{ text: string; type: 'success' | 'error' } | null>(null);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   // Fetch current user
   React.useEffect(() => {
@@ -42,6 +46,7 @@ export default function DashboardProfileSettingsPage() {
               email: u.email || '',
               phoneNumber: u.phoneNumber || '',
               bio: u.bio || '',
+              avatarUrl: u.avatarUrl || null,
               instagramUrl: u.instagramUrl || '',
               websiteUrl: u.websiteUrl || '',
               isProfilePublic: u.isProfilePublic ?? true,
@@ -58,6 +63,56 @@ export default function DashboardProfileSettingsPage() {
     loadUser();
   }, []);
 
+  const handleAvatarFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      setMessage({ text: 'Ukuran foto maksimal 5MB.', type: 'error' });
+      return;
+    }
+
+    setUploadingAvatar(true);
+    setMessage(null);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('folder', 'avatars');
+
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const json = await res.json();
+      if (!res.ok) {
+        throw new Error(json.error || 'Gagal mengunggah foto profil.');
+      }
+
+      setProfile((prev) => ({ ...prev, avatarUrl: json.url }));
+      setMessage({
+        text: 'Foto profil berhasil diunggah. Klik "Simpan Perubahan Profil" untuk menyimpan ke akun.',
+        type: 'success',
+      });
+    } catch (err: any) {
+      setMessage({ text: err.message, type: 'error' });
+    } finally {
+      setUploadingAvatar(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const handleRemoveAvatar = () => {
+    setProfile((prev) => ({ ...prev, avatarUrl: null }));
+    setMessage({
+      text: 'Foto profil dicopot. Klik "Simpan Perubahan Profil" untuk mengonfirmasi.',
+      type: 'success',
+    });
+  };
+
   const handleProfileSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSavingProfile(true);
@@ -71,6 +126,7 @@ export default function DashboardProfileSettingsPage() {
         body: JSON.stringify({
           name: profile.name,
           bio: profile.bio,
+          avatarUrl: profile.avatarUrl,
           phoneNumber: profile.phoneNumber,
           instagramUrl: profile.instagramUrl,
           websiteUrl: profile.websiteUrl,
@@ -191,6 +247,71 @@ export default function DashboardProfileSettingsPage() {
           </div>
 
           <form onSubmit={handleProfileSubmit} className="space-y-6">
+            {/* ── AVATAR UPLOADER SECTION ── */}
+            <div className="pb-6 border-b border-border-hairline">
+              <label className="block font-mono text-xs uppercase tracking-wider text-muted mb-3 font-bold">
+                Foto Profil & Identitas Visual
+              </label>
+
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
+                <div className="relative group">
+                  <UserAvatar
+                    src={profile.avatarUrl}
+                    name={profile.name}
+                    username={profile.username}
+                    size="xl"
+                  />
+                  {uploadingAvatar && (
+                    <div className="absolute inset-0 bg-background/80 rounded-full flex items-center justify-center">
+                      <Loader2 className="w-6 h-6 animate-spin text-foreground" />
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-2 flex-1">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp,image/jpg"
+                      onChange={handleAvatarFileChange}
+                      className="hidden"
+                    />
+
+                    <button
+                      type="button"
+                      disabled={uploadingAvatar}
+                      onClick={() => fileInputRef.current?.click()}
+                      className="px-4 py-2 border-2 border-foreground bg-foreground text-background font-mono text-xs font-bold uppercase tracking-wider hover:bg-foreground/90 transition-colors inline-flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                    >
+                      {uploadingAvatar ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <Camera className="w-3.5 h-3.5" />
+                      )}
+                      <span>{profile.avatarUrl ? 'Ganti Foto' : 'Unggah Foto'}</span>
+                    </button>
+
+                    {profile.avatarUrl && (
+                      <button
+                        type="button"
+                        onClick={handleRemoveAvatar}
+                        className="px-3.5 py-2 border border-border-hairline bg-surface hover:bg-red-50 hover:text-red-700 hover:border-red-300 dark:hover:bg-red-950/40 dark:hover:text-red-300 font-mono text-xs text-muted transition-colors inline-flex items-center gap-1.5 cursor-pointer"
+                        title="Hapus foto profil dan gunakan inisial monogram"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>Hapus</span>
+                      </button>
+                    )}
+                  </div>
+
+                  <p className="font-sans text-xs text-muted leading-relaxed">
+                    Format yang didukung: JPG, PNG, atau WebP (Maks. 5MB). Foto ini akan terpampang di samping namamu pada artikel, kartu anggota, dan kolom diskusi.
+                  </p>
+                </div>
+              </div>
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div>
                 <label className="block font-mono text-xs uppercase tracking-wider text-muted mb-1.5">

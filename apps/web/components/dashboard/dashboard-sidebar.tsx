@@ -25,6 +25,7 @@ import { Role } from '@perpusjal/types';
 import { cn } from '@/lib/utils';
 import { apiClient } from '@/lib/api';
 import { useNotifications } from '@/contexts/notifications-context';
+import { UserAvatar } from '@/components/ui/user-avatar';
 
 interface DashboardSidebarProps {
   user: {
@@ -112,14 +113,14 @@ export function DashboardSidebar({ user, onNavigate }: DashboardSidebarProps) {
         {/* User Mini Card */}
         {user && (
           <div className="p-3 border border-border-hairline bg-surface-muted/40 flex items-center gap-3">
-            <div className="w-10 h-10 border border-foreground bg-foreground text-background flex items-center justify-center font-serif text-sm font-bold uppercase shrink-0">
-              {user.avatarUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={user.avatarUrl} alt={user.name} className="w-full h-full object-cover grayscale" />
-              ) : (
-                user.name.slice(0, 1)
-              )}
-            </div>
+            <UserAvatar
+              src={user.avatarUrl}
+              name={user.name}
+              username={user.username}
+              size="sm"
+              shape="square"
+              className="shrink-0"
+            />
             <div className="flex-1 min-w-0">
               <div className="font-serif font-bold text-xs text-foreground truncate">
                 {user.name}

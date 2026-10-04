@@ -12,6 +12,7 @@ import {
   UserSessionPayload,
 } from '@perpusjal/types';
 import { notificationsService } from '../notifications/notifications.service.js';
+import { badgesService } from '../badges/badges.service.js';
 
 export class CommentsService {
   /**
@@ -77,6 +78,8 @@ export class CommentsService {
                       name: true,
                       iconName: true,
                       tier: true,
+                      category: true,
+                      titleReward: true,
                     },
                   },
                 },
@@ -105,6 +108,8 @@ export class CommentsService {
                           name: true,
                           iconName: true,
                           tier: true,
+                          category: true,
+                          titleReward: true,
                         },
                       },
                     },
@@ -131,6 +136,13 @@ export class CommentsService {
         displayContent = '[Komentar ini telah dihapus oleh penulis]';
       }
 
+      const authorBadges = c.author.badges?.map((ub: any) => ub.badge) || [];
+      const equippedBadge = c.author.equippedTitle
+        ? authorBadges.find(
+            (b: any) => b.titleReward === c.author.equippedTitle || b.name === c.author.equippedTitle
+          ) || null
+        : null;
+
       return {
         id: c.id,
         content: displayContent,
@@ -148,8 +160,9 @@ export class CommentsService {
           role: c.author.role as unknown as Role,
           trustLevel: c.author.trustLevel as unknown as TrustLevel,
           equippedTitle: c.author.equippedTitle,
-          earnedBadgesCount: c.author.badges?.length || 0,
-          badges: c.author.badges?.map((ub: any) => ub.badge) || [],
+          equippedBadge,
+          earnedBadgesCount: authorBadges.length,
+          badges: authorBadges,
         },
         replies: c.replies ? c.replies.map(formatComment) : [],
       };
@@ -264,6 +277,8 @@ export class CommentsService {
                     name: true,
                     iconName: true,
                     tier: true,
+                    category: true,
+                    titleReward: true,
                   },
                 },
               },
@@ -274,34 +289,54 @@ export class CommentsService {
     });
 
     // 6. If published immediately and attached to an article, increment commentCount
-    if (initialStatus === CommentStatus.PUBLISHED && articleId) {
-      // Increment comment count
-      const articleRecord = await prisma.article.update({
-        where: { id: articleId },
-        data: { commentCount: { increment: 1 } },
-        select: { authorId: true, title: true, slug: true },
-      });
+    if (initialStatus === CommentStatus.PUBLISHED) {
+      // Check comment badges progression
+      badgesService.checkCommentBadges(user.userId).catch(() => {});
 
-      // Notify article author (only if commenter !== author)
-      if (articleRecord && articleRecord.authorId !== user.userId) {
-        const preview =
-          created.content.length > 80
-            ? created.content.slice(0, 80) + '...'
-            : created.content;
-        try {
-          await notificationsService.createNotification(articleRecord.authorId, {
-            type: 'NEW_COMMENT',
-            title: 'Komentar Baru pada Tulisanmu',
-            body: `${created.author.name} mengomentari "${articleRecord.title}": "${preview}"`,
-            actionUrl: `/artikel/${articleRecord.slug}#komentar`,
-            entityType: 'ARTICLE',
-            entityId: articleId,
-          });
-        } catch (e) {
-          console.error('[CommentsService] Failed to send NEW_COMMENT notification:', e);
+      if (articleId) {
+        // Increment comment count
+        const articleRecord = await prisma.article.update({
+          where: { id: articleId },
+          data: { commentCount: { increment: 1 } },
+          select: { authorId: true, title: true, slug: true },
+        });
+
+        // Easter egg: SECRET_SPEED_COMMENT (first published commenter on an article)
+        const publishedCommentsOnArticle = await prisma.comment.count({
+          where: { articleId, status: CommentStatus.PUBLISHED },
+        });
+        if (publishedCommentsOnArticle === 1) {
+          badgesService.awardManualBadge(user.userId, 'SECRET_SPEED_COMMENT').catch(() => {});
+        }
+
+        // Notify article author (only if commenter !== author)
+        if (articleRecord && articleRecord.authorId !== user.userId) {
+          const preview =
+            created.content.length > 80
+              ? created.content.slice(0, 80) + '...'
+              : created.content;
+          try {
+            await notificationsService.createNotification(articleRecord.authorId, {
+              type: 'NEW_COMMENT',
+              title: 'Komentar Baru pada Tulisanmu',
+              body: `${created.author.name} mengomentari "${articleRecord.title}": "${preview}"`,
+              actionUrl: `/artikel/${articleRecord.slug}#komentar`,
+              entityType: 'ARTICLE',
+              entityId: articleId,
+            });
+          } catch (e) {
+            console.error('[CommentsService] Failed to send NEW_COMMENT notification:', e);
+          }
         }
       }
     }
+
+    const authorBadges = created.author.badges?.map((ub: any) => ub.badge) || [];
+    const equippedBadge = created.author.equippedTitle
+      ? authorBadges.find(
+          (b: any) => b.titleReward === created.author.equippedTitle || b.name === created.author.equippedTitle
+        ) || null
+      : null;
 
     const commentItem: CommentItem = {
       id: created.id,
@@ -320,8 +355,9 @@ export class CommentsService {
         role: created.author.role as unknown as Role,
         trustLevel: created.author.trustLevel as unknown as TrustLevel,
         equippedTitle: created.author.equippedTitle,
-        earnedBadgesCount: created.author.badges?.length || 0,
-        badges: created.author.badges?.map((ub: any) => ub.badge) || [],
+        equippedBadge,
+        earnedBadgesCount: authorBadges.length,
+        badges: authorBadges,
       },
       replies: [],
     };
@@ -601,14 +637,25 @@ export class CommentsService {
       },
     });
 
-    // Adjust article comment count
-    if (comment.articleId) {
-      if (previousStatus !== CommentStatus.PUBLISHED && newStatus === CommentStatus.PUBLISHED) {
+    // Adjust article comment count and trigger badges
+    if (previousStatus !== CommentStatus.PUBLISHED && newStatus === CommentStatus.PUBLISHED) {
+      badgesService.checkCommentBadges(comment.authorId).catch(() => {});
+
+      if (comment.articleId) {
         await prisma.article.update({
           where: { id: comment.articleId },
           data: { commentCount: { increment: 1 } },
         });
-      } else if (previousStatus === CommentStatus.PUBLISHED && newStatus !== CommentStatus.PUBLISHED) {
+
+        const publishedCommentsOnArticle = await prisma.comment.count({
+          where: { articleId: comment.articleId, status: CommentStatus.PUBLISHED },
+        });
+        if (publishedCommentsOnArticle === 1) {
+          badgesService.awardManualBadge(comment.authorId, 'SECRET_SPEED_COMMENT').catch(() => {});
+        }
+      }
+    } else if (previousStatus === CommentStatus.PUBLISHED && newStatus !== CommentStatus.PUBLISHED) {
+      if (comment.articleId) {
         await prisma.article.update({
           where: { id: comment.articleId },
           data: { commentCount: { decrement: 1 } },

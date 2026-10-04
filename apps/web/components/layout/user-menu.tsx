@@ -21,6 +21,7 @@ import {
 import { Role } from '@perpusjal/types';
 import { useAuth } from '@/contexts/auth-context';
 import { useNotifications } from '@/contexts/notifications-context';
+import { UserAvatar } from '@/components/ui/user-avatar';
 
 export function UserMenu() {
   const router = useRouter();
@@ -85,14 +86,14 @@ export function UserMenu() {
           aria-expanded={isOpen}
         >
           {/* Monogram / Avatar */}
-          <div className="w-5 h-5 bg-foreground text-background flex items-center justify-center font-serif text-[11px] font-bold uppercase shrink-0">
-            {user.avatarUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={user.avatarUrl} alt={user.name} className="w-full h-full object-cover grayscale" />
-            ) : (
-              user.name.slice(0, 1)
-            )}
-          </div>
+          <UserAvatar
+            src={user.avatarUrl}
+            name={user.name}
+            username={user.username}
+            size="xs"
+            shape="square"
+            className="shrink-0"
+          />
 
           {/* Display name & role */}
           <div className="hidden sm:flex flex-col text-left leading-none">
@@ -111,14 +112,24 @@ export function UserMenu() {
         {isOpen && (
           <div className="absolute right-0 mt-2 w-64 bg-surface border border-foreground shadow-2xl z-50 animate-in fade-in-50 duration-150 divide-y divide-border-hairline">
             {/* User Header */}
-            <div className="p-3 bg-surface-muted/40 font-mono">
-              <div className="text-xs font-bold font-serif text-foreground truncate">{user.name}</div>
-              <div className="text-[10px] text-muted truncate">@{user.username}</div>
-              <div className="mt-1 flex items-center gap-1.5">
-                <span className="px-1.5 py-0.2 border border-foreground bg-foreground text-background text-[9px] font-bold uppercase tracking-wider">
-                  {user.role}
-                </span>
-                <span className="text-[9px] text-muted truncate">{user.email}</span>
+            <div className="p-3 bg-surface-muted/40 font-mono flex items-center gap-3">
+              <UserAvatar
+                src={user.avatarUrl}
+                name={user.name}
+                username={user.username}
+                size="sm"
+                shape="square"
+                className="shrink-0"
+              />
+              <div className="min-w-0 flex-1">
+                <div className="text-xs font-bold font-serif text-foreground truncate">{user.name}</div>
+                <div className="text-[10px] text-muted truncate">@{user.username}</div>
+                <div className="mt-1 flex items-center gap-1.5">
+                  <span className="px-1.5 py-0.2 border border-foreground bg-foreground text-background text-[9px] font-bold uppercase tracking-wider">
+                    {user.role}
+                  </span>
+                  <span className="text-[9px] text-muted truncate">{user.email}</span>
+                </div>
               </div>
             </div>
 

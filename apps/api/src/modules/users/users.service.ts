@@ -45,9 +45,13 @@ export class UsersService {
 
     // Evaluate badges for this user
     let userBadges: any[] = [];
+    let equippedBadge = null;
+    let showcaseBadges: any[] = [];
     if (user.showBadges && user.isProfilePublic) {
       const badgesRes = await badgesService.getUserBadgeProgress(user.id);
       userBadges = badgesRes.badges.filter((b) => b.earned);
+      equippedBadge = badgesRes.equippedBadge;
+      showcaseBadges = badgesRes.showcaseBadges || [];
     }
 
     // BR-PROF-01: if private profile, only return name and published articles
@@ -101,6 +105,9 @@ export class UsersService {
       role: user.role as Role,
       trustLevel: user.trustLevel as TrustLevel,
       equippedTitle: user.equippedTitle,
+      equippedBadge,
+      showcaseBadgeCodes: (user as any).showcaseBadgeCodes || [],
+      showcaseBadges,
       createdAt: user.createdAt.toISOString(),
       isProfilePublic: user.isProfilePublic,
       showBadges: user.showBadges,
@@ -110,6 +117,7 @@ export class UsersService {
         loansCount,
         eventsAttended: eventsCount,
         booksDonated: user.booksDonatedCount,
+        onTimeStreak: user.onTimeStreak,
       },
       badges: userBadges,
       articles: user.articles.map((a) => ({

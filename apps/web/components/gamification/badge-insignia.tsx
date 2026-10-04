@@ -33,9 +33,11 @@ import {
   Layers,
   Lock,
   Sparkles,
+  Moon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { BadgeCategory } from '@perpusjal/types';
+import { getTierInfo } from '@/lib/badge-tier-styles';
 
 interface BadgeInsigniaProps {
   code: string;
@@ -45,6 +47,7 @@ interface BadgeInsigniaProps {
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
   className?: string;
   showTierTag?: boolean;
+  variant?: 'default' | 'solid-inverted';
 }
 
 const ROMAN_NUMERALS: Record<number, string> = {
@@ -64,6 +67,7 @@ export function BadgeInsignia({
   size = 'md',
   className,
   showTierTag = false,
+  variant = 'default',
 }: BadgeInsigniaProps) {
   // Render specific icon based on badge code
   const renderIcon = () => {
@@ -160,66 +164,83 @@ export function BadgeInsignia({
       case 'DONATUR_T6':
         return <Crown className={iconSizeClass} />;
 
+      // ── SECRET EASTER EGGS ──
+      case 'SECRET_NIGHT_OWL':
+        return <Moon className={iconSizeClass} />;
+      case 'SECRET_SPEED_COMMENT':
+        return <Zap className={iconSizeClass} />;
+      case 'SECRET_CURATOR_FAVORITE':
+        return <Sparkles className={iconSizeClass} />;
+
       default:
         return <Sparkles className={iconSizeClass} />;
     }
   };
 
   const sizeBoxClass = {
-    xs: 'w-7 h-7 text-[8px]',
-    sm: 'w-9 h-9 text-[9px]',
-    md: 'w-12 h-12 text-[10px]',
-    lg: 'w-16 h-16 text-xs',
-    xl: 'w-20 h-20 text-sm',
+    xs: 'w-6 h-6',
+    sm: 'w-8 h-8',
+    md: 'w-11 h-11',
+    lg: 'w-14 h-14',
+    xl: 'w-18 h-18',
   }[size];
 
-  // Editorial frame styles per tier
+  const tierInfo = getTierInfo(tier);
+
+  // Concentric double-ring styling for an authentic literary medallion
   const tierFrameStyle = {
-    1: 'border',
+    1: 'border-2',
     2: 'border-2',
-    3: 'border-2 shadow-[2px_2px_0px_0px_currentColor]',
-    4: 'border-2 shadow-[3px_3px_0px_0px_currentColor]',
-    5: 'border-2 ring-1 ring-foreground/20 shadow-[3px_3px_0px_0px_currentColor]',
-    6: 'border-2 ring-2 ring-amber-500/30 shadow-[4px_4px_0px_0px_rgba(217,119,6,0.5)]',
-  }[tier] || 'border';
+    3: 'border-2',
+    4: 'border-2',
+    5: 'border-2 ring-1 ring-purple-400/30 dark:ring-purple-400/40',
+    6: 'border-2 ring-2 ring-amber-400/40 dark:ring-yellow-400/50 shadow-[0_0_12px_rgba(250,204,21,0.25)]',
+  }[tier] || 'border-2';
+
+  // Distinct subtle locked medallion styling per tier (gentle tint, no visual noise)
+  const lockedInsigniaClass = {
+    1: 'border-emerald-700/30 dark:border-emerald-400/30 text-emerald-800/60 dark:text-emerald-300/50 bg-emerald-500/5 dark:bg-emerald-950/20 border-dashed',
+    2: 'border-orange-700/30 dark:border-orange-400/30 text-orange-800/60 dark:text-orange-300/50 bg-orange-500/5 dark:bg-orange-950/20 border-dashed',
+    3: 'border-sky-700/30 dark:border-sky-400/30 text-sky-800/60 dark:text-sky-300/50 bg-sky-500/5 dark:bg-sky-950/20 border-dashed',
+    4: 'border-slate-500/30 dark:border-slate-300/30 text-slate-700/60 dark:text-slate-200/50 bg-slate-500/5 dark:bg-slate-900/20 border-dashed',
+    5: 'border-purple-700/30 dark:border-purple-400/30 text-purple-800/60 dark:text-purple-300/50 bg-purple-500/5 dark:bg-purple-950/20 border-dashed',
+    6: 'border-amber-600/30 dark:border-yellow-400/30 text-amber-800/60 dark:text-yellow-300/50 bg-amber-500/5 dark:bg-yellow-950/20 border-dashed',
+  }[tier] || 'border-border-hairline bg-surface-muted/50 text-muted/60 border-dashed';
+
+  const solidInvertedClass =
+    tier === 6
+      ? 'border-slate-950/40 bg-black/15 text-slate-950 ring-0 shadow-none'
+      : tier === 4
+      ? 'border-white/50 bg-white/20 text-white dark:border-slate-950/40 dark:bg-black/15 dark:text-slate-950 ring-0 shadow-none'
+      : 'border-white/50 bg-white/20 text-white ring-0 shadow-none';
 
   return (
     <div className={cn('relative inline-flex flex-col items-center justify-center shrink-0', className)}>
       <div
         className={cn(
-          'relative flex items-center justify-center transition-transform duration-200 select-none',
+          'relative flex items-center justify-center rounded-full transition-transform duration-200 select-none shrink-0',
           sizeBoxClass,
-          tierFrameStyle,
-          earned
-            ? tier === 6
-              ? 'border-amber-600 bg-amber-500/10 text-amber-800 dark:text-amber-300 dark:border-amber-400'
-              : 'border-foreground bg-surface text-foreground shadow-xs'
-            : 'border-border-hairline bg-surface-muted/50 text-muted/60 border-dashed'
+          variant === 'solid-inverted' ? 'border' : tierFrameStyle,
+          variant === 'solid-inverted'
+            ? solidInvertedClass
+            : earned
+            ? tierInfo.insigniaClass
+            : lockedInsigniaClass
         )}
       >
-        {/* Tier Roman Numeral Watermark in background */}
-        <span
-          className={cn(
-            'absolute font-mono font-black pointer-events-none opacity-10 select-none leading-none',
-            size === 'xl' ? 'text-4xl' : size === 'lg' ? 'text-2xl' : 'text-base'
-          )}
-        >
-          {ROMAN_NUMERALS[tier] || tier}
-        </span>
+        {/* Center Symbol (Clean and unhampered, free of background watermarks) */}
+        <div className="relative z-10 flex items-center justify-center">{renderIcon()}</div>
 
-        {/* Center Symbol */}
-        <div className="relative z-10">{renderIcon()}</div>
-
-        {/* Locked Padlock Accent if not earned */}
+        {/* Minimalist Locked Padlock Accent if not earned */}
         {!earned && (
-          <div className="absolute -top-1 -right-1 bg-surface border border-border-hairline p-0.5 shadow-xs">
-            <Lock className="w-2 h-2 text-muted" />
+          <div className="absolute -bottom-0.5 -right-0.5 bg-surface border border-border-hairline rounded-full p-0.5 shadow-xs">
+            <Lock className="w-2.5 h-2.5 text-muted" />
           </div>
         )}
 
         {/* Tier 6 Crown Accents */}
         {tier === 6 && earned && (
-          <div className="absolute -top-1.5 -right-1.5 bg-amber-500 text-background p-0.5 rounded-full shadow-xs">
+          <div className="absolute -top-1 -right-1 bg-amber-500 dark:bg-yellow-400 text-slate-950 p-0.5 rounded-full shadow-xs">
             <Crown className="w-2.5 h-2.5" />
           </div>
         )}

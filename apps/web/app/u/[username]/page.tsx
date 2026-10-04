@@ -18,6 +18,9 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { BadgeInsignia } from '@/components/gamification/badge-insignia';
+import { MemberCardModal } from '@/components/gamification/member-card-modal';
+import { getTierInfo, inferTierFromTitle } from '@/lib/badge-tier-styles';
+import { UserAvatar } from '@/components/ui/user-avatar';
 
 export const dynamic = 'force-dynamic';
 
@@ -96,18 +99,14 @@ export default async function UserProfilePage({
         <section className="border-2 border-foreground bg-surface p-6 sm:p-10 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.9)] relative">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 sm:gap-8 pb-8 border-b border-border-hairline">
             {/* Avatar / Monogram */}
-            <div className="w-20 h-20 sm:w-24 sm:h-24 border-2 border-foreground bg-foreground text-background flex items-center justify-center font-serif text-3xl font-bold uppercase select-none shrink-0 shadow-sm">
-              {user.avatarUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={user.avatarUrl}
-                  alt={user.name}
-                  className="w-full h-full object-cover grayscale"
-                />
-              ) : (
-                user.name.slice(0, 2)
-              )}
-            </div>
+            <UserAvatar
+              src={user.avatarUrl}
+              name={user.name}
+              username={user.username}
+              size="2xl"
+              shape="square"
+              className="border-2 border-foreground shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,0.9)] shrink-0"
+            />
 
             {/* Core Info */}
             <div className="flex-1 min-w-0">
@@ -127,15 +126,48 @@ export default async function UserProfilePage({
                 {user.name}
               </h1>
 
-              {/* Equipped Primary Title */}
-              {user.equippedTitle ? (
-                <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 border-2 border-foreground bg-foreground text-background font-mono text-xs font-bold uppercase tracking-wider">
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span>{user.equippedTitle}</span>
-                </div>
-              ) : (
-                <p className="font-mono text-xs text-muted mt-1">@{user.username}</p>
-              )}
+              {/* Equipped Primary Title & Digital Member Card */}
+              {(() => {
+                const activeBadge =
+                  user.equippedBadge ||
+                  (user.equippedTitle
+                    ? user.badges?.map((ub: any) => ub.badge || ub).find(
+                        (b: any) => b.titleReward === user.equippedTitle || b.name === user.equippedTitle
+                      )
+                    : undefined);
+                const activeTier = activeBadge?.tier || inferTierFromTitle(user.equippedTitle);
+                const tierInfo = getTierInfo(activeTier);
+
+                return (
+                  <div className="mt-2.5 flex flex-wrap items-center gap-3">
+                    {user.equippedTitle ? (
+                      <div
+                        className={cn(
+                          'inline-flex items-center gap-1.5 px-3 py-1 rounded-full border-2 font-mono text-xs font-bold uppercase tracking-wider shadow-xs',
+                          tierInfo.honorBadgeClass
+                        )}
+                        title={`Gelar Kehormatan: "${user.equippedTitle}" (Tier ${activeTier} • ${tierInfo.name})`}
+                      >
+                        <BadgeInsignia
+                          code={activeBadge?.code || 'HONOR_BADGE'}
+                          tier={activeTier}
+                          category={activeBadge?.category}
+                          earned={true}
+                          size="xs"
+                          variant="solid-inverted"
+                          className="-my-1 -ml-1 shrink-0"
+                        />
+                        <span>{user.equippedTitle}</span>
+                      </div>
+                    ) : (
+                      <span className="font-mono text-xs text-muted">@{user.username}</span>
+                    )}
+
+                    {/* Member Card Modal Trigger */}
+                    <MemberCardModal user={user} />
+                  </div>
+                );
+              })()}
 
               {/* Bio */}
               {user.isProfilePublic && user.bio && (
@@ -218,71 +250,139 @@ export default async function UserProfilePage({
           )}
         </section>
 
-        {/* ── 3. Paspor Lencana & Prestasi (Showcase Badges) ── */}
+        {/* ── 3. Koleksi Lencana & Prestasi ── */}
         {user.isProfilePublic && user.showBadges && (
-          <section className="space-y-4">
-            <div className="flex items-baseline justify-between border-b-2 border-foreground pb-2">
-              <div className="flex items-center gap-2">
-                <Award className="w-4 h-4 text-foreground" />
-                <h2 className="font-serif text-xl font-bold uppercase tracking-wider">
-                  Paspor Prestasi Literasi ({user.badges.length})
-                </h2>
-              </div>
-              <span className="font-mono text-[10px] text-muted uppercase tracking-wider">
-                Stempel Penghargaan Komunitas
-              </span>
-            </div>
-
-            {user.badges.length === 0 ? (
-              <div className="border border-dashed border-border-hairline p-8 text-center bg-surface">
-                <p className="font-mono text-xs text-muted">
-                  Warga ini belum menyematkan lencana publik.
-                </p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                {user.badges.map((b) => (
-                  <div
-                    key={b.badge.id}
-                    className="border-2 border-foreground bg-surface p-4 flex items-start gap-3.5 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,0.9)]"
-                  >
-                    <BadgeInsignia
-                      code={b.badge.code}
-                      tier={b.badge.tier}
-                      category={b.badge.category}
-                      earned={true}
-                      size="md"
-                    />
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center justify-between font-mono text-[9px] text-muted uppercase tracking-wider mb-0.5">
-                        <span>TIER {b.badge.tier || 1}</span>
-                        <span>{b.badge.category}</span>
-                      </div>
-                      <h3 className="font-serif text-base font-bold text-foreground truncate">
-                        {b.badge.name}
-                      </h3>
-                      {b.badge.titleReward && (
-                        <span className="font-mono text-[9.5px] font-bold text-foreground block">
-                          Julukan: "{b.badge.titleReward}"
-                        </span>
-                      )}
-                      <p className="text-[11px] text-muted font-sans line-clamp-2 mt-1 leading-snug">
-                        {b.badge.description}
-                      </p>
-                      {b.earnedAt && (
-                        <span className="font-mono text-[9px] text-muted block mt-2">
-                          Diraih: {new Date(b.earnedAt).toLocaleDateString('id-ID', {
-                            day: 'numeric',
-                            month: 'short',
-                            year: 'numeric',
-                          })}
-                        </span>
-                      )}
-                    </div>
+          <section className="space-y-6">
+            {/* ── 3.1 Etalase 3 Lencana Kebanggaan ── */}
+            {user.showcaseBadges && user.showcaseBadges.length > 0 && (
+              <div className="border-2 border-foreground bg-surface p-5 sm:p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.9)] space-y-4">
+                <div className="flex items-center justify-between border-b-2 border-foreground pb-2.5">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-amber-500" />
+                    <h3 className="font-serif text-lg font-bold text-foreground">
+                      Etalase Lencana Kebanggaan
+                    </h3>
                   </div>
-                ))}
+                  <span className="font-mono text-[9.5px] uppercase font-bold text-muted tracking-wider">
+                    PODIUM KEHORMATAN ANGGOTA
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  {user.showcaseBadges.map((sb, idx) => {
+                    const sbTierInfo = getTierInfo(sb.tier);
+                    return (
+                      <div
+                        key={sb.code || idx}
+                        className={cn(
+                          'border p-4 flex flex-col items-center justify-center text-center space-y-2 shadow-xs transition-all rounded-sm bg-surface',
+                          sbTierInfo.cardEarnedBg
+                        )}
+                      >
+                        <span className={cn('px-2.5 py-0.5 text-[9px] font-mono font-bold uppercase tracking-wider rounded-full border shadow-xs whitespace-nowrap', sbTierInfo.headerTagClass)}>
+                          T{sb.tier} &bull; {sbTierInfo.name}
+                        </span>
+                        <div className="py-1">
+                          <BadgeInsignia
+                            code={sb.code}
+                            tier={sb.tier}
+                            category={sb.category}
+                            earned={true}
+                            size="md"
+                          />
+                        </div>
+                        <div className="space-y-1 max-w-full">
+                          <h4 className="font-serif font-bold text-sm text-foreground truncate px-1">
+                            {sb.name}
+                          </h4>
+                          {sb.titleReward && (
+                            <span className={cn('font-mono text-[9px] px-2.5 py-0.5 rounded-full border font-semibold inline-block truncate max-w-full shadow-xs', sbTierInfo.honorBadgeClass)}>
+                              "{sb.titleReward}"
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             )}
+
+            {/* ── 3.2 Katalog Seluruh Capaian Terbuka ── */}
+            <div className="space-y-4">
+              <div className="flex items-baseline justify-between border-b-2 border-foreground pb-2">
+                <div className="flex items-center gap-2">
+                  <Award className="w-4 h-4 text-foreground" />
+                  <h2 className="font-serif text-xl font-bold uppercase tracking-wider">
+                    Koleksi Lencana & Julukan ({user.badges.length})
+                  </h2>
+                </div>
+                <span className="font-mono text-[10px] text-muted uppercase tracking-wider">
+                  Stempel Penghargaan Komunitas
+                </span>
+              </div>
+
+              {user.badges.length === 0 ? (
+                <div className="border border-dashed border-border-hairline p-8 text-center bg-surface">
+                  <p className="font-mono text-xs text-muted">
+                    Warga ini belum menyematkan lencana publik.
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                  {user.badges.map((b) => {
+                    const bTierInfo = getTierInfo(b.badge.tier);
+                    return (
+                      <div
+                        key={b.badge.id}
+                        className={cn(
+                          'p-4 flex items-start gap-3.5 shadow-xs transition-all rounded-sm bg-surface border',
+                          bTierInfo.cardEarnedBg
+                        )}
+                      >
+                        <BadgeInsignia
+                          code={b.badge.code}
+                          tier={b.badge.tier}
+                          category={b.badge.category}
+                          earned={true}
+                          size="md"
+                        />
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center justify-between pb-1.5 border-b border-border-hairline mb-2 gap-1">
+                            <span className={cn('px-2 py-0.5 text-[8.5px] font-mono font-bold uppercase tracking-wider rounded-full border shadow-xs whitespace-nowrap', bTierInfo.headerTagClass)}>
+                              T{b.badge.tier || 1} &bull; {bTierInfo.name}
+                            </span>
+                            <span className="font-mono text-[9px] uppercase text-muted tracking-wider font-semibold whitespace-nowrap">
+                              {b.badge.category}
+                            </span>
+                          </div>
+                          <h3 className="font-serif text-base font-bold text-foreground truncate">
+                            {b.badge.name}
+                          </h3>
+                          {b.badge.titleReward && (
+                            <span className={cn('font-mono text-[9px] px-2.5 py-0.5 rounded-full border font-semibold inline-block mt-1 shadow-xs', bTierInfo.honorBadgeClass)}>
+                              Gelar: "{b.badge.titleReward}"
+                            </span>
+                          )}
+                          <p className="text-[11px] text-muted font-sans line-clamp-2 mt-1.5 leading-snug">
+                            {b.badge.description}
+                          </p>
+                          {b.earnedAt && (
+                            <span className="font-mono text-[9px] text-muted block mt-2">
+                              Diraih: {new Date(b.earnedAt).toLocaleDateString('id-ID', {
+                                day: 'numeric',
+                                month: 'short',
+                                year: 'numeric',
+                              })}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </section>
         )}
 

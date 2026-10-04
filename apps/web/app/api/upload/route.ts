@@ -20,9 +20,9 @@ export async function POST(req: NextRequest) {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // Determine upload folder (books or articles)
+    // Determine upload folder (books, articles, or avatars)
     const folderParam = (formData.get('folder') as string) || 'books';
-    const allowedFolders = ['books', 'articles'];
+    const allowedFolders = ['books', 'articles', 'avatars'];
     const uploadFolder = `perpusjal/${allowedFolders.includes(folderParam) ? folderParam : 'books'}`;
     const localSubfolder = allowedFolders.includes(folderParam) ? folderParam : 'books';
 

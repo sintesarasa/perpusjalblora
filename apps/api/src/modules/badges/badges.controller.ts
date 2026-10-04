@@ -50,6 +50,20 @@ export class BadgesController {
     }
   }
 
+  async updateShowcase(req: Request, res: Response, next: NextFunction) {
+    try {
+      const userId = this.getUserId(req);
+      const { badgeCodes } = req.body;
+      const result = await badgesService.updateShowcaseBadges(
+        userId,
+        Array.isArray(badgeCodes) ? badgeCodes : []
+      );
+      res.json({ success: true, data: result });
+    } catch (err) {
+      next(err);
+    }
+  }
+
   async recordDonation(req: Request, res: Response, next: NextFunction) {
     try {
       const adminUserId = this.getUserId(req);

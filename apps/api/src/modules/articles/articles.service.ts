@@ -13,6 +13,7 @@ import {
   UserSessionPayload,
 } from '@perpusjal/types';
 import { notificationsService } from '../notifications/notifications.service.js';
+import { badgesService } from '../badges/badges.service.js';
 
 export class ArticlesService {
   /**
@@ -94,6 +95,7 @@ export class ArticlesService {
                       iconName: true,
                       tier: true,
                       category: true,
+                      titleReward: true,
                     },
                   },
                 },
@@ -119,20 +121,30 @@ export class ArticlesService {
     ]);
 
     return {
-      data: articles.map((a) => ({
-        ...a,
-        publishedAt: a.publishedAt?.toISOString() || null,
-        author: {
-          id: a.author.id,
-          name: a.author.name,
-          username: a.author.username,
-          avatarUrl: a.author.avatarUrl,
-          bio: a.author.bio,
-          equippedTitle: a.author.equippedTitle,
-          earnedBadgesCount: a.author.badges?.length || 0,
-          badges: a.author.badges?.map((ub: any) => ub.badge) || [],
-        },
-      })),
+      data: articles.map((a) => {
+        const authorBadges = a.author.badges?.map((ub: any) => ub.badge) || [];
+        const equippedBadge = a.author.equippedTitle
+          ? authorBadges.find(
+              (b: any) => b.titleReward === a.author.equippedTitle || b.name === a.author.equippedTitle
+            ) || null
+          : null;
+
+        return {
+          ...a,
+          publishedAt: a.publishedAt?.toISOString() || null,
+          author: {
+            id: a.author.id,
+            name: a.author.name,
+            username: a.author.username,
+            avatarUrl: a.author.avatarUrl,
+            bio: a.author.bio,
+            equippedTitle: a.author.equippedTitle,
+            equippedBadge,
+            earnedBadgesCount: authorBadges.length,
+            badges: authorBadges,
+          },
+        };
+      }),
       meta: {
         page,
         perPage,
@@ -170,6 +182,7 @@ export class ArticlesService {
                     iconName: true,
                     tier: true,
                     category: true,
+                    titleReward: true,
                   },
                 },
               },
@@ -216,6 +229,7 @@ export class ArticlesService {
                       iconName: true,
                       tier: true,
                       category: true,
+                      titleReward: true,
                     },
                   },
                 },
@@ -303,6 +317,11 @@ export class ArticlesService {
         avatarUrl: article.author.avatarUrl,
         bio: article.author.bio,
         equippedTitle: article.author.equippedTitle,
+        equippedBadge: article.author.equippedTitle
+          ? (article.author.badges?.map((ub: any) => ub.badge) || []).find(
+              (b: any) => b.titleReward === article.author.equippedTitle || b.name === article.author.equippedTitle
+            ) || null
+          : null,
         earnedBadgesCount: article.author.badges?.length || 0,
         badges: article.author.badges?.map((ub: any) => ub.badge) || [],
       },
@@ -507,6 +526,17 @@ export class ArticlesService {
               },
             })
             .catch(() => {});
+        }
+
+        if (payload.userId && !isAuthor) {
+          // Easter egg: SECRET_NIGHT_OWL (reading between 00:00 - 04:00 WIB)
+          const currentHourWIB = (new Date().getUTCHours() + 7) % 24;
+          if (currentHourWIB >= 0 && currentHourWIB < 4 && (payload.secondsSpent || 0) >= 15) {
+            badgesService.awardManualBadge(payload.userId, 'SECRET_NIGHT_OWL').catch(() => {});
+          }
+
+          // Trigger reading badge progression check
+          badgesService.checkArticleReadBadges(payload.userId).catch(() => {});
         }
       } else {
         await prisma.readingLog
@@ -993,6 +1023,11 @@ export class ArticlesService {
       console.error('Failed to send article approved notification:', e);
     }
 
+    // Trigger badge evaluation if published immediately
+    if (!isScheduled) {
+      badgesService.checkArticlePublishBadges(article.authorId).catch(() => {});
+    }
+
     return { message: isScheduled ? 'Naskah dijadwalkan terbit.' : 'Naskah berhasil diterbitkan.' };
   }
 
@@ -1116,7 +1151,12 @@ export class ArticlesService {
     const updated = await prisma.article.update({
       where: { id: articleId },
       data: { isFeatured },
+      select: { id: true, isFeatured: true, authorId: true },
     });
+
+    if (isFeatured && updated.authorId) {
+      badgesService.awardManualBadge(updated.authorId, 'SECRET_CURATOR_FAVORITE').catch(() => {});
+    }
 
     return updated;
   }

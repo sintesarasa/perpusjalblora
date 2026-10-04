@@ -13,6 +13,7 @@ import {
   ScrollText, X, ChevronRight, Eye,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { UserAvatar } from '@/components/ui/user-avatar';
 
 interface MyArticleItem {
   id: string;
@@ -429,16 +430,13 @@ export default function MyArticlesDashboardPage() {
 
                       {/* Kurator info */}
                       <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-full bg-surface-muted border border-border-hairline overflow-hidden shrink-0">
-                          {rev.editor.avatarUrl ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img src={rev.editor.avatarUrl} alt={rev.editor.name} className="w-full h-full object-cover" />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center font-mono text-[8px] text-muted">
-                              {rev.editor.name.charAt(0).toUpperCase()}
-                            </div>
-                          )}
-                        </div>
+                        <UserAvatar
+                          src={rev.editor.avatarUrl}
+                          name={rev.editor.name}
+                          size="xs"
+                          shape="circle"
+                          className="shrink-0"
+                        />
                         <span className="font-mono text-[10px] text-muted uppercase tracking-wider">
                           Kurator: <span className="text-foreground">{rev.editor.name}</span>
                         </span>

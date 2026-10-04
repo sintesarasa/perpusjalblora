@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { BrandStamp } from '@/components/ui/brand-stamp';
+import { UserAvatar } from '@/components/ui/user-avatar';
 
 interface ArticleQuickReadDrawerProps {
   article: ArticleSummary | null;
@@ -173,21 +174,20 @@ export function ArticleQuickReadDrawer({
           {/* Author Card Box */}
           <div className="p-4 bg-surface border border-border flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              {article.author?.avatarUrl ? (
-                <img
-                  src={article.author.avatarUrl}
-                  alt={article.author.name}
-                  className="w-10 h-10 rounded-full object-cover border border-border"
-                />
-              ) : (
-                <div className="w-10 h-10 rounded-full bg-foreground text-background font-mono font-bold flex items-center justify-center text-xs">
-                  {article.author?.name?.slice(0, 2).toUpperCase() || 'PJ'}
-                </div>
-              )}
+              <UserAvatar
+                src={article.author?.avatarUrl}
+                name={article.author?.name || 'Redaksi'}
+                username={article.author?.username}
+                size="sm"
+                linkToProfile={!!article.author?.username}
+              />
               <div className="space-y-0.5">
-                <p className="font-sans text-xs font-semibold text-foreground">
+                <Link
+                  href={article.author?.username ? `/u/${article.author.username}` : '#'}
+                  className="font-serif text-sm font-bold text-foreground hover:underline block leading-tight"
+                >
                   {article.author?.name || 'Redaksi Perpusjal'}
-                </p>
+                </Link>
                 <p className="font-mono text-[10px] text-muted">
                   @{article.author?.username || 'redaksi'} • Penulis Warga
                 </p>

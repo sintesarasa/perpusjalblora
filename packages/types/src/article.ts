@@ -80,6 +80,7 @@ export interface ArticleAuthor {
   avatarUrl: string | null;
   bio?: string | null;
   equippedTitle?: string | null;
+  equippedBadge?: { code: string; name: string; titleReward: string; tier: number; category: string } | null;
   earnedBadgesCount?: number;
   badges?: Array<{ code: string; name: string; iconName: string; tier: number; category?: string }>;
 }
