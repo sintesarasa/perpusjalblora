@@ -135,6 +135,15 @@ const INITIAL_CURATED_BOOKS = [
   },
 ];
 
+// Rotating active verbs for the broadsheet hero
+const ROTATING_WORDS = [
+  'BERDISKUSI.',
+  'BERGERAK.',
+  'BERDAYA.',
+  'MERDEKA.',
+  'BERBAHAGIA.',
+];
+
 interface BooksApiResponse {
   data: BookItem[];
   meta: {
@@ -147,6 +156,22 @@ interface BooksApiResponse {
 
 export default function HomePage() {
   const router = useRouter();
+
+  // Rotating words state (1.8s tempo)
+  const [wordIndex, setWordIndex] = React.useState(0);
+  const [isWordExiting, setIsWordExiting] = React.useState(false);
+
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      setIsWordExiting(true);
+      setTimeout(() => {
+        setWordIndex((prev) => (prev + 1) % ROTATING_WORDS.length);
+        setIsWordExiting(false);
+      }, 260);
+    }, 1800);
+
+    return () => clearInterval(interval);
+  }, []);
 
   // Books from API
   const [books, setBooks] = React.useState<BookItem[]>([]);
@@ -235,11 +260,11 @@ export default function HomePage() {
 
       <main className="flex-1">
         {/* ========================================================= */}
-        {/* 1. FRONT-PAGE HERO: THE BROADSHEET MASTHEAD (ELEGANT)     */}
+        {/* 1. FRONT-PAGE HERO: THE BROADSHEET MASTHEAD               */}
         {/* ========================================================= */}
         <section
           onMouseMove={handleHeroMouseMove}
-          className="border-b-2 border-foreground max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12 lg:pt-14 pb-12 sm:pb-16 lg:pb-18 relative overflow-hidden"
+          className="border-b-2 border-foreground max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-14 pb-14 sm:pb-20 relative overflow-hidden"
         >
           {/* Subtle Typography Watermark */}
           <div
@@ -247,13 +272,13 @@ export default function HomePage() {
               transform: `translate3d(${heroMouseOffset.x * 1.5}px, ${heroMouseOffset.y * 1.5}px, 0)`,
               transition: 'transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1)',
             }}
-            className="hidden sm:block absolute right-0 top-1/2 -translate-y-1/2 opacity-[0.035] select-none pointer-events-none font-serif text-[180px] sm:text-[240px] lg:text-[280px] xl:text-[320px] font-black leading-none text-foreground tracking-tighter"
+            className="absolute right-0 top-1/2 -translate-y-1/2 opacity-[0.035] select-none pointer-events-none font-serif text-[180px] sm:text-[300px] font-black leading-none text-foreground tracking-tighter"
           >
             PERPUSJAL
           </div>
 
           {/* Authentic Gazette Masthead Top Ledger */}
-          <div className="flex flex-wrap items-center justify-between border-b border-border-hairline pb-3 mb-8 sm:mb-10 lg:mb-12 text-[10px] sm:text-[11px] font-mono uppercase tracking-widest text-muted gap-2 relative z-10">
+          <div className="flex flex-wrap items-center justify-between border-b border-border-hairline pb-3.5 mb-10 sm:mb-14 text-[10px] sm:text-[11px] font-mono uppercase tracking-widest text-muted gap-2 relative z-10">
             <div className="flex items-center gap-2 sm:gap-3">
               <BrandStamp edition="KRONIK UTAMA" year="2026" />
               <span className="hidden sm:inline">[ EDISI RESMI // GERAKAN SWADAYA RAKYAT ]</span>
@@ -265,21 +290,29 @@ export default function HomePage() {
             <div className="hidden lg:block">BLORA, JAWA TENGAH &bull; RUANG BACA RAKYAT</div>
           </div>
 
-          {/* Main Hero Split Content: Natural & Harmonious */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 xl:gap-16 relative z-10 items-start">
-            {/* Left Column (7 cols): Lead Editorial & Actions */}
-            <div className="lg:col-span-7 space-y-6 sm:space-y-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 relative z-10 items-start">
+            {/* Left Big Lead (7 cols) */}
+            <div className="lg:col-span-7 flex flex-col justify-between space-y-8">
               <RevealOnScroll variant="fade-up" delayMs={100}>
-                <div className="space-y-5 sm:space-y-6">
-                  <div className="inline-flex items-center gap-2 px-2.5 py-1 border border-foreground font-mono text-[9px] sm:text-[10px] tracking-widest uppercase font-bold bg-foreground text-background">
+                <div className="space-y-5 sm:space-y-7">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 border border-foreground font-mono text-[9px] sm:text-[10px] tracking-widest uppercase font-bold bg-foreground text-background">
                     <span>RUANG PERJUMPAAN MERDEKA</span>
                   </div>
 
-                  {/* Monumental Headline: MEMBACA DAN BERBAHAGIA */}
-                  <h1 className="font-serif font-black uppercase text-foreground text-4xl sm:text-6xl md:text-7xl lg:text-7xl xl:text-8xl leading-[1.02] sm:leading-[0.92] tracking-tight break-words">
+                  {/* Monumental Headline: MEMBACA DAN [ROTATING VERB] */}
+                  <h1 className="font-serif font-black uppercase text-foreground leading-[1.02] sm:leading-[0.92] tracking-tight text-4xl sm:text-6xl md:text-7xl lg:text-8xl break-words">
                     MEMBACA DAN <br />
-                    <span className="italic font-serif font-normal text-foreground">
-                      BERBAHAGIA.
+                    <span className="inline-block overflow-hidden align-bottom">
+                      <span
+                        className={cn(
+                          'italic font-serif font-normal text-foreground inline-block transition-all duration-300 transform',
+                          isWordExiting
+                            ? '-translate-y-full opacity-0 blur-[1px]'
+                            : 'translate-y-0 opacity-100 blur-0'
+                        )}
+                      >
+                        {ROTATING_WORDS[wordIndex]}
+                      </span>
                     </span>
                   </h1>
 
@@ -291,7 +324,7 @@ export default function HomePage() {
                 </div>
               </RevealOnScroll>
 
-              {/* Action Buttons Bar */}
+              {/* Action Buttons Bar (Clean 2-Action Streamline) */}
               <RevealOnScroll variant="fade-up" delayMs={200}>
                 <div className="pt-4 border-t border-border-hairline flex flex-wrap gap-3 sm:gap-4 items-center">
                   <Link
@@ -314,8 +347,8 @@ export default function HomePage() {
               </RevealOnScroll>
             </div>
 
-            {/* Right Column (5 cols): Editorial Column & Chronicle Manifesto */}
-            <div className="lg:col-span-5 border-t-2 lg:border-t-0 lg:border-l-2 border-foreground pt-8 lg:pt-0 lg:pl-8 xl:pl-10 space-y-6 sm:space-y-8">
+            {/* Right Side Editorial Callout & Chronicle Dossier (5 cols) */}
+            <div className="lg:col-span-5 border-t-2 lg:border-t-0 lg:border-l-2 border-foreground pt-8 lg:pt-0 lg:pl-8 flex flex-col justify-between space-y-6">
               {/* Quote Card (Catatan Pinggir Falsafah) */}
               <RevealOnScroll variant="slide-right" delayMs={200}>
                 <div className="space-y-4">
@@ -323,7 +356,7 @@ export default function HomePage() {
                     <Quote className="w-3.5 h-3.5 text-foreground" />
                     <span>[ CATATAN PINGGIR // FALSAFAH ]</span>
                   </div>
-                  <blockquote className="font-serif italic text-xl sm:text-2xl lg:text-2xl text-foreground leading-snug">
+                  <blockquote className="font-serif italic text-2xl sm:text-3xl text-foreground leading-snug">
                     &ldquo;Buku tidak bernilai jika hanya berdebu di lemari kaca. Ia hidup saat disentuh
                     jemari dan diperdebatkan di lapak trotoar.&rdquo;
                   </blockquote>
@@ -335,7 +368,7 @@ export default function HomePage() {
 
               {/* Chronicle Movement Manifesto Card */}
               <RevealOnScroll variant="fade-up" delayMs={300}>
-                <div className="border-2 border-foreground p-5 sm:p-6 bg-surface font-mono space-y-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.9)]">
+                <div className="border-2 border-foreground p-5 sm:p-6 bg-surface font-mono space-y-3.5 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.9)]">
                   <div className="flex items-center justify-between pb-2.5 border-b border-border-hairline text-[10px] uppercase tracking-widest text-muted">
                     <span>KRONIK GERAKAN // BLORA</span>
                     <span className="font-bold text-foreground">SWADAYA RAKYAT</span>
@@ -366,32 +399,32 @@ export default function HomePage() {
         {/* ========================================================= */}
         {/* 2. SHOWCASE: KARTU IDENTITAS WARGA (TACTILE PRESS PASS)    */}
         {/* ========================================================= */}
-        <section className="border-b-2 border-foreground bg-foreground text-background py-12 sm:py-16 lg:py-20 relative overflow-hidden select-none">
+        <section className="border-b-2 border-foreground bg-foreground text-background py-16 sm:py-24 relative overflow-hidden select-none">
           {/* Subtle Background Watermark */}
-          <div className="hidden sm:block absolute right-0 top-1/2 -translate-y-1/2 opacity-[0.035] pointer-events-none font-serif text-[180px] sm:text-[240px] lg:text-[280px] font-black leading-none text-background tracking-tighter">
+          <div className="absolute right-0 top-1/2 -translate-y-1/2 opacity-[0.035] pointer-events-none font-serif text-[180px] sm:text-[280px] font-black leading-none text-background tracking-tighter">
             WARGA
           </div>
 
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-12 lg:gap-14 items-center">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-14 items-center">
               {/* Left Column: Narrative & Rank Progression Ledger (7 cols) */}
               <div className="lg:col-span-7">
                 <RevealOnScroll variant="fade-up">
-                  <div className="space-y-5 sm:space-y-7">
+                  <div className="space-y-6 sm:space-y-8">
                     <div>
-                      <div className="inline-flex items-center gap-2 px-2.5 py-0.5 border border-background/40 bg-background/10 font-mono text-[8.5px] sm:text-[9.5px] uppercase font-bold tracking-widest text-background">
-                        <Sparkles className="w-3 h-3 text-background" />
+                      <div className="inline-flex items-center gap-2 px-3 py-1 border border-background/40 bg-background/10 font-mono text-[9px] sm:text-[10px] uppercase font-bold tracking-widest text-background">
+                        <Sparkles className="w-3.5 h-3.5 text-background" />
                         <span>ARSIP IDENTITAS // KARTU SIRKULASI TERPAL</span>
                       </div>
 
-                      <h2 className="font-serif text-2xl sm:text-4xl md:text-5xl lg:text-5xl font-black uppercase tracking-tight text-background leading-[1.05] mt-3 sm:mt-4">
+                      <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black uppercase tracking-tight text-background leading-[1.05] mt-4">
                         Jejak Bacamu Adalah <br />
                         <span className="italic font-serif font-normal text-background/90">
                           Kehormatan Tertinggi.
                         </span>
                       </h2>
 
-                      <p className="font-serif text-sm sm:text-base lg:text-base text-background/80 leading-relaxed max-w-2xl mt-3 sm:mt-4">
+                      <p className="font-serif text-base sm:text-lg text-background/80 leading-relaxed max-w-2xl mt-4">
                         Di Perpusjal Blora, membaca bukan sekadar kegiatan pasif. Setiap buku yang kamu
                         pinjam dan warta yang kamu tulis mencatatkan reputasi literasi terbuka dalam{' '}
                         <strong className="text-background font-bold">Kartu Warga Literasi</strong> bersertifikasi publik
@@ -400,62 +433,62 @@ export default function HomePage() {
                     </div>
 
                     {/* Streamlined Citizen Rank Progression (Summary of Unique Titles) */}
-                    <div className="space-y-2.5 sm:space-y-3 pt-2 border-t border-background/20 font-mono">
-                      <div className="text-[9.5px] sm:text-[10px] uppercase tracking-widest text-background/70 font-bold">
+                    <div className="space-y-3 pt-2 border-t border-background/20 font-mono">
+                      <div className="text-[10px] uppercase tracking-widest text-background/70 font-bold">
                         [ SISTEM REPUTASI // JENJANG GELAR KEHORMATAN ]
                       </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 text-xs">
-                        <div className="p-2.5 sm:p-3 bg-background/5 border border-background/20 flex items-start gap-2.5 rounded-xs">
-                          <span className="text-background font-mono font-bold text-[10px] sm:text-[11px] shrink-0 border border-background/30 px-1.5 py-0.5">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                        <div className="p-3 bg-background/5 border border-background/20 flex items-start gap-3 rounded-xs">
+                          <span className="text-background font-mono font-bold text-[11px] shrink-0 border border-background/30 px-1.5 py-0.5">
                             01
                           </span>
                           <div>
-                            <div className="font-bold text-background uppercase tracking-wide text-[10.5px] sm:text-[11px]">
+                            <div className="font-bold text-background uppercase tracking-wide text-[11px]">
                               Warga Pemula
                             </div>
-                            <div className="font-serif text-[10.5px] sm:text-[11px] text-background/75 mt-0.5">
+                            <div className="font-serif text-[11px] text-background/75 mt-0.5">
                               Langkah awal terdaftar di hamparan terpal.
                             </div>
                           </div>
                         </div>
 
-                        <div className="p-2.5 sm:p-3 bg-background/5 border border-background/20 flex items-start gap-2.5 rounded-xs">
-                          <span className="text-background font-mono font-bold text-[10px] sm:text-[11px] shrink-0 border border-background/30 px-1.5 py-0.5">
+                        <div className="p-3 bg-background/5 border border-background/20 flex items-start gap-3 rounded-xs">
+                          <span className="text-background font-mono font-bold text-[11px] shrink-0 border border-background/30 px-1.5 py-0.5">
                             02
                           </span>
                           <div>
-                            <div className="font-bold text-background uppercase tracking-wide text-[10.5px] sm:text-[11px]">
+                            <div className="font-bold text-background uppercase tracking-wide text-[11px]">
                               Pembaca Terpal
                             </div>
-                            <div className="font-serif text-[10.5px] sm:text-[11px] text-background/75 mt-0.5">
+                            <div className="font-serif text-[11px] text-background/75 mt-0.5">
                               Menuntaskan 3 peminjaman buku amanah.
                             </div>
                           </div>
                         </div>
 
-                        <div className="p-2.5 sm:p-3 bg-background/5 border border-background/20 flex items-start gap-2.5 rounded-xs">
-                          <span className="text-background font-mono font-bold text-[10px] sm:text-[11px] shrink-0 border border-background/30 px-1.5 py-0.5">
+                        <div className="p-3 bg-background/5 border border-background/20 flex items-start gap-3 rounded-xs">
+                          <span className="text-background font-mono font-bold text-[11px] shrink-0 border border-background/30 px-1.5 py-0.5">
                             03
                           </span>
                           <div>
-                            <div className="font-bold text-background uppercase tracking-wide text-[10.5px] sm:text-[11px]">
+                            <div className="font-bold text-background uppercase tracking-wide text-[11px]">
                               Pengelana Kata
                             </div>
-                            <div className="font-serif text-[10.5px] sm:text-[11px] text-background/75 mt-0.5">
+                            <div className="font-serif text-[11px] text-background/75 mt-0.5">
                               Aktif mengulas buku atau menulis warta warga.
                             </div>
                           </div>
                         </div>
 
-                        <div className="p-2.5 sm:p-3 bg-background/5 border border-background/20 flex items-start gap-2.5 rounded-xs">
-                          <span className="text-background font-mono font-bold text-[10px] sm:text-[11px] shrink-0 border border-background/30 px-1.5 py-0.5">
+                        <div className="p-3 bg-background/5 border border-background/20 flex items-start gap-3 rounded-xs">
+                          <span className="text-background font-mono font-bold text-[11px] shrink-0 border border-background/30 px-1.5 py-0.5">
                             04
                           </span>
                           <div>
-                            <div className="font-bold text-background uppercase tracking-wide text-[10.5px] sm:text-[11px]">
+                            <div className="font-bold text-background uppercase tracking-wide text-[11px]">
                               Penjaga Nyala
                             </div>
-                            <div className="font-serif text-[10.5px] sm:text-[11px] text-background/75 mt-0.5">
+                            <div className="font-serif text-[11px] text-background/75 mt-0.5">
                               Pilar penggerak literasi swadaya Blora.
                             </div>
                           </div>
@@ -463,9 +496,9 @@ export default function HomePage() {
                       </div>
 
                       {/* Micro-chips of Sample Badges */}
-                      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 pt-1.5">
-                        <span className="text-[9.5px] sm:text-[10px] uppercase text-background/60 tracking-wider">
-                          Lencana:
+                      <div className="flex flex-wrap items-center gap-2 pt-2">
+                        <span className="text-[10px] uppercase text-background/60 tracking-wider">
+                          Lencana Kehormatan:
                         </span>
                         {[
                           { name: 'Pena Emas', icon: Award },
@@ -477,9 +510,9 @@ export default function HomePage() {
                           return (
                             <span
                               key={badge.name}
-                              className="px-2 py-0.5 bg-background/10 border border-background/25 text-background text-[9px] sm:text-[10px] font-bold uppercase tracking-wider inline-flex items-center gap-1.5 rounded-xs"
+                              className="px-2.5 py-1 bg-background/10 border border-background/25 text-background text-[10px] font-bold uppercase tracking-wider inline-flex items-center gap-1.5 rounded-xs"
                             >
-                              <IconComp className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-background" />
+                              <IconComp className="w-3 h-3 text-background" />
                               <span>{badge.name}</span>
                             </span>
                           );
@@ -488,10 +521,10 @@ export default function HomePage() {
                     </div>
 
                     {/* CTA Action Buttons */}
-                    <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3.5">
+                    <div className="pt-2 flex flex-wrap items-center gap-3 sm:gap-4">
                       <Link
                         href="/masuk"
-                        className="px-5 py-3 sm:px-6 sm:py-3.5 bg-background text-foreground font-mono text-[11px] sm:text-xs font-bold uppercase tracking-wider hover:bg-background/90 transition-colors shadow-xs inline-flex items-center justify-center gap-2"
+                        className="px-6 py-3.5 bg-background text-foreground font-mono text-xs font-bold uppercase tracking-wider hover:bg-background/90 transition-colors shadow-xs inline-flex items-center gap-2"
                       >
                         <Sparkles className="w-4 h-4 text-foreground" />
                         <span>BUAT KARTU MILIKMU SEKARANG</span>
@@ -500,7 +533,7 @@ export default function HomePage() {
 
                       <Link
                         href="/kontributor"
-                        className="px-4 py-3 sm:px-5 sm:py-3.5 border-2 border-background text-background hover:bg-background hover:text-foreground font-mono text-[11px] sm:text-xs font-bold uppercase tracking-wider transition-colors inline-flex items-center justify-center gap-2"
+                        className="px-5 py-3.5 border-2 border-background text-background hover:bg-background hover:text-foreground font-mono text-xs font-bold uppercase tracking-wider transition-colors inline-flex items-center gap-2"
                       >
                         <span>JELAJAHI DAFTAR WARGA &rarr;</span>
                       </Link>
@@ -511,7 +544,7 @@ export default function HomePage() {
 
               {/* Right Column: Tactile Light-Sheen Press Pass (5 cols) */}
               <div className="lg:col-span-5 flex flex-col items-center">
-                <RevealOnScroll variant="stamp" delayMs={200} className="w-full max-w-sm sm:max-w-md mx-auto">
+                <RevealOnScroll variant="stamp" delayMs={200} className="w-full max-w-md">
                   <div
                     ref={cardRef}
                     onMouseMove={handleCardMouseMove}
@@ -526,50 +559,50 @@ export default function HomePage() {
                       style={{
                         backgroundImage: `radial-gradient(circle at ${cardTilt.sheenX}% ${cardTilt.sheenY}%, rgba(255, 255, 255, ${cardTilt.sheenOpacity}) 0%, transparent 60%)`,
                       }}
-                      className="relative bg-background text-foreground p-5 sm:p-6 border-2 border-background shadow-[6px_6px_0px_0px_rgba(255,255,255,0.2)] select-none space-y-3.5 sm:space-y-4 box-border rounded-xs overflow-hidden"
+                      className="relative bg-background text-foreground p-6 pb-6 border-2 border-background shadow-[8px_8px_0px_0px_rgba(255,255,255,0.2)] select-none space-y-4 box-border rounded-xs overflow-hidden"
                     >
                       {/* Decorative corner markers */}
-                      <div className="absolute top-2 left-2 w-2.5 h-2.5 sm:w-3 sm:h-3 border-t-2 border-l-2 border-foreground pointer-events-none" />
-                      <div className="absolute top-2 right-2 w-2.5 h-2.5 sm:w-3 sm:h-3 border-t-2 border-r-2 border-foreground pointer-events-none" />
-                      <div className="absolute bottom-2 left-2 w-2.5 h-2.5 sm:w-3 sm:h-3 border-b-2 border-l-2 border-foreground pointer-events-none" />
-                      <div className="absolute bottom-2 right-2 w-2.5 h-2.5 sm:w-3 sm:h-3 border-b-2 border-r-2 border-foreground pointer-events-none" />
+                      <div className="absolute top-2 left-2 w-3 h-3 border-t-2 border-l-2 border-foreground pointer-events-none" />
+                      <div className="absolute top-2 right-2 w-3 h-3 border-t-2 border-r-2 border-foreground pointer-events-none" />
+                      <div className="absolute bottom-2 left-2 w-3 h-3 border-b-2 border-l-2 border-foreground pointer-events-none" />
+                      <div className="absolute bottom-2 right-2 w-3 h-3 border-b-2 border-r-2 border-foreground pointer-events-none" />
 
                       {/* Top Bar of the Card */}
-                      <div className="border-b border-border-hairline pb-2.5 sm:pb-3 space-y-1.5 sm:space-y-2">
-                        <div className="flex items-center justify-between gap-3 sm:gap-4">
-                          <Logo className="h-6 sm:h-7 w-auto text-foreground shrink-0" />
+                      <div className="border-b border-border-hairline pb-3 space-y-2">
+                        <div className="flex items-center justify-between gap-4">
+                          <Logo className="h-7 w-auto text-foreground shrink-0" />
                           <div className="text-right shrink-0">
-                            <span className="font-mono text-[7px] sm:text-[7.5px] uppercase font-bold tracking-widest text-muted block mb-0.5">
+                            <span className="font-mono text-[7.5px] uppercase font-bold tracking-widest text-muted block mb-0.5">
                               NO. REGISTRASI RESMI
                             </span>
-                            <span className="font-mono text-[9.5px] sm:text-[10.5px] font-bold text-background bg-foreground tracking-wider px-1.5 py-0.5 rounded-xs inline-block">
+                            <span className="font-mono text-[10.5px] font-bold text-background bg-foreground tracking-wider px-2 py-0.5 rounded-xs inline-block">
                               BLR-2026-WARGA01
                             </span>
                           </div>
                         </div>
 
-                        <div className="flex items-center justify-between gap-2 pt-1.5 sm:pt-2 border-t border-border-hairline">
-                          <span className="font-mono text-[8px] sm:text-[8.5px] uppercase font-bold tracking-[0.2em] text-foreground">
+                        <div className="flex items-center justify-between gap-2 pt-2 border-t border-border-hairline">
+                          <span className="font-mono text-[8.5px] uppercase font-bold tracking-[0.2em] text-foreground">
                             KARTU KEHORMATAN WARGA
                           </span>
-                          <span className="font-serif italic text-[11px] sm:text-xs text-muted truncate">
+                          <span className="font-serif italic text-xs text-muted">
                             Membaca dan Berbahagia.
                           </span>
                         </div>
                       </div>
 
                       {/* Persona Identity Strip */}
-                      <div className="flex items-center gap-3 sm:gap-3.5 py-0.5">
-                        <div className="w-11 h-11 sm:w-13 sm:h-13 rounded-full border-2 border-foreground bg-surface flex items-center justify-center font-serif text-lg sm:text-xl font-bold text-foreground shrink-0 shadow-xs">
+                      <div className="flex items-center gap-3.5 py-1">
+                        <div className="w-13 h-13 rounded-full border-2 border-foreground bg-surface flex items-center justify-center font-serif text-xl font-bold text-foreground shrink-0 shadow-xs">
                           P
                         </div>
                         <div className="flex-1 min-w-0 space-y-0.5">
-                          <h4 className="font-serif font-black text-lg sm:text-xl text-foreground tracking-wide truncate">
+                          <h4 className="font-serif font-black text-xl text-foreground tracking-wide truncate">
                             Pramono Wibowo
                           </h4>
-                          <p className="font-mono text-[9.5px] sm:text-[10.5px] text-muted truncate">@pramono &bull; Warga Penggerak 2024</p>
+                          <p className="font-mono text-[10.5px] text-muted">@pramono &bull; Warga Penggerak 2024</p>
                           <div className="pt-0.5">
-                            <span className="inline-block px-2 py-0.5 bg-foreground text-background font-mono text-[7.5px] sm:text-[8px] uppercase font-bold tracking-wider rounded-xs truncate max-w-full">
+                            <span className="inline-block px-2.5 py-0.5 bg-foreground text-background font-mono text-[8px] uppercase font-bold tracking-wider rounded-xs">
                               GELAR: PENJAGA NYALA LITERASI
                             </span>
                           </div>
@@ -577,40 +610,40 @@ export default function HomePage() {
                       </div>
 
                       {/* Inspiring Quote Box */}
-                      <div className="p-3 sm:p-3.5 bg-surface-muted/60 border-l-4 border-foreground rounded-xs space-y-1">
-                        <p className="font-serif italic text-[11px] sm:text-xs text-foreground/90 leading-relaxed">
+                      <div className="p-3.5 bg-surface-muted/60 border-l-4 border-foreground rounded-xs space-y-1">
+                        <p className="font-serif italic text-xs text-foreground/90 leading-relaxed">
                           &ldquo;Tangan yang membolak-balik buku adalah tangan yang merawat masa depan bangsa.&rdquo;
                         </p>
-                        <div className="text-right font-mono text-[8px] sm:text-[8.5px] text-muted font-semibold uppercase">
+                        <div className="text-right font-mono text-[8.5px] text-muted font-semibold uppercase">
                           — Pramono Wibowo (Catatan Warga)
                         </div>
                       </div>
 
                       {/* 4 Achievement Pillars */}
-                      <div className="grid grid-cols-4 gap-1.5 sm:gap-2 font-mono text-center pt-0.5">
-                        <div className="p-1.5 sm:p-2 border border-border-hairline bg-surface rounded-xs">
-                          <span className="text-[7px] sm:text-[7.5px] uppercase tracking-wider text-muted block">Tulisan</span>
-                          <span className="font-serif font-black text-sm sm:text-base text-foreground">8</span>
+                      <div className="grid grid-cols-4 gap-2 font-mono text-center pt-0.5">
+                        <div className="p-2 border border-border-hairline bg-surface rounded-xs">
+                          <span className="text-[7.5px] uppercase tracking-wider text-muted block">Tulisan</span>
+                          <span className="font-serif font-black text-base text-foreground">8</span>
                         </div>
-                        <div className="p-1.5 sm:p-2 border border-border-hairline bg-surface rounded-xs">
-                          <span className="text-[7px] sm:text-[7.5px] uppercase tracking-wider text-muted block">Lencana</span>
-                          <span className="font-serif font-black text-sm sm:text-base text-foreground">6</span>
+                        <div className="p-2 border border-border-hairline bg-surface rounded-xs">
+                          <span className="text-[7.5px] uppercase tracking-wider text-muted block">Lencana</span>
+                          <span className="font-serif font-black text-base text-foreground">6</span>
                         </div>
-                        <div className="p-1.5 sm:p-2 border border-border-hairline bg-surface rounded-xs">
-                          <span className="text-[7px] sm:text-[7.5px] uppercase tracking-wider text-muted block">Pinjaman</span>
-                          <span className="font-serif font-black text-sm sm:text-base text-foreground">14</span>
+                        <div className="p-2 border border-border-hairline bg-surface rounded-xs">
+                          <span className="text-[7.5px] uppercase tracking-wider text-muted block">Pinjaman</span>
+                          <span className="font-serif font-black text-base text-foreground">14</span>
                         </div>
-                        <div className="p-1.5 sm:p-2 border border-border-hairline bg-surface rounded-xs">
-                          <span className="text-[7px] sm:text-[7.5px] uppercase tracking-wider text-muted block">Amanah</span>
-                          <span className="font-serif font-black text-sm sm:text-base text-foreground">100%</span>
+                        <div className="p-2 border border-border-hairline bg-surface rounded-xs">
+                          <span className="text-[7.5px] uppercase tracking-wider text-muted block">Amanah</span>
+                          <span className="font-serif font-black text-base text-foreground">100%</span>
                         </div>
                       </div>
 
                       {/* Bottom Verification Seal */}
-                      <div className="flex items-center justify-between pt-2 sm:pt-2.5 border-t border-border-hairline gap-2">
-                        <Logo className="h-5 sm:h-6 w-auto text-foreground shrink-0" />
-                        <div className="flex-1 min-w-0 text-right space-y-0.5 font-mono text-[7px] sm:text-[7.5px] text-muted">
-                          <span className="text-foreground block font-bold truncate">perpusjalblora.id/warga/@pramono</span>
+                      <div className="flex items-center justify-between pt-2.5 border-t border-border-hairline gap-2">
+                        <Logo className="h-6 w-auto text-foreground shrink-0" />
+                        <div className="flex-1 min-w-0 text-right space-y-0.5 font-mono text-[7.5px] text-muted">
+                          <span className="text-foreground block font-bold">perpusjalblora.id/warga/@pramono</span>
                           <span>DOKUMEN RESMI WARGA LITERASI</span>
                         </div>
                       </div>
@@ -623,49 +656,49 @@ export default function HomePage() {
         </section>
 
         {/* ========================================================= */}
-        {/* 3. ETALASE KOLEKSI BUKU: RAK TERPAL DINAMIS (RESPONSIVE)  */}
+        {/* 3. ETALASE KOLEKSI BUKU: RAK TERPAL DINAMIS (LIVE API)     */}
         {/* ========================================================= */}
-        <section className="border-b-2 border-foreground max-w-7xl mx-auto py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8">
+        <section className="border-b-2 border-foreground max-w-7xl mx-auto py-14 sm:py-20 px-4 sm:px-6 lg:px-8">
           {/* Section Header Broadsheet with Sharp Contrast & Quick Search */}
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 sm:mb-10 pb-5 sm:pb-6 border-b-2 border-foreground gap-4 sm:gap-6">
-            <div className="space-y-1.5 sm:space-y-2">
-              <div className="text-[9.5px] sm:text-[11px] font-mono uppercase tracking-ultra text-foreground/70 flex items-center gap-2">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 pb-6 border-b-2 border-foreground gap-6">
+            <div className="space-y-2">
+              <div className="text-[10px] sm:text-[11px] font-mono uppercase tracking-ultra text-foreground/70 flex items-center gap-2">
                 <BookOpen className="w-3.5 h-3.5 text-foreground" />
                 <span>[ SEKSI KOLEKSI // RAK &amp; TERPAL ]</span>
               </div>
-              <h2 className="font-serif text-2xl sm:text-4xl md:text-5xl font-black uppercase tracking-tight text-foreground leading-[1.05]">
+              <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-black uppercase tracking-tight text-foreground leading-[1.05]">
                 BUKU DI RAK &amp; HAMPARAN TERPAL
               </h2>
-              <p className="font-serif text-xs sm:text-base text-foreground/80 max-w-2xl leading-relaxed">
+              <p className="font-serif text-sm sm:text-base text-foreground/80 max-w-2xl leading-relaxed">
                 Pustaka terpilih yang dirawat secara swadaya. Siap kamu baca bersila di lapak Minggu pagi
                 CFD Alun-Alun Blora atau dipesan daring untuk dijemput langsung.
               </p>
             </div>
 
             {/* Quick Search Bar & Full Catalog Link */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 shrink-0">
-              <form onSubmit={handleQuickSearchSubmit} className="relative flex items-center flex-1 sm:flex-none">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
+              <form onSubmit={handleQuickSearchSubmit} className="relative flex items-center">
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Cari judul buku... [↵]"
-                  className="w-full sm:w-60 px-3 py-2 sm:py-2.5 pl-8 bg-surface border-2 border-foreground font-mono text-xs text-foreground placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-foreground transition-all shadow-2xs"
+                  className="w-full sm:w-64 px-3 py-2.5 pl-8 bg-surface border-2 border-foreground font-mono text-xs text-foreground placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-foreground transition-all shadow-2xs"
                 />
                 <Search className="w-3.5 h-3.5 text-muted absolute left-2.5 pointer-events-none" />
               </form>
 
               <Link
                 href="/buku"
-                className="px-4 py-2 sm:py-2.5 bg-foreground text-background font-mono text-xs font-bold uppercase tracking-wider hover:bg-foreground/90 transition-colors inline-flex items-center justify-center gap-1.5 shrink-0 shadow-2xs"
+                className="px-4 py-2.5 bg-foreground text-background font-mono text-xs font-bold uppercase tracking-wider hover:bg-foreground/90 transition-colors inline-flex items-center justify-center gap-1.5 shrink-0 shadow-2xs"
               >
                 <span>SEMUA BUKU &rarr;</span>
               </Link>
             </div>
           </div>
 
-          {/* Book Cards Grid: Responsive 2 Columns on Mobile, 4 on Desktop */}
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5 lg:gap-6">
+          {/* Book Cards Grid with Real Book Covers */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {displayBooks.slice(0, 8).map((book, idx) => {
               const shelf = ('shelfLocation' in book && book.shelfLocation) ? book.shelfLocation : 'RAK-CFD';
               const availability = ('availability' in book) ? book.availability : (('status' in book && book.status === 'BORROWED') ? 'BORROWED' : 'AVAILABLE');
@@ -676,22 +709,22 @@ export default function HomePage() {
 
               return (
                 <RevealOnScroll key={book.id || idx} variant="fade-up" delayMs={idx * 75}>
-                  <div className="border-2 border-foreground bg-surface p-3 sm:p-4 lg:p-5 flex flex-col justify-between group hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[5px_5px_0px_0px_rgba(255,255,255,0.9)] transition-all h-full">
+                  <div className="border-2 border-foreground bg-surface p-5 flex flex-col justify-between group hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.9)] transition-all h-full">
                     <div>
                       {/* Top Metadata Strip */}
-                      <div className="flex items-center justify-between text-[8.5px] sm:text-[10px] font-mono pb-1.5 sm:pb-2 mb-2 sm:mb-3 border-b border-border-hairline gap-1">
-                        <span className="text-muted font-bold tracking-wider truncate">{shelf}</span>
+                      <div className="flex items-center justify-between text-[10px] font-mono pb-2 mb-3 border-b border-border-hairline">
+                        <span className="text-muted font-bold tracking-wider">{shelf}</span>
                         <StatusPill status={availability === 'AVAILABLE' ? 'available' : 'borrowed'} />
                       </div>
 
                       {/* Real Book Cover Showcase Container (Aspect 2/3 Book Proportion) */}
-                      <Link href={`/buku/${bookSlug}`} className="block relative aspect-[2/3] w-full mb-2.5 sm:mb-4 overflow-hidden border-2 border-foreground bg-surface-muted rounded-xs group/cover shadow-xs">
+                      <Link href={`/buku/${bookSlug}`} className="block relative aspect-[2/3] w-full mb-4 overflow-hidden border-2 border-foreground bg-surface-muted rounded-xs group/cover shadow-xs">
                         {coverImg ? (
                           <>
                             {/* Realistic Left Spine Fold Shadow */}
-                            <div className="absolute left-0 top-0 bottom-0 w-2.5 sm:w-3.5 bg-gradient-to-r from-black/40 via-black/15 to-transparent z-10 pointer-events-none" />
+                            <div className="absolute left-0 top-0 bottom-0 w-3.5 bg-gradient-to-r from-black/40 via-black/15 to-transparent z-10 pointer-events-none" />
                             {/* Paper Gloss Line Highlight */}
-                            <div className="absolute left-2.5 sm:left-3.5 top-0 bottom-0 w-px bg-white/25 z-10 pointer-events-none" />
+                            <div className="absolute left-3.5 top-0 bottom-0 w-px bg-white/25 z-10 pointer-events-none" />
 
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
@@ -702,47 +735,46 @@ export default function HomePage() {
                           </>
                         ) : (
                           /* Authentic Broadsheet Fallback Jacket */
-                          <div className="w-full h-full p-2.5 sm:p-4 flex flex-col justify-between border-2 border-foreground/30 bg-[#f4f4ee] dark:bg-[#141414] text-foreground select-none relative">
-                            <div className="absolute left-0 top-0 bottom-0 w-2 sm:w-3 bg-foreground border-r border-white/20" />
-                            <div className="pl-1.5 font-mono text-[7px] sm:text-[8.5px] uppercase tracking-widest text-muted truncate">
+                          <div className="w-full h-full p-4 flex flex-col justify-between border-2 border-foreground/30 bg-[#f4f4ee] dark:bg-[#141414] text-foreground select-none relative">
+                            <div className="absolute left-0 top-0 bottom-0 w-3 bg-foreground border-r border-white/20" />
+                            <div className="pl-2 font-mono text-[8.5px] uppercase tracking-widest text-muted truncate">
                               PERPUSJAL &bull; {categoryName}
                             </div>
-                            <div className="pl-1.5 space-y-1 my-auto">
-                              <BookOpen className="w-4 h-4 sm:w-6 sm:h-6 text-foreground/30 mb-1" />
-                              <h4 className="font-serif font-black text-xs sm:text-sm uppercase leading-tight line-clamp-2 sm:line-clamp-3 text-foreground">
+                            <div className="pl-2 space-y-1 my-auto">
+                              <BookOpen className="w-6 h-6 text-foreground/30 mb-2" />
+                              <h4 className="font-serif font-black text-sm uppercase leading-tight line-clamp-3 text-foreground">
                                 {book.title}
                               </h4>
-                              <p className="font-mono text-[9px] sm:text-[10.5px] text-muted line-clamp-1 italic">
+                              <p className="font-mono text-[10.5px] text-muted line-clamp-1 italic">
                                 {book.author}
                               </p>
                             </div>
-                            <div className="pl-1.5 font-mono text-[7px] sm:text-[8px] text-muted uppercase tracking-widest border-t border-border-hairline pt-1">
+                            <div className="pl-2 font-mono text-[8px] text-muted uppercase tracking-widest border-t border-border-hairline pt-1.5">
                               {shelf} &bull; {bookYear}
                             </div>
                           </div>
                         )}
                       </Link>
 
-                      <h3 className="font-serif text-sm sm:text-lg lg:text-xl font-bold text-foreground mb-0.5 sm:mb-1 leading-snug group-hover:underline line-clamp-1 transition-colors">
+                      <h3 className="font-serif text-xl font-bold text-foreground mb-1 leading-snug group-hover:underline line-clamp-1 transition-colors">
                         <Link href={`/buku/${bookSlug}`}>{book.title}</Link>
                       </h3>
-                      <p className="font-mono text-[10px] sm:text-xs text-muted mb-1 sm:mb-2 truncate">{book.author}</p>
-                      <p className="hidden sm:block font-serif text-xs text-foreground/80 leading-relaxed line-clamp-2">
+                      <p className="font-mono text-xs text-muted mb-2">{book.author}</p>
+                      <p className="font-serif text-xs text-foreground/80 leading-relaxed line-clamp-2">
                         {book.description || 'Pustaka pilihan yang siap kamu baca dan diskusikan di lapak Minggu pagi CFD Blora.'}
                       </p>
                     </div>
 
-                    <div className="pt-2 sm:pt-4 mt-2 sm:mt-5 border-t border-border-hairline flex items-center justify-between text-[9px] sm:text-xs font-mono">
-                      <span className="text-muted uppercase text-[8px] sm:text-[9.5px] font-semibold truncate max-w-[70px] sm:max-w-[130px]">
+                    <div className="pt-4 mt-5 border-t border-border-hairline flex items-center justify-between text-xs font-mono">
+                      <span className="text-muted uppercase text-[9.5px] font-semibold truncate max-w-[130px]">
                         {categoryName}
                       </span>
                       <Link
                         href={`/buku/${bookSlug}`}
-                        className="font-bold uppercase tracking-wider group-hover:underline flex items-center gap-0.5 sm:gap-1 text-foreground transition-colors shrink-0"
+                        className="font-bold uppercase tracking-wider group-hover:underline flex items-center gap-1 text-foreground transition-colors shrink-0"
                       >
-                        <span className="hidden sm:inline">PINJAM BUKU</span>
-                        <span className="sm:hidden">PINJAM</span>
-                        <ArrowUpRight className="w-3 h-3 sm:w-3.5 sm:h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                        <span>PINJAM BUKU</span>
+                        <ArrowUpRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                       </Link>
                     </div>
                   </div>
@@ -755,24 +787,24 @@ export default function HomePage() {
         {/* ========================================================= */}
         {/* 4. GRAND CALL TO ACTION: LESEHAN DI ALUN-ALUN BLORA       */}
         {/* ========================================================= */}
-        <section className="py-14 sm:py-20 lg:py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto text-center">
+        <section className="py-20 sm:py-28 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto text-center">
           <RevealOnScroll variant="fade-up">
-            <div className="max-w-3xl mx-auto space-y-4 sm:space-y-6">
-              <div className="inline-flex items-center gap-2 px-3 py-1 border border-foreground font-mono text-[8.5px] sm:text-[9px] uppercase tracking-widest font-bold bg-foreground text-background">
+            <div className="max-w-3xl mx-auto space-y-6">
+              <div className="inline-flex items-center gap-2 px-3 py-1 border border-foreground font-mono text-[9px] uppercase tracking-widest font-bold bg-foreground text-background">
                 <span>PANGGILAN TROTOAR // ALUN-ALUN BLORA</span>
               </div>
-              <h2 className="font-serif text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-black uppercase tracking-tight text-foreground leading-[1.05]">
+              <h2 className="font-serif text-3xl sm:text-5xl md:text-6xl font-black uppercase tracking-tight text-foreground leading-[1.05]">
                 Trotoar Menunggu <br />
                 <span className="italic font-serif font-normal">Jejak Langkahmu.</span>
               </h2>
-              <p className="font-serif text-sm sm:text-base lg:text-lg text-foreground/85 leading-relaxed max-w-2xl mx-auto">
+              <p className="font-serif text-base sm:text-lg text-foreground/85 leading-relaxed max-w-2xl mx-auto">
                 Setiap Minggu pagi, lembaran terpal biru dihamparkan di depan Pendopo Kabupaten Blora.
                 Mari datang, duduk bersila, temukan buku pilihanmu, atau buat kartu warga digitalmu sekarang.
               </p>
-              <div className="pt-2 sm:pt-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 sm:gap-4 font-mono text-xs">
+              <div className="pt-4 flex flex-wrap justify-center gap-4 font-mono text-xs">
                 <Link
                   href="/tentang#lapak"
-                  className="px-6 py-3.5 bg-foreground text-background font-bold uppercase tracking-wider hover:bg-foreground/90 transition-colors inline-flex items-center justify-center gap-2 shadow-xs"
+                  className="px-6 py-3.5 bg-foreground text-background font-bold uppercase tracking-wider hover:bg-foreground/90 transition-colors inline-flex items-center gap-2 shadow-xs"
                 >
                   <MapPin className="w-4 h-4" />
                   <span>PETA &amp; JADWAL CFD</span>
@@ -780,7 +812,7 @@ export default function HomePage() {
                 </Link>
                 <Link
                   href="/masuk"
-                  className="px-6 py-3.5 border-2 border-foreground bg-surface hover:bg-foreground hover:text-background font-bold uppercase tracking-wider transition-colors inline-flex items-center justify-center gap-2"
+                  className="px-6 py-3.5 border-2 border-foreground bg-surface hover:bg-foreground hover:text-background font-bold uppercase tracking-wider transition-colors inline-flex items-center gap-2"
                 >
                   <Sparkles className="w-4 h-4" />
                   <span>BUAT KARTU WARGA</span>
