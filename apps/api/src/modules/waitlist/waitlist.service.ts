@@ -318,11 +318,15 @@ export class WaitlistService {
         throw HttpError.badRequest('Tidak ada stok eksemplar buku yang tersedia untuk dialokasikan.');
       }
 
-      // 1. Decrement available copies (soft hold for this user)
-      await tx.book.update({
-        where: { id: book.id },
+      // 1. Decrement available copies (soft hold for this user with concurrency protection)
+      const decrementResult = await tx.book.updateMany({
+        where: { id: book.id, availableCopies: { gt: 0 } },
         data: { availableCopies: { decrement: 1 } },
       });
+
+      if (decrementResult.count === 0) {
+        throw HttpError.badRequest('Tidak ada stok eksemplar buku yang tersedia untuk dialokasikan.');
+      }
 
       // 2. Generate unique pickup & loan codes
       let loanCode = generateLoanCode();

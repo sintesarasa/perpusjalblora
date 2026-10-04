@@ -7,7 +7,13 @@ const router = Router();
 
 // Public routes
 router.get('/', (req, res, next) => lettersController.getLetters(req, res, next));
+// Specific member and moderation routes (must precede :slug)
 router.get('/me', requireAuth, (req, res, next) => lettersController.getMyLetters(req, res, next));
+router.get('/moderation/queue', requireRole(Role.KURATOR), (req, res, next) =>
+  lettersController.getModerationLetters(req, res, next)
+);
+
+// Dynamic slug route
 router.get('/:slug', (req, res, next) => lettersController.getLetterBySlug(req, res, next));
 
 // Registered member submission (U+)
@@ -15,10 +21,7 @@ router.post('/', requireAuth, requireVerified, (req, res, next) =>
   lettersController.createLetter(req, res, next)
 );
 
-// Curator & Admin moderation queue (K)
-router.get('/moderation/queue', requireRole(Role.KURATOR), (req, res, next) =>
-  lettersController.getModerationLetters(req, res, next)
-);
+// Curator & Admin moderation actions (K)
 router.post('/:id/approve', requireRole(Role.KURATOR), (req, res, next) =>
   lettersController.approveLetter(req, res, next)
 );

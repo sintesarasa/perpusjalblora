@@ -224,17 +224,19 @@ export class LoansService {
         throw HttpError.badRequest('Buku ini tidak dapat dipinjam (koleksi baca di tempat).');
       }
 
-      if (book.availableCopies <= 0) {
-        throw HttpError.badRequest('Semua eksemplar buku ini sedang dipinjam.');
-      }
-
-      // 6. Soft hold: decrement availableCopies (BR-LOAN-12)
-      await tx.book.update({
-        where: { id: bookId },
+      // 6. Soft hold: decrement availableCopies atomically with concurrency protection (BR-LOAN-12)
+      const decrementResult = await tx.book.updateMany({
+        where: { id: bookId, availableCopies: { gt: 0 } },
         data: {
           availableCopies: { decrement: 1 },
         },
       });
+
+      if (decrementResult.count === 0) {
+        throw HttpError.badRequest(
+          'Eksemplar buku baru saja terpinjam oleh pembaca lain. Silakan coba buku lain atau gabung daftar antrean.'
+        );
+      }
 
       // 7. Create Loan
       let loanCode = generateLoanCode();
@@ -684,10 +686,14 @@ export class LoansService {
         data: { status: BookCopyStatus.BORROWED as unknown as any },
       });
 
-      await tx.book.update({
-        where: { id: bookId },
+      const decrementResult = await tx.book.updateMany({
+        where: { id: bookId, availableCopies: { gt: 0 } },
         data: { availableCopies: { decrement: 1 } },
       });
+
+      if (decrementResult.count === 0) {
+        throw HttpError.badRequest('Eksemplar buku baru saja dipinjam atau stok tidak mencukupi.');
+      }
 
       // 4. Create Loan with status BORROWED (14 days duration)
       let loanCode = generateLoanCode();
@@ -1220,6 +1226,30 @@ export class LoansService {
           where: { id: loan.bookId },
           data: {
             totalCopies: { decrement: 1 },
+          },
+        });
+      }
+
+      // Update borrower gamification streak & status: on-time return increments onTimeStreak; overdue or damaged/lost resets to 0
+      const isOntime = loan.dueDate ? new Date() <= loan.dueDate : true;
+      if (condition === ReturnCondition.BAIK) {
+        await tx.user.update({
+          where: { id: loan.userId },
+          data: {
+            onTimeStreak: isOntime ? { increment: 1 } : 0,
+          },
+        });
+      } else if (condition === ReturnCondition.HILANG || condition === ReturnCondition.RUSAK) {
+        await tx.user.update({
+          where: { id: loan.userId },
+          data: {
+            onTimeStreak: 0,
+            ...(condition === ReturnCondition.HILANG
+              ? {
+                  suspensionReason: `Buku "${loan.bookCopy?.inventoryCode || loan.bookId}" dilaporkan hilang pada peminjaman ${loan.loanCode}. Menunggu penyelesaian kekeluargaan.`,
+                  borrowSuspendedUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+                }
+              : {}),
           },
         });
       }
