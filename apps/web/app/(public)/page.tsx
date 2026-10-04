@@ -459,87 +459,87 @@ export default function HomePage() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-14 items-center">
               {/* Left Column: Narrative & Privilege Pillars (7 cols) */}
-              <div className="lg:col-span-7 space-y-6 sm:space-y-8">
+              <div className="lg:col-span-7">
                 <RevealOnScroll variant="fade-up">
-                  <div className="inline-flex items-center gap-2 px-3 py-1 border border-amber-500/50 bg-amber-500/10 font-mono text-[9px] sm:text-[10px] uppercase font-bold tracking-widest text-amber-400">
-                    <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
-                    <span>ARSIP KEHORMATAN // EDISI OBSIDIAN GOLD</span>
-                  </div>
-
-                  <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black uppercase tracking-tight text-white leading-[1.05] mt-4">
-                    Jejak Bacamu Adalah <br />
-                    <span className="italic font-serif font-normal text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-amber-400 to-amber-500">
-                      Kehormatan Tertinggi.
-                    </span>
-                  </h2>
-
-                  <p className="font-serif text-base sm:text-lg text-zinc-300 leading-relaxed max-w-2xl mt-4">
-                    Di Perpusjal Blora, membaca bukan kegiatan pasif yang lenyap seketika. Setiap buku yang kamu
-                    pinjam, warta yang kamu tulis, dan kehadiranmu di hamparan terpal diabadikan dalam{' '}
-                    <strong className="text-amber-300 font-normal">Kartu Kehormatan Warga</strong> bersertifikasi resmi
-                    — tanpa uang jaminan, dan tanpa denda rupiah seumur hidup.
-                  </p>
-                </RevealOnScroll>
-
-                {/* 3 Pillars of Honor */}
-                <RevealOnScroll variant="fade-up" delayMs={150}>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-zinc-800">
-                    <div className="p-4 bg-zinc-950/80 border border-amber-500/30 rounded-xs space-y-2">
-                      <div className="w-8 h-8 rounded-full bg-amber-500/10 border border-amber-500/40 flex items-center justify-center text-amber-400">
-                        <Award className="w-4 h-4" />
+                  <div className="space-y-6 sm:space-y-8">
+                    <div>
+                      <div className="inline-flex items-center gap-2 px-3 py-1 border border-amber-500/50 bg-amber-500/10 font-mono text-[9px] sm:text-[10px] uppercase font-bold tracking-widest text-amber-400">
+                        <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
+                        <span>ARSIP KEHORMATAN // EDISI OBSIDIAN GOLD</span>
                       </div>
-                      <h4 className="font-mono text-xs font-bold uppercase tracking-wider text-amber-300">
-                        12 Lencana Literasi
-                      </h4>
-                      <p className="font-serif text-xs text-zinc-400 leading-relaxed">
-                        Buka gelar kehormatan bertahap, mulai dari <em>Warga Pemula</em> hingga <em>Penjaga Nyala Perpusjal</em>.
+
+                      <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black uppercase tracking-tight text-white leading-[1.05] mt-4">
+                        Jejak Bacamu Adalah <br />
+                        <span className="italic font-serif font-normal text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-amber-400 to-amber-500">
+                          Kehormatan Tertinggi.
+                        </span>
+                      </h2>
+
+                      <p className="font-serif text-base sm:text-lg text-zinc-300 leading-relaxed max-w-2xl mt-4">
+                        Di Perpusjal Blora, membaca bukan kegiatan pasif yang lenyap seketika. Setiap buku yang kamu
+                        pinjam, warta yang kamu tulis, dan kehadiranmu di hamparan terpal diabadikan dalam{' '}
+                        <strong className="text-amber-300 font-normal">Kartu Kehormatan Warga</strong> bersertifikasi resmi
+                        — tanpa uang jaminan, dan tanpa denda rupiah seumur hidup.
                       </p>
                     </div>
 
-                    <div className="p-4 bg-zinc-950/80 border border-amber-500/30 rounded-xs space-y-2">
-                      <div className="w-8 h-8 rounded-full bg-amber-500/10 border border-amber-500/40 flex items-center justify-center text-amber-400">
-                        <Sparkles className="w-4 h-4" />
+                    {/* 3 Pillars of Honor */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-zinc-800">
+                      <div className="p-4 bg-zinc-950/80 border border-amber-500/30 rounded-xs space-y-2">
+                        <div className="w-8 h-8 rounded-full bg-amber-500/10 border border-amber-500/40 flex items-center justify-center text-amber-400">
+                          <Award className="w-4 h-4" />
+                        </div>
+                        <h4 className="font-mono text-xs font-bold uppercase tracking-wider text-amber-300">
+                          12 Lencana Literasi
+                        </h4>
+                        <p className="font-serif text-xs text-zinc-400 leading-relaxed">
+                          Buka gelar kehormatan bertahap, mulai dari <em>Warga Pemula</em> hingga <em>Penjaga Nyala Perpusjal</em>.
+                        </p>
                       </div>
-                      <h4 className="font-mono text-xs font-bold uppercase tracking-wider text-amber-300">
-                        Kartu Medsos HD
-                      </h4>
-                      <p className="font-serif text-xs text-zinc-400 leading-relaxed">
-                        Unduh kartu resolusi tinggi rasio 1:1 &amp; bagikan langsung ke WhatsApp, Instagram, dan X dalam satu klik.
-                      </p>
+
+                      <div className="p-4 bg-zinc-950/80 border border-amber-500/30 rounded-xs space-y-2">
+                        <div className="w-8 h-8 rounded-full bg-amber-500/10 border border-amber-500/40 flex items-center justify-center text-amber-400">
+                          <Sparkles className="w-4 h-4" />
+                        </div>
+                        <h4 className="font-mono text-xs font-bold uppercase tracking-wider text-amber-300">
+                          Kartu Medsos HD
+                        </h4>
+                        <p className="font-serif text-xs text-zinc-400 leading-relaxed">
+                          Unduh kartu resolusi tinggi rasio 1:1 &amp; bagikan langsung ke WhatsApp, Instagram, dan X dalam satu klik.
+                        </p>
+                      </div>
+
+                      <div className="p-4 bg-zinc-950/80 border border-amber-500/30 rounded-xs space-y-2">
+                        <div className="w-8 h-8 rounded-full bg-amber-500/10 border border-amber-500/40 flex items-center justify-center text-amber-400">
+                          <ShieldCheck className="w-4 h-4" />
+                        </div>
+                        <h4 className="font-mono text-xs font-bold uppercase tracking-wider text-amber-300">
+                          Hak Bebas Antre
+                        </h4>
+                        <p className="font-serif text-xs text-zinc-400 leading-relaxed">
+                          Pindai kode QR kartu di lapak CFD untuk langsung membawa pulang 3 buku tanpa titip KTP fisik.
+                        </p>
+                      </div>
                     </div>
 
-                    <div className="p-4 bg-zinc-950/80 border border-amber-500/30 rounded-xs space-y-2">
-                      <div className="w-8 h-8 rounded-full bg-amber-500/10 border border-amber-500/40 flex items-center justify-center text-amber-400">
-                        <ShieldCheck className="w-4 h-4" />
-                      </div>
-                      <h4 className="font-mono text-xs font-bold uppercase tracking-wider text-amber-300">
-                        Hak Bebas Antre
-                      </h4>
-                      <p className="font-serif text-xs text-zinc-400 leading-relaxed">
-                        Pindai kode QR kartu di lapak CFD untuk langsung membawa pulang 3 buku tanpa titip KTP fisik.
-                      </p>
+                    {/* CTA Action Buttons */}
+                    <div className="pt-2 flex flex-wrap items-center gap-3 sm:gap-4">
+                      <Link
+                        href="/masuk"
+                        className="px-6 py-3.5 bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 text-black font-mono text-xs font-bold uppercase tracking-wider hover:brightness-110 transition-all shadow-[0_0_20px_rgba(245,158,11,0.35)] inline-flex items-center gap-2 rounded-xs"
+                      >
+                        <Sparkles className="w-4 h-4 text-black" />
+                        <span>BUAT KARTU MILIKMU SEKARANG</span>
+                        <ArrowRight className="w-3.5 h-3.5 text-black" />
+                      </Link>
+
+                      <Link
+                        href="/kontributor"
+                        className="px-5 py-3.5 border border-amber-500/40 bg-zinc-900/60 hover:bg-amber-500/10 hover:border-amber-400 text-amber-300 font-mono text-xs font-bold uppercase tracking-wider transition-colors inline-flex items-center gap-2 rounded-xs"
+                      >
+                        <span>JELAJAHI DAFTAR WARGA &amp; LENCANA</span>
+                      </Link>
                     </div>
-                  </div>
-                </RevealOnScroll>
-
-                {/* CTA Action Buttons */}
-                <RevealOnScroll variant="fade-up" delayMs={250}>
-                  <div className="pt-2 flex flex-wrap items-center gap-3 sm:gap-4">
-                    <Link
-                      href="/masuk"
-                      className="px-6 py-3.5 bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 text-black font-mono text-xs font-bold uppercase tracking-wider hover:brightness-110 transition-all shadow-[0_0_20px_rgba(245,158,11,0.35)] inline-flex items-center gap-2 rounded-xs"
-                    >
-                      <Sparkles className="w-4 h-4 text-black" />
-                      <span>BUAT KARTU MILIKMU SEKARANG</span>
-                      <ArrowRight className="w-3.5 h-3.5 text-black" />
-                    </Link>
-
-                    <Link
-                      href="/kontributor"
-                      className="px-5 py-3.5 border border-amber-500/40 bg-zinc-900/60 hover:bg-amber-500/10 hover:border-amber-400 text-amber-300 font-mono text-xs font-bold uppercase tracking-wider transition-colors inline-flex items-center gap-2 rounded-xs"
-                    >
-                      <span>JELAJAHI DAFTAR WARGA &amp; LENCANA</span>
-                    </Link>
                   </div>
                 </RevealOnScroll>
               </div>

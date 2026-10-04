@@ -17,8 +17,8 @@ export function RevealOnScroll({
   className,
   variant = 'fade-up',
   delayMs = 0,
-  threshold = 0.1,
-  rootMargin = '0px 0px -25px 0px',
+  threshold = 0.02,
+  rootMargin = '0px 0px 80px 0px',
 }: RevealOnScrollProps) {
   const [isVisible, setIsVisible] = React.useState(false);
   const elementRef = React.useRef<HTMLDivElement>(null);
@@ -41,7 +41,7 @@ export function RevealOnScroll({
       ([entry]) => {
         if (entry.isIntersecting) {
           setIsVisible(true);
-          observer.disconnect(); // Fire once
+          observer.disconnect(); // Fire once and cleanly unbind
         }
       },
       {
@@ -66,23 +66,23 @@ export function RevealOnScroll({
     switch (variant) {
       case 'stamp':
         return isVisible
-          ? 'opacity-100 scale-100 blur-0 translate-y-0'
-          : 'opacity-0 scale-[1.02] sm:scale-105 blur-[1px] translate-y-2';
+          ? 'opacity-100 scale-100 translate-y-0'
+          : 'opacity-0 scale-[0.98] translate-y-2';
       case 'slide-left':
         return isVisible
-          ? 'opacity-100 translate-x-0 translate-y-0'
-          : 'opacity-0 -translate-x-3 sm:-translate-x-8 md:-translate-x-12 translate-y-2 sm:translate-y-0';
+          ? 'opacity-100 translate-x-0'
+          : 'opacity-0 -translate-x-6';
       case 'slide-right':
         return isVisible
-          ? 'opacity-100 translate-x-0 translate-y-0'
-          : 'opacity-0 translate-x-3 sm:translate-x-8 md:translate-x-12 translate-y-2 sm:translate-y-0';
+          ? 'opacity-100 translate-x-0'
+          : 'opacity-0 translate-x-6';
       case 'fade':
         return isVisible ? 'opacity-100' : 'opacity-0';
       case 'fade-up':
       default:
         return isVisible
-          ? 'opacity-100 translate-y-0 blur-0'
-          : 'opacity-0 translate-y-4 sm:translate-y-8 blur-[0.5px]';
+          ? 'opacity-100 translate-y-0'
+          : 'opacity-0 translate-y-4';
     }
   };
 
@@ -90,11 +90,11 @@ export function RevealOnScroll({
     <div
       ref={elementRef}
       style={{
-        transitionDuration: '700ms',
-        transitionDelay: `${delayMs}ms`,
+        transitionDuration: '500ms',
+        transitionDelay: delayMs > 0 ? `${delayMs}ms` : undefined,
       }}
       className={cn(
-        'transition-all ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform',
+        'transition-[opacity,transform] ease-out transform-gpu',
         getVariantStyles(),
         className
       )}

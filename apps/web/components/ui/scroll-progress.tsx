@@ -7,11 +7,19 @@ export function ScrollProgress({ className }: { className?: string }) {
   const [progress, setProgress] = React.useState(0);
 
   React.useEffect(() => {
+    let ticking = false;
+
     const handleScroll = () => {
-      const totalScroll = window.scrollY || document.documentElement.scrollTop;
-      const windowHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-      if (windowHeight > 0) {
-        setProgress((totalScroll / windowHeight) * 100);
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const totalScroll = window.scrollY || document.documentElement.scrollTop;
+          const windowHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+          if (windowHeight > 0) {
+            setProgress((totalScroll / windowHeight) * 100);
+          }
+          ticking = false;
+        });
+        ticking = true;
       }
     };
 

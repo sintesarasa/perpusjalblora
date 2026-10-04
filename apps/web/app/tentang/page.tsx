@@ -157,18 +157,27 @@ export default function AboutPage() {
   const [timelineProgress, setTimelineProgress] = React.useState(0);
 
   React.useEffect(() => {
-    const handleScroll = () => {
-      if (!timelineRef.current) return;
-      const rect = timelineRef.current.getBoundingClientRect();
-      const windowHeight = window.innerHeight;
-      const totalHeight = rect.height;
+    let ticking = false;
 
-      // Calculate how far into the timeline section the viewport has scrolled
-      const progress = Math.min(
-        100,
-        Math.max(0, ((windowHeight * 0.7 - rect.top) / totalHeight) * 100)
-      );
-      setTimelineProgress(progress);
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          if (timelineRef.current) {
+            const rect = timelineRef.current.getBoundingClientRect();
+            const windowHeight = window.innerHeight;
+            const totalHeight = rect.height;
+
+            // Calculate how far into the timeline section the viewport has scrolled
+            const progress = Math.min(
+              100,
+              Math.max(0, ((windowHeight * 0.7 - rect.top) / totalHeight) * 100)
+            );
+            setTimelineProgress(progress);
+          }
+          ticking = false;
+        });
+        ticking = true;
+      }
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
