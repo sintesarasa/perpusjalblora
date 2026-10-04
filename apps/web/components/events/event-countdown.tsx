@@ -10,7 +10,7 @@ interface EventCountdownProps {
   title?: string;
   locationName?: string;
   className?: string;
-  compact?: boolean;
+  variant?: 'card' | 'embedded';
 }
 
 interface TimeRemaining {
@@ -52,7 +52,7 @@ export function EventCountdown({
   title,
   locationName,
   className,
-  compact = false,
+  variant = 'card',
 }: EventCountdownProps) {
   const [mounted, setMounted] = React.useState(false);
 
@@ -140,6 +140,16 @@ export function EventCountdown({
 
   // SSR skeleton render to prevent layout shift
   if (!mounted) {
+    if (variant === 'embedded') {
+      return (
+        <div className={cn('p-4 border border-zinc-800 bg-zinc-950/80 rounded-xs', className)}>
+          <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-amber-400">
+            <Clock className="w-3.5 h-3.5 animate-pulse" />
+            <span>MEMUAT HITUNG MUNDUR...</span>
+          </div>
+        </div>
+      );
+    }
     return (
       <div className={cn('bg-[#090a0c] text-white p-6 border-2 border-amber-500/50 rounded-xs', className)}>
         <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-amber-400">
@@ -150,7 +160,84 @@ export function EventCountdown({
     );
   }
 
-  // If live right now
+  // ==========================================
+  // EMBEDDED VARIANT (for seamless integration)
+  // ==========================================
+  if (variant === 'embedded') {
+    if (time.isLive) {
+      return (
+        <div className={cn('p-4 bg-emerald-950/40 border border-emerald-500/60 rounded-xs flex items-center justify-between gap-4', className)}>
+          <div className="flex items-center gap-2.5 font-mono text-xs text-emerald-400 font-bold uppercase tracking-wider">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
+            <span>SESI SEDANG BERLANGSUNG DI ALUN-ALUN BLORA SAAT INI</span>
+          </div>
+          <span className="font-mono text-[11px] text-zinc-300">Merapat Langsung &bull; Gratis</span>
+        </div>
+      );
+    }
+
+    return (
+      <div
+        className={cn(
+          'p-4 sm:p-5 bg-gradient-to-r from-zinc-950 via-zinc-900 to-zinc-950 border border-amber-500/40 rounded-xs shadow-inner flex flex-col md:flex-row md:items-center justify-between gap-4',
+          className
+        )}
+      >
+        <div className="space-y-1">
+          <div className="flex items-center gap-2 font-mono text-[10.5px] uppercase font-bold text-amber-400 tracking-wider">
+            <Sparkles className="w-3.5 h-3.5 animate-pulse text-amber-400" />
+            <span>WAKTU TERSISA MENUJU PELAKSANAAN:</span>
+          </div>
+          <p className="font-serif italic text-xs text-zinc-400">
+            {isRecurringSunday ? 'Hitung mundur otomatis ke sesi Minggu pagi terdekat.' : 'Persiapkan kehadiranmu di atas terpal.'}
+          </p>
+        </div>
+
+        {/* 4 Digit Boxes */}
+        <div className="grid grid-cols-4 gap-2 sm:gap-2.5 shrink-0 select-none">
+          <div className="bg-zinc-950 border border-amber-500/40 px-2.5 sm:px-3 py-1.5 sm:py-2 text-center rounded-xs min-w-[54px] sm:min-w-[62px]">
+            <span className="font-mono font-black text-xl sm:text-2xl text-amber-300 block leading-tight">
+              {formatUnit(time.days)}
+            </span>
+            <span className="font-mono text-[7.5px] sm:text-[8px] uppercase tracking-widest text-zinc-400 block font-bold">
+              HARI
+            </span>
+          </div>
+
+          <div className="bg-zinc-950 border border-amber-500/40 px-2.5 sm:px-3 py-1.5 sm:py-2 text-center rounded-xs min-w-[54px] sm:min-w-[62px]">
+            <span className="font-mono font-black text-xl sm:text-2xl text-amber-300 block leading-tight">
+              {formatUnit(time.hours)}
+            </span>
+            <span className="font-mono text-[7.5px] sm:text-[8px] uppercase tracking-widest text-zinc-400 block font-bold">
+              JAM
+            </span>
+          </div>
+
+          <div className="bg-zinc-950 border border-amber-500/40 px-2.5 sm:px-3 py-1.5 sm:py-2 text-center rounded-xs min-w-[54px] sm:min-w-[62px]">
+            <span className="font-mono font-black text-xl sm:text-2xl text-amber-300 block leading-tight">
+              {formatUnit(time.minutes)}
+            </span>
+            <span className="font-mono text-[7.5px] sm:text-[8px] uppercase tracking-widest text-zinc-400 block font-bold">
+              MENIT
+            </span>
+          </div>
+
+          <div className="bg-zinc-950 border border-amber-500/40 px-2.5 sm:px-3 py-1.5 sm:py-2 text-center rounded-xs min-w-[54px] sm:min-w-[62px]">
+            <span className="font-mono font-black text-xl sm:text-2xl text-amber-400 block leading-tight">
+              {formatUnit(time.seconds)}
+            </span>
+            <span className="font-mono text-[7.5px] sm:text-[8px] uppercase tracking-widest text-zinc-400 block font-bold">
+              DETIK
+            </span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ==========================================
+  // CARD VARIANT (Default Standalone Box)
+  // ==========================================
   if (time.isLive) {
     return (
       <div
@@ -225,7 +312,6 @@ export function EventCountdown({
 
       {/* Countdown Grid (4 Digit Blocks) */}
       <div className="grid grid-cols-4 gap-2.5 sm:gap-4 max-w-lg mx-auto py-2">
-        {/* Days */}
         <div className="bg-zinc-950/90 border border-amber-500/40 p-3 sm:p-4 text-center rounded-xs shadow-inner">
           <span className="font-mono font-black text-3xl sm:text-5xl text-amber-300 block tracking-tight">
             {formatUnit(time.days)}
@@ -235,7 +321,6 @@ export function EventCountdown({
           </span>
         </div>
 
-        {/* Hours */}
         <div className="bg-zinc-950/90 border border-amber-500/40 p-3 sm:p-4 text-center rounded-xs shadow-inner">
           <span className="font-mono font-black text-3xl sm:text-5xl text-amber-300 block tracking-tight">
             {formatUnit(time.hours)}
@@ -245,7 +330,6 @@ export function EventCountdown({
           </span>
         </div>
 
-        {/* Minutes */}
         <div className="bg-zinc-950/90 border border-amber-500/40 p-3 sm:p-4 text-center rounded-xs shadow-inner">
           <span className="font-mono font-black text-3xl sm:text-5xl text-amber-300 block tracking-tight">
             {formatUnit(time.minutes)}
@@ -255,7 +339,6 @@ export function EventCountdown({
           </span>
         </div>
 
-        {/* Seconds */}
         <div className="bg-zinc-950/90 border border-amber-500/40 p-3 sm:p-4 text-center rounded-xs shadow-inner">
           <span className="font-mono font-black text-3xl sm:text-5xl text-amber-400 block tracking-tight">
             {formatUnit(time.seconds)}

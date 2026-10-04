@@ -247,79 +247,117 @@ function EventCatalogContent() {
         </section>
 
         {/* ========================================================= */}
-        {/* 2. CINEMATIC HERO COUNTDOWN SPOTLIGHT (THE OBSIDIAN VAULT)*/}
+        {/* 2. UNIFIED HERO EVENT STAGE & EMBEDDED COUNTDOWN           */}
         {/* ========================================================= */}
-        <section className="space-y-6">
+        <section className="space-y-4">
           <div className="flex items-center justify-between text-xs font-mono uppercase tracking-widest text-muted pb-2 border-b border-border-hairline">
             <span className="flex items-center gap-1.5 font-bold text-amber-600 dark:text-amber-400">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>[ HITUNG MUNDUR SESI TERDEKAT ]</span>
+              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+              <span>[ AGENDA UTAMA &bull; SESI TERDEKAT ]</span>
             </span>
             <span>BLORA, JAWA TENGAH</span>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-            {/* Left: Interactive Realtime Countdown Plinth (7 cols) */}
-            <div className="lg:col-span-7 flex flex-col">
+          {/* Unified Monumental Event Stage Card */}
+          <div className="border-2 border-foreground bg-surface p-6 sm:p-9 relative overflow-hidden shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.9)] space-y-7">
+            {/* Top Gazette Status Bar */}
+            <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-border-hairline text-xs font-mono">
+              <div className="flex items-center gap-2.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="font-bold text-foreground uppercase tracking-wider text-[11px]">
+                  {spotlightEvent ? `AGENDA // ${spotlightEvent.type}` : 'SESI RUTIN // LAPAK BACA CFD'}
+                </span>
+                <span className="text-muted hidden sm:inline">&bull;</span>
+                <span className="text-muted hidden sm:inline text-[11px]">Kolektif Trotoar Blora</span>
+              </div>
+
+              <div className="flex items-center gap-2 text-muted text-[11px]">
+                <Calendar className="w-3.5 h-3.5 text-amber-500" />
+                <span className="font-bold text-foreground">
+                  {spotlightEvent
+                    ? new Date(spotlightEvent.startAt).toLocaleDateString('id-ID', {
+                        weekday: 'long',
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric',
+                      })
+                    : sundaySession.startAt.toLocaleDateString('id-ID', {
+                        weekday: 'long',
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric',
+                      })}
+                </span>
+              </div>
+            </div>
+
+            {/* Event Name & Narrative (Reading Focus First) */}
+            <div className="space-y-3 max-w-4xl">
+              <div className="inline-block px-2.5 py-0.5 border border-amber-500/50 bg-amber-500/10 text-amber-600 dark:text-amber-400 font-mono text-[9px] uppercase font-bold tracking-widest">
+                <span>✦ SOROTAN SESI TERDEKAT ✦</span>
+              </div>
+
+              <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-black text-foreground leading-[1.1] tracking-tight">
+                {spotlightEvent
+                  ? spotlightEvent.title
+                  : 'Lapak Baca Rutin Car Free Day Alun-Alun Blora'}
+              </h2>
+
+              <p className="font-serif text-base sm:text-lg text-foreground/85 leading-relaxed">
+                {spotlightEvent
+                  ? 'Agenda terdekat yang disiapkan oleh kolektif kawan-kawan perpusjal. Buka rincian lengkap untuk memesan kursi, mengklaim tiket QR kehadiran, atau melihat topik bahasan.'
+                  : 'Hamparan terpal biru di trotoar depan Pendopo Kabupaten Blora. Ambil buku yang kamu pesan lewat website ini, baca bersila di bawah pepohonan, nikmati mewarnai gambar fabel untuk anak-anak, atau sekadar berbincang hangat.'}
+              </p>
+
+              {/* 3 Key Venue Pillars Strip */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 font-mono text-xs text-muted">
+                <div className="flex items-center gap-2 p-2.5 bg-surface-muted/50 border border-border-hairline rounded-xs">
+                  <Clock className="w-4 h-4 text-amber-500 shrink-0" />
+                  <span className="text-foreground font-semibold">
+                    {spotlightEvent
+                      ? `${new Date(spotlightEvent.startAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })} - ${new Date(spotlightEvent.endAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })} WIB`
+                      : '06.00 – 09.00 WIB (Pagi)'}
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2 p-2.5 bg-surface-muted/50 border border-border-hairline rounded-xs truncate">
+                  <MapPin className="w-4 h-4 text-amber-500 shrink-0" />
+                  <span className="text-foreground font-semibold truncate">
+                    {spotlightEvent
+                      ? spotlightEvent.locationName
+                      : 'Depan Pendopo Kabupaten Blora'}
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2 p-2.5 bg-surface-muted/50 border border-border-hairline rounded-xs">
+                  <Users className="w-4 h-4 text-amber-500 shrink-0" />
+                  <span className="text-foreground font-semibold">
+                    {spotlightEvent && spotlightEvent.quota
+                      ? `${spotlightEvent.registeredCount}/${spotlightEvent.quota} Terdaftar`
+                      : 'Terbuka Umum (Bebas Hadir)'}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Embedded Countdown Ribbon (Integrated Natural Flow) */}
+            <div>
               <EventCountdown
+                variant="embedded"
                 targetDate={spotlightEvent ? spotlightEvent.startAt : sundaySession.startAt}
                 endDate={spotlightEvent ? spotlightEvent.endAt : sundaySession.endAt}
                 title={spotlightEvent?.title}
                 locationName={spotlightEvent?.locationName}
-                className="h-full flex flex-col justify-between"
               />
             </div>
 
-            {/* Right: Featured Session Context Box (5 cols) */}
-            <div className="lg:col-span-5 border-2 border-foreground bg-surface p-6 sm:p-7 flex flex-col justify-between space-y-6 shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] dark:shadow-[5px_5px_0px_0px_rgba(255,255,255,0.9)]">
-              <div className="space-y-4">
-                <div className="flex items-center justify-between border-b border-border-hairline pb-2.5 text-[10px] font-mono uppercase tracking-wider text-muted">
-                  <span className="font-bold text-foreground">
-                    {spotlightEvent ? `TIPE // ${spotlightEvent.type}` : 'SESI MINGGUAN CFD'}
-                  </span>
-                  <span className="text-emerald-600 dark:text-emerald-400 font-bold">
-                    ● AKTIF DIGELAR
-                  </span>
-                </div>
-
-                <h3 className="font-serif text-2xl sm:text-3xl font-black text-foreground leading-snug">
-                  {spotlightEvent
-                    ? spotlightEvent.title
-                    : 'Lapak Baca Rutin Car Free Day Alun-Alun Blora'}
-                </h3>
-
-                <p className="font-serif text-sm text-foreground/80 leading-relaxed">
-                  {spotlightEvent
-                    ? 'Agenda terdekat yang disiapkan oleh kolektif kawan-kawan perpusjal. Buka rincian untuk memastikan ketersediaan kursi atau topik diskusi.'
-                    : 'Hamparan terpal biru di trotoar depan Pendopo Kabupaten Blora. Ambil buku yang kamu pesan lewat website, baca bersila bersama kawan, atau nikmati mewarnai gambar fabel untuk anak-anak.'}
-                </p>
-
-                <div className="space-y-2 font-mono text-xs text-muted pt-2 border-t border-border-hairline">
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-3.5 h-3.5 text-foreground shrink-0" />
-                    <span>
-                      {spotlightEvent
-                        ? `${new Date(spotlightEvent.startAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })} - ${new Date(spotlightEvent.endAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })} WIB`
-                        : 'Pukul 06.00 – 09.00 WIB (Setiap Minggu Pagi)'}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <MapPin className="w-3.5 h-3.5 text-foreground shrink-0" />
-                    <span className="line-clamp-1">
-                      {spotlightEvent
-                        ? spotlightEvent.locationName
-                        : 'Depan Pendopo Kabupaten Blora (Alun-Alun Kota)'}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="pt-4 border-t border-border-hairline flex flex-wrap items-center gap-2.5">
+            {/* Action Bar */}
+            <div className="pt-2 flex flex-wrap items-center justify-between gap-4 border-t border-border-hairline">
+              <div className="flex flex-wrap items-center gap-3">
                 {spotlightEvent ? (
                   <Link
                     href={`/kegiatan/${spotlightEvent.slug}`}
-                    className="px-5 py-3 bg-foreground text-background font-mono text-xs font-bold uppercase tracking-wider hover:bg-foreground/90 transition-colors inline-flex items-center gap-2"
+                    className="px-6 py-3.5 bg-foreground text-background font-mono text-xs font-bold uppercase tracking-wider hover:bg-foreground/90 transition-colors inline-flex items-center gap-2 shadow-xs"
                   >
                     <span>RINCIAN &amp; TIKET QR</span>
                     <ArrowRight className="w-3.5 h-3.5" />
@@ -329,10 +367,10 @@ function EventCatalogContent() {
                     href="https://maps.google.com/?q=Alun-Alun+Blora"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-4 py-2.5 bg-foreground text-background font-mono text-xs font-bold uppercase tracking-wider hover:bg-foreground/90 transition-colors inline-flex items-center gap-1.5"
+                    className="px-5 py-3 bg-foreground text-background font-mono text-xs font-bold uppercase tracking-wider hover:bg-foreground/90 transition-colors inline-flex items-center gap-2 shadow-xs"
                   >
-                    <MapPin className="w-3.5 h-3.5" />
-                    <span>PETUNJUK LOKASI MAPS</span>
+                    <MapPin className="w-3.5 h-3.5 text-amber-400" />
+                    <span>PETUNJUK LOKASI DI GOOGLE MAPS</span>
                     <ExternalLink className="w-3 h-3" />
                   </a>
                 )}
@@ -341,13 +379,22 @@ function EventCatalogContent() {
                   href={googleCalUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-3.5 py-2.5 border border-foreground bg-surface hover:bg-foreground hover:text-background font-mono text-xs font-bold uppercase tracking-wider transition-colors inline-flex items-center gap-1.5"
-                  title="Tambahkan Pengingat ke Google Calendar"
+                  className="px-4 py-3 border-2 border-foreground bg-surface hover:bg-foreground hover:text-background font-mono text-xs font-bold uppercase tracking-wider transition-colors inline-flex items-center gap-1.5"
                 >
                   <CalendarPlus className="w-3.5 h-3.5 text-amber-500" />
-                  <span className="hidden sm:inline">SIMPAN KE KALENDER</span>
+                  <span>SIMPAN KE GOOGLE CALENDAR</span>
                 </a>
               </div>
+
+              <a
+                href="https://wa.me/6281234567890?text=Halo%20Perpusjal%20Blora,%20saya%20ingin%20bertanya%20tentang%20sesi%20lapak%20berikutnya"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-mono text-xs uppercase font-bold text-amber-600 dark:text-amber-400 hover:underline inline-flex items-center gap-1.5"
+              >
+                <MessageCircle className="w-3.5 h-3.5" />
+                <span>TANYA RELAWAN LAPAK &rarr;</span>
+              </a>
             </div>
           </div>
         </section>
