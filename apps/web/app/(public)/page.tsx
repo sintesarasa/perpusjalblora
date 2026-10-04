@@ -145,45 +145,60 @@ const ROTATING_WORDS = [
 ];
 
 /**
- * The Gaussian Dissolve:
- * Cinematic optical ink evaporation & focus transition.
- * Words dissolve into each other on the exact same baseline with zero vertical jumping.
+ * Underline / Highlight Sweep:
+ * An authentic broadsheet highlighter bar & ink underline sweep horizontally
+ * across the word from left to right, swapping the active verb seamlessly underneath.
  */
-function GaussianDissolveHeadline() {
+function HighlightSweepHeadline() {
   const [currentIdx, setCurrentIdx] = React.useState(0);
-  const [prevIdx, setPrevIdx] = React.useState<number | null>(null);
+  const [isSweeping, setIsSweeping] = React.useState(false);
 
   React.useEffect(() => {
     const timer = setInterval(() => {
-      setPrevIdx(currentIdx);
-      setCurrentIdx((prev) => (prev + 1) % ROTATING_WORDS.length);
+      setIsSweeping(true);
+
+      // In the middle of the sweep (270ms), swap word seamlessly
+      const midTimer = setTimeout(() => {
+        setCurrentIdx((prev) => (prev + 1) % ROTATING_WORDS.length);
+      }, 270);
+
+      // Finish sweep (540ms)
+      const endTimer = setTimeout(() => {
+        setIsSweeping(false);
+      }, 540);
+
+      return () => {
+        clearTimeout(midTimer);
+        clearTimeout(endTimer);
+      };
     }, 2200);
 
     return () => clearInterval(timer);
-  }, [currentIdx]);
+  }, []);
 
   return (
-    <span className="relative inline-block align-baseline min-w-[270px] sm:min-w-[440px]">
-      {/* Outgoing Dissolving Word */}
-      {prevIdx !== null && (
-        <span
-          key={`prev-${prevIdx}-${currentIdx}`}
-          className="absolute inset-0 block italic font-serif font-normal text-foreground animate-gaussian-out select-none pointer-events-none"
-        >
-          {ROTATING_WORDS[prevIdx]}
-        </span>
-      )}
-
-      {/* Incoming Sharp Word */}
-      <span
-        key={`curr-${currentIdx}`}
-        className={cn(
-          'block italic font-serif font-normal text-foreground',
-          prevIdx !== null ? 'animate-gaussian-in' : ''
-        )}
-      >
+    <span className="relative inline-block align-baseline py-1 px-1.5 min-w-[270px] sm:min-w-[440px]">
+      {/* Active Word */}
+      <span className="italic font-serif font-normal text-foreground inline-block">
         {ROTATING_WORDS[currentIdx]}
       </span>
+
+      {/* Highlighter Sweep Bar (Broadsheet Marker Tint) */}
+      {isSweeping && (
+        <span
+          aria-hidden="true"
+          className="absolute inset-0 bg-foreground/20 dark:bg-white/25 animate-highlight-sweep pointer-events-none rounded-2xs"
+        />
+      )}
+
+      {/* Editorial Ink Underline Sweep */}
+      <span
+        aria-hidden="true"
+        className={cn(
+          'absolute -bottom-1 left-0 right-0 h-[3px] bg-foreground transition-all duration-300',
+          isSweeping ? 'animate-underline-sweep' : 'scale-x-100 opacity-60'
+        )}
+      />
     </span>
   );
 }
@@ -327,10 +342,10 @@ export default function HomePage() {
                     <span>RUANG PERJUMPAAN MERDEKA</span>
                   </div>
 
-                  {/* Monumental Headline: MEMBACA DAN [GAUSSIAN DISSOLVE] */}
+                  {/* Monumental Headline: MEMBACA DAN [HIGHLIGHT SWEEP] */}
                   <h1 className="font-serif font-black uppercase text-foreground leading-[1.02] sm:leading-[0.92] tracking-tight text-4xl sm:text-6xl md:text-7xl lg:text-8xl break-words">
                     MEMBACA DAN <br />
-                    <GaussianDissolveHeadline />
+                    <HighlightSweepHeadline />
                   </h1>
 
                   <p className="drop-cap font-serif text-lg sm:text-xl text-foreground/90 leading-relaxed max-w-2xl">
