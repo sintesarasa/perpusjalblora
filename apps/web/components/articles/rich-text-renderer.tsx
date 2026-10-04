@@ -20,6 +20,21 @@ interface RichTextRendererProps {
   withDropCap?: boolean;
 }
 
+/**
+ * Fast, secure zero-dependency HTML sanitizer for editorial rich text rendering
+ * Strips executable scripts, event handlers, and dangerous tags
+ */
+function sanitizeEditorialHtml(raw: string): string {
+  if (!raw) return '';
+
+  return raw
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+    .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
+    .replace(/<\/?(iframe|object|embed|applet|form|input|button|select|textarea|base|meta|link)\b[^>]*>/gi, '')
+    .replace(/\s+(href|src)\s*=\s*["']\s*(javascript|vbscript|data):[^"']*["']/gi, ' $1="#"')
+    .replace(/\s+on\w+\s*=\s*(["'][^"']*["']|[^\s>]+)/gi, '');
+}
+
 export function RichTextRenderer({
   content,
   className,
@@ -36,7 +51,7 @@ export function RichTextRenderer({
       return (
         <div
           className={cn('editorial-prose font-serif text-lg leading-[1.8] space-y-6', className)}
-          dangerouslySetInnerHTML={{ __html: content }}
+          dangerouslySetInnerHTML={{ __html: sanitizeEditorialHtml(content) }}
         />
       );
     }

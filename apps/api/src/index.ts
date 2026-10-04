@@ -124,7 +124,7 @@ app.get('/api/v1', (req, res) => {
 app.use(errorHandler);
 
 if (process.env.NODE_ENV !== 'test') {
-  app.listen(PORT, () => {
+  const server = app.listen(PORT, () => {
     console.log(`📖 Perpusjal API v3 running on port ${PORT}`);
     console.log(`📡 Health check: http://localhost:${PORT}/health`);
 
@@ -134,6 +134,36 @@ if (process.env.NODE_ENV !== 'test') {
     // Start article publish scheduler (every 5 minutes — auto-publish SCHEDULED articles)
     articleSchedulerService.startScheduler();
   });
+
+  // Global Process Error Handlers
+  process.on('unhandledRejection', (reason: unknown) => {
+    console.error('💥 [Server Process] Unhandled Rejection at:', reason);
+  });
+
+  process.on('uncaughtException', (error: Error) => {
+    console.error('💥 [Server Process] Uncaught Exception thrown:', error);
+  });
+
+  // Graceful Shutdown
+  const gracefulShutdown = async (signal: string) => {
+    console.log(`\n🛑 [Server Process] Menerima sinyal ${signal}. Menutup server secara aman...`);
+    try {
+      circulationSchedulerService.stopScheduler();
+      articleSchedulerService.stopScheduler();
+      server.close(async () => {
+        console.log('🔒 Server HTTP ditutup.');
+        await prisma.$disconnect();
+        console.log('✅ Koneksi database Prisma terputus secara bersih.');
+        process.exit(0);
+      });
+    } catch (err) {
+      console.error('⚠️ Gagal memutus koneksi secara bersih:', err);
+      process.exit(1);
+    }
+  };
+
+  process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+  process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 }
 
 export default app;

@@ -172,10 +172,14 @@ export class CirculationSchedulerService {
     return { expiredCount, overdueCount, reminderCount };
   }
 
+  private schedulerInterval: ReturnType<typeof setInterval> | null = null;
+
   /**
    * Start recurring background loop (e.g. every 1 hour)
    */
   startScheduler(intervalMs: number = 60 * 60 * 1000) {
+    if (this.schedulerInterval) return this.schedulerInterval;
+
     // Run initial maintenance on boot (after 10s delay to allow DB ready)
     setTimeout(() => {
       this.runMaintenance()
@@ -192,7 +196,7 @@ export class CirculationSchedulerService {
     }, 10000);
 
     // Schedule regular hourly checks
-    const timer = setInterval(() => {
+    this.schedulerInterval = setInterval(() => {
       this.runMaintenance()
         .then((res) => {
           if (res.expiredCount > 0 || res.overdueCount > 0 || res.reminderCount > 0) {
@@ -206,7 +210,15 @@ export class CirculationSchedulerService {
         });
     }, intervalMs);
 
-    return timer;
+    return this.schedulerInterval;
+  }
+
+  stopScheduler(): void {
+    if (this.schedulerInterval) {
+      clearInterval(this.schedulerInterval);
+      this.schedulerInterval = null;
+      console.log('⚡ [CirculationScheduler] Scheduler dihentikan.');
+    }
   }
 }
 
