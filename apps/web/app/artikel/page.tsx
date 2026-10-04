@@ -10,8 +10,6 @@ import { ArticleCard } from '@/components/articles/article-card';
 import { ArticleGridSkeleton } from '@/components/articles/article-card-skeleton';
 import { ArticleQuickReadDrawer } from '@/components/articles/article-quick-read-drawer';
 import { CitizenContributorsSidebar } from '@/components/articles/citizen-contributors-sidebar';
-import { StickyGazetteStreamer } from '@/components/articles/sticky-gazette-streamer';
-import { ScrollRotatingSeal } from '@/components/articles/scroll-rotating-seal';
 import { Pagination } from '@/components/ui/pagination';
 import { EmptyState } from '@/components/ui/empty-state';
 import { RevealOnScroll } from '@/components/ui/reveal-on-scroll';
@@ -217,14 +215,6 @@ function ArticlesCatalogContent() {
         }}
       />
 
-      {/* ── EFKEK 1: Sticky Gazette Masthead Streamer with Ink Reading Progress ── */}
-      <StickyGazetteStreamer
-        totalCount={totalCount}
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onFocusSearch={focusSearchInput}
-      />
-
       <Header />
 
       <main className="flex-1 pb-16 sm:pb-24">
@@ -236,9 +226,6 @@ function ArticlesCatalogContent() {
           <div className="absolute right-0 top-1/2 -translate-y-1/2 opacity-[0.03] pointer-events-none font-serif text-[160px] sm:text-[260px] font-black leading-none text-foreground tracking-tighter">
             WARGA
           </div>
-
-          {/* EFEK 4: Stempel Redaksi Berputar saat Halaman Digulir */}
-          <ScrollRotatingSeal className="hidden md:flex absolute right-6 sm:right-10 top-12 sm:top-16 opacity-85 z-20" size={115} />
 
           {/* Top Vintage Gazette Bar */}
           <div className="flex flex-wrap items-center justify-between border-b border-border-hairline pb-3 mb-8 sm:mb-12 text-[10px] sm:text-[11px] font-mono uppercase tracking-widest text-muted gap-2 relative z-10">
@@ -599,46 +586,48 @@ function ArticlesCatalogContent() {
         {/* 5. MAKLUMAT REDAKSI: MIMBAR BEBAS WARGA                   */}
         {/* ========================================================= */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 sm:pt-24">
-          <div className="border-2 border-foreground p-8 sm:p-12 lg:p-14 bg-foreground text-background relative overflow-hidden shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.9)]">
-            {/* Watermark icon */}
-            <div className="absolute -right-8 -bottom-8 opacity-10 pointer-events-none text-background">
-              <FileText className="w-72 h-72" />
-            </div>
-
-            <div className="relative z-10 max-w-3xl space-y-6">
-              <div className="flex items-center gap-2 font-mono text-[10px] sm:text-xs uppercase tracking-[0.2em] text-background/80 border-b border-background/20 pb-3">
-                <span className="w-2.5 h-2.5 bg-background inline-block" />
-                <span className="font-bold">MAKLUMAT REDAKSI // MIMBAR BEBAS WARGA BLORA</span>
+          <RevealOnScroll variant="stamp" delayMs={50}>
+            <div className="border-2 border-foreground p-8 sm:p-12 lg:p-14 bg-foreground text-background relative overflow-hidden shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.9)]">
+              {/* Watermark icon */}
+              <div className="absolute -right-8 -bottom-8 opacity-10 pointer-events-none text-background">
+                <FileText className="w-72 h-72" />
               </div>
 
-              <h2 className="font-serif text-2xl sm:text-4xl lg:text-5xl font-black text-background tracking-tight leading-tight">
-                Punya catatan lapak, resensi buku, atau keresahan tentang tanah Blora?
-              </h2>
+              <div className="relative z-10 max-w-3xl space-y-6">
+                <div className="flex items-center gap-2 font-mono text-[10px] sm:text-xs uppercase tracking-[0.2em] text-background/80 border-b border-background/20 pb-3">
+                  <span className="w-2.5 h-2.5 bg-background inline-block" />
+                  <span className="font-bold">MAKLUMAT REDAKSI // MIMBAR BEBAS WARGA BLORA</span>
+                </div>
 
-              <p className="font-serif text-base sm:text-lg text-background/85 leading-relaxed">
-                Perpusjal Blora adalah panggung terbuka tanpa kurasi elitis. Tulisanmu akan dibaca oleh sesama warga,
-                pegiat literasi, dan pengunjung lapak Car Free Day di bawah rindang pohon trembesi. Tuliskan suaramu, karena yang tertulis abadi.
-              </p>
+                <h2 className="font-serif text-2xl sm:text-4xl lg:text-5xl font-black text-background tracking-tight leading-tight">
+                  Punya catatan lapak, resensi buku, atau keresahan tentang tanah Blora?
+                </h2>
 
-              <div className="pt-2 flex flex-wrap items-center gap-4">
-                <Link
-                  href="/dashboard/tulisan"
-                  className="px-6 py-3.5 bg-background text-foreground font-mono text-xs uppercase tracking-wider font-bold hover:bg-background/90 transition-all inline-flex items-center gap-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.5)] active:translate-x-0.5 active:translate-y-0.5"
-                >
-                  <PenTool className="w-4 h-4" />
-                  <span>Mulai Menulis Naskah Baru</span>
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
+                <p className="font-serif text-base sm:text-lg text-background/85 leading-relaxed">
+                  Perpusjal Blora adalah panggung terbuka tanpa kurasi elitis. Tulisanmu akan dibaca oleh sesama warga,
+                  pegiat literasi, dan pengunjung lapak Car Free Day di bawah rindang pohon trembesi. Tuliskan suaramu, karena yang tertulis abadi.
+                </p>
 
-                <Link
-                  href="/tentang"
-                  className="font-mono text-xs uppercase tracking-wider text-background/80 hover:text-background underline underline-offset-4"
-                >
-                  Pelajari Nilai &amp; Gerakan Perpusjal &rarr;
-                </Link>
+                <div className="pt-2 flex flex-wrap items-center gap-4">
+                  <Link
+                    href="/dashboard/tulisan"
+                    className="px-6 py-3.5 bg-background text-foreground font-mono text-xs uppercase tracking-wider font-bold hover:bg-background/90 transition-all inline-flex items-center gap-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.5)] active:translate-x-0.5 active:translate-y-0.5"
+                  >
+                    <PenTool className="w-4 h-4" />
+                    <span>Mulai Menulis Naskah Baru</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </Link>
+
+                  <Link
+                    href="/tentang"
+                    className="font-mono text-xs uppercase tracking-wider text-background/80 hover:text-background underline underline-offset-4"
+                  >
+                    Pelajari Nilai &amp; Gerakan Perpusjal &rarr;
+                  </Link>
+                </div>
               </div>
             </div>
-          </div>
+          </RevealOnScroll>
         </section>
       </main>
 
