@@ -235,11 +235,11 @@ export default function HomePage() {
 
       <main className="flex-1">
         {/* ========================================================= */}
-        {/* 1. FRONT-PAGE HERO: ONE SINGLE VIEW (LAPTOP & DESKTOP)     */}
+        {/* 1. FRONT-PAGE HERO: THE BROADSHEET MASTHEAD (ELEGANT)     */}
         {/* ========================================================= */}
         <section
           onMouseMove={handleHeroMouseMove}
-          className="border-b-2 border-foreground max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-7 lg:py-6 xl:py-8 lg:min-h-[calc(100svh-4rem)] lg:max-h-[880px] lg:flex lg:flex-col lg:justify-between relative overflow-hidden"
+          className="border-b-2 border-foreground max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12 lg:pt-14 pb-12 sm:pb-16 lg:pb-18 relative overflow-hidden"
         >
           {/* Subtle Typography Watermark */}
           <div
@@ -253,7 +253,7 @@ export default function HomePage() {
           </div>
 
           {/* Authentic Gazette Masthead Top Ledger */}
-          <div className="flex flex-wrap items-center justify-between border-b border-border-hairline pb-2 mb-4 sm:mb-6 lg:mb-5 text-[9.5px] sm:text-[10.5px] font-mono uppercase tracking-widest text-muted gap-2 relative z-10 shrink-0">
+          <div className="flex flex-wrap items-center justify-between border-b border-border-hairline pb-3 mb-8 sm:mb-10 lg:mb-12 text-[10px] sm:text-[11px] font-mono uppercase tracking-widest text-muted gap-2 relative z-10">
             <div className="flex items-center gap-2 sm:gap-3">
               <BrandStamp edition="KRONIK UTAMA" year="2026" />
               <span className="hidden sm:inline">[ EDISI RESMI // GERAKAN SWADAYA RAKYAT ]</span>
@@ -265,25 +265,25 @@ export default function HomePage() {
             <div className="hidden lg:block">BLORA, JAWA TENGAH &bull; RUANG BACA RAKYAT</div>
           </div>
 
-          {/* Main Hero Split Content: Perfectly Proportioned */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 xl:gap-12 relative z-10 items-stretch my-auto flex-1">
+          {/* Main Hero Split Content: Natural & Harmonious */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 xl:gap-16 relative z-10 items-start">
             {/* Left Column (7 cols): Lead Editorial & Actions */}
-            <div className="lg:col-span-7 flex flex-col justify-between space-y-4 sm:space-y-6 lg:space-y-4 xl:space-y-6">
+            <div className="lg:col-span-7 space-y-6 sm:space-y-8">
               <RevealOnScroll variant="fade-up" delayMs={100}>
-                <div className="space-y-3 sm:space-y-4 lg:space-y-3.5 xl:space-y-5">
-                  <div className="inline-flex items-center gap-2 px-2.5 py-0.5 border border-foreground font-mono text-[8.5px] sm:text-[9.5px] tracking-widest uppercase font-bold bg-foreground text-background">
+                <div className="space-y-5 sm:space-y-6">
+                  <div className="inline-flex items-center gap-2 px-2.5 py-1 border border-foreground font-mono text-[9px] sm:text-[10px] tracking-widest uppercase font-bold bg-foreground text-background">
                     <span>RUANG PERJUMPAAN MERDEKA</span>
                   </div>
 
                   {/* Monumental Headline: MEMBACA DAN BERBAHAGIA */}
-                  <h1 className="font-serif font-black uppercase text-foreground leading-[1.0] sm:leading-[0.94] tracking-tight text-3xl sm:text-5xl md:text-6xl lg:text-[44px] xl:text-[66px] break-words">
+                  <h1 className="font-serif font-black uppercase text-foreground text-4xl sm:text-6xl md:text-7xl lg:text-7xl xl:text-8xl leading-[1.02] sm:leading-[0.92] tracking-tight break-words">
                     MEMBACA DAN <br />
                     <span className="italic font-serif font-normal text-foreground">
                       BERBAHAGIA.
                     </span>
                   </h1>
 
-                  <p className="drop-cap font-serif text-sm sm:text-base lg:text-[15px] xl:text-lg text-foreground/90 leading-relaxed max-w-xl xl:max-w-2xl">
+                  <p className="drop-cap font-serif text-lg sm:text-xl text-foreground/90 leading-relaxed max-w-2xl">
                     Kami mengembalikan buku ke tempat ia seharusnya bermula: di ruang-ruang terbuka
                     tempat percakapan merdeka dirawat, di bawah naungan pohon trembesi alun-alun kota,
                     hingga tepian hutan jati. Tanpa uang jaminan, tanpa denda rupiah, dan tanpa sekat kelas sosial.
@@ -293,10 +293,10 @@ export default function HomePage() {
 
               {/* Action Buttons Bar */}
               <RevealOnScroll variant="fade-up" delayMs={200}>
-                <div className="pt-3 sm:pt-4 border-t border-border-hairline flex flex-wrap gap-2.5 sm:gap-3.5 items-center">
+                <div className="pt-4 border-t border-border-hairline flex flex-wrap gap-3 sm:gap-4 items-center">
                   <Link
                     href="/buku"
-                    className="w-full sm:w-auto px-5 py-3 sm:px-6 sm:py-3.5 bg-foreground text-background font-mono text-[11px] sm:text-xs font-bold uppercase tracking-wider hover:bg-foreground/90 transition-all shadow-xs inline-flex items-center justify-center gap-2"
+                    className="px-6 py-3.5 bg-foreground text-background font-mono text-xs font-bold uppercase tracking-wider hover:bg-foreground/90 transition-all shadow-xs inline-flex items-center gap-2"
                   >
                     <BookOpen className="w-4 h-4" />
                     <span>TELUSURI KATALOG KOLEKSI</span>
@@ -305,7 +305,7 @@ export default function HomePage() {
 
                   <Link
                     href="/artikel"
-                    className="w-full sm:w-auto px-4 py-3 sm:px-5 sm:py-3.5 border-2 border-foreground bg-surface hover:bg-foreground hover:text-background font-mono text-[11px] sm:text-xs font-bold uppercase tracking-wider transition-colors inline-flex items-center justify-center gap-2"
+                    className="px-5 py-3.5 border-2 border-foreground bg-surface hover:bg-foreground hover:text-background font-mono text-xs font-bold uppercase tracking-wider transition-colors inline-flex items-center gap-2"
                   >
                     <Feather className="w-4 h-4" />
                     <span>BACA WARTA WARGA</span>
@@ -315,19 +315,19 @@ export default function HomePage() {
             </div>
 
             {/* Right Column (5 cols): Editorial Column & Chronicle Manifesto */}
-            <div className="lg:col-span-5 border-t-2 lg:border-t-0 lg:border-l-2 border-foreground pt-6 lg:pt-0 lg:pl-6 xl:pl-8 flex flex-col justify-between space-y-4 lg:space-y-4 xl:space-y-6">
+            <div className="lg:col-span-5 border-t-2 lg:border-t-0 lg:border-l-2 border-foreground pt-8 lg:pt-0 lg:pl-8 xl:pl-10 space-y-6 sm:space-y-8">
               {/* Quote Card (Catatan Pinggir Falsafah) */}
               <RevealOnScroll variant="slide-right" delayMs={200}>
-                <div className="space-y-3 sm:space-y-3.5">
-                  <div className="text-[9.5px] sm:text-[10px] font-mono uppercase tracking-ultra text-muted flex items-center gap-1.5">
-                    <Quote className="w-3 h-3 text-foreground" />
+                <div className="space-y-4">
+                  <div className="text-[10px] font-mono uppercase tracking-ultra text-muted flex items-center gap-1.5">
+                    <Quote className="w-3.5 h-3.5 text-foreground" />
                     <span>[ CATATAN PINGGIR // FALSAFAH ]</span>
                   </div>
-                  <blockquote className="font-serif italic text-lg sm:text-2xl lg:text-lg xl:text-2xl text-foreground leading-snug">
+                  <blockquote className="font-serif italic text-xl sm:text-2xl lg:text-2xl text-foreground leading-snug">
                     &ldquo;Buku tidak bernilai jika hanya berdebu di lemari kaca. Ia hidup saat disentuh
                     jemari dan diperdebatkan di lapak trotoar.&rdquo;
                   </blockquote>
-                  <cite className="block font-mono text-[10px] sm:text-[11px] uppercase tracking-wider text-muted not-italic">
+                  <cite className="block font-mono text-[11px] uppercase tracking-wider text-muted not-italic">
                     — Dewan Kolektif Perpusjal Blora
                   </cite>
                 </div>
@@ -335,23 +335,23 @@ export default function HomePage() {
 
               {/* Chronicle Movement Manifesto Card */}
               <RevealOnScroll variant="fade-up" delayMs={300}>
-                <div className="border-2 border-foreground p-4 sm:p-5 lg:p-4 xl:p-5 bg-surface font-mono space-y-2.5 sm:space-y-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.9)]">
-                  <div className="flex items-center justify-between pb-2 border-b border-border-hairline text-[9.5px] sm:text-[10px] uppercase tracking-widest text-muted">
+                <div className="border-2 border-foreground p-5 sm:p-6 bg-surface font-mono space-y-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.9)]">
+                  <div className="flex items-center justify-between pb-2.5 border-b border-border-hairline text-[10px] uppercase tracking-widest text-muted">
                     <span>KRONIK GERAKAN // BLORA</span>
                     <span className="font-bold text-foreground">SWADAYA RAKYAT</span>
                   </div>
 
-                  <p className="font-serif text-xs sm:text-sm lg:text-xs xl:text-sm text-foreground/85 leading-relaxed">
+                  <p className="font-serif text-sm text-foreground/85 leading-relaxed">
                     Tumbuh di tanah kelahiran Pramoedya Ananta Toer dan ajaran Sedulur Sikep Samin Surosentiko.
                     Sebuah ruang perjumpaan literasi yang dirawat bersama warga untuk merawat nalar sehat dan
                     kemerdekaan berpikir.
                   </p>
 
-                  <div className="pt-2 border-t border-border-hairline flex items-center justify-between text-[10px] sm:text-[10.5px] font-bold">
-                    <span className="text-muted uppercase tracking-wider">&bull; 100% BEBAS BIAYA</span>
+                  <div className="pt-2.5 border-t border-border-hairline flex items-center justify-between text-[11px] font-bold">
+                    <span className="text-muted text-[10px] uppercase tracking-wider">&bull; 100% BEBAS BIAYA</span>
                     <Link
                       href="/tentang"
-                      className="text-foreground hover:underline inline-flex items-center gap-1 uppercase tracking-wider"
+                      className="text-foreground hover:underline inline-flex items-center gap-1 uppercase tracking-wider text-[10.5px]"
                     >
                       <span>KENALI KISAH KAMI</span>
                       <ArrowRight className="w-3 h-3" />
