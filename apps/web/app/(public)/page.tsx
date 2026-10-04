@@ -30,6 +30,8 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { SmoothScroll } from '@/components/ui/smooth-scroll';
+import { MaskedReveal, ParallaxItem, ScrollScale } from '@/components/ui/parallax-layer';
 
 // High-fidelity fallback books for initial render before API responds
 const INITIAL_CURATED_BOOKS = [
@@ -243,57 +245,65 @@ export default function HomePage() {
   const displayBooks = books.length > 0 ? books : INITIAL_CURATED_BOOKS;
 
   return (
-    <div className="flex flex-col min-h-screen bg-background text-foreground selection:bg-foreground selection:text-background editorial-grain">
-      <Header />
+    <SmoothScroll>
+      <div className="flex flex-col min-h-screen bg-background text-foreground selection:bg-foreground selection:text-background editorial-grain">
+        <Header />
 
-      <main className="flex-1">
-        {/* ========================================================= */}
-        {/* 1. FRONT-PAGE HERO: THE KINETIC BROADSHEET MASTHEAD        */}
-        {/* ========================================================= */}
-        <section
-          onMouseMove={handleHeroMouseMove}
-          className="border-b-2 border-foreground max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-14 pb-14 sm:pb-20 relative overflow-hidden"
-        >
-          {/* Parallax Floating Typography Watermark */}
-          <div
-            style={{
-              transform: `translate3d(${heroMouseOffset.x * 1.5}px, ${heroMouseOffset.y * 1.5}px, 0)`,
-              transition: 'transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1)',
-            }}
-            className="absolute right-0 top-1/2 -translate-y-1/2 opacity-[0.035] select-none pointer-events-none font-serif text-[180px] sm:text-[300px] font-black leading-none text-foreground tracking-tighter"
+        <main className="flex-1">
+          {/* ========================================================= */}
+          {/* 1. FRONT-PAGE HERO: THE KINETIC BROADSHEET MASTHEAD        */}
+          {/* ========================================================= */}
+          <section
+            onMouseMove={handleHeroMouseMove}
+            className="border-b-2 border-foreground max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-14 pb-14 sm:pb-20 relative overflow-hidden"
           >
-            PERPUSJAL
-          </div>
+            {/* Parallax Floating Typography Watermark (Differential Scroll Speed) */}
+            <ParallaxItem speed={-0.12} className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none select-none z-0">
+              <div
+                style={{
+                  transform: `translate3d(${heroMouseOffset.x * 1.5}px, ${heroMouseOffset.y * 1.5}px, 0)`,
+                  transition: 'transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1)',
+                }}
+                className="opacity-[0.035] font-serif text-[180px] sm:text-[300px] font-black leading-none text-foreground tracking-tighter"
+              >
+                PERPUSJAL
+              </div>
+            </ParallaxItem>
 
-          {/* Authentic Gazette Masthead Top Ledger */}
-          <div className="flex flex-wrap items-center justify-between border-b border-border-hairline pb-3.5 mb-10 sm:mb-14 text-[10px] sm:text-[11px] font-mono uppercase tracking-widest text-muted gap-2 relative z-10">
-            <div className="flex items-center gap-2 sm:gap-3">
-              <BrandStamp edition="KRONIK UTAMA" year="2026" />
-              <span className="hidden sm:inline">[ EDISI RESMI // GERAKAN SWADAYA RAKYAT ]</span>
+            {/* Authentic Gazette Masthead Top Ledger */}
+            <div className="flex flex-wrap items-center justify-between border-b border-border-hairline pb-3.5 mb-10 sm:mb-14 text-[10px] sm:text-[11px] font-mono uppercase tracking-widest text-muted gap-2 relative z-10">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <BrandStamp edition="KRONIK UTAMA" year="2026" />
+                <span className="hidden sm:inline">[ EDISI RESMI // GERAKAN SWADAYA RAKYAT ]</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-foreground font-semibold">LAPAK CFD: SETIAP MINGGU PAGI</span>
+              </div>
+              <div className="hidden lg:block">BLORA, JAWA TENGAH &bull; RUANG BACA RAKYAT</div>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-foreground font-semibold">LAPAK CFD: SETIAP MINGGU PAGI</span>
-            </div>
-            <div className="hidden lg:block">BLORA, JAWA TENGAH &bull; RUANG BACA RAKYAT</div>
-          </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 relative z-10 items-start">
-            {/* Left Big Lead (8 cols) */}
-            <div className="lg:col-span-8 flex flex-col justify-between space-y-8">
-              <RevealOnScroll variant="fade-up" delayMs={100}>
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 relative z-10 items-start">
+              {/* Left Big Lead (8 cols) */}
+              <div className="lg:col-span-8 flex flex-col justify-between space-y-8">
                 <div className="space-y-5 sm:space-y-7">
                   <div className="inline-flex items-center gap-2 px-3 py-1 border border-foreground font-mono text-[9px] sm:text-[10px] tracking-widest uppercase font-bold bg-foreground text-background">
                     <span>RUANG PERJUMPAAN MERDEKA</span>
                   </div>
 
-                  {/* Monumental Headline: MEMBACA DAN BERBAHAGIA */}
-                  <h1 className="font-serif font-black uppercase text-foreground leading-[1.02] sm:leading-[0.92] tracking-tight text-4xl sm:text-6xl md:text-7xl lg:text-8xl break-words">
-                    MEMBACA DAN <br />
-                    <span className="italic font-serif font-normal text-foreground">
-                      BERBAHAGIA.
-                    </span>
-                  </h1>
+                  {/* Monumental Headline: MEMBACA DAN BERBAHAGIA with Masked Reveal */}
+                  <div className="space-y-1 sm:space-y-2">
+                    <MaskedReveal delayMs={100}>
+                      <h1 className="font-serif font-black uppercase text-foreground leading-[1.0] sm:leading-[0.92] tracking-tight text-4xl sm:text-6xl md:text-7xl lg:text-8xl break-words">
+                        MEMBACA DAN
+                      </h1>
+                    </MaskedReveal>
+                    <MaskedReveal delayMs={220}>
+                      <span className="italic font-serif font-normal text-foreground leading-[1.0] sm:leading-[0.92] tracking-tight text-4xl sm:text-6xl md:text-7xl lg:text-8xl block">
+                        BERBAHAGIA.
+                      </span>
+                    </MaskedReveal>
+                  </div>
 
                   <p className="drop-cap font-serif text-lg sm:text-xl text-foreground/90 leading-relaxed max-w-2xl">
                     Kami mengembalikan buku ke tempat ia seharusnya bermula: di ruang-ruang terbuka
@@ -301,30 +311,29 @@ export default function HomePage() {
                     hingga tepian hutan jati. Tanpa uang jaminan, tanpa denda rupiah, dan tanpa sekat kelas sosial.
                   </p>
                 </div>
-              </RevealOnScroll>
 
-              {/* Action Buttons Bar (Clean 2-Action Streamline) */}
-              <RevealOnScroll variant="fade-up" delayMs={200}>
-                <div className="pt-4 border-t border-border-hairline flex flex-wrap gap-3 sm:gap-4 items-center">
-                  <Link
-                    href="/buku"
-                    className="px-6 py-3.5 bg-foreground text-background font-mono text-xs font-bold uppercase tracking-wider hover:bg-foreground/90 transition-all shadow-xs inline-flex items-center gap-2"
-                  >
-                    <BookOpen className="w-4 h-4" />
-                    <span>TELUSURI KATALOG KOLEKSI</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </Link>
+                {/* Action Buttons Bar (Clean 2-Action Streamline) */}
+                <RevealOnScroll variant="fade-up" delayMs={200}>
+                  <div className="pt-4 border-t border-border-hairline flex flex-wrap gap-3 sm:gap-4 items-center">
+                    <Link
+                      href="/buku"
+                      className="px-6 py-3.5 bg-foreground text-background font-mono text-xs font-bold uppercase tracking-wider hover:bg-foreground/90 transition-all shadow-xs inline-flex items-center gap-2"
+                    >
+                      <BookOpen className="w-4 h-4" />
+                      <span>TELUSURI KATALOG KOLEKSI</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
 
-                  <Link
-                    href="/artikel"
-                    className="px-5 py-3.5 border-2 border-foreground bg-surface hover:bg-foreground hover:text-background font-mono text-xs font-bold uppercase tracking-wider transition-colors inline-flex items-center gap-2"
-                  >
-                    <Feather className="w-4 h-4" />
-                    <span>BACA WARTA WARGA</span>
-                  </Link>
-                </div>
-              </RevealOnScroll>
-            </div>
+                    <Link
+                      href="/artikel"
+                      className="px-5 py-3.5 border-2 border-foreground bg-surface hover:bg-foreground hover:text-background font-mono text-xs font-bold uppercase tracking-wider transition-colors inline-flex items-center gap-2"
+                    >
+                      <Feather className="w-4 h-4" />
+                      <span>BACA WARTA WARGA</span>
+                    </Link>
+                  </div>
+                </RevealOnScroll>
+              </div>
 
             {/* Right Side Editorial Callout (4 cols) */}
             <div className="lg:col-span-4 border-t-2 lg:border-t-0 lg:border-l-2 border-foreground pt-8 lg:pt-0 lg:pl-8 flex flex-col justify-between space-y-6">
@@ -538,10 +547,11 @@ export default function HomePage() {
 
               {/* Right Column: Tactile Light-Sheen Press Pass (5 cols) */}
               <div className="lg:col-span-5 flex flex-col items-center">
-                <RevealOnScroll variant="stamp" delayMs={200} className="w-full max-w-md">
-                  <div
-                    ref={cardRef}
-                    onMouseMove={handleCardMouseMove}
+                <ScrollScale minScale={0.96} maxScale={1.02} className="w-full max-w-md">
+                  <RevealOnScroll variant="stamp" delayMs={200} className="w-full">
+                    <div
+                      ref={cardRef}
+                      onMouseMove={handleCardMouseMove}
                     onMouseLeave={handleCardMouseLeave}
                     style={{
                       transform: `perspective(1000px) rotateX(${cardTilt.rotateX}deg) rotateY(${cardTilt.rotateY}deg)`,
@@ -644,7 +654,8 @@ export default function HomePage() {
                     </div>
                   </div>
                 </RevealOnScroll>
-              </div>
+              </ScrollScale>
+            </div>
             </div>
           </div>
         </section>
@@ -806,5 +817,6 @@ export default function HomePage() {
 
       <Footer />
     </div>
-  );
+  </SmoothScroll>
+);
 }
