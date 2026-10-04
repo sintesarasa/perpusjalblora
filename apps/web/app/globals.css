@@ -245,8 +245,27 @@
 }
 
 .animate-underline-progress {
-  animation: underlineProgress 2400ms linear forwards;
+  animation: underlineProgress 3500ms linear forwards;
   will-change: transform;
+}
+
+/* Editorial Word Entrance (Silky Smooth Typography Shift) */
+@keyframes wordSmoothIn {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 8px, 0);
+    filter: blur(2px);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+    filter: blur(0px);
+  }
+}
+
+.animate-word-smooth-in {
+  animation: wordSmoothIn 380ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity, filter;
 }
 
 /* Editorial Drop Cap */

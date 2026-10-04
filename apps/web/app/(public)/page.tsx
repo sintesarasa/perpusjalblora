@@ -146,25 +146,56 @@ const ROTATING_WORDS = [
 
 /**
  * Single Editorial Loading Progress Underline:
- * - One clean horizontal track with an active ink indicator filling from 0% to 100%.
- * - Word updates in sync right when progress reaches 100% (2.4s cadence).
- * - Zero double-lines, zero highlight background box.
+ * - One clean horizontal track with an active ink indicator filling from 0% to 100% over 3.5s.
+ * - Silky smooth word transition: gentle dissolve out (220ms) followed by an elegant slide-in from below (380ms).
+ * - Zero double-lines, zero highlighter background box.
  */
 function LoadingUnderlineHeadline() {
   const [currentIdx, setCurrentIdx] = React.useState(0);
+  const [isExiting, setIsExiting] = React.useState(false);
 
   React.useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentIdx((prev) => (prev + 1) % ROTATING_WORDS.length);
-    }, 2400);
+    let isMounted = true;
+    let timerId: NodeJS.Timeout;
 
-    return () => clearInterval(timer);
+    const runCycle = () => {
+      // Step 1: Loading progress fills for 3500ms
+      timerId = setTimeout(() => {
+        if (!isMounted) return;
+        setIsExiting(true);
+
+        // Step 2: Smooth dissolve-out transition (220ms)
+        timerId = setTimeout(() => {
+          if (!isMounted) return;
+          setCurrentIdx((prev) => (prev + 1) % ROTATING_WORDS.length);
+          setIsExiting(false);
+
+          // Step 3: Run the next cycle
+          runCycle();
+        }, 220);
+      }, 3500);
+    };
+
+    runCycle();
+
+    return () => {
+      isMounted = false;
+      clearTimeout(timerId);
+    };
   }, []);
 
   return (
-    <span className="relative inline-block align-baseline px-1 py-0.5">
-      {/* Active Word (Solid Broadsheet Typography) */}
-      <span className="italic font-serif font-normal text-foreground inline-block tracking-tight pr-1.5">
+    <span className="relative inline-block align-baseline px-1 py-0.5 whitespace-nowrap">
+      {/* Active Word (Solid Broadsheet Typography with Smooth In/Out) */}
+      <span
+        key={currentIdx}
+        className={cn(
+          'italic font-serif font-normal text-foreground inline-block tracking-tight pr-1.5',
+          isExiting
+            ? 'opacity-0 -translate-y-2 blur-[1.5px] transition-all duration-200 ease-in'
+            : 'animate-word-smooth-in'
+        )}
+      >
         {ROTATING_WORDS[currentIdx]}
       </span>
 
