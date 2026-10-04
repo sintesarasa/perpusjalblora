@@ -291,51 +291,98 @@ function EventCatalogContent() {
               </div>
             </div>
 
-            {/* Event Name & Narrative (Reading Focus First) */}
-            <div className="space-y-3 max-w-4xl">
-              <div className="inline-block px-2.5 py-0.5 border border-amber-500/50 bg-amber-500/10 text-amber-600 dark:text-amber-400 font-mono text-[9px] uppercase font-bold tracking-widest">
-                <span>✦ SOROTAN SESI TERDEKAT ✦</span>
+            {/* Grid Layout: Left Narrative & Details (7 cols) + Right Tactile Photo Mockup (5 cols) */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+              {/* Left Column: Event Context */}
+              <div className="lg:col-span-7 space-y-4">
+                <div className="inline-block px-2.5 py-0.5 border border-amber-500/50 bg-amber-500/10 text-amber-600 dark:text-amber-400 font-mono text-[9px] uppercase font-bold tracking-widest">
+                  <span>✦ SOROTAN SESI TERDEKAT ✦</span>
+                </div>
+
+                <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-black text-foreground leading-[1.1] tracking-tight">
+                  {spotlightEvent
+                    ? spotlightEvent.title
+                    : 'Lapak Baca Rutin Car Free Day Alun-Alun Blora'}
+                </h2>
+
+                <p className="font-serif text-base sm:text-lg text-foreground/85 leading-relaxed">
+                  {spotlightEvent
+                    ? 'Agenda terdekat yang disiapkan oleh kolektif kawan-kawan perpusjal. Buka rincian lengkap untuk memesan kursi, mengklaim tiket QR kehadiran, atau melihat topik bahasan.'
+                    : 'Hamparan terpal biru di trotoar depan Pendopo Kabupaten Blora. Ambil buku yang kamu pesan lewat website ini, baca bersila di bawah naungan pohon trembesi, nikmati mewarnai gambar fabel untuk anak-anak, atau sekadar berbincang hangat.'}
+                </p>
+
+                {/* 3 Key Venue Pillars Strip */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-2 font-mono text-xs text-muted">
+                  <div className="flex items-center gap-2 p-2 bg-surface-muted/60 border border-border-hairline rounded-xs">
+                    <Clock className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                    <span className="text-foreground font-semibold text-[11px]">
+                      {spotlightEvent
+                        ? `${new Date(spotlightEvent.startAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })} - ${new Date(spotlightEvent.endAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })} WIB`
+                        : '06.00 – 09.00 WIB'}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2 p-2 bg-surface-muted/60 border border-border-hairline rounded-xs truncate">
+                    <MapPin className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                    <span className="text-foreground font-semibold text-[11px] truncate">
+                      {spotlightEvent
+                        ? spotlightEvent.locationName
+                        : 'Depan Pendopo Alun-Alun'}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2 p-2 bg-surface-muted/60 border border-border-hairline rounded-xs">
+                    <Users className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                    <span className="text-foreground font-semibold text-[11px]">
+                      {spotlightEvent && spotlightEvent.quota
+                        ? `${spotlightEvent.registeredCount}/${spotlightEvent.quota} Terdaftar`
+                        : 'Terbuka Umum'}
+                    </span>
+                  </div>
+                </div>
               </div>
 
-              <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-black text-foreground leading-[1.1] tracking-tight">
-                {spotlightEvent
-                  ? spotlightEvent.title
-                  : 'Lapak Baca Rutin Car Free Day Alun-Alun Blora'}
-              </h2>
+              {/* Right Column: Tactile Editorial Photography Mockup (5 cols) */}
+              <div className="lg:col-span-5 flex justify-center">
+                <div className="relative w-full max-w-sm sm:max-w-md bg-surface border-2 border-foreground p-3.5 shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] dark:shadow-[5px_5px_0px_0px_rgba(255,255,255,0.9)] select-none">
+                  {/* Top Photo Strip */}
+                  <div className="flex items-center justify-between pb-2 mb-2 border-b border-border-hairline font-mono text-[9px] uppercase tracking-widest text-muted">
+                    <span>[ DOKUMENTASI TROTOAR // LAPAK CFD ]</span>
+                    <span className="font-bold text-amber-600 dark:text-amber-400">2026</span>
+                  </div>
 
-              <p className="font-serif text-base sm:text-lg text-foreground/85 leading-relaxed">
-                {spotlightEvent
-                  ? 'Agenda terdekat yang disiapkan oleh kolektif kawan-kawan perpusjal. Buka rincian lengkap untuk memesan kursi, mengklaim tiket QR kehadiran, atau melihat topik bahasan.'
-                  : 'Hamparan terpal biru di trotoar depan Pendopo Kabupaten Blora. Ambil buku yang kamu pesan lewat website ini, baca bersila di bawah pepohonan, nikmati mewarnai gambar fabel untuk anak-anak, atau sekadar berbincang hangat.'}
-              </p>
+                  {/* Image Canvas Container */}
+                  <div className="relative aspect-[4/3] w-full overflow-hidden border border-foreground/30 bg-zinc-950">
+                    <img
+                      src={
+                        spotlightEvent?.coverImage ||
+                        'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=1000&q=80'
+                      }
+                      alt={spotlightEvent?.title || 'Suasana Lapak Baca Terpal Perpusjal Blora'}
+                      className="w-full h-full object-cover grayscale contrast-110 hover:grayscale-0 transition-all duration-500"
+                    />
 
-              {/* 3 Key Venue Pillars Strip */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 font-mono text-xs text-muted">
-                <div className="flex items-center gap-2 p-2.5 bg-surface-muted/50 border border-border-hairline rounded-xs">
-                  <Clock className="w-4 h-4 text-amber-500 shrink-0" />
-                  <span className="text-foreground font-semibold">
-                    {spotlightEvent
-                      ? `${new Date(spotlightEvent.startAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })} - ${new Date(spotlightEvent.endAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })} WIB`
-                      : '06.00 – 09.00 WIB (Pagi)'}
-                  </span>
-                </div>
+                    {/* Gradient Overlay for Mood */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-transparent pointer-events-none" />
 
-                <div className="flex items-center gap-2 p-2.5 bg-surface-muted/50 border border-border-hairline rounded-xs truncate">
-                  <MapPin className="w-4 h-4 text-amber-500 shrink-0" />
-                  <span className="text-foreground font-semibold truncate">
-                    {spotlightEvent
-                      ? spotlightEvent.locationName
-                      : 'Depan Pendopo Kabupaten Blora'}
-                  </span>
-                </div>
+                    {/* Vintage Corner Badge on Photo */}
+                    <div className="absolute top-2.5 right-2.5 px-2 py-0.5 bg-amber-500 text-black font-mono text-[8px] font-extrabold uppercase tracking-widest border border-black shadow-xs">
+                      ✦ TERPAL RAKYAT ✦
+                    </div>
 
-                <div className="flex items-center gap-2 p-2.5 bg-surface-muted/50 border border-border-hairline rounded-xs">
-                  <Users className="w-4 h-4 text-amber-500 shrink-0" />
-                  <span className="text-foreground font-semibold">
-                    {spotlightEvent && spotlightEvent.quota
-                      ? `${spotlightEvent.registeredCount}/${spotlightEvent.quota} Terdaftar`
-                      : 'Terbuka Umum (Bebas Hadir)'}
-                  </span>
+                    {/* Photo Caption Overlay */}
+                    <div className="absolute bottom-2.5 left-3 right-3 text-white">
+                      <p className="font-serif italic text-xs leading-snug drop-shadow-md">
+                        &ldquo;Buku menemukan jiwanya saat disentuh jemari dan diperbincangkan di trotoar.&rdquo;
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Bottom Photo Metadata */}
+                  <div className="pt-2.5 flex items-center justify-between font-mono text-[9.5px] text-muted">
+                    <span>Lesehan Alun-Alun Blora</span>
+                    <span className="font-bold text-foreground">RUANG BACA SWADAYA</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -395,90 +442,6 @@ function EventCatalogContent() {
                 <MessageCircle className="w-3.5 h-3.5" />
                 <span>TANYA RELAWAN LAPAK &rarr;</span>
               </a>
-            </div>
-          </div>
-        </section>
-
-        {/* ========================================================= */}
-        {/* 3. DUA SAYAP GERAKAN // TITIK RUANG BACA RUTIN            */}
-        {/* ========================================================= */}
-        <section className="border-t-2 border-foreground pt-10 sm:pt-14 space-y-8">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between pb-3 border-b-2 border-foreground gap-4">
-            <div>
-              <div className="text-[10px] font-mono uppercase tracking-ultra text-muted">
-                [ BASIS FISIK // TITIK SAYAP ]
-              </div>
-              <h2 className="font-serif text-3xl sm:text-4xl font-black uppercase tracking-tight text-foreground">
-                Tiga Titik Nyala Gerakan
-              </h2>
-            </div>
-            <p className="font-mono text-xs text-muted max-w-sm">
-              Tempat di mana buku fisik digelar dan kawan-kawan relawan berkumpul secara berkala.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Wing 1: Kota CFD */}
-            <div className="border-2 border-foreground bg-surface p-6 flex flex-col justify-between space-y-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.9)] group hover:border-amber-500 transition-colors">
-              <div className="space-y-3">
-                <div className="flex items-center justify-between font-mono text-[10px] uppercase text-muted tracking-widest pb-2 border-b border-border-hairline">
-                  <span>01 // SAYAP KOTA</span>
-                  <Coffee className="w-4 h-4 text-amber-500" />
-                </div>
-                <h3 className="font-serif text-2xl font-black text-foreground leading-tight">
-                  Lapak CFD Alun-Alun
-                </h3>
-                <p className="font-serif text-xs text-foreground/80 leading-relaxed">
-                  Ruang temu mingguan di pusat kota. Digelar setiap Minggu pagi pukul 06.00 – 09.00 WIB
-                  di depan Pendopo Kabupaten Blora. Tempat pengambilan pesanan buku daring dan ruang baca trotoar.
-                </p>
-              </div>
-              <div className="pt-3 border-t border-border-hairline font-mono text-[10.5px] text-muted flex items-center justify-between">
-                <span className="font-bold text-foreground">Minggu 06.00 – 09.00 WIB</span>
-                <span className="text-amber-600 dark:text-amber-400 font-bold">RUTIN</span>
-              </div>
-            </div>
-
-            {/* Wing 2: Sayap Hutan Doplang */}
-            <div className="border-2 border-foreground bg-surface p-6 flex flex-col justify-between space-y-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.9)] group hover:border-amber-500 transition-colors">
-              <div className="space-y-3">
-                <div className="flex items-center justify-between font-mono text-[10px] uppercase text-muted tracking-widest pb-2 border-b border-border-hairline">
-                  <span>02 // SAYAP HUTAN</span>
-                  <TreePine className="w-4 h-4 text-emerald-600" />
-                </div>
-                <h3 className="font-serif text-2xl font-black text-foreground leading-tight">
-                  Mata Air Sendang Salak
-                </h3>
-                <p className="font-serif text-xs text-foreground/80 leading-relaxed">
-                  Sayap literasi di Blora Selatan (Tanggel, Kecamatan Doplang). Mendekatkan buku dongeng dan
-                  sains ke desa tepian hutan, serta menjadi lokasi kemah literasi tahunan <em>&ldquo;Nginep Alas&rdquo;</em>.
-                </p>
-              </div>
-              <div className="pt-3 border-t border-border-hairline font-mono text-[10.5px] text-muted flex items-center justify-between">
-                <span className="font-bold text-foreground">Doplang, Blora Selatan</span>
-                <span className="text-emerald-600 dark:text-emerald-400 font-bold">TEMATIK</span>
-              </div>
-            </div>
-
-            {/* Wing 3: Omah Talang Bocor */}
-            <div className="border-2 border-foreground bg-surface p-6 flex flex-col justify-between space-y-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.9)] group hover:border-amber-500 transition-colors">
-              <div className="space-y-3">
-                <div className="flex items-center justify-between font-mono text-[10px] uppercase text-muted tracking-widest pb-2 border-b border-border-hairline">
-                  <span>03 // MARKAS KREATIF</span>
-                  <Palette className="w-4 h-4 text-indigo-500" />
-                </div>
-                <h3 className="font-serif text-2xl font-black text-foreground leading-tight">
-                  Omah Talang Bocor
-                </h3>
-                <p className="font-serif text-xs text-foreground/80 leading-relaxed">
-                  Basecamp dan bengkel kriya mandiri dekat Stadion Kridosono Blora. Tempat perbaikan buku rusak,
-                  workshop sablon cukil kayu murah, dan batik ecoprint daun jati bersama pemuda kampung.
-                </p>
-              </div>
-              <div className="pt-3 border-t border-border-hairline font-mono text-[10.5px] text-muted flex items-center justify-between">
-                <span className="font-bold text-foreground">Karangjati, Blora Kota</span>
-                <span className="text-indigo-600 dark:text-indigo-400 font-bold">BASECAMP</span>
-              </div>
             </div>
           </div>
         </section>
