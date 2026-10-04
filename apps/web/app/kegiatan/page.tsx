@@ -32,6 +32,7 @@ import {
   Radio,
   CheckCircle2,
   Tent,
+  Archive,
 } from 'lucide-react';
 
 interface EventsApiResponse {
@@ -70,7 +71,7 @@ function EventCatalogContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const statusTab = (searchParams.get('status') as 'mendatang' | 'selesai') || 'mendatang';
+  const statusTab = (searchParams.get('status') as 'mendatang' | 'selesai') || 'selesai';
   const typeFilter = (searchParams.get('type') as EventType) || '';
   const page = parseInt(searchParams.get('page') || '1', 10);
 
@@ -78,6 +79,28 @@ function EventCatalogContent() {
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
   const [meta, setMeta] = React.useState({ page: 1, perPage: 12, total: 0, totalPages: 1 });
+
+  // Independent Hero Spotlight & Upcoming Counter
+  const [heroSpotlightEvent, setHeroSpotlightEvent] = React.useState<EventItem | null>(null);
+  const [upcomingTotal, setUpcomingTotal] = React.useState<number>(0);
+
+  React.useEffect(() => {
+    async function loadSpotlight() {
+      try {
+        const res = await apiClient<EventsApiResponse>('/events?status=mendatang&perPage=5');
+        if (res.data?.data && res.data.data.length > 0) {
+          setHeroSpotlightEvent(res.data.data[0]);
+          setUpcomingTotal(res.data.meta?.total ?? res.data.data.length);
+        } else {
+          setHeroSpotlightEvent(null);
+          setUpcomingTotal(0);
+        }
+      } catch {
+        setHeroSpotlightEvent(null);
+      }
+    }
+    loadSpotlight();
+  }, []);
 
   const fetchEvents = React.useCallback(async () => {
     setLoading(true);
@@ -123,13 +146,8 @@ function EventCatalogContent() {
     router.push(`/kegiatan?${next.toString()}`, { scroll: false });
   };
 
-  // The featured spotlight event (first upcoming event or automatic Sunday Lapak CFD)
-  const spotlightEvent = React.useMemo(() => {
-    if (statusTab === 'mendatang' && events.length > 0) {
-      return events[0];
-    }
-    return null;
-  }, [statusTab, events]);
+  // The featured spotlight event (independent upcoming hero event or fallback to Sunday CFD)
+  const spotlightEvent = heroSpotlightEvent;
 
   const sundaySession = React.useMemo(() => getNextSundayLapakSession(), []);
 
@@ -460,42 +478,70 @@ function EventCatalogContent() {
           <div className="space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-end justify-between pb-3 border-b-2 border-foreground gap-4">
               <div>
-                <div className="text-[10px] font-mono uppercase tracking-ultra text-muted">
-                  [ KALENDER KEGIATAN // DAFTAR LENGKAP ]
+                <div className="text-[10px] font-mono uppercase tracking-ultra text-amber-600 dark:text-amber-400 font-bold flex items-center gap-1.5 mb-1">
+                  <Archive className="w-3.5 h-3.5 text-amber-500" />
+                  <span>[ KRONIK PERJALANAN // ARSIP DOKUMENTASI LAPAK ]</span>
                 </div>
                 <h2 className="font-serif text-3xl sm:text-4xl font-black uppercase tracking-tight text-foreground">
-                  Daftar Kegiatan Warga
+                  {statusTab === 'selesai'
+                    ? 'Rekam Jejak & Dokumentasi Kegiatan'
+                    : 'Jadwal Agenda Mendatang Lainnya'}
                 </h2>
+                <p className="font-serif text-sm sm:text-base text-foreground/80 max-w-2xl mt-1 leading-relaxed">
+                  {statusTab === 'selesai'
+                    ? 'Menelusuri lintasan perjumpaan di balik terpal, arsip foto kegiatan, notula diskusi, dan kesaksian warga dari masa ke masa.'
+                    : 'Daftar kegiatan literasi yang siap digelar oleh relawan dan kawan-kawan kolektif trotoar Blora.'}
+                </p>
               </div>
 
               {/* Status Tab Switchers */}
-              <div className="flex items-center gap-2 border-b-2 sm:border-b-0 border-foreground font-mono text-xs uppercase tracking-wider">
-                <button
-                  type="button"
-                  onClick={() => updateFilters({ status: 'mendatang', page: '1' })}
-                  className={cn(
-                    'px-4 py-2 border-2 transition-all cursor-pointer font-bold',
-                    statusTab === 'mendatang'
-                      ? 'bg-foreground text-background border-foreground shadow-xs'
-                      : 'bg-surface text-foreground border-border-hairline hover:border-foreground'
-                  )}
-                >
-                  Agenda Mendatang
-                </button>
+              <div className="flex items-center gap-2 border-b-2 sm:border-b-0 border-foreground font-mono text-xs uppercase tracking-wider shrink-0">
                 <button
                   type="button"
                   onClick={() => updateFilters({ status: 'selesai', page: '1' })}
                   className={cn(
                     'px-4 py-2 border-2 transition-all cursor-pointer font-bold',
                     statusTab === 'selesai'
-                      ? 'bg-foreground text-background border-foreground shadow-xs'
+                      ? 'bg-foreground text-background border-foreground shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,0.9)]'
                       : 'bg-surface text-foreground border-border-hairline hover:border-foreground'
                   )}
                 >
-                  Arsip Dokumentasi
+                  📜 Arsip Dokumentasi Lapak
+                </button>
+                <button
+                  type="button"
+                  onClick={() => updateFilters({ status: 'mendatang', page: '1' })}
+                  className={cn(
+                    'px-4 py-2 border-2 transition-all cursor-pointer font-bold flex items-center gap-1.5',
+                    statusTab === 'mendatang'
+                      ? 'bg-foreground text-background border-foreground shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,0.9)]'
+                      : 'bg-surface text-foreground border-border-hairline hover:border-foreground'
+                  )}
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                  <span>Agenda Mendatang {upcomingTotal > 0 ? `(${upcomingTotal})` : ''}</span>
                 </button>
               </div>
             </div>
+
+            {/* Pinned Banner when browsing archive and upcoming events exist */}
+            {statusTab === 'selesai' && upcomingTotal > 0 && (
+              <div className="p-3.5 bg-amber-500/10 border-2 border-amber-500/40 flex flex-wrap items-center justify-between gap-3 text-xs font-mono shadow-2xs">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-amber-500 shrink-0" />
+                  <span className="text-foreground">
+                    Terdapat <strong>{upcomingTotal} agenda kegiatan mendatang</strong> yang siap digelar di Blora.
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => updateFilters({ status: 'mendatang', page: '1' })}
+                  className="px-3 py-1 bg-amber-500 hover:bg-amber-600 text-black font-bold uppercase tracking-wider text-[11px] border border-black shadow-xs cursor-pointer transition-colors"
+                >
+                  Buka Agenda Mendatang &rarr;
+                </button>
+              </div>
+            )}
 
             {/* Type Filter Chips */}
             <div className="flex flex-wrap items-center gap-2 font-mono text-xs uppercase tracking-wider pt-1">
@@ -595,11 +641,26 @@ function EventCatalogContent() {
                     <article
                       key={event.id}
                       className={cn(
-                        'border-2 border-foreground bg-surface hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[5px_5px_0px_0px_rgba(255,255,255,0.9)] transition-all flex flex-col justify-between group',
+                        'border-2 border-foreground bg-surface hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[5px_5px_0px_0px_rgba(255,255,255,0.9)] transition-all flex flex-col justify-between group overflow-hidden',
                         theme.border
                       )}
                     >
                       <div>
+                        {/* Optional Card Cover Image Thumbnail */}
+                        {event.coverImage && (
+                          <Link href={`/kegiatan/${event.slug}`} className="block relative aspect-[16/9] w-full overflow-hidden border-b-2 border-foreground bg-zinc-950">
+                            <img
+                              src={event.coverImage}
+                              alt={event.title}
+                              className="w-full h-full object-cover grayscale contrast-105 group-hover:grayscale-0 group-hover:scale-105 transition-all duration-500"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-transparent pointer-events-none" />
+                            <div className="absolute top-2.5 left-2.5 px-2 py-0.5 bg-black/80 text-white font-mono text-[8.5px] font-bold uppercase tracking-widest border border-white/30 backdrop-blur-xs">
+                              {statusTab === 'selesai' ? '✦ DOKUMENTASI TERPAL ✦' : '✦ POSTER AGENDA ✦'}
+                            </div>
+                          </Link>
+                        )}
+
                         {/* Top Header Card: Calendar Stamp Date & Status Badge */}
                         <div className="p-5 border-b border-border-hairline bg-surface-muted/30 flex items-start justify-between gap-4">
                           <div className="flex items-center gap-3">
@@ -674,7 +735,7 @@ function EventCatalogContent() {
                           href={`/kegiatan/${event.slug}`}
                           className="font-bold text-foreground group-hover:text-amber-600 dark:group-hover:text-amber-400 inline-flex items-center gap-1 uppercase tracking-wider transition-colors"
                         >
-                          <span>RINCIAN</span>
+                          <span>{statusTab === 'selesai' ? 'REKAM JEJAK' : 'RINCIAN'}</span>
                           <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
                         </Link>
                       </div>
