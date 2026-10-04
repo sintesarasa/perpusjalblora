@@ -12,6 +12,14 @@
     --border-hairline: #e2e2db;
     --border-subtle: #ecece6;
     --muted: #666661;
+
+    /* Heritage Amber & Gold Tokens */
+    --gold: #f59e0b;
+    --gold-primary: #d97706;
+    --gold-surface: #fffbeb;
+    --gold-border: #fcd34d;
+    --gold-light: #fef3c7;
+    --gold-glow: rgba(245, 158, 11, 0.18);
   }
 
   .dark {
@@ -23,6 +31,14 @@
     --border-hairline: #292926;
     --border-subtle: #1f1f1d;
     --muted: #999993;
+
+    /* Heritage Amber & Gold Tokens */
+    --gold: #fbbf24;
+    --gold-primary: #f59e0b;
+    --gold-surface: #14110b;
+    --gold-border: #92400e;
+    --gold-light: #291804;
+    --gold-glow: rgba(245, 158, 11, 0.25);
   }
 
   body {

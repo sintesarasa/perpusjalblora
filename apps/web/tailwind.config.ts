@@ -28,6 +28,13 @@ const config: Config = {
           subtle: 'var(--border-subtle)',
         },
         muted: 'var(--muted)',
+        gold: {
+          DEFAULT: 'var(--gold)',
+          primary: 'var(--gold-primary)',
+          surface: 'var(--gold-surface)',
+          border: 'var(--gold-border)',
+          light: 'var(--gold-light)',
+        },
       },
       letterSpacing: {
         'tightest': '-0.05em',

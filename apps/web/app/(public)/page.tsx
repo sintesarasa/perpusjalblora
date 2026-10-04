@@ -46,6 +46,11 @@ const CURATED_BOOKS = [
     categorySlug: 'sastra',
     status: 'available' as const,
     year: '1980',
+    shelf: 'RAK-SAS-01',
+    spineColor: 'bg-amber-700',
+    coverBg: 'from-[#2b1810] to-[#120a06]',
+    textColor: 'text-amber-100',
+    accentBorder: 'border-amber-600/40',
     description: 'Roman sejarah monumental tentang kebangkitan kesadaran manusia merdeka di Hindia Belanda.',
   },
   {
@@ -56,6 +61,11 @@ const CURATED_BOOKS = [
     categorySlug: 'sosial',
     status: 'available' as const,
     year: '1943',
+    shelf: 'RAK-FIL-03',
+    spineColor: 'bg-rose-800',
+    coverBg: 'from-[#280d12] to-[#120508]',
+    textColor: 'text-rose-100',
+    accentBorder: 'border-rose-600/40',
     description: 'Materialisme, Dialektika, dan Logika sebagai fondasi berpikir merdeka rakyat jelata.',
   },
   {
@@ -66,6 +76,11 @@ const CURATED_BOOKS = [
     categorySlug: 'sastra',
     status: 'available' as const,
     year: '1982',
+    shelf: 'RAK-SAS-02',
+    spineColor: 'bg-teal-800',
+    coverBg: 'from-[#0b2528] to-[#041214]',
+    textColor: 'text-teal-100',
+    accentBorder: 'border-teal-600/40',
     description: 'Kisah pilu penindasan feodalisme Jawa terhadap perempuan bersahaja dari kampung nelayan.',
   },
   {
@@ -76,6 +91,11 @@ const CURATED_BOOKS = [
     categorySlug: 'sejarah',
     status: 'borrowed' as const,
     year: '1954',
+    shelf: 'RAK-SEJ-01',
+    spineColor: 'bg-stone-700',
+    coverBg: 'from-[#211f1d] to-[#0e0e0c]',
+    textColor: 'text-stone-200',
+    accentBorder: 'border-stone-600/40',
     description: 'Dua lakon sandiwara tentang pergulatan revolusi dan manusia di persimpangan zaman.',
   },
   {
@@ -86,6 +106,11 @@ const CURATED_BOOKS = [
     categorySlug: 'pendidikan',
     status: 'available' as const,
     year: '1968',
+    shelf: 'RAK-PED-01',
+    spineColor: 'bg-emerald-800',
+    coverBg: 'from-[#0c2618] to-[#04120a]',
+    textColor: 'text-emerald-100',
+    accentBorder: 'border-emerald-600/40',
     description: 'Pedagogi pembebasan yang mengubah pendidikan dari sistem perbankan pasif menjadi dialog kritis.',
   },
   {
@@ -96,6 +121,11 @@ const CURATED_BOOKS = [
     categorySlug: 'sastra',
     status: 'available' as const,
     year: '1952',
+    shelf: 'RAK-SAS-04',
+    spineColor: 'bg-indigo-800',
+    coverBg: 'from-[#12152e] to-[#070817]',
+    textColor: 'text-indigo-100',
+    accentBorder: 'border-indigo-600/40',
     description: 'Eksplorasi psikologis mendalam tentang ketakutan batin, martabat, dan idealisme masa revolusi.',
   },
   {
@@ -106,6 +136,11 @@ const CURATED_BOOKS = [
     categorySlug: 'anak',
     status: 'available' as const,
     year: '2019',
+    shelf: 'RAK-ANK-02',
+    spineColor: 'bg-amber-600',
+    coverBg: 'from-[#2a1d07] to-[#120c02]',
+    textColor: 'text-amber-200',
+    accentBorder: 'border-amber-500/40',
     description: 'Dongeng bergambar pengantar imajinasi dan kearifan lokal untuk anak-anak pembaca trotoar.',
   },
   {
@@ -116,6 +151,11 @@ const CURATED_BOOKS = [
     categorySlug: 'sejarah',
     status: 'available' as const,
     year: '2015',
+    shelf: 'RAK-SEJ-02',
+    spineColor: 'bg-yellow-800',
+    coverBg: 'from-[#2b200b] to-[#120d04]',
+    textColor: 'text-yellow-100',
+    accentBorder: 'border-yellow-600/40',
     description: 'Ajaran Sedulur Sikep, perlawanan tanpa kekerasan, dan kedaulatan tanah adat di bumi Blora.',
   },
 ];
@@ -383,217 +423,357 @@ export default function HomePage() {
         </section>
 
         {/* ========================================================= */}
-        {/* 3. SHOWCASE: KARTU KEHORMATAN WARGA (MARKETING HIGHLIGHT) */}
+        {/* 3. SHOWCASE: KARTU KEHORMATAN WARGA (THE OBSIDIAN GOLD VAULT) */}
         {/* ========================================================= */}
-        <section className="border-b-2 border-foreground max-w-7xl mx-auto py-12 sm:py-16 px-4 sm:px-6 lg:px-8 bg-surface-muted/30">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
-            {/* Left Narrative */}
-            <div className="lg:col-span-6 space-y-6">
-              <RevealOnScroll variant="fade-up">
-                <div className="inline-flex items-center gap-2 px-2.5 py-1 border border-amber-500/40 bg-amber-500/10 font-mono text-[9px] sm:text-[10px] uppercase font-bold tracking-widest text-amber-600 dark:text-amber-400">
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span>IDENTITAS DIGITAL WARGA LITERASI</span>
-                </div>
+        <section className="border-y-2 border-amber-500/70 bg-[#090a0c] text-white py-16 sm:py-24 relative overflow-hidden">
+          {/* Subtle Golden Radial Glow */}
+          <div className="absolute top-0 right-1/4 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute bottom-0 left-10 w-80 h-80 bg-amber-600/10 rounded-full blur-3xl pointer-events-none" />
 
-                <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-black uppercase tracking-tight text-foreground leading-tight mt-3">
-                  Jejak Bacamu Adalah <br />
-                  <span className="italic font-normal font-serif lowercase text-amber-500 dark:text-amber-400">
-                    kehormatan tersendiri.
-                  </span>
-                </h2>
-
-                <p className="font-serif text-base sm:text-lg text-foreground/85 leading-relaxed mt-4">
-                  Setiap buku yang kamu pinjam, ulasan yang kamu tulis, dan kehadiranmu di lapak terpal
-                  tercatat sebagai rekam jejak literasi. Buka lencana kehormatan, raih julukan warga, dan
-                  unduh <strong>Kartu Kehormatan Warga</strong> dalam desain <em>Obsidian Gold</em> yang siap
-                  kamu bagikan ke media sosial.
-                </p>
-
-                <div className="grid grid-cols-2 gap-4 pt-4 border-t border-border-hairline font-mono text-xs">
-                  <div className="space-y-1">
-                    <span className="text-[10px] uppercase text-muted tracking-wider block">LENCANA PRESTASI</span>
-                    <strong className="text-foreground text-sm flex items-center gap-1.5">
-                      <Award className="w-4 h-4 text-amber-500" />
-                      12 Tingkatan Lencana
-                    </strong>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-14 items-center">
+              {/* Left Column: Narrative & Privilege Pillars (7 cols) */}
+              <div className="lg:col-span-7 space-y-6 sm:space-y-8">
+                <RevealOnScroll variant="fade-up">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 border border-amber-500/50 bg-amber-500/10 font-mono text-[9px] sm:text-[10px] uppercase font-bold tracking-widest text-amber-400">
+                    <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
+                    <span>ARSIP KEHORMATAN // EDISI OBSIDIAN GOLD</span>
                   </div>
-                  <div className="space-y-1">
-                    <span className="text-[10px] uppercase text-muted tracking-wider block">KARTU MEDSOS HD</span>
-                    <strong className="text-foreground text-sm flex items-center gap-1.5">
-                      <Sparkles className="w-4 h-4 text-amber-500" />
-                      Siap Unduh &amp; Share
-                    </strong>
+
+                  <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black uppercase tracking-tight text-white leading-[1.05] mt-4">
+                    Jejak Bacamu Adalah <br />
+                    <span className="italic font-serif font-normal text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-amber-400 to-amber-500">
+                      Kehormatan Tertinggi.
+                    </span>
+                  </h2>
+
+                  <p className="font-serif text-base sm:text-lg text-zinc-300 leading-relaxed max-w-2xl mt-4">
+                    Di Perpusjal Blora, membaca bukan kegiatan pasif yang lenyap seketika. Setiap buku yang kamu
+                    pinjam, warta yang kamu tulis, dan kehadiranmu di hamparan terpal diabadikan dalam{' '}
+                    <strong className="text-amber-300 font-normal">Kartu Kehormatan Warga</strong> bersertifikasi resmi
+                    — tanpa uang jaminan, dan tanpa denda rupiah seumur hidup.
+                  </p>
+                </RevealOnScroll>
+
+                {/* 3 Pillars of Honor */}
+                <RevealOnScroll variant="fade-up" delayMs={150}>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-zinc-800">
+                    <div className="p-4 bg-zinc-950/80 border border-amber-500/30 rounded-xs space-y-2">
+                      <div className="w-8 h-8 rounded-full bg-amber-500/10 border border-amber-500/40 flex items-center justify-center text-amber-400">
+                        <Award className="w-4 h-4" />
+                      </div>
+                      <h4 className="font-mono text-xs font-bold uppercase tracking-wider text-amber-300">
+                        12 Lencana Literasi
+                      </h4>
+                      <p className="font-serif text-xs text-zinc-400 leading-relaxed">
+                        Buka gelar kehormatan bertahap, mulai dari <em>Warga Pemula</em> hingga <em>Penjaga Nyala Perpusjal</em>.
+                      </p>
+                    </div>
+
+                    <div className="p-4 bg-zinc-950/80 border border-amber-500/30 rounded-xs space-y-2">
+                      <div className="w-8 h-8 rounded-full bg-amber-500/10 border border-amber-500/40 flex items-center justify-center text-amber-400">
+                        <Sparkles className="w-4 h-4" />
+                      </div>
+                      <h4 className="font-mono text-xs font-bold uppercase tracking-wider text-amber-300">
+                        Kartu Medsos HD
+                      </h4>
+                      <p className="font-serif text-xs text-zinc-400 leading-relaxed">
+                        Unduh kartu resolusi tinggi rasio 1:1 &amp; bagikan langsung ke WhatsApp, Instagram, dan X dalam satu klik.
+                      </p>
+                    </div>
+
+                    <div className="p-4 bg-zinc-950/80 border border-amber-500/30 rounded-xs space-y-2">
+                      <div className="w-8 h-8 rounded-full bg-amber-500/10 border border-amber-500/40 flex items-center justify-center text-amber-400">
+                        <ShieldCheck className="w-4 h-4" />
+                      </div>
+                      <h4 className="font-mono text-xs font-bold uppercase tracking-wider text-amber-300">
+                        Hak Bebas Antre
+                      </h4>
+                      <p className="font-serif text-xs text-zinc-400 leading-relaxed">
+                        Pindai kode QR kartu di lapak CFD untuk langsung membawa pulang 3 buku tanpa titip KTP fisik.
+                      </p>
+                    </div>
                   </div>
-                </div>
+                </RevealOnScroll>
 
-                <div className="pt-4 flex flex-wrap items-center gap-3">
-                  <Link
-                    href="/kontributor"
-                    className="px-5 py-3 bg-foreground text-background font-mono text-xs uppercase font-bold tracking-wider hover:bg-foreground/90 transition-colors inline-flex items-center gap-2 shadow-xs"
-                  >
-                    <span>LIHAT ETALASE WARGA &amp; LENCANA</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </Link>
+                {/* CTA Action Buttons */}
+                <RevealOnScroll variant="fade-up" delayMs={250}>
+                  <div className="pt-2 flex flex-wrap items-center gap-3 sm:gap-4">
+                    <Link
+                      href="/masuk"
+                      className="px-6 py-3.5 bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 text-black font-mono text-xs font-bold uppercase tracking-wider hover:brightness-110 transition-all shadow-[0_0_20px_rgba(245,158,11,0.35)] inline-flex items-center gap-2 rounded-xs"
+                    >
+                      <Sparkles className="w-4 h-4 text-black" />
+                      <span>BUAT KARTU MILIKMU SEKARANG</span>
+                      <ArrowRight className="w-3.5 h-3.5 text-black" />
+                    </Link>
 
-                  <Link
-                    href="/masuk"
-                    className="px-4 py-3 border-2 border-foreground bg-surface hover:bg-foreground hover:text-background font-mono text-xs uppercase font-bold tracking-wider transition-colors inline-flex items-center gap-2"
-                  >
-                    <span>BUAT KARTU MILIKMU</span>
-                  </Link>
-                </div>
-              </RevealOnScroll>
-            </div>
+                    <Link
+                      href="/kontributor"
+                      className="px-5 py-3.5 border border-amber-500/40 bg-zinc-900/60 hover:bg-amber-500/10 hover:border-amber-400 text-amber-300 font-mono text-xs font-bold uppercase tracking-wider transition-colors inline-flex items-center gap-2 rounded-xs"
+                    >
+                      <span>JELAJAHI DAFTAR WARGA &amp; LENCANA</span>
+                    </Link>
+                  </div>
+                </RevealOnScroll>
+              </div>
 
-            {/* Right: Live Realistic Mini Mockup of the Obsidian Gold Card */}
-            <div className="lg:col-span-6 flex justify-center">
-              <RevealOnScroll variant="stamp" delayMs={200} className="w-full max-w-md">
-                <div
-                  className="relative bg-[#090a0c] text-[#f4f4f0] p-5 sm:p-6 pb-6 border-2 border-amber-500/70 shadow-[0_20px_50px_rgba(0,0,0,0.85)] select-none space-y-4 box-border rounded-xs"
-                  style={{
-                    backgroundImage:
-                      'radial-gradient(circle at 100% 0%, rgba(245, 158, 11, 0.12) 0%, transparent 45%), radial-gradient(circle at 0% 100%, rgba(245, 158, 11, 0.08) 0%, transparent 40%)',
-                  }}
-                >
-                  {/* Decorative corner markers */}
-                  <div className="absolute top-2 left-2 w-3 h-3 border-t-2 border-l-2 border-amber-400/60 pointer-events-none" />
-                  <div className="absolute top-2 right-2 w-3 h-3 border-t-2 border-r-2 border-amber-400/60 pointer-events-none" />
-                  <div className="absolute bottom-2 left-2 w-3 h-3 border-b-2 border-l-2 border-amber-400/60 pointer-events-none" />
-                  <div className="absolute bottom-2 right-2 w-3 h-3 border-b-2 border-r-2 border-amber-400/60 pointer-events-none" />
+              {/* Right Column: Realistic Obsidian Gold Plinth Showcase (5 cols) */}
+              <div className="lg:col-span-5 flex flex-col items-center">
+                <RevealOnScroll variant="stamp" delayMs={200} className="w-full max-w-md">
+                  {/* Glowing Plinth / Pedestal Shadow Container */}
+                  <div className="relative group">
+                    <div className="absolute -inset-1 bg-gradient-to-r from-amber-500/30 to-amber-600/30 rounded-xs blur-md opacity-75 group-hover:opacity-100 transition duration-500 pointer-events-none" />
 
-                  {/* Top Bar of the Card */}
-                  <div className="border-b border-amber-500/30 pb-2.5 space-y-2">
-                    <div className="flex items-center justify-between gap-4">
-                      <Logo className="h-6 sm:h-7 w-auto text-amber-400 shrink-0" />
-                      <div className="text-right shrink-0">
-                        <span className="font-mono text-[7px] uppercase font-bold tracking-widest text-zinc-400 block mb-0.5">
-                          NO. REGISTRASI
-                        </span>
-                        <span className="font-mono text-[10px] font-bold text-amber-300 tracking-wider px-2 py-0.5 bg-amber-500/10 border border-amber-500/30 rounded-xs inline-block">
-                          BLR-2026-WARGA01
-                        </span>
+                    <div
+                      className="relative bg-[#090a0c] text-[#f4f4f0] p-6 pb-6 border-2 border-amber-500/80 shadow-[0_25px_60px_rgba(0,0,0,0.95)] select-none space-y-4 box-border rounded-xs"
+                      style={{
+                        backgroundImage:
+                          'radial-gradient(circle at 100% 0%, rgba(245, 158, 11, 0.15) 0%, transparent 50%), radial-gradient(circle at 0% 100%, rgba(245, 158, 11, 0.10) 0%, transparent 45%)',
+                      }}
+                    >
+                      {/* Decorative corner markers */}
+                      <div className="absolute top-2 left-2 w-3 h-3 border-t-2 border-l-2 border-amber-400 pointer-events-none" />
+                      <div className="absolute top-2 right-2 w-3 h-3 border-t-2 border-r-2 border-amber-400 pointer-events-none" />
+                      <div className="absolute bottom-2 left-2 w-3 h-3 border-b-2 border-l-2 border-amber-400 pointer-events-none" />
+                      <div className="absolute bottom-2 right-2 w-3 h-3 border-b-2 border-r-2 border-amber-400 pointer-events-none" />
+
+                      {/* Top Bar of the Card */}
+                      <div className="border-b border-amber-500/30 pb-3 space-y-2">
+                        <div className="flex items-center justify-between gap-4">
+                          <Logo className="h-7 w-auto text-amber-400 shrink-0" />
+                          <div className="text-right shrink-0">
+                            <span className="font-mono text-[7.5px] uppercase font-bold tracking-widest text-zinc-400 block mb-0.5">
+                              NO. REGISTRASI RESMI
+                            </span>
+                            <span className="font-mono text-[10.5px] font-bold text-amber-300 tracking-wider px-2 py-0.5 bg-amber-500/15 border border-amber-500/40 rounded-xs inline-block shadow-inner">
+                              BLR-2026-WARGA01
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between gap-2 pt-2 border-t border-zinc-800/80">
+                          <span className="font-mono text-[8.5px] uppercase font-bold tracking-[0.2em] text-amber-400">
+                            KARTU KEHORMATAN WARGA
+                          </span>
+                          <span className="font-serif italic text-xs text-zinc-300">
+                            Membaca dan Berbahagia.
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Persona Identity Strip */}
+                      <div className="flex items-center gap-3.5 py-1">
+                        <div className="w-13 h-13 rounded-full border-2 border-amber-400 bg-zinc-900 flex items-center justify-center font-serif text-xl font-bold text-amber-300 shrink-0 shadow-[0_0_20px_rgba(245,158,11,0.35)]">
+                          P
+                        </div>
+                        <div className="flex-1 min-w-0 space-y-0.5">
+                          <h4 className="font-serif font-black text-xl text-white tracking-wide truncate">
+                            Pramono Wibowo
+                          </h4>
+                          <p className="font-mono text-[10.5px] text-amber-300">@pramono &bull; Warga Penggerak 2024</p>
+                          <div className="pt-0.5">
+                            <span className="inline-block px-2.5 py-0.5 bg-amber-500/20 border border-amber-400/60 text-amber-300 font-mono text-[8px] uppercase font-bold tracking-wider rounded-full">
+                              GELAR: PENJAGA NYALA LITERASI
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Inspiring Quote Box */}
+                      <div className="p-3.5 bg-gradient-to-r from-amber-500/15 via-zinc-900/90 to-zinc-900/60 border-l-4 border-amber-400 rounded-xs space-y-1">
+                        <p className="font-serif italic text-xs text-zinc-200 leading-relaxed">
+                          &ldquo;Tangan yang membolak-balik buku adalah tangan yang merawat masa depan bangsa.&rdquo;
+                        </p>
+                        <div className="text-right font-mono text-[8.5px] text-amber-300 font-semibold uppercase">
+                          — Pramono Wibowo (Catatan Warga)
+                        </div>
+                      </div>
+
+                      {/* 4 Achievement Pillars */}
+                      <div className="grid grid-cols-4 gap-2 font-mono text-center pt-0.5">
+                        <div className="p-2 border border-zinc-800 bg-zinc-900/90 rounded-xs">
+                          <span className="text-[7.5px] uppercase tracking-wider text-zinc-400 block">Tulisan</span>
+                          <span className="font-serif font-black text-base text-amber-300">8</span>
+                        </div>
+                        <div className="p-2 border border-zinc-800 bg-zinc-900/90 rounded-xs">
+                          <span className="text-[7.5px] uppercase tracking-wider text-zinc-400 block">Lencana</span>
+                          <span className="font-serif font-black text-base text-amber-300">6</span>
+                        </div>
+                        <div className="p-2 border border-zinc-800 bg-zinc-900/90 rounded-xs">
+                          <span className="text-[7.5px] uppercase tracking-wider text-zinc-400 block">Pinjaman</span>
+                          <span className="font-serif font-black text-base text-amber-300">14</span>
+                        </div>
+                        <div className="p-2 border border-zinc-800 bg-zinc-900/90 rounded-xs">
+                          <span className="text-[7.5px] uppercase tracking-wider text-zinc-400 block">Amanah</span>
+                          <span className="font-serif font-black text-base text-amber-300">100%</span>
+                        </div>
+                      </div>
+
+                      {/* Bottom Verification Seal */}
+                      <div className="flex items-center justify-between pt-2.5 border-t border-zinc-800/80 gap-2">
+                        <Logo className="h-6 w-auto text-amber-400 shrink-0" />
+                        <div className="flex-1 min-w-0 text-right space-y-0.5 font-mono text-[7.5px] text-zinc-400">
+                          <span className="text-amber-300 block font-bold">perpusjalblora.id/warga/@pramono</span>
+                          <span>DOKUMEN RESMI WARGA LITERASI</span>
+                        </div>
                       </div>
                     </div>
-
-                    <div className="flex items-center justify-between gap-2 pt-1.5 border-t border-zinc-800/70">
-                      <span className="font-mono text-[8px] uppercase font-bold tracking-[0.2em] text-amber-400">
-                        KARTU KEHORMATAN WARGA
-                      </span>
-                      <span className="font-serif italic text-[11px] text-zinc-200">
-                        Membaca dan Berbahagia.
-                      </span>
-                    </div>
                   </div>
 
-                  {/* Persona Identity Strip */}
-                  <div className="flex items-center gap-3 py-1">
-                    <div className="w-12 h-12 rounded-full border-2 border-amber-400 bg-zinc-800 flex items-center justify-center font-serif text-lg font-bold text-amber-300 shrink-0 shadow-[0_0_15px_rgba(245,158,11,0.3)]">
-                      P
+                  {/* 3 Showcase Badges Row beneath the card */}
+                  <div className="mt-4 grid grid-cols-3 gap-2 font-mono text-center">
+                    <div className="p-2 bg-zinc-900/90 border border-amber-500/30 rounded-xs flex items-center justify-center gap-1.5 text-amber-300 text-[10px]">
+                      <Award className="w-3.5 h-3.5 text-amber-400" />
+                      <span className="font-bold">Pena Emas</span>
                     </div>
-                    <div className="flex-1 min-w-0 space-y-0.5">
-                      <h4 className="font-serif font-black text-lg text-white truncate">Pramono Wibowo</h4>
-                      <p className="font-mono text-[10px] text-amber-300">@pramono &bull; Warga Sejak 2024</p>
-                      <div className="pt-0.5">
-                        <span className="inline-block px-2 py-0.2 bg-amber-500/15 border border-amber-400/50 text-amber-300 font-mono text-[8px] uppercase font-bold tracking-wider rounded-full">
-                          GELAR: PENJAGA NYALA LITERASI
-                        </span>
-                      </div>
+                    <div className="p-2 bg-zinc-900/90 border border-amber-500/30 rounded-xs flex items-center justify-center gap-1.5 text-amber-300 text-[10px]">
+                      <Flame className="w-3.5 h-3.5 text-amber-400" />
+                      <span className="font-bold">Penjaga Nyala</span>
                     </div>
-                  </div>
-
-                  {/* Inspiring Quote Box */}
-                  <div className="p-3 bg-gradient-to-r from-amber-500/15 via-zinc-900/90 to-zinc-900/60 border-l-3 border-amber-400 rounded-xs space-y-1">
-                    <p className="font-serif italic text-xs text-[#f4f4f0] leading-relaxed">
-                      &ldquo;Tangan yang membolak-balik buku adalah tangan yang merawat masa depan bangsa.&rdquo;
-                    </p>
-                    <div className="text-right font-mono text-[8.5px] text-amber-300 font-semibold uppercase">
-                      — Pramono Wibowo (Bio Warga)
+                    <div className="p-2 bg-zinc-900/90 border border-amber-500/30 rounded-xs flex items-center justify-center gap-1.5 text-amber-300 text-[10px]">
+                      <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
+                      <span className="font-bold">Warga Amanah</span>
                     </div>
                   </div>
-
-                  {/* 4 Achievement Pillars */}
-                  <div className="grid grid-cols-4 gap-1.5 font-mono text-center pt-0.5">
-                    <div className="p-1.5 border border-zinc-800 bg-zinc-900/80 rounded-xs">
-                      <span className="text-[7px] uppercase tracking-wider text-zinc-400 block">Tulisan</span>
-                      <span className="font-serif font-black text-sm text-amber-300">8</span>
-                    </div>
-                    <div className="p-1.5 border border-zinc-800 bg-zinc-900/80 rounded-xs">
-                      <span className="text-[7px] uppercase tracking-wider text-zinc-400 block">Lencana</span>
-                      <span className="font-serif font-black text-sm text-amber-300">6</span>
-                    </div>
-                    <div className="p-1.5 border border-zinc-800 bg-zinc-900/80 rounded-xs">
-                      <span className="text-[7px] uppercase tracking-wider text-zinc-400 block">Pinjaman</span>
-                      <span className="font-serif font-black text-sm text-amber-300">14</span>
-                    </div>
-                    <div className="p-1.5 border border-zinc-800 bg-zinc-900/80 rounded-xs">
-                      <span className="text-[7px] uppercase tracking-wider text-zinc-400 block">Amanah</span>
-                      <span className="font-serif font-black text-sm text-amber-300">14x</span>
-                    </div>
-                  </div>
-
-                  {/* Bottom Verification Seal */}
-                  <div className="flex items-center justify-between pt-2 border-t border-zinc-800/80 gap-2">
-                    <Logo className="h-6 w-auto text-amber-400 shrink-0" />
-                    <div className="flex-1 min-w-0 text-right space-y-0.5 font-mono text-[7.5px] text-zinc-400">
-                      <span className="text-amber-300 block font-bold">perpusjalblora.id/warga/@pramono</span>
-                      <span>DOKUMEN RESMI WARGA LITERASI</span>
-                    </div>
-                  </div>
-                </div>
-              </RevealOnScroll>
+                </RevealOnScroll>
+              </div>
             </div>
           </div>
         </section>
 
         {/* ========================================================= */}
-        {/* 4. ETALASE KOLEKSI PILIHAN DI RAK & LAPAK                  */}
+        {/* 4. ETALASE KOLEKSI PILIHAN DI RAK & HAMPARAN TERPAL       */}
         {/* ========================================================= */}
-        <section className="border-b-2 border-foreground max-w-7xl mx-auto py-12 sm:py-16 px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 pb-3 border-b-2 border-foreground gap-4">
-            <div>
-              <div className="text-[10px] font-mono uppercase tracking-ultra text-muted">
-                [ SEKSI III // ETALASE KOLEKSI ]
+        <section className="border-b-2 border-foreground max-w-7xl mx-auto py-14 sm:py-20 px-4 sm:px-6 lg:px-8">
+          {/* Section Header Broadsheet */}
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 pb-4 border-b-2 border-foreground gap-4">
+            <div className="space-y-1">
+              <div className="text-[10px] sm:text-[11px] font-mono uppercase tracking-ultra text-muted flex items-center gap-2">
+                <BookOpen className="w-3.5 h-3.5 text-amber-500" />
+                <span>[ SEKSI IV // ETALASE KOLEKSI ]</span>
               </div>
-              <h2 className="font-serif text-3xl sm:text-4xl font-black uppercase tracking-tight text-foreground">
-                BUKU DI RAK &amp; TERPAL
+              <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-black uppercase tracking-tight text-foreground">
+                BUKU DI RAK &amp; HAMPARAN TERPAL
               </h2>
+              <p className="font-serif text-sm sm:text-base text-muted max-w-xl">
+                Ratusan pustaka berharga yang dirawat secara swadaya. Siap kamu baca bersila di lapak Minggu pagi
+                CFD Alun-Alun Blora atau dipesan daring untuk dijemput.
+              </p>
             </div>
             <Link
               href="/buku"
-              className="font-mono text-xs uppercase tracking-widest underline hover:text-muted inline-flex items-center gap-1.5 font-bold"
+              className="font-mono text-xs uppercase tracking-wider underline hover:text-amber-600 dark:hover:text-amber-400 inline-flex items-center gap-1.5 font-bold shrink-0"
             >
-              <span>[ JELAJAHI SELURUH 240+ KOLEKSI BUKU &rarr; ]</span>
+              <span>JELAJAHI SEMUA 240+ KOLEKSI &rarr;</span>
             </Link>
           </div>
 
-          {/* Interactive Category Filter Pills */}
+          {/* CURATOR'S SPOTLIGHT BANNER: Mahakarya Pramoedya Ananta Toer */}
+          <RevealOnScroll variant="fade-up" className="mb-10">
+            <div className="border-2 border-foreground bg-surface p-6 sm:p-8 relative overflow-hidden shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] dark:shadow-[5px_5px_0px_0px_rgba(255,255,255,0.9)]">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+                {/* Left Mini Book Visual */}
+                <div className="lg:col-span-3 flex justify-center lg:justify-start">
+                  <div className="relative w-36 sm:w-40 h-52 sm:h-56 bg-gradient-to-br from-[#2b1810] to-[#0f0703] border-2 border-amber-600/60 p-4 flex flex-col justify-between text-amber-100 shadow-xl rounded-xs">
+                    {/* Spine detail */}
+                    <div className="absolute left-0 top-0 bottom-0 w-3 bg-amber-700 border-r border-amber-500/40" />
+                    <div className="pl-2 font-mono text-[8px] uppercase tracking-widest text-amber-300/80">
+                      KLASIK BLORA &bull; 1980
+                    </div>
+                    <div className="pl-2 space-y-1">
+                      <div className="font-serif font-black text-lg leading-tight uppercase text-amber-200">
+                        Bumi Manusia
+                      </div>
+                      <div className="font-mono text-[10px] text-amber-400">Pramoedya A.T.</div>
+                    </div>
+                    <div className="pl-2 font-mono text-[8px] text-zinc-400 uppercase tracking-widest border-t border-amber-500/30 pt-1.5">
+                      RAK-SAS-01
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right Editorial Spotlight Context */}
+                <div className="lg:col-span-9 space-y-4">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="px-2.5 py-0.5 bg-amber-500 text-black font-mono text-[9px] font-bold uppercase tracking-widest">
+                      ✦ PILIHAN UTAMA KURATOR PEKAN INI ✦
+                    </span>
+                    <span className="font-mono text-[10px] text-muted uppercase">
+                      Koleksi Paling Dicari di Lapak CFD
+                    </span>
+                  </div>
+
+                  <h3 className="font-serif text-2xl sm:text-3xl font-black text-foreground">
+                    &ldquo;Bumi Manusia&rdquo; — Menegakkan Harga Diri Manusia Merdeka
+                  </h3>
+
+                  <p className="font-serif text-sm sm:text-base text-foreground/85 leading-relaxed max-w-3xl">
+                    Lahir dari rahim Blora, karya agung Pramoedya Ananta Toer ini adalah bacaan wajib bagi siapa saja
+                    yang ingin memahami bagaimana literasi, martabat, dan keberanian berpikir mampu mengguncang
+                    rantai feodalisme dan kolonialisme. Tersedia di rak utama lapak Car Free Day.
+                  </p>
+
+                  <div className="pt-2 flex flex-wrap items-center gap-3">
+                    <Link
+                      href="/buku/PJ-2026-0001"
+                      className="px-5 py-2.5 bg-foreground text-background font-mono text-xs font-bold uppercase tracking-wider hover:bg-foreground/90 transition-colors inline-flex items-center gap-2"
+                    >
+                      <BookOpen className="w-3.5 h-3.5" />
+                      <span>PESAN UNTUK DIAMBIL DI CFD</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
+
+                    <span className="font-mono text-xs text-muted">
+                      Status:{' '}
+                      <strong className="text-emerald-600 dark:text-emerald-400 font-bold">
+                        ● Siap Dipinjam Minggu Pagi
+                      </strong>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </RevealOnScroll>
+
+          {/* Interactive Category Filter Pills with Live Counts */}
           <div className="flex flex-wrap items-center gap-2 mb-8 font-mono text-xs">
-            <span className="text-muted text-[11px] uppercase mr-1">Kategori Cepat:</span>
+            <span className="text-muted text-[11px] uppercase mr-1">Filter Kategori:</span>
             {[
-              { id: 'all', label: 'Semua Koleksi' },
-              { id: 'sastra', label: 'Sastra & Roman' },
-              { id: 'sejarah', label: 'Sejarah & Samin' },
-              { id: 'sosial', label: 'Sosial & Filsafat' },
-              { id: 'pendidikan', label: 'Pedagogi Kritis' },
-              { id: 'anak', label: 'Buku Anak & Fabel' },
+              { id: 'all', label: 'Semua Koleksi', count: '240+' },
+              { id: 'sastra', label: 'Sastra & Roman', count: '85' },
+              { id: 'sejarah', label: 'Sejarah & Samin', count: '42' },
+              { id: 'sosial', label: 'Sosial & Filsafat', count: '56' },
+              { id: 'pendidikan', label: 'Pedagogi Kritis', count: '32' },
+              { id: 'anak', label: 'Buku Anak & Fabel', count: '25' },
             ].map((cat) => (
               <button
                 key={cat.id}
                 type="button"
                 onClick={() => setSelectedCategory(cat.id)}
                 className={cn(
-                  'px-3 py-1.5 border font-bold uppercase tracking-wider text-[11px] transition-colors cursor-pointer',
+                  'px-3.5 py-1.5 border font-bold uppercase tracking-wider text-[11px] transition-all cursor-pointer flex items-center gap-1.5',
                   selectedCategory === cat.id
-                    ? 'bg-foreground text-background border-foreground'
+                    ? 'bg-foreground text-background border-foreground shadow-xs'
                     : 'bg-surface text-foreground border-border-hairline hover:border-foreground'
                 )}
               >
-                {cat.label}
+                <span>{cat.label}</span>
+                <span
+                  className={cn(
+                    'text-[9px] px-1.5 py-0.2 rounded-full',
+                    selectedCategory === cat.id
+                      ? 'bg-amber-400 text-black font-extrabold'
+                      : 'bg-surface-muted text-muted font-normal'
+                  )}
+                >
+                  {cat.count}
+                </span>
               </button>
             ))}
           </div>
 
-          {/* Book Jackets Grid */}
+          {/* Book Jackets Grid (Tactile Editorial Covers) */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {filteredBooks.slice(0, 4).map((book, idx) => (
               <RevealOnScroll key={book.code} variant="fade-up" delayMs={idx * 100}>
@@ -601,46 +781,88 @@ export default function HomePage() {
                   <div>
                     {/* Top Metadata Strip */}
                     <div className="flex items-center justify-between text-[10px] font-mono pb-2 mb-3 border-b border-border-hairline">
-                      <span className="text-muted font-bold">{book.code}</span>
+                      <span className="text-muted font-bold tracking-wider">{book.shelf}</span>
                       <StatusPill status={book.status} />
                     </div>
 
-                    {/* Book Jacket Graphic Mockup */}
-                    <div className="border border-border-hairline bg-surface-muted h-48 mb-4 p-4 flex flex-col justify-between text-left group-hover:bg-foreground group-hover:text-background transition-colors">
-                      <div className="font-mono text-[9px] uppercase tracking-ultra opacity-60">
-                        [ {book.category} // {book.year} ]
+                    {/* Tactile Book Jacket Graphic */}
+                    <div
+                      className={cn(
+                        'relative border-2 border-foreground/30 bg-gradient-to-br h-52 mb-4 p-4 flex flex-col justify-between text-left transition-all duration-300 shadow-md group-hover:border-foreground rounded-xs overflow-hidden',
+                        book.coverBg,
+                        book.textColor
+                      )}
+                    >
+                      {/* Left Spine Fold Line */}
+                      <div
+                        className={cn(
+                          'absolute left-0 top-0 bottom-0 w-3.5 border-r border-white/20',
+                          book.spineColor
+                        )}
+                      />
+
+                      {/* Thin vintage border frame inside cover */}
+                      <div className="absolute inset-2 border border-white/10 pointer-events-none rounded-xs" />
+
+                      <div className="pl-2 font-mono text-[9px] uppercase tracking-widest opacity-75">
+                        [ {book.category} &bull; {book.year} ]
                       </div>
-                      <div>
-                        <div className="font-serif text-lg font-black uppercase leading-tight line-clamp-2">
+
+                      <div className="pl-2 relative z-10 space-y-1">
+                        <div className="font-serif text-lg font-black uppercase leading-tight line-clamp-2 drop-shadow-sm">
                           {book.title}
                         </div>
-                        <div className="font-mono text-[11px] mt-1 opacity-80">{book.author}</div>
+                        <div className="font-mono text-[11px] opacity-90 font-medium">
+                          {book.author}
+                        </div>
+                      </div>
+
+                      <div className="pl-2 font-mono text-[8px] opacity-70 uppercase tracking-widest">
+                        PERPUSJAL &bull; {book.code}
                       </div>
                     </div>
 
-                    <h3 className="font-serif text-xl font-bold text-foreground mb-1 leading-snug group-hover:underline line-clamp-1">
+                    <h3 className="font-serif text-xl font-bold text-foreground mb-1 leading-snug group-hover:text-amber-600 dark:group-hover:text-amber-400 group-hover:underline line-clamp-1 transition-colors">
                       <Link href={`/buku/${book.code}`}>{book.title}</Link>
                     </h3>
-                    <p className="font-mono text-xs text-muted mb-3">{book.author}</p>
+                    <p className="font-mono text-xs text-muted mb-2">{book.author}</p>
                     <p className="font-serif text-xs text-foreground/80 leading-relaxed line-clamp-2">
                       {book.description}
                     </p>
                   </div>
 
-                  <div className="pt-4 mt-6 border-t border-border-hairline flex items-center justify-between text-xs font-mono">
-                    <span className="text-muted uppercase text-[10px] font-semibold">{book.category}</span>
+                  <div className="pt-4 mt-5 border-t border-border-hairline flex items-center justify-between text-xs font-mono">
+                    <span className="text-muted uppercase text-[9.5px] font-semibold">{book.category}</span>
                     <Link
                       href={`/buku/${book.code}`}
-                      className="font-bold uppercase tracking-wider hover:underline flex items-center gap-1 text-foreground"
+                      className="font-bold uppercase tracking-wider group-hover:text-amber-600 dark:group-hover:text-amber-400 flex items-center gap-1 text-foreground transition-colors"
                     >
                       <span>PINJAM BUKU</span>
-                      <ArrowUpRight className="w-3.5 h-3.5" />
+                      <ArrowUpRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                     </Link>
                   </div>
                 </div>
               </RevealOnScroll>
             ))}
           </div>
+
+          {/* Bottom Community Donation Notice */}
+          <RevealOnScroll variant="fade-up" delayMs={200}>
+            <div className="mt-10 p-5 bg-surface-muted/40 border border-border-hairline flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-xs">
+              <div className="flex items-center gap-3">
+                <Heart className="w-5 h-5 text-amber-500 shrink-0" />
+                <span className="text-foreground/90 font-serif text-sm">
+                  Punya buku yang menganggur di lemari rumah? Hibahkan ke terpal rakyat Blora untuk dibaca ratusan pasang mata.
+                </span>
+              </div>
+              <Link
+                href="/kontributor"
+                className="px-4 py-2 border border-foreground bg-surface hover:bg-foreground hover:text-background font-mono text-xs uppercase font-bold tracking-wider transition-colors shrink-0"
+              >
+                TITIP ATAU HIBAHKAN BUKU &rarr;
+              </Link>
+            </div>
+          </RevealOnScroll>
         </section>
 
         {/* ========================================================= */}
