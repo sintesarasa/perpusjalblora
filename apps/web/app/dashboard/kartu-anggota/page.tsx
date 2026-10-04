@@ -128,13 +128,13 @@ export default function MemberCardPage() {
       </div>
 
       {/* Helper Banner for circulation desk */}
-      <div className="p-4 border border-border-hairline bg-surface font-mono text-xs space-y-1.5 no-print">
-        <div className="flex items-center gap-2 font-bold text-foreground uppercase tracking-wider">
-          <QrCodeIcon className="w-4 h-4 text-foreground" />
-          <span>Integrasi Meja Sirkulasi Lapak</span>
+      <div className="p-4 border-2 border-amber-500/40 bg-amber-500/5 font-mono text-xs space-y-1.5 no-print">
+        <div className="flex items-center gap-2 font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">
+          <QrCodeIcon className="w-4 h-4 shrink-0" />
+          <span>Kartu Sirkulasi Peminjaman (KTA Lapak Baca) &bull; Dokumen Privat</span>
         </div>
-        <p className="font-sans text-xs text-muted">
-          Tunjukkan QR Code pada kartu ini kepada kurator/relawan di lapak baca untuk mempercepat proses verifikasi peminjaman dan serah-terima buku fisik.
+        <p className="font-sans text-xs text-muted leading-relaxed">
+          Tunjukkan QR Code pada kartu ini secara langsung kepada relawan/kurator di lapak baca fisik saat melakukan serah-terima atau pengembalian buku. <strong>Jaga kerahasiaan kartu ini dan jangan dibagikan secara publik untuk melindungi kuota peminjaman akun Anda.</strong>
         </p>
       </div>
 
@@ -149,7 +149,7 @@ export default function MemberCardPage() {
             <div>
               <Logo className="h-6 w-auto text-foreground print:text-black" />
               <span className="block font-mono text-[9px] uppercase tracking-widest text-muted print:text-gray-600 mt-1">
-                PERPUSTAKAAN JALANAN BLORA
+                KARTU SIRKULASI PEMINJAMAN &bull; PERPUSJAL BLORA
               </span>
             </div>
             <div className="text-right">
