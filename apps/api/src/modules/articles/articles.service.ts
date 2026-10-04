@@ -560,7 +560,17 @@ export class ArticlesService {
   async getCategories() {
     const categories = await prisma.category.findMany({
       where: {
-        type: { in: ['ARTICLE', 'BOTH'] },
+        OR: [
+          { type: { in: ['ARTICLE', 'BOTH'] } },
+          {
+            articles: {
+              some: {
+                status: ArticleStatus.PUBLISHED,
+                deletedAt: null,
+              },
+            },
+          },
+        ],
         isActive: true,
       },
       orderBy: { order: 'asc' },

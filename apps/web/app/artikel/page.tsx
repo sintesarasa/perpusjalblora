@@ -563,13 +563,8 @@ function ArticlesCatalogContent() {
             <div className="lg:col-span-4 space-y-8">
               <CitizenContributorsSidebar
                 articles={articles}
-                categories={categories}
-                currentCategory={currentCategory}
                 onSelectAuthor={(authorName) => {
                   updateQueryParams({ q: authorName }, { scrollToSearch: true });
-                }}
-                onSelectCategory={(categorySlug) => {
-                  updateQueryParams({ kategori: categorySlug }, { scrollToSearch: true });
                 }}
               />
             </div>

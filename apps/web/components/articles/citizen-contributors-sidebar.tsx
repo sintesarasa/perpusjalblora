@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { ArticleSummary, ArticleCategory } from '@perpusjal/types';
+import { ArticleSummary } from '@perpusjal/types';
 import { UserAvatar } from '@/components/ui/user-avatar';
 import { UserHonorBadge } from '@/components/gamification/user-honor-badge';
 import { cn } from '@/lib/utils';
@@ -10,20 +10,14 @@ import {
   PenTool,
   Quote,
   Users,
-  Sparkles,
   ArrowRight,
   BookOpen,
-  Feather,
   Mail,
-  Compass,
 } from 'lucide-react';
 
 interface CitizenContributorsSidebarProps {
   articles: ArticleSummary[];
-  categories?: ArticleCategory[];
-  currentCategory?: string;
   onSelectAuthor?: (authorName: string) => void;
-  onSelectCategory?: (categorySlug: string) => void;
   className?: string;
 }
 
@@ -40,57 +34,9 @@ interface ContributorInfo {
   articleCount: number;
 }
 
-const OFFICIAL_RUBRICS = [
-  {
-    name: 'Suara Lapak',
-    slug: 'suara-lapak',
-    description: 'Catatan dari jalanan & perjumpaan buku di ruang terbuka.',
-    num: '01',
-  },
-  {
-    name: 'Pojok Blora',
-    slug: 'pojok-blora',
-    description: 'Sketsa sosial, tradisi, & denyut kehidupan lokal Blora.',
-    num: '02',
-  },
-  {
-    name: 'Opini Warga',
-    slug: 'opini-warga',
-    description: 'Pikiran kritis, suara aspirasi, & gagasan perbaikan daerah.',
-    num: '03',
-  },
-  {
-    name: 'Lingkungan',
-    slug: 'lingkungan',
-    description: 'Hutan jati, ekologi bumi, krisis air, & kelestarian alam.',
-    num: '04',
-  },
-  {
-    name: 'Sejarah',
-    slug: 'sejarah',
-    description: 'Memori masa lalu, falsafah Samin, & jejak Pramoedya.',
-    num: '05',
-  },
-  {
-    name: 'Puisi',
-    slug: 'puisi',
-    description: 'Bait sastra, sajak liris, karya puisi, & ekspresi rasa.',
-    num: '06',
-  },
-  {
-    name: 'Refleksi Diri',
-    slug: 'refleksi-diri',
-    description: 'Kontemplasi batin, renungan personal, & pencarian makna.',
-    num: '07',
-  },
-];
-
 export function CitizenContributorsSidebar({
   articles,
-  categories = [],
-  currentCategory = '',
   onSelectAuthor,
-  onSelectCategory,
   className,
 }: CitizenContributorsSidebarProps) {
   // Aggregate unique contributors from the current articles collection
@@ -275,51 +221,6 @@ export function CitizenContributorsSidebar({
         <div className="pt-3 mt-2 border-t border-border-hairline flex items-center justify-between font-mono text-[10px] text-muted">
           <span>Notula Sesi Lapak CFD</span>
           <span className="font-bold text-foreground">Perpusjal Blora</span>
-        </div>
-      </div>
-
-      {/* ========================================================= */}
-      {/* 4. PEDOMAN 7 RUBRIK RESMI SISTEM (INTERAKTIF)             */}
-      {/* ========================================================= */}
-      <div className="border-2 border-foreground bg-surface p-4 sm:p-5 space-y-3 font-mono text-xs shadow-xs">
-        <div className="flex items-center justify-between font-bold text-foreground text-[11px] uppercase tracking-wider pb-2 border-b-2 border-foreground">
-          <div className="flex items-center gap-1.5">
-            <Compass className="w-3.5 h-3.5 text-foreground" />
-            <span>7 RUBRIK RESMI WARGA</span>
-          </div>
-          <span className="text-[10px] text-muted">Klik untuk Filter</span>
-        </div>
-
-        <div className="space-y-1.5 pt-1">
-          {OFFICIAL_RUBRICS.map((rubric) => {
-            const isActive = currentCategory === rubric.slug;
-            return (
-              <button
-                key={rubric.slug}
-                type="button"
-                onClick={() => onSelectCategory?.(rubric.slug)}
-                className={cn(
-                  'w-full text-left p-2.5 border transition-all cursor-pointer flex items-start gap-2.5',
-                  isActive
-                    ? 'bg-foreground text-background border-foreground font-bold shadow-xs'
-                    : 'bg-surface hover:bg-surface-muted/60 text-foreground border-border-hairline hover:border-foreground'
-                )}
-              >
-                <span className={cn('font-mono font-bold text-[10px] shrink-0 mt-0.5', isActive ? 'text-background' : 'text-muted')}>
-                  {rubric.num}.
-                </span>
-                <div className="min-w-0 flex-1">
-                  <div className="font-bold text-xs leading-snug flex items-center justify-between gap-2">
-                    <span>{rubric.name}</span>
-                    {isActive && <span className="text-[9px] uppercase tracking-widest">[AKTIF]</span>}
-                  </div>
-                  <p className={cn('text-[10.5px] leading-relaxed mt-0.5 line-clamp-1 font-sans', isActive ? 'text-background/85' : 'text-muted')}>
-                    {rubric.description}
-                  </p>
-                </div>
-              </button>
-            );
-          })}
         </div>
       </div>
     </aside>

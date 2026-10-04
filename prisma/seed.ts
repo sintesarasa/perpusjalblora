@@ -32,9 +32,9 @@ async function main() {
 
   // 2. Book Categories (type = BOOK)
   const bookCategories = [
-    { name: 'Sastra', slug: 'sastra', description: 'Karya sastra, puisi, cerpen, novel, dan kritik sastra.', type: CategoryType.BOOK, order: 10 },
+    { name: 'Sastra', slug: 'sastra', description: 'Karya sastra, puisi, cerpen, novel, dan kritik sastra.', type: CategoryType.BOTH, order: 10 },
     { name: 'Pendidikan', slug: 'pendidikan', description: 'Dunia pendidikan, pedagogi, dan pengembangan ilmu.', type: CategoryType.BOOK, order: 11 },
-    { name: 'Sosial', slug: 'sosial', description: 'Isu sosial kemasyarakatan, dinamika warga, dan opini publik.', type: CategoryType.BOOK, order: 12 },
+    { name: 'Sosial', slug: 'sosial', description: 'Isu sosial kemasyarakatan, dinamika warga, dan opini publik.', type: CategoryType.BOTH, order: 12 },
     { name: 'Budaya', slug: 'budaya', description: 'Kekayaan budaya lokal Blora, tradisi Nusantara, dan seni.', type: CategoryType.BOOK, order: 13 },
     { name: 'Anak', slug: 'anak', description: 'Bacaan ramah anak, dongeng, dan literasi usia dini.', type: CategoryType.BOOK, order: 14 },
     { name: 'Fiksi', slug: 'fiksi', description: 'Koleksi cerita imajinatif, fiksi ilmiah, roman, dan misteri.', type: CategoryType.BOOK, order: 15 },
