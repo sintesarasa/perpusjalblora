@@ -145,12 +145,11 @@ const ROTATING_WORDS = [
 ];
 
 /**
- * The Studio Slot-Roller:
- * Dual-track concurrent transition (Apple / Awwwards standard)
- * Outgoing word glides up while incoming word concurrently glides in from bottom
- * powered by cubic-bezier(0.16, 1, 0.3, 1) at 60FPS.
+ * The Gaussian Dissolve:
+ * Cinematic optical ink evaporation & focus transition.
+ * Words dissolve into each other on the exact same baseline with zero vertical jumping.
  */
-function StudioSlotRoller() {
+function GaussianDissolveHeadline() {
   const [currentIdx, setCurrentIdx] = React.useState(0);
   const [prevIdx, setPrevIdx] = React.useState<number | null>(null);
 
@@ -158,29 +157,29 @@ function StudioSlotRoller() {
     const timer = setInterval(() => {
       setPrevIdx(currentIdx);
       setCurrentIdx((prev) => (prev + 1) % ROTATING_WORDS.length);
-    }, 2000);
+    }, 2200);
 
     return () => clearInterval(timer);
   }, [currentIdx]);
 
   return (
-    <span className="relative inline-block overflow-hidden align-baseline h-[1.15em] min-w-[270px] sm:min-w-[430px]">
-      {/* Outgoing Word */}
+    <span className="relative inline-block align-baseline min-w-[270px] sm:min-w-[440px]">
+      {/* Outgoing Dissolving Word */}
       {prevIdx !== null && (
         <span
           key={`prev-${prevIdx}-${currentIdx}`}
-          className="absolute inset-0 block italic font-serif font-normal text-foreground animate-slot-roller-out select-none pointer-events-none"
+          className="absolute inset-0 block italic font-serif font-normal text-foreground animate-gaussian-out select-none pointer-events-none"
         >
           {ROTATING_WORDS[prevIdx]}
         </span>
       )}
 
-      {/* Incoming / Active Word */}
+      {/* Incoming Sharp Word */}
       <span
         key={`curr-${currentIdx}`}
         className={cn(
           'block italic font-serif font-normal text-foreground',
-          prevIdx !== null ? 'animate-slot-roller-in' : ''
+          prevIdx !== null ? 'animate-gaussian-in' : ''
         )}
       >
         {ROTATING_WORDS[currentIdx]}
@@ -328,10 +327,10 @@ export default function HomePage() {
                     <span>RUANG PERJUMPAAN MERDEKA</span>
                   </div>
 
-                  {/* Monumental Headline: MEMBACA DAN [STUDIO SLOT-ROLLER] */}
+                  {/* Monumental Headline: MEMBACA DAN [GAUSSIAN DISSOLVE] */}
                   <h1 className="font-serif font-black uppercase text-foreground leading-[1.02] sm:leading-[0.92] tracking-tight text-4xl sm:text-6xl md:text-7xl lg:text-8xl break-words">
                     MEMBACA DAN <br />
-                    <StudioSlotRoller />
+                    <GaussianDissolveHeadline />
                   </h1>
 
                   <p className="drop-cap font-serif text-lg sm:text-xl text-foreground/90 leading-relaxed max-w-2xl">

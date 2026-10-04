@@ -134,6 +134,43 @@
   will-change: transform, opacity, filter;
 }
 
+/* The Gaussian Dissolve Keyframes (Optical Ink Evaporation & Focus) */
+@keyframes gaussianDissolveOut {
+  0% {
+    opacity: 1;
+    filter: blur(0px);
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    filter: blur(8px);
+    transform: scale(1.02);
+  }
+}
+
+@keyframes gaussianDissolveIn {
+  0% {
+    opacity: 0;
+    filter: blur(8px);
+    transform: scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    filter: blur(0px);
+    transform: scale(1);
+  }
+}
+
+.animate-gaussian-out {
+  animation: gaussianDissolveOut 600ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  will-change: transform, opacity, filter;
+}
+
+.animate-gaussian-in {
+  animation: gaussianDissolveIn 600ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  will-change: transform, opacity, filter;
+}
+
 /* Editorial Drop Cap */
 .drop-cap::first-letter {
   font-family: var(--font-playfair), Georgia, serif;
