@@ -338,25 +338,26 @@ export function MemberCardModal({ user, triggerClassName }: MemberCardModalProps
                 </div>
               </div>
 
-              {/* 1. Card Top Ribbon / Masthead with Official Logo & Tagline */}
-              <div className="relative z-10 flex items-start justify-between border-b-2 border-amber-500/40 pb-3 gap-3">
-                <div className="space-y-1.5 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <Logo className="h-5 sm:h-6 w-auto text-amber-400" />
+              {/* 1. Card Top Ribbon / Masthead */}
+              <div className="relative z-10 flex items-center justify-between border-b border-amber-500/30 pb-3 gap-3">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <LogoIcon className="h-6 w-auto text-amber-400 shrink-0" />
+                  <div className="h-6 w-[1px] bg-amber-500/30 shrink-0" />
+                  <div className="min-w-0">
+                    <span className="font-mono text-[8.5px] uppercase font-bold tracking-[0.2em] text-amber-400 block truncate">
+                      KARTU KEHORMATAN WARGA
+                    </span>
+                    <h3 className="font-serif italic text-sm sm:text-base text-zinc-100 font-medium tracking-wide leading-tight truncate">
+                      Membaca dan Berbahagia.
+                    </h3>
                   </div>
-                  <div className="flex items-center gap-1.5 font-mono text-[9px] uppercase font-bold tracking-widest text-amber-400">
-                    <span>★ KARTU KEHORMATAN WARGA LITERASI ★</span>
-                  </div>
-                  <span className="font-serif italic text-[11px] text-zinc-300 block tracking-wide">
-                    "Membaca dan Berbahagia di Bawah Langit Blora"
-                  </span>
                 </div>
 
                 <div className="text-right shrink-0">
-                  <span className="font-mono text-[8px] uppercase font-bold tracking-widest text-zinc-400 block mb-0.5">
+                  <span className="font-mono text-[7.5px] uppercase font-bold tracking-widest text-zinc-400 block mb-0.5">
                     NO. REGISTRASI
                   </span>
-                  <span className="font-mono text-[10.5px] font-bold text-amber-300 tracking-wider px-2 py-0.5 bg-amber-500/10 border border-amber-500/30 rounded-xs block">
+                  <span className="font-mono text-[11px] font-bold text-amber-300 tracking-wider px-2.5 py-0.5 bg-amber-500/10 border border-amber-500/30 rounded-xs inline-block">
                     {memberRegNo}
                   </span>
                 </div>
@@ -471,30 +472,22 @@ export function MemberCardModal({ user, triggerClassName }: MemberCardModalProps
                 </div>
               </div>
 
-              {/* 5. Bottom Stamp & Clean QR Marketing Hook */}
-              <div className="relative z-10 flex items-center justify-between pt-2 border-t border-zinc-800/80 gap-3">
-                {/* Vintage Circular Seal */}
-                <div className="relative w-16 h-16 rounded-full border border-amber-500/40 flex items-center justify-center p-1 bg-amber-500/5 select-none shrink-0 shadow-xs">
-                  <div className="w-full h-full rounded-full border border-dashed border-amber-400/50 flex flex-col items-center justify-center text-center p-0.5">
-                    <LogoIcon className="h-2.5 w-auto text-amber-400 mb-0.5" />
-                    <span className="font-serif font-black text-[7.5px] text-white tracking-wider leading-tight">
-                      PERPUSJAL
-                    </span>
-                    <span className="font-mono text-[4.5px] uppercase tracking-wider text-amber-300/80 leading-tight">
-                      TERVERIFIKASI
-                    </span>
-                  </div>
+              {/* 5. Bottom Brand & Clean QR Marketing Hook */}
+              <div className="relative z-10 flex items-center justify-between pt-2.5 border-t border-zinc-800/80 gap-3">
+                {/* Official Logo Perpusjal (Menggantikan stempel bulat) */}
+                <div className="shrink-0 flex items-center">
+                  <Logo className="h-7 sm:h-8 w-auto text-amber-400" />
                 </div>
 
                 {/* Slogan & Verification text */}
-                <div className="flex-1 min-w-0 space-y-0.5">
+                <div className="flex-1 min-w-0 space-y-0.5 pl-1">
                   <span className="font-mono text-[8px] uppercase tracking-wider text-amber-400 block font-bold truncate">
                     perpusjalblora.id/warga/@{user.username}
                   </span>
-                  <p className="font-serif text-[10.5px] text-zinc-300 leading-snug font-medium">
-                    Membaca dan Berbahagia &bull; Ruang Merdeka Warga
+                  <p className="font-serif text-[10px] text-zinc-300 leading-snug truncate">
+                    Buku Bebas di Trotoar &bull; Suara Merdeka Warga
                   </p>
-                  <span className="font-mono text-[7.5px] text-zinc-400 uppercase block tracking-widest">
+                  <span className="font-mono text-[7px] text-zinc-500 uppercase block tracking-widest">
                     PINDAI QR &bull; PINJAM BUKU GRATIS
                   </span>
                 </div>
@@ -502,11 +495,11 @@ export function MemberCardModal({ user, triggerClassName }: MemberCardModalProps
                 {/* Vector QR Code */}
                 {qrSvg ? (
                   <div
-                    className="w-16 h-16 bg-[#0b0c0e] p-1 border border-amber-500/40 rounded-xs inline-flex items-center justify-center shrink-0 shadow-xs [&>svg]:w-full [&>svg]:h-full"
+                    className="w-14 h-14 sm:w-16 sm:h-16 bg-[#0b0c0e] p-1 border border-amber-500/40 rounded-xs inline-flex items-center justify-center shrink-0 shadow-xs [&>svg]:w-full [&>svg]:h-full"
                     dangerouslySetInnerHTML={{ __html: qrSvg }}
                   />
                 ) : (
-                  <div className="w-16 h-16 bg-zinc-900 border border-zinc-800 rounded-xs flex items-center justify-center text-[8px] font-mono text-zinc-500 shrink-0">
+                  <div className="w-14 h-14 sm:w-16 sm:h-16 bg-zinc-900 border border-zinc-800 rounded-xs flex items-center justify-center text-[8px] font-mono text-zinc-500 shrink-0">
                     QR
                   </div>
                 )}
