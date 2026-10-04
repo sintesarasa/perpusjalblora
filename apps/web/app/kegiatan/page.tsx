@@ -186,7 +186,7 @@ function EventCatalogContent() {
       );
     }
     return (
-      <span className="font-mono text-[9px] uppercase tracking-wider px-2 py-0.5 border border-amber-500/60 bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold">
+      <span className="font-mono text-[9px] uppercase tracking-wider px-2 py-0.5 border border-foreground/40 bg-surface-muted text-foreground font-bold">
         TERBUKA UMUM
       </span>
     );
@@ -197,8 +197,8 @@ function EventCatalogContent() {
       case EventType.LAPAK:
         return {
           label: 'Lapak Baca',
-          border: 'border-l-4 border-l-amber-500',
-          badge: 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/40',
+          border: 'border-l-4 border-l-foreground',
+          badge: 'bg-surface-muted text-foreground border-foreground/40',
         };
       case EventType.DISKUSI:
         return {
@@ -275,8 +275,8 @@ function EventCatalogContent() {
         {/* ========================================================= */}
         <section className="space-y-4">
           <div className="flex items-center justify-between text-xs font-mono uppercase tracking-widest text-muted pb-2 border-b border-border-hairline">
-            <span className="flex items-center gap-1.5 font-bold text-amber-600 dark:text-amber-400">
-              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+            <span className="flex items-center gap-1.5 font-bold text-foreground">
+              <Sparkles className="w-3.5 h-3.5 text-foreground" />
               <span>[ AGENDA UTAMA &bull; SESI TERDEKAT ]</span>
             </span>
             <span>BLORA, JAWA TENGAH</span>
@@ -296,7 +296,7 @@ function EventCatalogContent() {
               </div>
 
               <div className="flex items-center gap-2 text-muted text-[11px]">
-                <Calendar className="w-3.5 h-3.5 text-amber-500" />
+                <Calendar className="w-3.5 h-3.5 text-foreground" />
                 <span className="font-bold text-foreground">
                   {spotlightEvent
                     ? new Date(spotlightEvent.startAt).toLocaleDateString('id-ID', {
@@ -323,7 +323,7 @@ function EventCatalogContent() {
                   {/* Top Photo Strip */}
                   <div className="flex items-center justify-between pb-2 mb-2 border-b border-border-hairline font-mono text-[9px] uppercase tracking-widest text-muted">
                     <span>[ DOKUMENTASI TROTOAR // LAPAK CFD ]</span>
-                    <span className="font-bold text-amber-600 dark:text-amber-400">2026</span>
+                    <span className="font-bold text-foreground">2026</span>
                   </div>
 
                   {/* Image Canvas Container */}
@@ -341,7 +341,7 @@ function EventCatalogContent() {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-transparent pointer-events-none" />
 
                     {/* Vintage Corner Badge on Photo */}
-                    <div className="absolute top-2.5 right-2.5 px-2 py-0.5 bg-amber-500 text-black font-mono text-[8px] font-extrabold uppercase tracking-widest border border-black shadow-xs">
+                    <div className="absolute top-2.5 right-2.5 px-2 py-0.5 bg-foreground text-background font-mono text-[8px] font-extrabold uppercase tracking-widest border border-background shadow-xs">
                       ✦ TERPAL RAKYAT ✦
                     </div>
 
@@ -363,7 +363,7 @@ function EventCatalogContent() {
 
               {/* Right Column: Event Narrative, Countdown Ticker & Actions (7 cols) */}
               <div className="lg:col-span-7 space-y-4">
-                <div className="inline-block px-2.5 py-0.5 border border-amber-500/50 bg-amber-500/10 text-amber-600 dark:text-amber-400 font-mono text-[9px] uppercase font-bold tracking-widest">
+                <div className="inline-block px-2.5 py-0.5 border border-foreground/40 bg-surface-muted text-foreground font-mono text-[9px] uppercase font-bold tracking-widest">
                   <span>✦ SOROTAN SESI TERDEKAT ✦</span>
                 </div>
 
@@ -382,7 +382,7 @@ function EventCatalogContent() {
                 {/* 3 Key Venue Pillars Strip */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1 font-mono text-xs text-muted">
                   <div className="flex items-center gap-2 p-2 bg-surface-muted/60 border border-border-hairline rounded-xs">
-                    <Clock className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                    <Clock className="w-3.5 h-3.5 text-foreground shrink-0" />
                     <span className="text-foreground font-semibold text-[11px]">
                       {spotlightEvent
                         ? `${new Date(spotlightEvent.startAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })} - ${new Date(spotlightEvent.endAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })} WIB`
@@ -391,7 +391,7 @@ function EventCatalogContent() {
                   </div>
 
                   <div className="flex items-center gap-2 p-2 bg-surface-muted/60 border border-border-hairline rounded-xs truncate">
-                    <MapPin className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                    <MapPin className="w-3.5 h-3.5 text-foreground shrink-0" />
                     <span className="text-foreground font-semibold text-[11px] truncate">
                       {spotlightEvent
                         ? spotlightEvent.locationName
@@ -400,7 +400,7 @@ function EventCatalogContent() {
                   </div>
 
                   <div className="flex items-center gap-2 p-2 bg-surface-muted/60 border border-border-hairline rounded-xs">
-                    <Users className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                    <Users className="w-3.5 h-3.5 text-foreground shrink-0" />
                     <span className="text-foreground font-semibold text-[11px]">
                       {spotlightEvent && spotlightEvent.quota
                         ? `${spotlightEvent.registeredCount}/${spotlightEvent.quota} Terdaftar`
@@ -438,7 +438,7 @@ function EventCatalogContent() {
                         rel="noopener noreferrer"
                         className="px-4 py-2.5 bg-foreground text-background font-mono text-xs font-bold uppercase tracking-wider hover:bg-foreground/90 transition-colors inline-flex items-center gap-2 shadow-xs"
                       >
-                        <MapPin className="w-3.5 h-3.5 text-amber-400" />
+                        <MapPin className="w-3.5 h-3.5 text-background" />
                         <span>PETUNJUK LOKASI DI GOOGLE MAPS</span>
                         <ExternalLink className="w-3 h-3" />
                       </a>
@@ -450,7 +450,7 @@ function EventCatalogContent() {
                       rel="noopener noreferrer"
                       className="px-4 py-2.5 border-2 border-foreground bg-surface hover:bg-foreground hover:text-background font-mono text-xs font-bold uppercase tracking-wider transition-colors inline-flex items-center gap-1.5"
                     >
-                      <CalendarPlus className="w-3.5 h-3.5 text-amber-500" />
+                      <CalendarPlus className="w-3.5 h-3.5 text-foreground" />
                       <span>SIMPAN KE GOOGLE CALENDAR</span>
                     </a>
                   </div>
@@ -459,7 +459,7 @@ function EventCatalogContent() {
                     href="https://wa.me/6281234567890?text=Halo%20Perpusjal%20Blora,%20saya%20ingin%20bertanya%20tentang%20sesi%20lapak%20berikutnya"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="font-mono text-xs uppercase font-bold text-amber-600 dark:text-amber-400 hover:underline inline-flex items-center gap-1.5"
+                    className="font-mono text-xs uppercase font-bold text-foreground hover:underline inline-flex items-center gap-1.5"
                   >
                     <MessageCircle className="w-3.5 h-3.5" />
                     <span>TANYA RELAWAN &rarr;</span>
@@ -478,8 +478,8 @@ function EventCatalogContent() {
           <div className="space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-end justify-between pb-3 border-b-2 border-foreground gap-4">
               <div>
-                <div className="text-[10px] font-mono uppercase tracking-ultra text-amber-600 dark:text-amber-400 font-bold flex items-center gap-1.5 mb-1">
-                  <Archive className="w-3.5 h-3.5 text-amber-500" />
+                <div className="text-[10px] font-mono uppercase tracking-ultra text-foreground font-bold flex items-center gap-1.5 mb-1">
+                  <Archive className="w-3.5 h-3.5 text-foreground" />
                   <span>[ KRONIK PERJALANAN // ARSIP DOKUMENTASI LAPAK ]</span>
                 </div>
                 <h2 className="font-serif text-3xl sm:text-4xl font-black uppercase tracking-tight text-foreground">
@@ -518,7 +518,7 @@ function EventCatalogContent() {
                       : 'bg-surface text-foreground border-border-hairline hover:border-foreground'
                   )}
                 >
-                  <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                  <Sparkles className="w-3.5 h-3.5 text-current" />
                   <span>Agenda Mendatang {upcomingTotal > 0 ? `(${upcomingTotal})` : ''}</span>
                 </button>
               </div>
@@ -526,9 +526,9 @@ function EventCatalogContent() {
 
             {/* Pinned Banner when browsing archive and upcoming events exist */}
             {statusTab === 'selesai' && upcomingTotal > 0 && (
-              <div className="p-3.5 bg-amber-500/10 border-2 border-amber-500/40 flex flex-wrap items-center justify-between gap-3 text-xs font-mono shadow-2xs">
+              <div className="p-3.5 bg-surface-muted border-2 border-foreground flex flex-wrap items-center justify-between gap-3 text-xs font-mono shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] dark:shadow-[3px_3px_0px_0px_rgba(255,255,255,0.9)]">
                 <div className="flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-amber-500 shrink-0" />
+                  <Sparkles className="w-4 h-4 text-foreground shrink-0" />
                   <span className="text-foreground">
                     Terdapat <strong>{upcomingTotal} agenda kegiatan mendatang</strong> yang siap digelar di Blora.
                   </span>
@@ -536,7 +536,7 @@ function EventCatalogContent() {
                 <button
                   type="button"
                   onClick={() => updateFilters({ status: 'mendatang', page: '1' })}
-                  className="px-3 py-1 bg-amber-500 hover:bg-amber-600 text-black font-bold uppercase tracking-wider text-[11px] border border-black shadow-xs cursor-pointer transition-colors"
+                  className="px-3 py-1 bg-foreground hover:bg-foreground/90 text-background font-bold uppercase tracking-wider text-[11px] border border-foreground shadow-xs cursor-pointer transition-colors"
                 >
                   Buka Agenda Mendatang &rarr;
                 </button>
@@ -564,7 +564,7 @@ function EventCatalogContent() {
                   className={cn(
                     'px-3 py-1 border transition-colors cursor-pointer text-[11px] font-bold',
                     typeFilter === chip.val
-                      ? 'bg-amber-500 text-black border-amber-600'
+                      ? 'bg-foreground text-background border-foreground shadow-xs'
                       : 'bg-surface text-foreground border-border-hairline hover:border-foreground'
                   )}
                 >
@@ -672,7 +672,7 @@ function EventCatalogContent() {
                               <span className="text-xl font-black leading-none text-foreground">
                                 {day}
                               </span>
-                              <span className="text-[9px] uppercase font-bold text-amber-600 dark:text-amber-400 leading-tight">
+                              <span className="text-[9px] uppercase font-bold text-foreground leading-tight">
                                 {month}
                               </span>
                             </div>
@@ -698,7 +698,7 @@ function EventCatalogContent() {
                         {/* Body Details */}
                         <div className="p-5 space-y-3">
                           <Link href={`/kegiatan/${event.slug}`} className="block">
-                            <h3 className="font-serif text-xl font-bold text-foreground leading-snug group-hover:text-amber-600 dark:group-hover:text-amber-400 group-hover:underline transition-colors line-clamp-2">
+                            <h3 className="font-serif text-xl font-bold text-foreground leading-snug group-hover:underline transition-colors line-clamp-2">
                               {event.title}
                             </h3>
                           </Link>
@@ -733,7 +733,7 @@ function EventCatalogContent() {
                         </span>
                         <Link
                           href={`/kegiatan/${event.slug}`}
-                          className="font-bold text-foreground group-hover:text-amber-600 dark:group-hover:text-amber-400 inline-flex items-center gap-1 uppercase tracking-wider transition-colors"
+                          className="font-bold text-foreground hover:underline inline-flex items-center gap-1 uppercase tracking-wider transition-colors"
                         >
                           <span>{statusTab === 'selesai' ? 'REKAM JEJAK' : 'RINCIAN'}</span>
                           <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
@@ -766,20 +766,17 @@ function EventCatalogContent() {
         {/* ========================================================= */}
         {/* 5. AJAKAN KOLABORASI // GELAR LAPAK BERSAMA KAMI          */}
         {/* ========================================================= */}
-        <section className="border-2 border-foreground bg-gradient-to-r from-zinc-950 via-zinc-900 to-zinc-950 text-white p-6 sm:p-10 relative overflow-hidden shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.9)]">
-          {/* Subtle gold glow */}
-          <div className="absolute right-0 top-0 w-80 h-80 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
-
+        <section className="border-2 border-foreground bg-foreground text-background p-6 sm:p-10 relative overflow-hidden shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.9)]">
           <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-8">
             <div className="space-y-3 max-w-2xl">
-              <div className="inline-flex items-center gap-2 px-3 py-1 bg-amber-500/20 border border-amber-500/40 text-amber-300 font-mono text-[9px] uppercase font-bold tracking-widest">
-                <Sparkles className="w-3 h-3" />
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-background/15 border border-background/30 text-background font-mono text-[9px] uppercase font-bold tracking-widest">
+                <Sparkles className="w-3 h-3 text-background" />
                 <span>KOLABORASI RUANG BUKA // GERAKAN SWADAYA</span>
               </div>
-              <h3 className="font-serif text-3xl sm:text-4xl font-black text-white leading-tight">
+              <h3 className="font-serif text-3xl sm:text-4xl font-black text-background leading-tight">
                 Punya Gagasan Diskusi, Workshop, atau Pentas Akustik di Lapak?
               </h3>
-              <p className="font-serif text-sm sm:text-base text-zinc-300 leading-relaxed">
+              <p className="font-serif text-sm sm:text-base text-background/80 leading-relaxed">
                 Kami selalu membuka pintu terpal bagi komunitas literasi lain, guru desa, musisi akustik,
                 seniman cukil, maupun pegiat lingkungan yang ingin berkolaborasi menyemarakkan ruang baca rakyat.
               </p>
@@ -790,15 +787,15 @@ function EventCatalogContent() {
                 href="https://wa.me/6281234567890?text=Halo%20Perpusjal%20Blora,%20kami%20ingin%20berkolaborasi%20kegiatan%20bersama"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-6 py-3.5 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-black font-mono text-xs font-bold uppercase tracking-wider text-center transition-all shadow-[0_0_15px_rgba(245,158,11,0.3)] inline-flex items-center justify-center gap-2"
+                className="px-6 py-3.5 bg-background text-foreground hover:bg-background/90 font-mono text-xs font-bold uppercase tracking-wider text-center transition-colors inline-flex items-center justify-center gap-2 border border-foreground shadow-[3px_3px_0px_0px_rgba(0,0,0,0.5)]"
               >
-                <MessageCircle className="w-4 h-4 text-black" />
+                <MessageCircle className="w-4 h-4 text-foreground" />
                 <span>KOLABORASI VIA WHATSAPP</span>
               </a>
 
               <Link
                 href="/tentang"
-                className="px-5 py-3.5 border border-zinc-700 bg-zinc-800/80 hover:bg-zinc-700 text-zinc-200 font-mono text-xs font-bold uppercase tracking-wider text-center transition-colors inline-flex items-center justify-center gap-1.5"
+                className="px-5 py-3.5 border border-background/40 bg-transparent hover:bg-background/10 text-background font-mono text-xs font-bold uppercase tracking-wider text-center transition-colors inline-flex items-center justify-center gap-1.5"
               >
                 <Compass className="w-4 h-4" />
                 <span>KRONIK GERAKAN</span>

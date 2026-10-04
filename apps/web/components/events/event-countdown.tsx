@@ -143,16 +143,16 @@ export function EventCountdown({
     if (variant === 'embedded') {
       return (
         <div className={cn('p-3 sm:p-3.5 border border-border-hairline bg-surface-muted/50 rounded-xs', className)}>
-          <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-amber-600 dark:text-amber-400">
-            <Clock className="w-3.5 h-3.5 animate-pulse text-amber-500" />
+          <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-foreground font-bold">
+            <Clock className="w-3.5 h-3.5 animate-pulse text-foreground" />
             <span>MEMUAT HITUNG MUNDUR...</span>
           </div>
         </div>
       );
     }
     return (
-      <div className={cn('bg-[#090a0c] text-white p-6 border-2 border-amber-500/50 rounded-xs', className)}>
-        <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-amber-400">
+      <div className={cn('bg-surface text-foreground p-6 border-2 border-foreground rounded-xs', className)}>
+        <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-foreground font-bold">
           <Clock className="w-3.5 h-3.5" />
           <span>MEMUAT PENGHITUNG WAKTU...</span>
         </div>
@@ -184,8 +184,8 @@ export function EventCountdown({
         )}
       >
         <div className="space-y-0.5">
-          <div className="flex items-center gap-1.5 font-mono text-[10px] uppercase font-bold text-amber-600 dark:text-amber-400 tracking-wider">
-            <Clock className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+          <div className="flex items-center gap-1.5 font-mono text-[10px] uppercase font-bold text-foreground tracking-wider">
+            <Clock className="w-3.5 h-3.5 text-foreground shrink-0" />
             <span>[ ⏳ WAKTU TERSISA MENUJU TERPAL ]</span>
           </div>
           <p className="font-serif italic text-xs text-muted leading-tight">
@@ -223,7 +223,7 @@ export function EventCountdown({
           </div>
 
           <div className="bg-surface border border-foreground/30 px-2 sm:px-2.5 py-1 text-center rounded-xs min-w-[44px] sm:min-w-[50px] shadow-2xs">
-            <span className="font-mono font-black text-lg sm:text-xl text-amber-600 dark:text-amber-400 block leading-tight">
+            <span className="font-mono font-black text-lg sm:text-xl text-foreground block leading-tight">
               {formatUnit(time.seconds)}
             </span>
             <span className="font-mono text-[7px] sm:text-[7.5px] uppercase tracking-widest text-muted block font-bold mt-0.5">
