@@ -7,8 +7,9 @@ import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { ArticleFeatured } from '@/components/articles/article-featured';
 import { ArticleCard } from '@/components/articles/article-card';
-import { ArticleCardSkeleton, ArticleGridSkeleton } from '@/components/articles/article-card-skeleton';
+import { ArticleGridSkeleton } from '@/components/articles/article-card-skeleton';
 import { ArticleQuickReadDrawer } from '@/components/articles/article-quick-read-drawer';
+import { CitizenContributorsSidebar } from '@/components/articles/citizen-contributors-sidebar';
 import { Pagination } from '@/components/ui/pagination';
 import { EmptyState } from '@/components/ui/empty-state';
 import { RevealOnScroll } from '@/components/ui/reveal-on-scroll';
@@ -25,10 +26,9 @@ import {
   X,
   Feather,
   BookOpen,
-  Heart,
   FileText,
   Printer,
-  Compass,
+  Users,
 } from 'lucide-react';
 import { apiClient } from '@/lib/api';
 import { ArticleSummary, ArticleCategory } from '@perpusjal/types';
@@ -114,7 +114,6 @@ function ArticlesCatalogContent() {
       }
       setIsLoading(false);
 
-      // Avoid jumping on first load, only adjust scroll if user initiated search and was scrolled down
       if (!isFirstRender.current && currentSearch) {
         searchSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
@@ -133,12 +132,10 @@ function ArticlesCatalogContent() {
         params.set(key, value);
       }
     });
-    // Reset to page 1 on filter changes
     if (!newParams.page && newParams.page !== '1') {
       params.delete('page');
     }
 
-    // Use scroll: false so Next.js does NOT kick the scrollbar back to page top
     router.push(`/artikel?${params.toString()}`, { scroll: false });
 
     if (options?.scrollToSearch && searchSectionRef.current) {
@@ -206,7 +203,7 @@ function ArticlesCatalogContent() {
           __html: JSON.stringify({
             '@context': 'https://schema.org',
             '@type': 'CollectionPage',
-            name: 'Arsip Warta & Catatan Kritis — Perpustakaan Jalanan Blora',
+            name: 'Mimbar Bebas Warta & Catatan Kritis — Perpustakaan Jalanan Blora',
             description:
               'Kumpulan esai warga, resensi buku lapak terpal, reportase gerakan literasi, dan catatan kebudayaan Blora.',
             url: 'https://perpusjalblora.id/artikel',
@@ -222,33 +219,33 @@ function ArticlesCatalogContent() {
 
       <main className="flex-1 pb-16 sm:pb-24">
         {/* ========================================================= */}
-        {/* 1. CINEMATIC BROADSHEET OPENING SCENE (STYLE TENTANG)     */}
+        {/* 1. CINEMATIC BROADSHEET OPENING SCENE                     */}
         {/* ========================================================= */}
-        <section className="border-b-2 border-foreground max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-10 pb-10 sm:pb-16 relative overflow-hidden">
+        <section className="border-b-2 border-foreground max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-10 pb-10 sm:pb-16 relative overflow-hidden select-none">
           {/* Subtle giant background typography watermark */}
           <div className="absolute right-0 top-1/2 -translate-y-1/2 opacity-[0.03] select-none pointer-events-none font-serif text-[160px] sm:text-[260px] font-black leading-none text-foreground tracking-tighter">
-            WARTA
+            WARGA
           </div>
 
           {/* Top Vintage Gazette Bar */}
           <div className="flex flex-wrap items-center justify-between border-b border-border-hairline pb-3 mb-8 sm:mb-12 text-[10px] sm:text-[11px] font-mono uppercase tracking-widest text-muted gap-2 relative z-10">
             <div className="flex items-center gap-2 sm:gap-3">
-              <BrandStamp edition="ARSIP LITERASI" year="2026" />
+              <BrandStamp edition="MIMBAR WARGA" year="2026" />
               <span className="hidden sm:inline">[ WARTA &amp; CATATAN KRITIS // SUARA SWADAYA WARGA ]</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-foreground animate-pulse" />
-              <span>TERBUKA UNTUK SELURUH WARGA</span>
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="font-bold text-foreground">TERBUKA UNTUK SELURUH WARGA</span>
             </div>
             <div className="hidden lg:flex items-center gap-2">
               <button
                 type="button"
                 onClick={handlePrint}
-                className="hover:text-foreground inline-flex items-center gap-1.5 transition-colors"
-                title="Cetak Arsip Warta"
+                className="hover:text-foreground inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+                title="Cetak Lembaran Warta"
               >
                 <Printer className="w-3.5 h-3.5" />
-                <span>CETAK ARSIP</span>
+                <span>CETAK LEMBARAN</span>
               </button>
             </div>
           </div>
@@ -256,12 +253,12 @@ function ArticlesCatalogContent() {
           <RevealOnScroll variant="fade-up" delayMs={100}>
             <div className="max-w-4xl space-y-4 sm:space-y-6 relative z-10">
               <div className="inline-flex items-center gap-2 px-2.5 py-1 border border-foreground font-mono text-[9px] sm:text-[10px] tracking-wider uppercase font-bold bg-foreground text-background">
-                <span>MIMBAR MERDEKA PERPUSJAL BLORA</span>
+                <span>MIMBAR BEBAS &bull; PERPUSTAKAAN JALANAN BLORA</span>
               </div>
 
               <h1 className="font-serif text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-black uppercase tracking-tight text-foreground leading-[1.02] sm:leading-[0.95] break-words">
                 ARSIP WARTA &amp; <br />
-                <span className="italic font-normal lowercase font-serif">catatan kritis jalanan.</span>
+                <span className="italic font-normal lowercase font-serif">suara swadaya warga.</span>
               </h1>
 
               <p className="font-serif text-lg sm:text-2xl text-foreground/90 leading-relaxed pt-1 sm:pt-2 max-w-3xl">
@@ -273,7 +270,7 @@ function ArticlesCatalogContent() {
                 <div className="flex flex-wrap items-center gap-x-6 gap-y-2 font-mono text-xs text-muted uppercase tracking-wider">
                   <div className="flex items-center gap-1.5">
                     <Feather className="w-3.5 h-3.5 text-foreground" />
-                    <span>Tanpa Syarat Gelar</span>
+                    <span className="font-bold text-foreground">Tanpa Syarat Gelar</span>
                   </div>
                   <span>&bull;</span>
                   <div className="flex items-center gap-1.5">
@@ -289,7 +286,7 @@ function ArticlesCatalogContent() {
 
                 <Link
                   href="/dashboard/tulisan"
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-foreground text-background font-mono text-xs uppercase tracking-wider font-bold hover:opacity-85 transition-opacity shrink-0"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-foreground text-background font-mono text-xs uppercase tracking-wider font-bold hover:bg-foreground/90 transition-all shrink-0 shadow-xs active:translate-x-0.5 active:translate-y-0.5"
                 >
                   <PenTool className="w-3.5 h-3.5" />
                   <span>Kirim Naskah Warga</span>
@@ -315,26 +312,29 @@ function ArticlesCatalogContent() {
         )}
 
         {/* ========================================================= */}
-        {/* 3. SEARCH, CATEGORIES & ERGONOMIC TOOLBAR SECTION        */}
+        {/* 3. TOOLBAR PENCARIAN & RUBRIKASI GAZETTE                 */}
         {/* ========================================================= */}
         <section
           ref={searchSectionRef}
           aria-label="Alat Pencarian dan Penyaring Naskah"
-          className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 sm:pt-14 scroll-mt-20"
+          className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 sm:pt-14 scroll-mt-20 select-none"
         >
-          <div className="border-2 border-foreground bg-surface p-5 sm:p-6 space-y-5 shadow-xs">
+          <div className="border-2 border-foreground bg-surface p-5 sm:p-6 space-y-5 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.9)]">
             {/* Top Toolbar: Categories & View Switcher */}
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-border-hairline pb-4">
               {/* Category Pills */}
               <div className="flex flex-wrap items-center gap-1.5 font-mono text-[11px] uppercase tracking-wider">
+                <span className="text-muted text-[10px] font-bold mr-1 flex items-center gap-1">
+                  RUBRIK:
+                </span>
                 <button
                   type="button"
                   onClick={() => updateQueryParams({ kategori: null }, { scrollToSearch: false })}
                   className={cn(
-                    'px-3 py-1.5 border transition-colors',
+                    'px-3 py-1.5 border transition-all cursor-pointer font-bold',
                     !currentCategory
-                      ? 'bg-foreground text-background border-foreground font-bold'
-                      : 'bg-transparent text-muted border-border hover:border-foreground'
+                      ? 'bg-foreground text-background border-foreground shadow-2xs'
+                      : 'bg-surface text-foreground border-border hover:border-foreground'
                   )}
                 >
                   Semua Topik
@@ -345,10 +345,10 @@ function ArticlesCatalogContent() {
                     type="button"
                     onClick={() => updateQueryParams({ kategori: c.slug }, { scrollToSearch: false })}
                     className={cn(
-                      'px-3 py-1.5 border transition-colors',
+                      'px-3 py-1.5 border transition-all cursor-pointer font-bold',
                       currentCategory === c.slug
-                        ? 'bg-foreground text-background border-foreground font-bold'
-                        : 'bg-transparent text-muted border-border hover:border-foreground'
+                        ? 'bg-foreground text-background border-foreground shadow-2xs'
+                        : 'bg-surface text-foreground border-border hover:border-foreground'
                     )}
                   >
                     {c.name}
@@ -358,18 +358,18 @@ function ArticlesCatalogContent() {
 
               {/* View Switcher */}
               <div className="flex items-center gap-2 shrink-0 self-end lg:self-auto font-mono text-[10px] uppercase tracking-wider">
-                <span className="text-muted">Tampilan:</span>
-                <div className="flex items-center border border-border bg-background">
+                <span className="text-muted font-bold">Tampilan:</span>
+                <div className="flex items-center border-2 border-foreground bg-background">
                   <button
                     type="button"
                     onClick={() => setViewMode('grid')}
                     className={cn(
-                      'p-1.5 transition-colors',
+                      'p-1.5 transition-colors cursor-pointer',
                       viewMode === 'grid'
-                        ? 'bg-foreground text-background'
+                        ? 'bg-foreground text-background font-bold'
                         : 'text-muted hover:text-foreground'
                     )}
-                    title="Tampilan Kartu Kotak (Grid)"
+                    title="Tampilan Kotak (Grid)"
                   >
                     <LayoutGrid className="w-3.5 h-3.5" />
                   </button>
@@ -377,9 +377,9 @@ function ArticlesCatalogContent() {
                     type="button"
                     onClick={() => setViewMode('broadsheet')}
                     className={cn(
-                      'p-1.5 transition-colors',
+                      'p-1.5 transition-colors cursor-pointer',
                       viewMode === 'broadsheet'
-                        ? 'bg-foreground text-background'
+                        ? 'bg-foreground text-background font-bold'
                         : 'text-muted hover:text-foreground'
                     )}
                     title="Tampilan Kolom Koran (Broadsheet)"
@@ -397,10 +397,10 @@ function ArticlesCatalogContent() {
                 <input
                   ref={searchInputRef}
                   type="text"
-                  placeholder="Cari naskah, topik tulisan, atau nama kontributor... (Cmd+K)"
+                  placeholder="Cari judul, topik esai, atau nama warga... (Cmd+K)"
                   value={searchInput}
                   onChange={(e) => setSearchInput(e.target.value)}
-                  className="w-full h-11 pl-10 pr-24 bg-background border border-border text-xs sm:text-sm font-sans focus:outline-none focus:border-foreground rounded-none transition-colors"
+                  className="w-full h-11 pl-10 pr-24 bg-background border-2 border-foreground text-xs sm:text-sm font-sans text-foreground focus:outline-none focus:ring-0 rounded-none transition-colors"
                 />
                 <Search className="w-4 h-4 text-muted absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
 
@@ -408,8 +408,8 @@ function ArticlesCatalogContent() {
                   <button
                     type="button"
                     onClick={clearSearch}
-                    className="absolute right-16 top-1/2 -translate-y-1/2 text-muted hover:text-foreground p-1 transition-colors"
-                    title="Hapus pencarian"
+                    className="absolute right-16 top-1/2 -translate-y-1/2 text-muted hover:text-foreground p-1 transition-colors cursor-pointer"
+                    title="Hapus kata kunci"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -417,7 +417,7 @@ function ArticlesCatalogContent() {
 
                 <button
                   type="submit"
-                  className="absolute right-1.5 top-1/2 -translate-y-1/2 px-3.5 py-1.5 bg-foreground text-background font-mono text-[10px] uppercase tracking-wider font-semibold hover:opacity-85 transition-opacity"
+                  className="absolute right-1.5 top-1/2 -translate-y-1/2 px-3.5 py-1.5 bg-foreground text-background font-mono text-[10px] uppercase tracking-wider font-bold hover:bg-foreground/90 transition-opacity cursor-pointer active:translate-x-0.5 active:translate-y-0.5"
                 >
                   Cari
                 </button>
@@ -425,11 +425,10 @@ function ArticlesCatalogContent() {
 
               {/* Reading Duration Selector */}
               <div className="md:col-span-3 flex items-center gap-1 font-mono text-[10px] uppercase tracking-wider">
-                <span className="text-muted shrink-0 hidden xl:inline">Durasi:</span>
                 <select
                   value={readingTimeFilter}
                   onChange={(e) => setReadingTimeFilter(e.target.value as ReadingTimeFilter)}
-                  className="w-full h-11 bg-background border border-border px-3 text-foreground focus:outline-none focus:border-foreground font-mono text-xs rounded-none cursor-pointer"
+                  className="w-full h-11 bg-background border-2 border-foreground px-3 text-foreground focus:outline-none font-mono text-xs rounded-none cursor-pointer"
                 >
                   <option value="all">Semua Durasi Baca</option>
                   <option value="short">Kilas Singkat (&le; 3 Menit)</option>
@@ -440,11 +439,11 @@ function ArticlesCatalogContent() {
 
               {/* Sort Selector */}
               <div className="md:col-span-3 flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-muted">
-                <SlidersHorizontal className="w-3.5 h-3.5 shrink-0 hidden sm:inline" />
+                <SlidersHorizontal className="w-3.5 h-3.5 shrink-0 hidden sm:inline text-foreground" />
                 <select
                   value={currentSort}
                   onChange={(e) => updateQueryParams({ sort: e.target.value }, { scrollToSearch: false })}
-                  className="w-full h-11 bg-background border border-border px-3 text-foreground focus:outline-none focus:border-foreground font-mono text-xs rounded-none cursor-pointer"
+                  className="w-full h-11 bg-background border-2 border-foreground px-3 text-foreground focus:outline-none font-mono text-xs rounded-none cursor-pointer"
                 >
                   <option value="terbaru">Urutan: Terbaru</option>
                   <option value="populer">Urutan: Terpopuler</option>
@@ -457,22 +456,22 @@ function ArticlesCatalogContent() {
             {hasSearchOrFilter && (
               <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-border-hairline font-mono text-xs">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="w-2 h-2 rounded-full bg-foreground animate-pulse" />
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                   <span className="font-bold text-foreground uppercase tracking-wider">
                     {totalCount} Naskah Ditemukan
                   </span>
                   {currentSearch && (
                     <span className="text-muted">
-                      untuk pencarian &ldquo;<span className="text-foreground font-semibold">{currentSearch}</span>&rdquo;
+                      kata kunci: &ldquo;<strong className="text-foreground">{currentSearch}</strong>&rdquo;
                     </span>
                   )}
                   {currentCategory && (
-                    <span className="px-2 py-0.5 bg-foreground/10 text-foreground font-bold text-[10px] uppercase">
+                    <span className="px-2 py-0.5 bg-surface-muted border border-foreground/30 text-foreground font-bold text-[10px] uppercase">
                       Topik: {categories.find((c) => c.slug === currentCategory)?.name || currentCategory}
                     </span>
                   )}
                   {readingTimeFilter !== 'all' && (
-                    <span className="px-2 py-0.5 bg-foreground/10 text-foreground font-bold text-[10px] uppercase">
+                    <span className="px-2 py-0.5 bg-surface-muted border border-foreground/30 text-foreground font-bold text-[10px] uppercase">
                       Durasi:{' '}
                       {readingTimeFilter === 'short'
                         ? '< 3 mnt'
@@ -486,9 +485,9 @@ function ArticlesCatalogContent() {
                 <button
                   type="button"
                   onClick={clearAllFilters}
-                  className="text-xs font-semibold text-muted hover:text-foreground underline underline-offset-4 tracking-wider uppercase transition-colors"
+                  className="text-xs font-bold text-foreground hover:underline underline-offset-4 tracking-wider uppercase transition-colors cursor-pointer"
                 >
-                  [ Reset Pencarian ]
+                  [ Reset Semua Filter &times; ]
                 </button>
               </div>
             )}
@@ -496,109 +495,124 @@ function ArticlesCatalogContent() {
         </section>
 
         {/* ========================================================= */}
-        {/* 4. ARTICLES RESULTS GRID WITH SKELETON LOADING            */}
+        {/* 4. TATA LETAK MAJEMUK: KOLOM NASKAH (8) + SIDEBAR (4)     */}
         {/* ========================================================= */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-10">
-          {/* Skeleton Shimmer Loading State */}
-          {isLoading && (
-            <div className="space-y-6">
-              <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest text-muted border-b border-border-hairline pb-2">
-                <span>Memuat Bundel Arsip...</span>
-                <span className="animate-pulse">Menghubungkan ke Rak Redaksi...</span>
-              </div>
-              <ArticleGridSkeleton count={6} viewMode={viewMode} />
-            </div>
-          )}
-
-          {/* Results Grid when Loaded */}
-          {!isLoading && regularArticles.length > 0 && (
-            <div className="space-y-10">
-              <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest text-muted border-b border-border-hairline pb-2.5">
-                <span>
-                  Menampilkan {regularArticles.length} dari {totalCount} Naskah Publik
-                </span>
-                <span>
-                  Halaman {currentPage} dari {totalPages}
-                </span>
-              </div>
-
-              {viewMode === 'grid' ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {regularArticles.map((article) => (
-                    <ArticleCard
-                      key={article.id}
-                      article={article}
-                      viewMode="grid"
-                      onQuickRead={(art) => setQuickReadArticle(art)}
-                    />
-                  ))}
-                </div>
-              ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            {/* Kolom Utama: Hasil Artikel (8 Grid) */}
+            <div className="lg:col-span-8 space-y-8">
+              {/* Skeleton Shimmer Loading State */}
+              {isLoading && (
                 <div className="space-y-6">
-                  {regularArticles.map((article) => (
-                    <ArticleCard
-                      key={article.id}
-                      article={article}
-                      viewMode="broadsheet"
-                      onQuickRead={(art) => setQuickReadArticle(art)}
-                    />
-                  ))}
+                  <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest text-muted border-b border-border-hairline pb-2">
+                    <span>Memuat Bundel Lembaran Warta...</span>
+                    <span className="animate-pulse font-bold text-foreground">Menghubungkan ke Meja Redaksi...</span>
+                  </div>
+                  <ArticleGridSkeleton count={6} viewMode={viewMode} />
                 </div>
               )}
 
-              {/* Pagination */}
-              {totalPages > 1 && (
-                <div className="pt-8 border-t-2 border-foreground">
-                  <Pagination
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    createPageUrl={createPageUrl}
-                  />
+              {/* Results Grid when Loaded */}
+              {!isLoading && regularArticles.length > 0 && (
+                <div className="space-y-8">
+                  <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest text-muted border-b border-border-hairline pb-2.5">
+                    <span className="font-bold text-foreground">
+                      Menampilkan {regularArticles.length} dari {totalCount} Naskah Warga
+                    </span>
+                    <span>
+                      Halaman {currentPage} dari {totalPages}
+                    </span>
+                  </div>
+
+                  {viewMode === 'grid' ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {regularArticles.map((article) => (
+                        <ArticleCard
+                          key={article.id}
+                          article={article}
+                          viewMode="grid"
+                          onQuickRead={(art) => setQuickReadArticle(art)}
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="space-y-6">
+                      {regularArticles.map((article) => (
+                        <ArticleCard
+                          key={article.id}
+                          article={article}
+                          viewMode="broadsheet"
+                          onQuickRead={(art) => setQuickReadArticle(art)}
+                        />
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Pagination */}
+                  {totalPages > 1 && (
+                    <div className="pt-8 border-t-2 border-foreground flex justify-center">
+                      <Pagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        createPageUrl={createPageUrl}
+                      />
+                    </div>
+                  )}
                 </div>
+              )}
+
+              {/* Empty Search State */}
+              {!isLoading && regularArticles.length === 0 && (
+                <EmptyState
+                  title="Tidak Ditemukan Naskah yang Sesuai"
+                  description="Belum ada warta, resensi terpal, atau esai yang cocok dengan kata kunci atau filter pencarian ini."
+                  actionLabel="Reset Semua Filter"
+                  onAction={clearAllFilters}
+                />
               )}
             </div>
-          )}
 
-          {/* Empty Search State */}
-          {!isLoading && regularArticles.length === 0 && (
-            <EmptyState
-              title="Tidak Ditemukan Naskah yang Sesuai"
-              description="Tidak ada warta atau esai yang cocok dengan kriteria pencarian atau filter yang kamu pilih."
-              actionLabel="Reset Semua Filter"
-              onAction={clearAllFilters}
-            />
-          )}
+            {/* Kolom Samping (Sidebar): Etalase Penulis Warga & Kotak Pos (4 Grid) */}
+            <div className="lg:col-span-4 space-y-8">
+              <CitizenContributorsSidebar
+                articles={articles}
+                onSelectAuthor={(authorName) => {
+                  updateQueryParams({ q: authorName }, { scrollToSearch: true });
+                }}
+              />
+            </div>
+          </div>
         </section>
 
         {/* ========================================================= */}
-        {/* 5. COMMUNITY MANIFESTO: MIMBAR BEBAS WARGA                */}
+        {/* 5. MAKLUMAT REDAKSI: MIMBAR BEBAS WARGA                   */}
         {/* ========================================================= */}
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 sm:pt-24">
-          <div className="border-4 border-foreground p-8 sm:p-12 lg:p-14 bg-surface relative overflow-hidden">
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 sm:pt-24 select-none">
+          <div className="border-2 border-foreground p-8 sm:p-12 lg:p-14 bg-foreground text-background relative overflow-hidden shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.9)]">
             {/* Watermark icon */}
-            <div className="absolute -right-8 -bottom-8 opacity-5 pointer-events-none select-none">
+            <div className="absolute -right-8 -bottom-8 opacity-10 pointer-events-none select-none text-background">
               <FileText className="w-72 h-72" />
             </div>
 
             <div className="relative z-10 max-w-3xl space-y-6">
-              <div className="flex items-center gap-2 font-mono text-[10px] sm:text-xs uppercase tracking-[0.2em] text-muted">
-                <span className="w-2.5 h-2.5 bg-foreground inline-block" />
-                <span>MAKLUMAT REDAKSI // MIMBAR BEBAS WARGA BLORA</span>
+              <div className="flex items-center gap-2 font-mono text-[10px] sm:text-xs uppercase tracking-[0.2em] text-background/80 border-b border-background/20 pb-3">
+                <span className="w-2.5 h-2.5 bg-background inline-block" />
+                <span className="font-bold">MAKLUMAT REDAKSI // MIMBAR BEBAS WARGA BLORA</span>
               </div>
 
-              <h2 className="font-serif text-2xl sm:text-4xl lg:text-5xl font-normal text-foreground tracking-tight leading-tight">
+              <h2 className="font-serif text-2xl sm:text-4xl lg:text-5xl font-black text-background tracking-tight leading-tight">
                 Punya catatan lapak, resensi buku, atau keresahan tentang tanah Blora?
               </h2>
 
-              <p className="font-serif text-base sm:text-xl text-foreground/85 leading-relaxed">
+              <p className="font-serif text-base sm:text-lg text-background/85 leading-relaxed">
                 Perpusjal Blora adalah panggung terbuka tanpa kurasi elitis. Tulisanmu akan dibaca oleh sesama warga,
-                pegiat literasi, dan pengunjung lapak Car Free Day. Tuliskan suaramu, karena yang tertulis abadi.
+                pegiat literasi, dan pengunjung lapak Car Free Day di bawah rindang pohon trembesi. Tuliskan suaramu, karena yang tertulis abadi.
               </p>
 
               <div className="pt-2 flex flex-wrap items-center gap-4">
                 <Link
                   href="/dashboard/tulisan"
-                  className="px-6 py-3.5 bg-foreground text-background font-mono text-xs uppercase tracking-wider font-bold hover:opacity-90 transition-opacity inline-flex items-center gap-2"
+                  className="px-6 py-3.5 bg-background text-foreground font-mono text-xs uppercase tracking-wider font-bold hover:bg-background/90 transition-all inline-flex items-center gap-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.5)] active:translate-x-0.5 active:translate-y-0.5"
                 >
                   <PenTool className="w-4 h-4" />
                   <span>Mulai Menulis Naskah Baru</span>
@@ -607,7 +621,7 @@ function ArticlesCatalogContent() {
 
                 <Link
                   href="/tentang"
-                  className="font-mono text-xs uppercase tracking-wider text-muted hover:text-foreground underline underline-offset-4"
+                  className="font-mono text-xs uppercase tracking-wider text-background/80 hover:text-background underline underline-offset-4"
                 >
                   Pelajari Nilai &amp; Gerakan Perpusjal &rarr;
                 </Link>
