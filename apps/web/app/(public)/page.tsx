@@ -154,17 +154,14 @@ const ROTATING_WORDS = [
 function HighlightSweepHeadline() {
   const [currentIdx, setCurrentIdx] = React.useState(0);
   const [isSweeping, setIsSweeping] = React.useState(false);
-  const [isSwapping, setIsSwapping] = React.useState(false);
 
   React.useEffect(() => {
     const timer = setInterval(() => {
       setIsSweeping(true);
 
-      // At the exact peak of the sweep (240ms), swap word with micro crossfade
+      // At the exact peak of the sweep (240ms), swap word instantly
       const midTimer = setTimeout(() => {
-        setIsSwapping(true);
         setCurrentIdx((prev) => (prev + 1) % ROTATING_WORDS.length);
-        setTimeout(() => setIsSwapping(false), 120);
       }, 240);
 
       // Sweep finishes cleanly at 480ms
@@ -183,13 +180,8 @@ function HighlightSweepHeadline() {
 
   return (
     <span className="relative inline-block align-baseline py-0.5 px-1.5 my-0.5 rounded-xs transition-all duration-300">
-      {/* Active Word with Micro-Fade during sweep */}
-      <span
-        className={cn(
-          'italic font-serif font-normal text-foreground inline-block tracking-tight pr-1.5 transition-opacity duration-150',
-          isSwapping ? 'opacity-25' : 'opacity-100'
-        )}
-      >
+      {/* Active Word (Solid 100% Opacity) */}
+      <span className="italic font-serif font-normal text-foreground inline-block tracking-tight pr-1.5">
         {ROTATING_WORDS[currentIdx]}
       </span>
 
