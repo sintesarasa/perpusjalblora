@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { apiClient } from '@/lib/api';
 import { EventItem, EventDetail, EventType, EventStatus } from '@perpusjal/types';
+import { EventCoverUploader } from '@/components/events/event-cover-uploader';
 
 interface EventFormModalProps {
   isOpen: boolean;
@@ -546,61 +547,30 @@ export function EventFormModal({
             </div>
           </div>
 
-          {/* Section 3: Foto Sampul & Live Mockup Broadsheet */}
+          {/* Section 3: Foto Sampul & Visual Terpal (Upload with < 200KB compression + Cloudinary & Presets) */}
           <div className="space-y-3 p-3.5 border border-border-hairline bg-surface">
             <div className="flex items-center justify-between border-b border-border-hairline pb-2">
               <label className="font-mono text-xs uppercase tracking-wider font-bold text-foreground flex items-center gap-1.5">
                 <Camera className="w-3.5 h-3.5 text-amber-500" />
-                <span>Foto Sampul & Visual Terpal</span>
+                <span>Foto Sampul &amp; Visual Terpal</span>
               </label>
-              <span className="font-mono text-[10px] text-muted">Mockup Hero Broadsheet</span>
+              <span className="font-mono text-[10px] text-muted">Kompresi &lt; 200 KB &bull; Cloudinary CDN</span>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-center">
-              {/* Left Form: URL input & Presets (7 cols) */}
-              <div className="lg:col-span-7 space-y-3">
-                <div className="space-y-1">
-                  <input
-                    type="url"
-                    value={coverImage}
-                    onChange={(e) => setCoverImage(e.target.value)}
-                    placeholder="https://images.unsplash.com/..."
-                    className="w-full px-3 py-1.5 bg-surface border border-foreground font-mono text-xs focus:outline-hidden"
-                  />
-                  <span className="text-[10px] text-muted font-mono block">
-                    Gunakan URL gambar resolusi tinggi untuk kartu panggung di halaman /kegiatan.
-                  </span>
-                </div>
-
-                {/* Preset Chips */}
-                <div className="space-y-1.5">
-                  <span className="font-mono text-[10px] uppercase tracking-widest text-muted block">
-                    Pilihan Preset Dokumentasi Cepat:
-                  </span>
-                  <div className="flex flex-wrap gap-2">
-                    {COVER_PRESETS.map((preset) => (
-                      <button
-                        key={preset.name}
-                        type="button"
-                        onClick={() => setCoverImage(preset.url)}
-                        className={`px-2 py-1 font-mono text-[10px] border transition-colors ${
-                          coverImage === preset.url
-                            ? 'bg-foreground text-background border-foreground font-bold'
-                            : 'bg-surface-muted hover:bg-surface border-border-hairline text-foreground'
-                        }`}
-                      >
-                        {preset.name}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+              {/* Left Form: EventCoverUploader (7 cols) */}
+              <div className="lg:col-span-7">
+                <EventCoverUploader
+                  value={coverImage}
+                  onChange={(url) => setCoverImage(url)}
+                />
               </div>
 
               {/* Right: Live Editorial Mini-Card Preview (5 cols) */}
               <div className="lg:col-span-5 flex justify-center">
-                <div className="relative w-full max-w-[240px] bg-surface border-2 border-foreground p-2 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] dark:shadow-[3px_3px_0px_0px_rgba(255,255,255,0.9)] select-none">
-                  <div className="flex items-center justify-between pb-1 mb-1 border-b border-border-hairline font-mono text-[8px] uppercase tracking-widest text-muted">
-                    <span>[ PRATINJAU ]</span>
+                <div className="relative w-full max-w-[260px] bg-surface border-2 border-foreground p-2.5 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.9)] select-none">
+                  <div className="flex items-center justify-between pb-1.5 mb-1.5 border-b border-border-hairline font-mono text-[8px] uppercase tracking-widest text-muted">
+                    <span>[ PRATINJAU HERO ]</span>
                     <span className="text-amber-500 font-bold">2026</span>
                   </div>
                   <div className="relative aspect-[4/3] w-full overflow-hidden border border-foreground/30 bg-zinc-950">
@@ -610,13 +580,13 @@ export function EventFormModal({
                         'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=600&q=80'
                       }
                       alt="Pratinjau Foto"
-                      className="w-full h-full object-cover grayscale contrast-110"
+                      className="w-full h-full object-cover grayscale contrast-110 hover:grayscale-0 transition-all duration-300"
                     />
                     <div className="absolute top-1.5 right-1.5 px-1.5 py-0.2 bg-amber-500 text-black font-mono text-[7px] font-extrabold uppercase tracking-widest border border-black shadow-xs">
                       ✦ TERPAL RAKYAT ✦
                     </div>
                   </div>
-                  <div className="pt-1 text-[9px] font-serif italic text-muted truncate">
+                  <div className="pt-1.5 text-[9px] font-serif italic text-muted truncate">
                     &ldquo;{title || 'Judul Agenda Terpal'}&rdquo;
                   </div>
                 </div>

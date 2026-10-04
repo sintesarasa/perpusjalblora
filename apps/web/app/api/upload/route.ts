@@ -20,11 +20,11 @@ export async function POST(req: NextRequest) {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // Determine upload folder (books, articles, or avatars)
-    const folderParam = (formData.get('folder') as string) || 'books';
-    const allowedFolders = ['books', 'articles', 'avatars'];
-    const uploadFolder = `perpusjal/${allowedFolders.includes(folderParam) ? folderParam : 'books'}`;
-    const localSubfolder = allowedFolders.includes(folderParam) ? folderParam : 'books';
+    // Determine upload folder (books, articles, avatars, or events)
+    const folderParam = (formData.get('folder') as string) || 'events';
+    const allowedFolders = ['books', 'articles', 'avatars', 'events'];
+    const uploadFolder = `perpusjal/${allowedFolders.includes(folderParam) ? folderParam : 'events'}`;
+    const localSubfolder = allowedFolders.includes(folderParam) ? folderParam : 'events';
 
     let cloudName = process.env.CLOUDINARY_CLOUD_NAME || process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
     let apiKey = process.env.CLOUDINARY_API_KEY;
