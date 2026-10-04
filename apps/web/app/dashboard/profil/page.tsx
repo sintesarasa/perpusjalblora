@@ -258,10 +258,8 @@ export default function DashboardProfileSettingsPage() {
 
     try {
       // 1. Save profile fields
-      const res = await fetch('/api/v1/users/me/profile', {
+      const res = await apiClient('/users/me/profile', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({
           name: profile.name,
           bio: profile.bio,
@@ -274,17 +272,14 @@ export default function DashboardProfileSettingsPage() {
         }),
       });
 
-      const json = await res.json();
-      if (!res.ok) {
-        throw new Error(json.error?.message || 'Gagal menyimpan profil.');
+      if (res.error) {
+        throw new Error(res.error.message || 'Gagal menyimpan profil.');
       }
 
       // 2. Save equipped title if available
       try {
-        await fetch('/api/v1/badges/equip-title', {
+        await apiClient('/badges/equip-title', {
           method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
           body: JSON.stringify({ title: profile.equippedTitle }),
         });
       } catch {
@@ -338,19 +333,16 @@ export default function DashboardProfileSettingsPage() {
 
     setSavingPassword(true);
     try {
-      const res = await fetch('/api/v1/users/me/change-password', {
+      const res = await apiClient('/users/me/change-password', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({
           currentPassword: passwordState.currentPassword,
           newPassword: passwordState.newPassword,
         }),
       });
 
-      const json = await res.json();
-      if (!res.ok) {
-        throw new Error(json.error?.message || 'Gagal mengubah kata sandi.');
+      if (res.error) {
+        throw new Error(res.error.message || 'Gagal mengubah kata sandi.');
       }
 
       setMessage({ text: 'Kata sandi akun Anda berhasil diperbarui.', type: 'success' });
@@ -366,7 +358,8 @@ export default function DashboardProfileSettingsPage() {
   };
 
   const handleExportData = () => {
-    window.location.href = '/api/v1/users/me/export';
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
+    window.location.href = `${apiUrl}/users/me/export`;
   };
 
   const activeTier = profile.equippedTitle ? inferTierFromTitle(profile.equippedTitle) : 1;

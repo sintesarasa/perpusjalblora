@@ -20,11 +20,33 @@ const inter = Inter({
   display: 'swap',
 });
 
+const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://perpusjalblora.org';
+
 export const metadata: Metadata = {
-  title: 'PERPUSJAL BLORA — Perpustakaan Jalanan Blora',
+  metadataBase: new URL(appUrl),
+  title: {
+    default: 'PERPUSJAL BLORA — Perpustakaan Jalanan Blora',
+    template: '%s | PERPUSJAL BLORA',
+  },
   description:
     'Ruang literasi independen akar rumput, katalog buku fisik, peminjaman swadaya, dan publikasi tulisan warga Blora. Membaca dan Berbahagia.',
-  keywords: ['Perpustakaan Jalanan', 'Blora', 'Literasi', 'Pinjam Buku', 'Komunitas'],
+  keywords: ['Perpustakaan Jalanan', 'Blora', 'Literasi', 'Pinjam Buku', 'Komunitas', 'Koleksi Buku'],
+  authors: [{ name: 'Perpustakaan Jalanan Blora' }],
+  openGraph: {
+    title: 'PERPUSJAL BLORA — Perpustakaan Jalanan Blora',
+    description:
+      'Ruang literasi independen akar rumput, katalog buku fisik, peminjaman swadaya, dan publikasi tulisan warga Blora. Membaca dan Berbahagia.',
+    url: appUrl,
+    siteName: 'Perpustakaan Jalanan Blora',
+    locale: 'id_ID',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'PERPUSJAL BLORA — Perpustakaan Jalanan Blora',
+    description:
+      'Ruang literasi independen akar rumput, katalog buku fisik, peminjaman swadaya, dan publikasi tulisan warga Blora. Membaca dan Berbahagia.',
+  },
 };
 
 export default function RootLayout({

@@ -4,6 +4,7 @@ import * as React from 'react';
 import Link from 'next/link';
 import { Users, Search, Shield, UserX, UserCheck, AlertTriangle } from 'lucide-react';
 import { AdminUserListItem, Role, UserStatus } from '@perpusjal/types';
+import { apiClient } from '@/lib/api';
 
 export default function AdminUsersPage() {
   const [users, setUsers] = React.useState<AdminUserListItem[]>([]);
@@ -34,14 +35,13 @@ export default function AdminUsersPage() {
       if (roleFilter) params.append('role', roleFilter);
       if (statusFilter) params.append('status', statusFilter);
 
-      const res = await fetch(`/api/v1/users/admin/list?${params.toString()}`, {
-        credentials: 'include',
-      });
-      if (res.ok) {
-        const json = await res.json();
-        setUsers(json.data?.items || []);
-        setTotal(json.data?.total || 0);
-        setTotalPages(json.data?.totalPages || 1);
+      const res = await apiClient<{ items: AdminUserListItem[]; total: number; totalPages: number }>(
+        `/users/admin/list?${params.toString()}`
+      );
+      if (res.data) {
+        setUsers(res.data.items || []);
+        setTotal(res.data.total || 0);
+        setTotalPages(res.data.totalPages || 1);
       }
     } catch (err) {
       console.error(err);
@@ -58,16 +58,13 @@ export default function AdminUsersPage() {
     if (!activeModalUser) return;
     setActionError(null);
     try {
-      const res = await fetch(`/api/v1/users/admin/${activeModalUser.id}/role`, {
+      const res = await apiClient(`/users/admin/${activeModalUser.id}/role`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ role: selectedRole }),
       });
 
-      const json = await res.json();
-      if (!res.ok) {
-        throw new Error(json.error?.message || 'Gagal mengubah peran pengguna');
+      if (res.error) {
+        throw new Error(res.error.message || 'Gagal mengubah peran pengguna');
       }
 
       setActiveModalUser(null);
@@ -82,19 +79,16 @@ export default function AdminUsersPage() {
     if (!activeModalUser) return;
     setActionError(null);
     try {
-      const res = await fetch(`/api/v1/users/admin/${activeModalUser.id}/suspend`, {
+      const res = await apiClient(`/users/admin/${activeModalUser.id}/suspend`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({
           suspend,
           reason: suspendReason,
         }),
       });
 
-      const json = await res.json();
-      if (!res.ok) {
-        throw new Error(json.error?.message || 'Gagal mengubah status akun');
+      if (res.error) {
+        throw new Error(res.error.message || 'Gagal mengubah status akun');
       }
 
       setActiveModalUser(null);

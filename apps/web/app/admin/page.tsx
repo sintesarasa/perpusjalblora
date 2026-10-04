@@ -15,6 +15,7 @@ import {
   Layers,
 } from 'lucide-react';
 import { AdminDashboardStats, AdminAuditLogItem } from '@perpusjal/types';
+import { apiClient } from '@/lib/api';
 
 export default function AdminDashboardPage() {
   const [stats, setStats] = React.useState<AdminDashboardStats | null>(null);
@@ -25,17 +26,15 @@ export default function AdminDashboardPage() {
     async function loadData() {
       try {
         const [statsRes, logsRes] = await Promise.all([
-          fetch('/api/v1/admin/stats', { credentials: 'include' }),
-          fetch('/api/v1/admin/audit-logs?limit=10', { credentials: 'include' }),
+          apiClient<AdminDashboardStats>('/admin/stats'),
+          apiClient<{ items: AdminAuditLogItem[] }>('/admin/audit-logs?limit=10'),
         ]);
 
-        if (statsRes.ok) {
-          const sJson = await statsRes.json();
-          setStats(sJson.data);
+        if (statsRes.data) {
+          setStats(statsRes.data);
         }
-        if (logsRes.ok) {
-          const lJson = await logsRes.json();
-          setLogs(lJson.data?.items || []);
+        if (logsRes.data) {
+          setLogs(logsRes.data.items || []);
         }
       } catch (err) {
         console.error(err);

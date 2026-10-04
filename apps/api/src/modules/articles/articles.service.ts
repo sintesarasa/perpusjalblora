@@ -46,7 +46,6 @@ export class ArticlesService {
         { title: { contains: searchTerm, mode: 'insensitive' } },
         { subtitle: { contains: searchTerm, mode: 'insensitive' } },
         { excerpt: { contains: searchTerm, mode: 'insensitive' } },
-        { plainText: { contains: searchTerm, mode: 'insensitive' } },
       ];
     }
 
