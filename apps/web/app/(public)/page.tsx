@@ -167,10 +167,14 @@ const CURATED_ARTICLES = [
     title: 'Menemukan Kembali Suara Akar Rumput di Pinggiran Rel Kereta Blora',
     author: 'Pramono Wibowo',
     authorRole: 'Relawan Perpusjal',
-    category: 'SASTRA & JALANAN',
+    category: 'LIPUTAN & JALANAN',
     readTime: '5 MIN BACA',
+    publishedAt: '28 SEP 2026',
+    editionCode: 'WARTA-01',
+    leadQuote: 'Di atas lembaran terpal, suara buruh dan mahasiswa memiliki bobot yang setara.',
     summary:
       'Bagaimana lembaran buku yang dihamparkan di trotoar menjadi jembatan dialog antar-warga yang selama ini tercerabut dari gemerlap perbincangan kota.',
+    curatorNote: 'Tajuk Pilihan Redaksi Pekan Ini — Catatan otentik tentang ruang perjumpaan merdeka.',
   },
   {
     slug: 'merawat-ingatan-samin-lewat-arsip-warga',
@@ -179,8 +183,12 @@ const CURATED_ARTICLES = [
     authorRole: 'Kontributor Warga',
     category: 'SEJARAH & BUDAYA',
     readTime: '4 MIN BACA',
+    publishedAt: '24 SEP 2026',
+    editionCode: 'WARTA-02',
+    leadQuote: 'Ajaran Samin bukan sekadar masa lalu, melainkan kompas moral hidup hari ini.',
     summary:
       'Ajaran perlawanan tanpa kekerasan dan kedaulatan tanah adat yang masih terus bernapas dalam laku hidup sehari-hari masyarakat pedesaan Blora.',
+    curatorNote: 'Kajian budaya akar rumput yang menggugah.',
   },
   {
     slug: 'tanpa-denda-sebagai-etos-kepercayaan',
@@ -189,8 +197,26 @@ const CURATED_ARTICLES = [
     authorRole: 'Pegiat Lapak CFD',
     category: 'ETOS GERAKAN',
     readTime: '3 MIN BACA',
+    publishedAt: '19 SEP 2026',
+    editionCode: 'WARTA-03',
+    leadQuote: 'Uang denda menghukum ketidakberdayaan; rasa saling percaya menumbuhkan tanggung jawab.',
     summary:
       'Mengapa sanksi finansial justru melukai hak membaca rakyat, dan bagaimana etos amanah mampu menjaga ratusan koleksi tetap berputar sehat.',
+    curatorNote: 'Prinsip dasar yang melandasi setiap langkah Perpusjal.',
+  },
+  {
+    slug: 'mengapa-pramoedya-harus-dibaca-di-warung-kopi',
+    title: 'Mengapa Pramoedya Harus Dibaca di Warung Kopi dan Trotoar',
+    author: 'Anisa Rahma',
+    authorRole: 'Penulis Warga Cepu',
+    category: 'RESENSI & SASTRA',
+    readTime: '6 MIN BACA',
+    publishedAt: '15 SEP 2026',
+    editionCode: 'WARTA-04',
+    leadQuote: 'Karya sastra sejati tidak boleh dimonopoli ruang akademik yang berjarak dari rakyat.',
+    summary:
+      'Membaca roman Pulau Buru di tengah kepulan kopi lelet Blora menghidupkan kembali roh perlawanan terhadap ketidakadilan zaman.',
+    curatorNote: 'Resensi berani tentang demokratisasi sastra di tanah Blora.',
   },
 ];
 
@@ -866,45 +892,198 @@ export default function HomePage() {
         </section>
 
         {/* ========================================================= */}
-        {/* 5. SEKSI WARTA & TULISAN KURASI WARGA                     */}
+        {/* 5. SEKSI WARTA & TULISAN KURASI WARGA (MEJA REDAKSI)       */}
         {/* ========================================================= */}
-        <section className="border-b-2 border-foreground max-w-7xl mx-auto">
-          <div className="px-4 sm:px-8 py-3.5 border-b border-border-hairline flex items-center justify-between text-[11px] font-mono uppercase tracking-widest text-muted">
-            <span>[ SEKSI IV // MEJA REDAKSI WARGA ]</span>
-            <Link href="/artikel" className="hover:text-foreground underline font-bold">
-              SEMUA TULISAN WARGA &rarr;
-            </Link>
+        <section className="border-b-2 border-foreground max-w-7xl mx-auto py-14 sm:py-20 px-4 sm:px-6 lg:px-8">
+          {/* Section Header Broadsheet */}
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 pb-4 border-b-2 border-foreground gap-4">
+            <div className="space-y-1">
+              <div className="text-[10px] sm:text-[11px] font-mono uppercase tracking-ultra text-muted flex items-center gap-2">
+                <Feather className="w-3.5 h-3.5 text-amber-500" />
+                <span>[ SEKSI V // MEJA REDAKSI &amp; JURNALISME WARGA ]</span>
+              </div>
+              <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-black uppercase tracking-tight text-foreground">
+                KATA-KATA DARI SUDUT JALANAN
+              </h2>
+              <p className="font-serif text-sm sm:text-base text-muted max-w-2xl">
+                Ruang wacana merdeka yang dirawat secara swadaya. Dari buruh tani, relawan lapak, hingga pelajar desa
+                — setiap warga memiliki hak untuk menuliskan pengamatan, resensi buku, dan kritik zaman tanpa sensor.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-3 shrink-0">
+              <Link
+                href="/tulis"
+                className="px-4 py-2.5 bg-amber-500 hover:bg-amber-400 text-black font-mono text-xs font-bold uppercase tracking-wider transition-colors inline-flex items-center gap-1.5 shadow-xs"
+              >
+                <Feather className="w-3.5 h-3.5" />
+                <span>TULIS WARTAMU ✎</span>
+              </Link>
+
+              <Link
+                href="/artikel"
+                className="font-mono text-xs uppercase tracking-wider underline hover:text-amber-600 dark:hover:text-amber-400 inline-flex items-center gap-1 font-bold"
+              >
+                <span>SEMUA 48+ ARTIKEL &rarr;</span>
+              </Link>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 divide-y-2 md:divide-y-0 md:divide-x-2 divide-foreground">
-            {CURATED_ARTICLES.map((article, idx) => (
-              <RevealOnScroll key={article.slug} variant="fade-up" delayMs={idx * 150} className="h-full">
-                <article className="p-6 sm:p-8 h-full flex flex-col justify-between group hover:bg-surface transition-colors space-y-4">
-                  <div>
-                    <div className="flex items-center justify-between text-[10px] font-mono text-muted uppercase tracking-widest mb-3">
-                      <span>[ 0{idx + 1} // {article.category} ]</span>
-                      <span className="text-foreground font-semibold">{article.readTime}</span>
+          {/* Two-Wing Editorial Layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10">
+            {/* Left Wing (7 cols): Lead Editorial / Tajuk Utama Redaksi */}
+            <div className="lg:col-span-7">
+              <RevealOnScroll variant="fade-up" delayMs={100} className="h-full">
+                {CURATED_ARTICLES[0] && (
+                  <article className="border-2 border-foreground bg-surface p-6 sm:p-8 flex flex-col justify-between h-full shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] dark:shadow-[5px_5px_0px_0px_rgba(255,255,255,0.9)] relative group">
+                    <div>
+                      {/* Top Curatorial Badge */}
+                      <div className="flex flex-wrap items-center justify-between gap-2 pb-4 mb-5 border-b border-border-hairline text-[10.5px] font-mono uppercase tracking-wider">
+                        <span className="px-2.5 py-0.5 bg-foreground text-background font-bold inline-flex items-center gap-1.5">
+                          <Sparkles className="w-3 h-3 text-amber-400" />
+                          <span>TAJUK UTAMA PEKAN INI</span>
+                        </span>
+                        <div className="flex items-center gap-2 text-muted">
+                          <span>{CURATED_ARTICLES[0].category}</span>
+                          <span>&bull;</span>
+                          <span>{CURATED_ARTICLES[0].publishedAt}</span>
+                          <span>&bull;</span>
+                          <span className="text-foreground font-semibold">{CURATED_ARTICLES[0].readTime}</span>
+                        </div>
+                      </div>
+
+                      {/* Main Title */}
+                      <h3 className="font-serif text-2xl sm:text-3xl md:text-4xl font-black text-foreground group-hover:text-amber-600 dark:group-hover:text-amber-400 group-hover:underline transition-colors leading-[1.15] mb-4">
+                        <Link href={`/artikel/${CURATED_ARTICLES[0].slug}`}>
+                          {CURATED_ARTICLES[0].title}
+                        </Link>
+                      </h3>
+
+                      {/* Pull Quote Box */}
+                      <div className="p-4 sm:p-5 bg-surface-muted/60 border-l-4 border-amber-500 my-5 space-y-2">
+                        <Quote className="w-5 h-5 text-amber-500 opacity-80" />
+                        <blockquote className="font-serif italic text-base sm:text-lg text-foreground/90 leading-snug">
+                          &ldquo;{CURATED_ARTICLES[0].leadQuote}&rdquo;
+                        </blockquote>
+                        <cite className="block font-mono text-[10px] uppercase text-muted tracking-wider not-italic">
+                          — Catatan Pinggir Redaksi Lapak
+                        </cite>
+                      </div>
+
+                      {/* Summary Paragraph */}
+                      <p className="font-serif text-base text-foreground/80 leading-relaxed mb-6">
+                        {CURATED_ARTICLES[0].summary}
+                      </p>
                     </div>
-                    <h3 className="font-serif text-2xl font-bold tracking-tight text-foreground group-hover:underline mb-3 leading-tight">
+
+                    {/* Author & Dispatch Footer */}
+                    <div className="pt-5 border-t border-border-hairline flex flex-wrap items-center justify-between gap-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full border border-foreground bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center font-serif text-base font-bold shrink-0">
+                          {CURATED_ARTICLES[0].author[0]}
+                        </div>
+                        <div>
+                          <div className="font-mono text-xs font-bold text-foreground">
+                            {CURATED_ARTICLES[0].author}
+                          </div>
+                          <div className="font-mono text-[10px] text-muted">
+                            {CURATED_ARTICLES[0].authorRole} &bull; Lulus Kurasi
+                          </div>
+                        </div>
+                      </div>
+
+                      <Link
+                        href={`/artikel/${CURATED_ARTICLES[0].slug}`}
+                        className="px-4 py-2 bg-foreground text-background font-mono text-xs font-bold uppercase tracking-wider hover:bg-foreground/90 transition-colors inline-flex items-center gap-1.5"
+                      >
+                        <span>BACA TAJUK LENGKAP</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </Link>
+                    </div>
+                  </article>
+                )}
+              </RevealOnScroll>
+            </div>
+
+            {/* Right Wing (5 cols): 3 Secondary Dispatches with Divider Lines */}
+            <div className="lg:col-span-5 flex flex-col justify-between space-y-4">
+              {CURATED_ARTICLES.slice(1, 4).map((article, idx) => (
+                <RevealOnScroll key={article.slug} variant="fade-up" delayMs={150 + idx * 100}>
+                  <article className="border-2 border-foreground bg-surface p-5 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.9)] transition-all group">
+                    <div className="flex items-center justify-between text-[10px] font-mono text-muted uppercase tracking-widest pb-2 mb-2 border-b border-border-hairline">
+                      <span className="font-bold text-amber-600 dark:text-amber-400">
+                        {article.editionCode} // {article.category}
+                      </span>
+                      <span>{article.readTime}</span>
+                    </div>
+
+                    <h4 className="font-serif text-lg sm:text-xl font-bold text-foreground group-hover:text-amber-600 dark:group-hover:text-amber-400 group-hover:underline transition-colors leading-snug mb-2">
                       <Link href={`/artikel/${article.slug}`}>{article.title}</Link>
-                    </h3>
-                    <p className="font-serif text-sm text-foreground/80 leading-relaxed mb-6">
+                    </h4>
+
+                    <p className="font-serif text-xs sm:text-sm text-foreground/75 leading-relaxed line-clamp-2 mb-3">
                       {article.summary}
                     </p>
-                  </div>
-                  <div className="pt-4 border-t border-border-hairline flex items-center justify-between text-[10px] font-mono uppercase tracking-widest text-muted">
-                    <div>
-                      <span className="text-foreground font-bold block">{article.author}</span>
-                      <span className="text-[9px] text-muted">{article.authorRole}</span>
+
+                    <div className="pt-2 border-t border-border-hairline flex items-center justify-between font-mono text-[10.5px]">
+                      <span className="text-muted">
+                        Oleh <strong className="text-foreground">{article.author}</strong> ({article.authorRole})
+                      </span>
+                      <Link
+                        href={`/artikel/${article.slug}`}
+                        className="font-bold uppercase tracking-wider text-foreground group-hover:text-amber-600 dark:group-hover:text-amber-400 inline-flex items-center gap-0.5 transition-colors"
+                      >
+                        <span>BACA</span>
+                        <ArrowUpRight className="w-3 h-3 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                      </Link>
                     </div>
-                    <span className="group-hover:translate-x-1 transition-transform font-bold text-foreground">
-                      BACA &rarr;
-                    </span>
-                  </div>
-                </article>
-              </RevealOnScroll>
-            ))}
+                  </article>
+                </RevealOnScroll>
+              ))}
+            </div>
           </div>
+
+          {/* Open Redaction Invitation Strip */}
+          <RevealOnScroll variant="fade-up" delayMs={300}>
+            <div className="mt-10 border-2 border-foreground bg-gradient-to-r from-zinc-950 via-zinc-900 to-zinc-950 text-white p-6 sm:p-8 relative overflow-hidden shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] dark:shadow-[5px_5px_0px_0px_rgba(255,255,255,0.9)]">
+              {/* Subtle gold glow */}
+              <div className="absolute right-0 top-0 w-64 h-64 bg-amber-500/10 rounded-full blur-2xl pointer-events-none" />
+
+              <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <div className="space-y-2 max-w-2xl">
+                  <div className="inline-flex items-center gap-2 px-2.5 py-0.5 bg-amber-500/20 border border-amber-500/50 text-amber-300 font-mono text-[9px] uppercase font-bold tracking-widest">
+                    <Feather className="w-3 h-3" />
+                    <span>MEJA REDAKSI TERBUKA // BERSUARA TANPA SENSOR</span>
+                  </div>
+                  <h3 className="font-serif text-2xl sm:text-3xl font-black text-white">
+                    Punya Catatan, Resensi, atau Renungan tentang Blora?
+                  </h3>
+                  <p className="font-serif text-xs sm:text-sm text-zinc-300 leading-relaxed">
+                    Setiap naskah kiriman warga akan dikurasi secara bersahabat oleh dewan kolektif. Tulisan yang
+                    terbit otomatis mencatatkan poin literasi dan membuka <strong>Lencana Pena Emas</strong> di Kartu
+                    Kehormatan Wargamu.
+                  </p>
+                </div>
+
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
+                  <Link
+                    href="/tulis"
+                    className="px-6 py-3 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-black font-mono text-xs font-bold uppercase tracking-wider text-center transition-all shadow-[0_0_15px_rgba(245,158,11,0.3)] inline-flex items-center justify-center gap-2"
+                  >
+                    <Feather className="w-4 h-4 text-black" />
+                    <span>KIRIM TULISAN SEKARANG</span>
+                  </Link>
+
+                  <Link
+                    href="/tentang"
+                    className="px-4 py-3 border border-zinc-700 bg-zinc-800/80 hover:bg-zinc-700 text-zinc-200 font-mono text-xs font-bold uppercase tracking-wider text-center transition-colors"
+                  >
+                    <span>ETOS KURASI</span>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </RevealOnScroll>
         </section>
 
         {/* ========================================================= */}
