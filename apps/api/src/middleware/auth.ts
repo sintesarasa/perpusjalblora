@@ -10,7 +10,23 @@ declare global {
   }
 }
 
-const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-jwt-key-replace-in-production-min-32-chars';
+const DEFAULT_DEV_JWT_SECRET = 'super-secret-jwt-key-replace-in-production-min-32-chars';
+
+export function getJwtSecret(): string {
+  const secret = process.env.JWT_SECRET;
+  const isProduction = process.env.NODE_ENV === 'production';
+  const isDefaultPlaceholder = !secret || secret === DEFAULT_DEV_JWT_SECRET;
+
+  if (isProduction && (isDefaultPlaceholder || secret.length < 32)) {
+    throw new Error(
+      'FATAL SECURITY CONFIGURATION: JWT_SECRET must be explicitly defined with at least 32 characters in production. Default placeholder is forbidden.'
+    );
+  }
+
+  return secret || DEFAULT_DEV_JWT_SECRET;
+}
+
+export const JWT_SECRET = getJwtSecret();
 
 import { prisma } from '../lib/prisma.js';
 

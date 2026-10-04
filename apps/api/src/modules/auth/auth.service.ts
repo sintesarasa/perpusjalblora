@@ -16,7 +16,7 @@ import {
   UserSessionPayload,
 } from '@perpusjal/types';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-jwt-key-replace-in-production-min-32-chars';
+import { JWT_SECRET } from '../../middleware/auth.js';
 const BCRYPT_SALT_ROUNDS = process.env.NODE_ENV === 'production' ? 12 : 10;
 const DUMMY_BCRYPT_HASH = '$2a$10$wT2oO0K2f8xH7Xz5u5R.E.eG9yKzS9y6M6j3vH4fB1g7i4a8k9m0q';
 
