@@ -145,58 +145,68 @@ const ROTATING_WORDS = [
 ];
 
 /**
- * Underline / Highlight Sweep:
- * An authentic broadsheet highlighter bar & ink underline sweep horizontally
- * across the word from left to right, swapping the active verb seamlessly underneath.
+ * Underline / Highlight Sweep (Refined Broadsheet Polish):
+ * - Snappy 480ms sweep with comfortable 2.8s reading dwell time.
+ * - Dynamic width wrapping with tailored padding (no awkward trailing empty space).
+ * - Proper descender clearance for letters (g, y, p) so underline never collides with glyphs.
+ * - Gentle micro-crossfade for flawless rendering across all display refresh rates.
  */
 function HighlightSweepHeadline() {
   const [currentIdx, setCurrentIdx] = React.useState(0);
   const [isSweeping, setIsSweeping] = React.useState(false);
+  const [isSwapping, setIsSwapping] = React.useState(false);
 
   React.useEffect(() => {
     const timer = setInterval(() => {
       setIsSweeping(true);
 
-      // In the middle of the sweep (270ms), swap word seamlessly
+      // At the exact peak of the sweep (240ms), swap word with micro crossfade
       const midTimer = setTimeout(() => {
+        setIsSwapping(true);
         setCurrentIdx((prev) => (prev + 1) % ROTATING_WORDS.length);
-      }, 270);
+        setTimeout(() => setIsSwapping(false), 120);
+      }, 240);
 
-      // Finish sweep (540ms)
+      // Sweep finishes cleanly at 480ms
       const endTimer = setTimeout(() => {
         setIsSweeping(false);
-      }, 540);
+      }, 480);
 
       return () => {
         clearTimeout(midTimer);
         clearTimeout(endTimer);
       };
-    }, 2200);
+    }, 2800); // 2.8s relaxed reading cadence
 
     return () => clearInterval(timer);
   }, []);
 
   return (
-    <span className="relative inline-block align-baseline py-1 px-1.5 min-w-[270px] sm:min-w-[440px]">
-      {/* Active Word */}
-      <span className="italic font-serif font-normal text-foreground inline-block">
+    <span className="relative inline-block align-baseline py-0.5 px-1.5 my-0.5 rounded-xs transition-all duration-300">
+      {/* Active Word with Micro-Fade during sweep */}
+      <span
+        className={cn(
+          'italic font-serif font-normal text-foreground inline-block tracking-tight pr-1.5 transition-opacity duration-150',
+          isSwapping ? 'opacity-25' : 'opacity-100'
+        )}
+      >
         {ROTATING_WORDS[currentIdx]}
       </span>
 
-      {/* Highlighter Sweep Bar (Broadsheet Marker Tint) */}
+      {/* Broadsheet Highlighter Tinted Sweep Bar */}
       {isSweeping && (
         <span
           aria-hidden="true"
-          className="absolute inset-0 bg-foreground/20 dark:bg-white/25 animate-highlight-sweep pointer-events-none rounded-2xs"
+          className="absolute inset-y-0.5 inset-x-0 bg-foreground/15 dark:bg-white/20 animate-highlight-sweep pointer-events-none rounded-xs"
         />
       )}
 
-      {/* Editorial Ink Underline Sweep */}
+      {/* Underline Ink Strike positioned with descender clearance */}
       <span
         aria-hidden="true"
         className={cn(
-          'absolute -bottom-1 left-0 right-0 h-[3px] bg-foreground transition-all duration-300',
-          isSweeping ? 'animate-underline-sweep' : 'scale-x-100 opacity-60'
+          'absolute bottom-0 translate-y-1.5 sm:translate-y-2.5 left-1.5 right-1.5 h-[2.5px] sm:h-[3px] bg-foreground transition-all duration-300 rounded-full',
+          isSweeping ? 'animate-underline-sweep' : 'scale-x-100 opacity-90'
         )}
       />
     </span>
