@@ -2,7 +2,6 @@
 
 import * as React from 'react';
 import QRCode from 'qrcode';
-import { toPng } from 'html-to-image';
 import {
   Sparkles,
   Download,
@@ -151,6 +150,7 @@ export function MemberCardModal({ user, triggerClassName }: MemberCardModalProps
     const node = cardRef.current;
     if (!node) return null;
     try {
+      const { toPng } = await import('html-to-image');
       const width = node.offsetWidth;
       const height = node.scrollHeight;
 
@@ -184,6 +184,7 @@ export function MemberCardModal({ user, triggerClassName }: MemberCardModalProps
     setIsDownloading(true);
 
     try {
+      const { toPng } = await import('html-to-image');
       // Calculate precise dimensions with safety margin so no border is cut off
       const width = node.offsetWidth;
       const height = node.scrollHeight;

@@ -20,8 +20,13 @@ import {
 } from 'lucide-react';
 import { CustomLoader } from '@/components/ui/custom-loader';
 import { apiClient } from '@/lib/api';
+import dynamic from 'next/dynamic';
 import { EventDetail, EventRegistrationItem, RegistrationStatus } from '@perpusjal/types';
-import { CameraQrScannerModal } from '@/components/circulation/camera-qr-scanner-modal';
+
+const CameraQrScannerModal = dynamic(
+  () => import('@/components/circulation/camera-qr-scanner-modal').then((mod) => mod.CameraQrScannerModal),
+  { ssr: false }
+);
 
 interface CheckinApiResponse {
   message: string;

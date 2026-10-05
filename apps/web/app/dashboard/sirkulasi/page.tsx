@@ -40,7 +40,12 @@ import {
   ChevronUp,
   Zap,
 } from 'lucide-react';
-import { CameraQrScannerModal } from '@/components/circulation/camera-qr-scanner-modal';
+import dynamic from 'next/dynamic';
+
+const CameraQrScannerModal = dynamic(
+  () => import('@/components/circulation/camera-qr-scanner-modal').then((mod) => mod.CameraQrScannerModal),
+  { ssr: false }
+);
 
 interface LookupResponse {
   loan: LoanItem;
