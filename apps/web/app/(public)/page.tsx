@@ -202,11 +202,11 @@ function LoadingUnderlineHeadline() {
       {/* Single Clean Editorial Loading Underline */}
       <span
         aria-hidden="true"
-        className="absolute bottom-0 translate-y-2 sm:translate-y-2.5 left-1 right-1 h-[2.5px] sm:h-[3px] bg-foreground/15 dark:bg-white/15 rounded-full overflow-hidden"
+        className="absolute bottom-0 translate-y-2 sm:translate-y-2.5 left-1 right-1 h-[2.5px] sm:h-[3px] bg-foreground/15 dark:bg-white/15 rounded-none overflow-hidden"
       >
         <span
           key={currentIdx}
-          className="block h-full w-full bg-foreground origin-left animate-underline-progress rounded-full"
+          className="block h-full w-full bg-foreground origin-left animate-underline-progress rounded-none"
         />
       </span>
     </span>
@@ -337,7 +337,7 @@ export default function HomePage() {
               <span className="hidden sm:inline">[ EDISI RESMI // GERAKAN SWADAYA RAKYAT ]</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="w-1.5 h-1.5 rounded-none bg-foreground animate-pulse" />
               <span className="text-foreground font-semibold">LAPAK CFD: SETIAP MINGGU PAGI</span>
             </div>
             <div className="hidden lg:block">BLORA, JAWA TENGAH &bull; RUANG BACA RAKYAT</div>
@@ -371,7 +371,7 @@ export default function HomePage() {
                 <div className="pt-4 border-t border-border-hairline flex flex-wrap gap-3 sm:gap-4 items-center">
                   <Link
                     href="/buku"
-                    className="px-6 py-3.5 bg-foreground text-background font-mono text-xs font-bold uppercase tracking-wider hover:bg-foreground/90 transition-all shadow-xs inline-flex items-center gap-2"
+                    className="px-6 py-3.5 bg-foreground text-background font-mono text-xs font-bold uppercase tracking-wider hover:bg-foreground/90 transition-all inline-flex items-center gap-2"
                   >
                     <BookOpen className="w-4 h-4" />
                     <span>TELUSURI KATALOG KOLEKSI</span>
@@ -410,7 +410,7 @@ export default function HomePage() {
 
               {/* Chronicle Movement Manifesto Card */}
               <RevealOnScroll variant="fade-up" delayMs={300}>
-                <div className="border-2 border-foreground p-5 sm:p-6 bg-surface font-mono space-y-3.5 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.9)]">
+                <div className="border-2 border-foreground p-5 sm:p-6 bg-surface font-mono space-y-3.5">
                   <div className="flex items-center justify-between pb-2.5 border-b border-border-hairline text-[10px] uppercase tracking-widest text-muted">
                     <span>KRONIK GERAKAN // BLORA</span>
                     <span className="font-bold text-foreground">SWADAYA RAKYAT</span>
@@ -480,7 +480,7 @@ export default function HomePage() {
                         [ SISTEM REPUTASI // JENJANG GELAR KEHORMATAN ]
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                        <div className="p-3 bg-background/5 border border-background/20 flex items-start gap-3 rounded-xs">
+                        <div className="p-3 bg-background/5 border border-background/20 flex items-start gap-3 rounded-none">
                           <span className="text-background font-mono font-bold text-[11px] shrink-0 border border-background/30 px-1.5 py-0.5">
                             01
                           </span>
@@ -494,7 +494,7 @@ export default function HomePage() {
                           </div>
                         </div>
 
-                        <div className="p-3 bg-background/5 border border-background/20 flex items-start gap-3 rounded-xs">
+                        <div className="p-3 bg-background/5 border border-background/20 flex items-start gap-3 rounded-none">
                           <span className="text-background font-mono font-bold text-[11px] shrink-0 border border-background/30 px-1.5 py-0.5">
                             02
                           </span>
@@ -508,7 +508,7 @@ export default function HomePage() {
                           </div>
                         </div>
 
-                        <div className="p-3 bg-background/5 border border-background/20 flex items-start gap-3 rounded-xs">
+                        <div className="p-3 bg-background/5 border border-background/20 flex items-start gap-3 rounded-none">
                           <span className="text-background font-mono font-bold text-[11px] shrink-0 border border-background/30 px-1.5 py-0.5">
                             03
                           </span>
@@ -522,7 +522,7 @@ export default function HomePage() {
                           </div>
                         </div>
 
-                        <div className="p-3 bg-background/5 border border-background/20 flex items-start gap-3 rounded-xs">
+                        <div className="p-3 bg-background/5 border border-background/20 flex items-start gap-3 rounded-none">
                           <span className="text-background font-mono font-bold text-[11px] shrink-0 border border-background/30 px-1.5 py-0.5">
                             04
                           </span>
@@ -552,7 +552,7 @@ export default function HomePage() {
                           return (
                             <span
                               key={badge.name}
-                              className="px-2.5 py-1 bg-background/10 border border-background/25 text-background text-[10px] font-bold uppercase tracking-wider inline-flex items-center gap-1.5 rounded-xs"
+                              className="px-2.5 py-1 bg-background/10 border border-background/25 text-background text-[10px] font-bold uppercase tracking-wider inline-flex items-center gap-1.5 rounded-none"
                             >
                               <IconComp className="w-3 h-3 text-background" />
                               <span>{badge.name}</span>
@@ -566,7 +566,7 @@ export default function HomePage() {
                     <div className="pt-2 flex flex-wrap items-center gap-3 sm:gap-4">
                       <Link
                         href="/masuk"
-                        className="px-6 py-3.5 bg-background text-foreground font-mono text-xs font-bold uppercase tracking-wider hover:bg-background/90 transition-colors shadow-xs inline-flex items-center gap-2"
+                        className="px-6 py-3.5 bg-background text-foreground font-mono text-xs font-bold uppercase tracking-wider hover:bg-background/90 transition-colors inline-flex items-center gap-2"
                       >
                         <Sparkles className="w-4 h-4 text-foreground" />
                         <span>BUAT KARTU MILIKMU SEKARANG</span>
@@ -601,7 +601,7 @@ export default function HomePage() {
                       style={{
                         backgroundImage: `radial-gradient(circle at ${cardTilt.sheenX}% ${cardTilt.sheenY}%, rgba(255, 255, 255, ${cardTilt.sheenOpacity}) 0%, transparent 60%)`,
                       }}
-                      className="relative bg-background text-foreground p-6 pb-6 border-2 border-background shadow-[8px_8px_0px_0px_rgba(255,255,255,0.2)] select-none space-y-4 box-border rounded-xs overflow-hidden"
+                      className="relative bg-background text-foreground p-6 pb-6 border-2 border-background select-none space-y-4 box-border rounded-none overflow-hidden"
                     >
                       {/* Decorative corner markers */}
                       <div className="absolute top-2 left-2 w-3 h-3 border-t-2 border-l-2 border-foreground pointer-events-none" />
@@ -617,7 +617,7 @@ export default function HomePage() {
                             <span className="font-mono text-[7.5px] uppercase font-bold tracking-widest text-muted block mb-0.5">
                               NO. REGISTRASI RESMI
                             </span>
-                            <span className="font-mono text-[10.5px] font-bold text-background bg-foreground tracking-wider px-2 py-0.5 rounded-xs inline-block">
+                            <span className="font-mono text-[10.5px] font-bold text-background bg-foreground tracking-wider px-2 py-0.5 rounded-none inline-block">
                               BLR-2026-WARGA01
                             </span>
                           </div>
@@ -635,7 +635,7 @@ export default function HomePage() {
 
                       {/* Persona Identity Strip */}
                       <div className="flex items-center gap-3.5 py-1">
-                        <div className="w-13 h-13 rounded-full border-2 border-foreground bg-surface flex items-center justify-center font-serif text-xl font-bold text-foreground shrink-0 shadow-xs">
+                        <div className="w-12 h-12 rounded-none border-2 border-foreground bg-surface flex items-center justify-center font-serif text-xl font-bold text-foreground shrink-0">
                           P
                         </div>
                         <div className="flex-1 min-w-0 space-y-0.5">
@@ -644,7 +644,7 @@ export default function HomePage() {
                           </h4>
                           <p className="font-mono text-[10.5px] text-muted">@pramono &bull; Warga Penggerak 2024</p>
                           <div className="pt-0.5">
-                            <span className="inline-block px-2.5 py-0.5 bg-foreground text-background font-mono text-[8px] uppercase font-bold tracking-wider rounded-xs">
+                            <span className="inline-block px-2.5 py-0.5 bg-foreground text-background font-mono text-[8px] uppercase font-bold tracking-wider rounded-none">
                               GELAR: PENJAGA NYALA LITERASI
                             </span>
                           </div>
@@ -652,7 +652,7 @@ export default function HomePage() {
                       </div>
 
                       {/* Inspiring Quote Box */}
-                      <div className="p-3.5 bg-surface-muted/60 border-l-4 border-foreground rounded-xs space-y-1">
+                      <div className="p-3.5 bg-surface-muted/60 border-l-4 border-foreground rounded-none space-y-1">
                         <p className="font-serif italic text-xs text-foreground/90 leading-relaxed">
                           &ldquo;Tangan yang membolak-balik buku adalah tangan yang merawat masa depan bangsa.&rdquo;
                         </p>
@@ -663,19 +663,19 @@ export default function HomePage() {
 
                       {/* 4 Achievement Pillars */}
                       <div className="grid grid-cols-4 gap-2 font-mono text-center pt-0.5">
-                        <div className="p-2 border border-border-hairline bg-surface rounded-xs">
+                        <div className="p-2 border border-border-hairline bg-surface rounded-none">
                           <span className="text-[7.5px] uppercase tracking-wider text-muted block">Tulisan</span>
                           <span className="font-serif font-black text-base text-foreground">8</span>
                         </div>
-                        <div className="p-2 border border-border-hairline bg-surface rounded-xs">
+                        <div className="p-2 border border-border-hairline bg-surface rounded-none">
                           <span className="text-[7.5px] uppercase tracking-wider text-muted block">Lencana</span>
                           <span className="font-serif font-black text-base text-foreground">6</span>
                         </div>
-                        <div className="p-2 border border-border-hairline bg-surface rounded-xs">
+                        <div className="p-2 border border-border-hairline bg-surface rounded-none">
                           <span className="text-[7.5px] uppercase tracking-wider text-muted block">Pinjaman</span>
                           <span className="font-serif font-black text-base text-foreground">14</span>
                         </div>
-                        <div className="p-2 border border-border-hairline bg-surface rounded-xs">
+                        <div className="p-2 border border-border-hairline bg-surface rounded-none">
                           <span className="text-[7.5px] uppercase tracking-wider text-muted block">Amanah</span>
                           <span className="font-serif font-black text-base text-foreground">100%</span>
                         </div>
@@ -725,14 +725,14 @@ export default function HomePage() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Cari judul buku... [↵]"
-                  className="w-full sm:w-64 px-3 py-2.5 pl-8 bg-surface border-2 border-foreground font-mono text-xs text-foreground placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-foreground transition-all shadow-2xs"
+                  className="w-full sm:w-64 px-3 py-2.5 pl-8 bg-surface border-2 border-foreground font-mono text-xs text-foreground placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-foreground transition-all"
                 />
                 <Search className="w-3.5 h-3.5 text-muted absolute left-2.5 pointer-events-none" />
               </form>
 
               <Link
                 href="/buku"
-                className="px-4 py-2.5 bg-foreground text-background font-mono text-xs font-bold uppercase tracking-wider hover:bg-foreground/90 transition-colors inline-flex items-center justify-center gap-1.5 shrink-0 shadow-2xs"
+                className="px-4 py-2.5 bg-foreground text-background font-mono text-xs font-bold uppercase tracking-wider hover:bg-foreground/90 transition-colors inline-flex items-center justify-center gap-1.5 shrink-0"
               >
                 <span>SEMUA BUKU &rarr;</span>
               </Link>
@@ -751,7 +751,7 @@ export default function HomePage() {
 
               return (
                 <RevealOnScroll key={book.id || idx} variant="fade-up" delayMs={idx * 75}>
-                  <div className="border-2 border-foreground bg-surface p-5 flex flex-col justify-between group hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.9)] transition-all h-full">
+                  <div className="border-2 border-foreground bg-surface p-5 flex flex-col justify-between group transition-all h-full">
                     <div>
                       {/* Top Metadata Strip */}
                       <div className="flex items-center justify-between text-[10px] font-mono pb-2 mb-3 border-b border-border-hairline">
@@ -760,7 +760,7 @@ export default function HomePage() {
                       </div>
 
                       {/* Real Book Cover Showcase Container (Aspect 2/3 Book Proportion) */}
-                      <Link href={`/buku/${bookSlug}`} className="block relative aspect-[2/3] w-full mb-4 overflow-hidden border-2 border-foreground bg-surface-muted rounded-xs group/cover shadow-xs">
+                      <Link href={`/buku/${bookSlug}`} className="block relative aspect-[2/3] w-full mb-4 overflow-hidden border-2 border-foreground bg-surface-muted rounded-none group/cover">
                         {coverImg ? (
                           <>
                             {/* Realistic Left Spine Fold Shadow */}
@@ -846,7 +846,7 @@ export default function HomePage() {
               <div className="pt-4 flex flex-wrap justify-center gap-4 font-mono text-xs">
                 <Link
                   href="/tentang#lapak"
-                  className="px-6 py-3.5 bg-foreground text-background font-bold uppercase tracking-wider hover:bg-foreground/90 transition-colors inline-flex items-center gap-2 shadow-xs"
+                  className="px-6 py-3.5 bg-foreground text-background font-bold uppercase tracking-wider hover:bg-foreground/90 transition-colors inline-flex items-center gap-2"
                 >
                   <MapPin className="w-4 h-4" />
                   <span>PETA &amp; JADWAL CFD</span>

@@ -29,18 +29,18 @@ export function DeleteBookConfirmModal({
       />
 
       {/* Modal Dialog */}
-      <div className="relative w-full max-w-md bg-surface border-2 border-foreground shadow-2xl p-6 font-mono text-xs space-y-5 animate-in fade-in zoom-in-95 duration-150">
+      <div className="relative w-full max-w-md bg-surface border-2 border-foreground rounded-none p-6 font-mono text-xs space-y-5 animate-in fade-in zoom-in-95 duration-150">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-border-hairline pb-3">
-          <div className="flex items-center gap-2 text-red-600 font-bold tracking-wider uppercase">
+          <div className="flex items-center gap-2 text-foreground font-bold tracking-wider uppercase">
             <AlertTriangle className="w-4 h-4 shrink-0" />
-            <span>KONFIRMASI ARSIP / HAPUS</span>
+            <span>[ ▲ KONFIRMASI ARSIP / HAPUS ]</span>
           </div>
           <button
             type="button"
             onClick={onClose}
             disabled={isDeleting}
-            className="p-1 text-muted hover:text-foreground disabled:opacity-30"
+            className="p-1 text-muted hover:text-foreground disabled:opacity-30 rounded-none"
           >
             <X className="w-4 h-4" />
           </button>
@@ -49,14 +49,14 @@ export function DeleteBookConfirmModal({
         {/* Content */}
         <div className="space-y-3 font-serif">
           <p className="text-sm text-foreground leading-relaxed">
-            Apakah Anda yakin ingin mengarsipkan / menghapus buku berikut dari katalog aktif?
+            Apakah kamu yakin ingin mengarsipkan atau menghapus buku berikut dari katalog aktif?
           </p>
-          <div className="p-3 bg-surface-muted border-l-2 border-red-600 font-sans text-xs">
+          <div className="p-3 bg-surface-muted border-l-4 border-foreground font-sans text-xs">
             <span className="font-mono text-[10px] text-muted uppercase block">Judul Buku:</span>
             <strong className="text-foreground text-sm font-semibold">{bookTitle}</strong>
           </div>
           <p className="text-xs text-muted leading-relaxed font-sans">
-            Buku akan disembunyikan dari katalog publik. Jika buku sedang dalam sirkulasi peminjaman aktif, penghapusan akan ditolak otomatis oleh sistem.
+            Buku akan disembunyikan dari katalog publik. Jika buku sedang dalam sirkulasi peminjaman aktif, tindakan ini akan ditolak otomatis oleh sistem.
           </p>
         </div>
 
@@ -66,7 +66,7 @@ export function DeleteBookConfirmModal({
             type="button"
             onClick={onClose}
             disabled={isDeleting}
-            className="px-4 py-2 border border-border-hairline text-foreground hover:border-foreground transition-colors disabled:opacity-40"
+            className="min-h-[44px] px-4 py-2 border border-border-hairline text-foreground hover:border-foreground transition-colors disabled:opacity-40 rounded-none cursor-pointer"
           >
             Batal
           </button>
@@ -74,7 +74,7 @@ export function DeleteBookConfirmModal({
             type="button"
             onClick={onConfirm}
             disabled={isDeleting}
-            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-bold tracking-wider uppercase transition-colors inline-flex items-center gap-2 disabled:opacity-50"
+            className="min-h-[44px] px-4 py-2 bg-destructive hover:bg-destructive/90 text-destructive-foreground font-bold tracking-wider uppercase transition-colors inline-flex items-center gap-2 disabled:opacity-50 rounded-none cursor-pointer"
           >
             <Trash2 className="w-3.5 h-3.5" />
             <span>{isDeleting ? 'Menghapus...' : 'Ya, Hapus Buku'}</span>

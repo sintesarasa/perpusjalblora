@@ -82,12 +82,12 @@ export function BadgeShowcasePicker({
   };
 
   return (
-    <div className="border-2 border-foreground bg-surface p-5 sm:p-6 space-y-5 shadow-xs">
+    <div className="border-2 border-foreground bg-surface p-5 sm:p-6 space-y-5">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b-2 border-foreground pb-3">
         <div className="space-y-0.5">
           <div className="flex items-center gap-1.5 font-mono text-[10px] uppercase font-bold tracking-widest text-muted">
-            <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+            <Star className="w-3.5 h-3.5 text-foreground fill-foreground" />
             <span>ETALASE PROFIL PUBLIK</span>
           </div>
           <h3 className="font-serif text-lg sm:text-xl font-bold text-foreground">
@@ -102,7 +102,7 @@ export function BadgeShowcasePicker({
           type="button"
           onClick={handleSave}
           disabled={saving}
-          className="px-4 py-2 border-2 border-foreground bg-foreground text-background hover:bg-foreground/90 font-mono text-xs uppercase font-bold tracking-wider transition-colors disabled:opacity-50 shrink-0 shadow-xs cursor-pointer"
+          className="px-4 py-2 border-2 border-foreground bg-foreground text-background hover:bg-foreground/90 font-mono text-xs uppercase font-bold tracking-wider transition-colors disabled:opacity-50 shrink-0 cursor-pointer"
         >
           {saving ? 'Menyimpan...' : 'Simpan Etalase'}
         </button>
@@ -128,7 +128,7 @@ export function BadgeShowcasePicker({
               className={cn(
                 'border-2 relative p-4 flex flex-col items-center justify-center text-center transition-all min-h-[170px]',
                 badgeProgress && tierInfo
-                  ? cn('bg-surface', tierInfo.borderClass, 'shadow-xs')
+                  ? cn('bg-surface', tierInfo.borderClass)
                   : 'border-dashed border-border-hairline bg-surface-muted/20 hover:border-foreground'
               )}
             >
@@ -204,7 +204,7 @@ export function BadgeShowcasePicker({
           onClick={() => setActiveSlotIndex(null)}
         >
           <div
-            className="w-full max-w-2xl bg-surface border-4 border-foreground shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.9)] p-6 space-y-4 max-h-[85vh] flex flex-col"
+            className="w-full max-w-2xl bg-surface border-2 border-foreground p-5 sm:p-6 space-y-4 max-h-[92dvh] flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between border-b-2 border-foreground pb-3">

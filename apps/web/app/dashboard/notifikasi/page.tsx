@@ -122,7 +122,7 @@ export default function DashboardNotificationsPage() {
         {unreadCount > 0 && (
           <button
             onClick={handleMarkAllRead}
-            className="px-4 py-2 bg-foreground text-background font-mono text-xs uppercase tracking-wider font-semibold hover:bg-foreground/90 transition-colors inline-flex items-center gap-1.5 self-start sm:self-auto shrink-0 shadow-sm"
+            className="px-4 py-2 bg-foreground text-background font-mono text-xs uppercase tracking-wider font-semibold hover:bg-foreground/90 transition-colors inline-flex items-center gap-1.5 self-start sm:self-auto shrink-0"
           >
             <Check className="w-3.5 h-3.5" />
             <span>Tandai Semua Dibaca ({unreadCount})</span>
@@ -210,7 +210,7 @@ export default function DashboardNotificationsPage() {
                   'w-9 h-9 border flex items-center justify-center shrink-0 mt-0.5',
                   item.isRead
                     ? 'border-border-hairline bg-surface-muted/30 text-muted'
-                    : 'border-foreground bg-surface text-foreground shadow-xs'
+                    : 'border-foreground bg-surface text-foreground'
                 )}
               >
                 {getNotificationCategoryIcon(item.type)}

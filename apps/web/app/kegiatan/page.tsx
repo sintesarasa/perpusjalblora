@@ -203,26 +203,26 @@ function EventCatalogContent() {
       case EventType.DISKUSI:
         return {
           label: 'Diskusi Buku',
-          border: 'border-l-4 border-l-rose-600',
-          badge: 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/40',
+          border: 'border-l-4 border-l-foreground',
+          badge: 'bg-surface-muted text-foreground border-foreground/40',
         };
       case EventType.WORKSHOP:
         return {
           label: 'Workshop Kriya',
-          border: 'border-l-4 border-l-emerald-600',
-          badge: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/40',
+          border: 'border-l-4 border-l-foreground',
+          badge: 'bg-surface-muted text-foreground border-foreground/40',
         };
       case EventType.KELAS:
         return {
           label: 'Kelas Belajar',
-          border: 'border-l-4 border-l-indigo-600',
-          badge: 'bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border-indigo-500/40',
+          border: 'border-l-4 border-l-foreground',
+          badge: 'bg-surface-muted text-foreground border-foreground/40',
         };
       case EventType.NOBAR:
         return {
           label: 'Nonton Bareng & Bedah Film',
-          border: 'border-l-4 border-l-purple-600',
-          badge: 'bg-purple-500/15 text-purple-600 dark:text-purple-400 border-purple-500/40',
+          border: 'border-l-4 border-l-foreground',
+          badge: 'bg-surface-muted text-foreground border-foreground/40',
         };
       default:
         return {
@@ -248,7 +248,7 @@ function EventCatalogContent() {
               <span className="hidden sm:inline">[ WARTA KEGIATAN &bull; RUANG PERJUMPAAN ]</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="w-2 h-2 rounded-none bg-foreground animate-pulse" />
               <span className="text-foreground font-semibold">LAPAK RUTIN: SETIAP MINGGU PAGI</span>
             </div>
           </div>
@@ -283,11 +283,11 @@ function EventCatalogContent() {
           </div>
 
           {/* Unified Monumental Event Stage Card */}
-          <div className="border-2 border-foreground bg-surface p-6 sm:p-9 relative overflow-hidden shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.9)] space-y-7">
+          <div className="border-2 border-foreground bg-surface p-6 sm:p-9 relative overflow-hidden space-y-7">
             {/* Top Gazette Status Bar */}
             <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-border-hairline text-xs font-mono">
               <div className="flex items-center gap-2.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="w-2 h-2 rounded-none bg-foreground animate-pulse" />
                 <span className="font-bold text-foreground uppercase tracking-wider text-[11px]">
                   {spotlightEvent ? `AGENDA // ${spotlightEvent.type}` : 'SESI RUTIN // LAPAK BACA CFD'}
                 </span>
@@ -319,7 +319,7 @@ function EventCatalogContent() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
               {/* Left Column: Tactile Editorial Photography Mockup (5 cols) */}
               <div className="lg:col-span-5 flex justify-center w-full">
-                <div className="relative w-full max-w-sm sm:max-w-md bg-surface border-2 border-foreground p-3.5 shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] dark:shadow-[5px_5px_0px_0px_rgba(255,255,255,0.9)] select-none">
+                <div className="relative w-full max-w-sm sm:max-w-md bg-surface border-2 border-foreground p-3.5 select-none">
                   {/* Top Photo Strip */}
                   <div className="flex items-center justify-between pb-2 mb-2 border-b border-border-hairline font-mono text-[9px] uppercase tracking-widest text-muted">
                     <span>[ DOKUMENTASI TROTOAR // LAPAK CFD ]</span>
@@ -341,13 +341,13 @@ function EventCatalogContent() {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-transparent pointer-events-none" />
 
                     {/* Vintage Corner Badge on Photo */}
-                    <div className="absolute top-2.5 right-2.5 px-2 py-0.5 bg-foreground text-background font-mono text-[8px] font-extrabold uppercase tracking-widest border border-background shadow-xs">
+                    <div className="absolute top-2.5 right-2.5 px-2 py-0.5 bg-foreground text-background font-mono text-[8px] font-extrabold uppercase tracking-widest border border-background">
                       ✦ TERPAL RAKYAT ✦
                     </div>
 
                     {/* Photo Caption Overlay */}
                     <div className="absolute bottom-2.5 left-3 right-3 text-white">
-                      <p className="font-serif italic text-xs leading-snug drop-shadow-md">
+                      <p className="font-serif italic text-xs leading-snug">
                         &ldquo;Buku menemukan jiwanya saat disentuh jemari dan diperbincangkan di trotoar.&rdquo;
                       </p>
                     </div>
@@ -381,7 +381,7 @@ function EventCatalogContent() {
 
                 {/* 3 Key Venue Pillars Strip */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1 font-mono text-xs text-muted">
-                  <div className="flex items-center gap-2 p-2 bg-surface-muted/60 border border-border-hairline rounded-xs">
+                  <div className="flex items-center gap-2 p-2 bg-surface-muted/60 border border-border-hairline rounded-none">
                     <Clock className="w-3.5 h-3.5 text-foreground shrink-0" />
                     <span className="text-foreground font-semibold text-[11px]">
                       {spotlightEvent
@@ -390,7 +390,7 @@ function EventCatalogContent() {
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-2 p-2 bg-surface-muted/60 border border-border-hairline rounded-xs truncate">
+                  <div className="flex items-center gap-2 p-2 bg-surface-muted/60 border border-border-hairline rounded-none truncate">
                     <MapPin className="w-3.5 h-3.5 text-foreground shrink-0" />
                     <span className="text-foreground font-semibold text-[11px] truncate">
                       {spotlightEvent
@@ -399,7 +399,7 @@ function EventCatalogContent() {
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-2 p-2 bg-surface-muted/60 border border-border-hairline rounded-xs">
+                  <div className="flex items-center gap-2 p-2 bg-surface-muted/60 border border-border-hairline rounded-none">
                     <Users className="w-3.5 h-3.5 text-foreground shrink-0" />
                     <span className="text-foreground font-semibold text-[11px]">
                       {spotlightEvent && spotlightEvent.quota
@@ -426,7 +426,7 @@ function EventCatalogContent() {
                     {spotlightEvent ? (
                       <Link
                         href={`/kegiatan/${spotlightEvent.slug}`}
-                        className="px-5 py-2.5 bg-foreground text-background font-mono text-xs font-bold uppercase tracking-wider hover:bg-foreground/90 transition-colors inline-flex items-center gap-2 shadow-xs"
+                        className="px-5 py-2.5 bg-foreground text-background font-mono text-xs font-bold uppercase tracking-wider hover:bg-foreground/90 transition-colors inline-flex items-center gap-2"
                       >
                         <span>RINCIAN &amp; TIKET QR</span>
                         <ArrowRight className="w-3.5 h-3.5" />
@@ -436,7 +436,7 @@ function EventCatalogContent() {
                         href="https://maps.google.com/?q=Alun-Alun+Blora"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="px-4 py-2.5 bg-foreground text-background font-mono text-xs font-bold uppercase tracking-wider hover:bg-foreground/90 transition-colors inline-flex items-center gap-2 shadow-xs"
+                        className="px-4 py-2.5 bg-foreground text-background font-mono text-xs font-bold uppercase tracking-wider hover:bg-foreground/90 transition-colors inline-flex items-center gap-2"
                       >
                         <MapPin className="w-3.5 h-3.5 text-background" />
                         <span>PETUNJUK LOKASI DI GOOGLE MAPS</span>
@@ -502,7 +502,7 @@ function EventCatalogContent() {
                   className={cn(
                     'px-4 py-2 border-2 transition-all cursor-pointer font-bold',
                     statusTab === 'selesai'
-                      ? 'bg-foreground text-background border-foreground shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,0.9)]'
+                      ? 'bg-foreground text-background border-foreground'
                       : 'bg-surface text-foreground border-border-hairline hover:border-foreground'
                   )}
                 >
@@ -514,7 +514,7 @@ function EventCatalogContent() {
                   className={cn(
                     'px-4 py-2 border-2 transition-all cursor-pointer font-bold flex items-center gap-1.5',
                     statusTab === 'mendatang'
-                      ? 'bg-foreground text-background border-foreground shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,0.9)]'
+                      ? 'bg-foreground text-background border-foreground'
                       : 'bg-surface text-foreground border-border-hairline hover:border-foreground'
                   )}
                 >
@@ -526,7 +526,7 @@ function EventCatalogContent() {
 
             {/* Pinned Banner when browsing archive and upcoming events exist */}
             {statusTab === 'selesai' && upcomingTotal > 0 && (
-              <div className="p-3.5 bg-surface-muted border-2 border-foreground flex flex-wrap items-center justify-between gap-3 text-xs font-mono shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] dark:shadow-[3px_3px_0px_0px_rgba(255,255,255,0.9)]">
+              <div className="p-3.5 bg-surface-muted border-2 border-foreground flex flex-wrap items-center justify-between gap-3 text-xs font-mono">
                 <div className="flex items-center gap-2">
                   <Sparkles className="w-4 h-4 text-foreground shrink-0" />
                   <span className="text-foreground">
@@ -536,7 +536,7 @@ function EventCatalogContent() {
                 <button
                   type="button"
                   onClick={() => updateFilters({ status: 'mendatang', page: '1' })}
-                  className="px-3 py-1 bg-foreground hover:bg-foreground/90 text-background font-bold uppercase tracking-wider text-[11px] border border-foreground shadow-xs cursor-pointer transition-colors"
+                  className="px-3 py-1 bg-foreground hover:bg-foreground/90 text-background font-bold uppercase tracking-wider text-[11px] border border-foreground cursor-pointer transition-colors"
                 >
                   Buka Agenda Mendatang &rarr;
                 </button>
@@ -564,7 +564,7 @@ function EventCatalogContent() {
                   className={cn(
                     'px-3 py-1 border transition-colors cursor-pointer text-[11px] font-bold',
                     typeFilter === chip.val
-                      ? 'bg-foreground text-background border-foreground shadow-xs'
+                      ? 'bg-foreground text-background border-foreground'
                       : 'bg-surface text-foreground border-border-hairline hover:border-foreground'
                   )}
                 >
@@ -641,7 +641,7 @@ function EventCatalogContent() {
                     <article
                       key={event.id}
                       className={cn(
-                        'border-2 border-foreground bg-surface hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[5px_5px_0px_0px_rgba(255,255,255,0.9)] transition-all flex flex-col justify-between group overflow-hidden',
+                        'border-2 border-foreground bg-surface transition-all flex flex-col justify-between group overflow-hidden',
                         theme.border
                       )}
                     >
@@ -665,7 +665,7 @@ function EventCatalogContent() {
                         <div className="p-5 border-b border-border-hairline bg-surface-muted/30 flex items-start justify-between gap-4">
                           <div className="flex items-center gap-3">
                             {/* Calendar Stamp */}
-                            <div className="border-2 border-foreground bg-surface w-14 h-14 flex flex-col items-center justify-center font-mono shrink-0 shadow-xs">
+                            <div className="border-2 border-foreground bg-surface w-14 h-14 flex flex-col items-center justify-center font-mono shrink-0">
                               <span className="text-[9px] uppercase font-bold text-muted leading-tight">
                                 {dayName}
                               </span>
@@ -680,7 +680,7 @@ function EventCatalogContent() {
                             <div className="space-y-0.5">
                               <span
                                 className={cn(
-                                  'font-mono text-[9px] uppercase font-bold px-2 py-0.5 border rounded-xs inline-block',
+                                  'font-mono text-[9px] uppercase font-bold px-2 py-0.5 border rounded-none inline-block',
                                   theme.badge
                                 )}
                               >
@@ -766,7 +766,7 @@ function EventCatalogContent() {
         {/* ========================================================= */}
         {/* 5. AJAKAN KOLABORASI // GELAR LAPAK BERSAMA KAMI          */}
         {/* ========================================================= */}
-        <section className="border-2 border-foreground bg-foreground text-background p-6 sm:p-10 relative overflow-hidden shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.9)]">
+        <section className="border-2 border-foreground bg-foreground text-background p-6 sm:p-10 relative overflow-hidden">
           <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-8">
             <div className="space-y-3 max-w-2xl">
               <div className="inline-flex items-center gap-2 px-3 py-1 bg-background/15 border border-background/30 text-background font-mono text-[9px] uppercase font-bold tracking-widest">
@@ -787,7 +787,7 @@ function EventCatalogContent() {
                 href="https://wa.me/6281234567890?text=Halo%20Perpusjal%20Blora,%20kami%20ingin%20berkolaborasi%20kegiatan%20bersama"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-6 py-3.5 bg-background text-foreground hover:bg-background/90 font-mono text-xs font-bold uppercase tracking-wider text-center transition-colors inline-flex items-center justify-center gap-2 border border-foreground shadow-[3px_3px_0px_0px_rgba(0,0,0,0.5)]"
+                className="px-6 py-3.5 bg-background text-foreground hover:bg-background/90 font-mono text-xs font-bold uppercase tracking-wider text-center transition-colors inline-flex items-center justify-center gap-2 border border-foreground"
               >
                 <MessageCircle className="w-4 h-4 text-foreground" />
                 <span>KOLABORASI VIA WHATSAPP</span>

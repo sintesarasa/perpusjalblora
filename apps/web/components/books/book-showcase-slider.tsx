@@ -106,23 +106,20 @@ export function BookShowcaseSlider({
     switch (availability) {
       case 'AVAILABLE':
         return (
-          <span className="font-mono text-[9px] uppercase tracking-wider px-2 py-0.5 bg-foreground text-background font-bold inline-flex items-center gap-1 shadow-xs">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-            TERSEDIA DI RAK
+          <span className="font-mono text-[9px] uppercase tracking-wider px-2 py-0.5 bg-foreground text-background font-bold inline-flex items-center gap-1 rounded-none">
+            [ ● TERSEDIA DI RAK ]
           </span>
         );
       case 'LAST_ONE':
         return (
-          <span className="font-mono text-[9px] uppercase tracking-wider px-2 py-0.5 border border-foreground bg-background text-foreground font-bold inline-flex items-center gap-1">
-            <AlertCircle className="w-2.5 h-2.5 text-amber-500" />
-            TERSISA 1 EKSEMPLAR
+          <span className="font-mono text-[9px] uppercase tracking-wider px-2 py-0.5 border-2 border-foreground bg-background text-foreground font-bold inline-flex items-center gap-1 rounded-none">
+            [ ◐ SISA 1 EKSEMPLAR ]
           </span>
         );
       case 'BORROWED':
         return (
-          <span className="font-mono text-[9px] uppercase tracking-wider px-2 py-0.5 border border-border text-muted bg-surface-muted inline-flex items-center gap-1">
-            <Clock className="w-2.5 h-2.5" />
-            SEDANG BERKELANA
+          <span className="font-mono text-[9px] uppercase tracking-wider px-2 py-0.5 border border-border-hairline text-muted bg-surface-muted inline-flex items-center gap-1 rounded-none">
+            [ ○ SEDANG BERKELANA ]
           </span>
         );
       default:
@@ -197,7 +194,7 @@ export function BookShowcaseSlider({
 
       {/* Main Showcase Slide Box with Smooth Crossfade Animation */}
       <div
-        className="border-2 border-foreground bg-surface p-6 sm:p-8 relative shadow-sm overflow-hidden"
+        className="border-2 border-foreground bg-surface p-6 sm:p-8 relative overflow-hidden"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
@@ -223,10 +220,10 @@ export function BookShowcaseSlider({
           <div className="md:col-span-4 lg:col-span-3 flex justify-center">
             <div className="w-48 sm:w-56 aspect-[3/4] relative group/cover select-none">
               {/* Book Spine 3D Accent */}
-              <div className="absolute left-0 top-0 bottom-0 w-3.5 bg-gradient-to-r from-black/35 via-black/15 to-transparent z-20 pointer-events-none rounded-l-xs" />
+              <div className="absolute left-0 top-0 bottom-0 w-3.5 bg-gradient-to-r from-black/35 via-black/15 to-transparent z-20 pointer-events-none rounded-none" />
               <div className="absolute -inset-1 bg-foreground/10 translate-x-1.5 translate-y-1.5 -z-10 border border-foreground/20" />
 
-              <div className="w-full h-full border-2 border-foreground bg-background overflow-hidden relative shadow-md">
+              <div className="w-full h-full border-2 border-foreground bg-background overflow-hidden relative">
                 {currentBook.coverImage ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img

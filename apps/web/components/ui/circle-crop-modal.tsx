@@ -211,7 +211,7 @@ export function CircleCropModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm animate-in fade-in-50 duration-150">
-      <div className="bg-surface border-2 border-foreground w-full max-w-md shadow-2xl p-5 sm:p-6 space-y-5">
+      <div className="bg-surface border-2 border-foreground w-full max-w-md p-5 sm:p-6 space-y-5 rounded-none max-h-[92dvh] overflow-y-auto">
         {/* Modal Header */}
         <div className="flex items-center justify-between border-b-2 border-foreground pb-3">
           <div className="space-y-0.5">
@@ -253,14 +253,14 @@ export function CircleCropModal({
               height={VIEWPORT_SIZE}
               className="block w-full h-full"
             />
-            <div className="absolute bottom-2 left-2 pointer-events-none bg-black/70 px-2 py-0.5 text-[9px] font-mono text-white/90 flex items-center gap-1 rounded-sm">
+            <div className="absolute bottom-2 left-2 pointer-events-none bg-black/70 px-2 py-0.5 text-[9px] font-mono text-white/90 flex items-center gap-1 rounded-none">
               <Move className="w-2.5 h-2.5" />
               <span>Geser untuk atur posisi</span>
             </div>
           </div>
 
           <p className="font-sans text-[11px] text-muted text-center max-w-xs">
-            Bagian di dalam lingkaran putih adalah area yang akan tampil sebagai foto profil Anda.
+            Bagian di dalam lingkaran putih adalah area yang akan tampil sebagai foto profilmu.
           </p>
         </div>
 
@@ -333,7 +333,7 @@ export function CircleCropModal({
               type="button"
               disabled={processing || !image}
               onClick={handleApplyCrop}
-              className="px-5 py-2 border-2 border-foreground bg-foreground text-background font-mono text-xs uppercase tracking-wider font-bold hover:bg-foreground/90 transition-colors inline-flex items-center gap-1.5 cursor-pointer shadow-xs disabled:opacity-50"
+              className="px-5 py-2 border-2 border-foreground bg-foreground text-background font-mono text-xs uppercase tracking-wider font-bold hover:bg-foreground/90 transition-colors inline-flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
             >
               {processing ? (
                 <>

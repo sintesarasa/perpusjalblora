@@ -57,7 +57,7 @@ export function BookQuickPeekDrawer({ book, isOpen, onClose }: BookQuickPeekDraw
 
       {/* Slide-over Sheet */}
       <div className="fixed inset-y-0 right-0 max-w-full flex pl-6 sm:pl-10">
-        <div className="w-screen max-w-md sm:max-w-lg bg-surface border-l-2 border-foreground shadow-2xl flex flex-col justify-between overflow-y-auto animate-in slide-in-from-right duration-300">
+        <div className="w-screen max-w-md sm:max-w-lg bg-surface border-l-2 border-foreground flex flex-col justify-between overflow-y-auto animate-in slide-in-from-right duration-300">
           {/* Header Strip */}
           <div>
             <div className="p-4 sm:p-5 border-b-2 border-foreground flex items-center justify-between bg-surface-muted/50">
@@ -78,7 +78,7 @@ export function BookQuickPeekDrawer({ book, isOpen, onClose }: BookQuickPeekDraw
             <div className="p-6 space-y-6">
               {/* Physical Book Cover Frame */}
               <div className="grid grid-cols-1 sm:grid-cols-12 gap-5 items-start">
-                <div className="sm:col-span-5 aspect-[3/4] border-2 border-foreground bg-surface-muted relative overflow-hidden shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] dark:shadow-[3px_3px_0px_0px_rgba(255,255,255,0.15)]">
+                <div className="sm:col-span-5 aspect-[3/4] border-2 border-foreground bg-surface-muted relative overflow-hidden">
                   {/* Left Spine Shadow */}
                   <div className="absolute left-0 top-0 bottom-0 w-3 bg-gradient-to-r from-black/25 via-black/10 to-transparent z-10 pointer-events-none" />
 
@@ -172,7 +172,7 @@ export function BookQuickPeekDrawer({ book, isOpen, onClose }: BookQuickPeekDraw
                 </h3>
                 <p className="font-serif text-sm text-foreground/85 leading-relaxed whitespace-pre-line">
                   {book.description ||
-                    'Belum ada catatan sinopsis resmi yang tertera untuk edisi buku ini. Anda dapat memeriksa fisik buku secara langsung di lapak terpal perpusjal atau mengunjungi halaman rincian.'}
+                    'Belum ada catatan sinopsis resmi yang tertera untuk edisi buku ini. Kamu dapat memeriksa fisik buku secara langsung di lapak terpal perpusjal atau mengunjungi halaman rincian.'}
                 </p>
               </div>
 

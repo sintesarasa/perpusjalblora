@@ -485,133 +485,245 @@ export default function DashboardCuratorPage() {
         </div>
       )}
 
-      {/* Queue Table */}
+      {/* Queue Table with Mobile Viewport Table Swap */}
       {!isLoading && articles.length > 0 && (
-        <div className="border border-border bg-surface overflow-x-auto shadow-sm">
-          <table className="w-full text-left font-sans text-xs">
-            <thead className="bg-surface-muted/60 border-b border-border font-mono text-[10px] uppercase tracking-wider text-muted select-none">
-              <tr>
-                <th className="py-3 px-4">Judul Naskah</th>
-                <th className="py-3 px-4">Penulis</th>
-                <th className="py-3 px-4">Kategori</th>
-                <th className="py-3 px-4">Panjang</th>
-                <th className="py-3 px-4">Tanggal Masuk</th>
-                <th className="py-3 px-4 text-right">Tindakan Kurasi</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border-hairline">
-              {articles.map((item) => {
-                const dateStr = item.submittedAt
-                  ? new Date(item.submittedAt).toLocaleDateString('id-ID', {
-                      day: 'numeric',
-                      month: 'short',
-                      year: 'numeric',
-                    })
-                  : '-';
+        <>
+          {/* Desktop & Tablet Table (Hidden on mobile <md) */}
+          <div className="hidden md:block border border-border bg-surface overflow-x-auto">
+            <table className="w-full text-left font-sans text-xs">
+              <thead className="bg-surface-muted/60 border-b border-border font-mono text-[10px] uppercase tracking-wider text-muted select-none">
+                <tr>
+                  <th className="py-3 px-4">Judul Naskah</th>
+                  <th className="py-3 px-4">Penulis</th>
+                  <th className="py-3 px-4">Kategori</th>
+                  <th className="py-3 px-4">Panjang</th>
+                  <th className="py-3 px-4">Tanggal Masuk</th>
+                  <th className="py-3 px-4 text-right">Tindakan Kurasi</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border-hairline">
+                {articles.map((item) => {
+                  const dateStr = item.submittedAt
+                    ? new Date(item.submittedAt).toLocaleDateString('id-ID', {
+                        day: 'numeric',
+                        month: 'short',
+                        year: 'numeric',
+                      })
+                    : '-';
 
-                return (
-                  <tr key={item.id} className="hover:bg-surface-muted/30 transition-colors">
-                    <td className="py-3.5 px-4">
-                      <button
-                        onClick={() => handleOpenPreview(item)}
-                        className="font-serif text-base font-normal text-foreground hover:underline decoration-1 text-left block"
-                      >
-                        {item.title}
-                      </button>
-                    </td>
-                    <td className="py-3.5 px-4 font-mono text-[11px]">
-                      <div>{item.author.name}</div>
-                      <div className="text-muted text-[10px]">@{item.author.username}</div>
-                    </td>
-                    <td className="py-3.5 px-4 font-mono text-[10px] uppercase tracking-wider text-muted">
-                      [{item.category.name}]
-                    </td>
-                    <td className="py-3.5 px-4 font-mono text-[10px] text-muted">
-                      {item.wordCount} Kata ({item.readingTime} Menit)
-                    </td>
-                    <td className="py-3.5 px-4 font-mono text-[10px] text-muted">
-                      {dateStr}
-                    </td>
-                    <td className="py-3.5 px-4 text-right">
-                      <div className="inline-flex items-center gap-1.5 font-mono text-[10px]">
-                        {/* Quick preview button */}
-                        <Button
-                          variant="ghost"
-                          size="sm"
+                  return (
+                    <tr key={item.id} className="hover:bg-surface-muted/30 transition-colors">
+                      <td className="py-3.5 px-4">
+                        <button
                           onClick={() => handleOpenPreview(item)}
-                          title="Tinjau Naskah di Dasbor"
-                          className="hover:bg-foreground hover:text-background"
+                          className="font-serif text-base font-normal text-foreground hover:underline decoration-1 text-left block"
                         >
-                          <Eye className="w-3.5 h-3.5 mr-1" />
-                          <span>Tinjau</span>
+                          {item.title}
+                        </button>
+                      </td>
+                      <td className="py-3.5 px-4 font-mono text-[11px]">
+                        <div>{item.author.name}</div>
+                        <div className="text-muted text-[10px]">@{item.author.username}</div>
+                      </td>
+                      <td className="py-3.5 px-4 font-mono text-[10px] uppercase tracking-wider text-muted">
+                        [{item.category.name}]
+                      </td>
+                      <td className="py-3.5 px-4 font-mono text-[10px] text-muted">
+                        {item.wordCount} Kata ({item.readingTime} Menit)
+                      </td>
+                      <td className="py-3.5 px-4 font-mono text-[10px] text-muted">
+                        {dateStr}
+                      </td>
+                      <td className="py-3.5 px-4 text-right">
+                        <div className="inline-flex items-center gap-1.5 font-mono text-[10px]">
+                          {/* Quick preview button */}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleOpenPreview(item)}
+                            title="Tinjau Naskah di Dasbor"
+                            className="hover:bg-foreground hover:text-background"
+                          >
+                            <Eye className="w-3.5 h-3.5 mr-1" />
+                            <span>Tinjau</span>
+                          </Button>
+
+                          {statusFilter === ArticleStatus.PENDING_REVIEW && (
+                            <>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  setSelectedArticle(item);
+                                  setModalMode('approve');
+                                }}
+                                className="hover:bg-foreground hover:text-background"
+                                title="Setujui dan Terbitkan Langsung"
+                              >
+                                <Check className="w-3.5 h-3.5 mr-1" />
+                                <span>Setujui</span>
+                              </Button>
+
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handlePrepareRevisionModal(item)}
+                                className="hover:bg-foreground hover:text-background"
+                                title="Minta Revisi kepada Penulis"
+                              >
+                                <RotateCcw className="w-3.5 h-3.5 mr-1" />
+                                <span>Revisi</span>
+                              </Button>
+
+                              <Button
+                                variant="danger"
+                                size="sm"
+                                onClick={() => {
+                                  setSelectedArticle(item);
+                                  setModalMode('reject');
+                                }}
+                                title="Tolak Naskah"
+                              >
+                                <X className="w-3.5 h-3.5 mr-1" />
+                                <span>Tolak</span>
+                              </Button>
+                            </>
+                          )}
+
+                          {statusFilter === ArticleStatus.PUBLISHED && (
+                            <button
+                              onClick={() => handleToggleFeatured(item.id, item.isFeatured)}
+                              title={item.isFeatured ? 'Hapus dari Pilihan Redaksi' : 'Jadikan Pilihan Redaksi (Featured)'}
+                              className={cn(
+                                'p-1.5 border transition-colors inline-flex items-center gap-1 font-mono text-[10px]',
+                                item.isFeatured
+                                  ? 'bg-foreground text-background border-foreground font-bold'
+                                  : 'bg-transparent text-muted border-border hover:border-foreground'
+                              )}
+                            >
+                              <Star className={cn('w-3.5 h-3.5', item.isFeatured && 'fill-current')} />
+                              <span>{item.isFeatured ? 'Unggulan' : 'Jadikan Unggulan'}</span>
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile Viewport Table Swap: Stacked Cards (Visible on mobile <md) */}
+          <div className="block md:hidden space-y-3">
+            {articles.map((item) => {
+              const dateStr = item.submittedAt
+                ? new Date(item.submittedAt).toLocaleDateString('id-ID', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric',
+                  })
+                : '-';
+
+              return (
+                <div
+                  key={item.id}
+                  className="p-4 border-2 border-foreground bg-surface space-y-3 font-sans"
+                >
+                  <div className="flex items-start justify-between gap-2 border-b border-border-hairline pb-2">
+                    <span className="font-mono text-[10px] uppercase tracking-wider text-muted px-1.5 py-0.5 bg-surface-muted border border-border-hairline">
+                      {item.category.name}
+                    </span>
+                    <span className="font-mono text-[10px] text-muted">{dateStr}</span>
+                  </div>
+
+                  <button
+                    onClick={() => handleOpenPreview(item)}
+                    className="font-serif text-lg font-bold text-foreground text-left leading-snug hover:underline block w-full"
+                  >
+                    {item.title}
+                  </button>
+
+                  <div className="flex items-center justify-between text-xs font-mono text-muted">
+                    <div>
+                      <span className="text-foreground font-semibold">{item.author.name}</span>
+                      <span className="text-[10px] text-muted ml-1">@{item.author.username}</span>
+                    </div>
+                    <span>{item.wordCount} Kata</span>
+                  </div>
+
+                  {/* Mobile Actions with 44px min touch target */}
+                  <div className="pt-2 border-t border-border-hairline flex flex-wrap gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleOpenPreview(item)}
+                      className="min-h-[44px] flex-1 flex items-center justify-center border border-border-hairline"
+                    >
+                      <Eye className="w-3.5 h-3.5 mr-1" />
+                      <span>Tinjau</span>
+                    </Button>
+
+                    {statusFilter === ArticleStatus.PENDING_REVIEW && (
+                      <>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setSelectedArticle(item);
+                            setModalMode('approve');
+                          }}
+                          className="min-h-[44px] flex-1 flex items-center justify-center"
+                        >
+                          <Check className="w-3.5 h-3.5 mr-1" />
+                          <span>Setujui</span>
                         </Button>
 
-                        {statusFilter === ArticleStatus.PENDING_REVIEW && (
-                          <>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => {
-                                setSelectedArticle(item);
-                                setModalMode('approve');
-                              }}
-                              className="hover:bg-foreground hover:text-background"
-                              title="Setujui dan Terbitkan Langsung"
-                            >
-                              <Check className="w-3.5 h-3.5 text-emerald-600 mr-1" />
-                              <span>Setujui</span>
-                            </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handlePrepareRevisionModal(item)}
+                          className="min-h-[44px] flex-1 flex items-center justify-center"
+                        >
+                          <RotateCcw className="w-3.5 h-3.5 mr-1" />
+                          <span>Revisi</span>
+                        </Button>
 
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handlePrepareRevisionModal(item)}
-                              className="hover:bg-foreground hover:text-background"
-                              title="Minta Revisi kepada Penulis"
-                            >
-                              <RotateCcw className="w-3.5 h-3.5 text-amber-600 mr-1" />
-                              <span>Revisi</span>
-                            </Button>
+                        <Button
+                          variant="danger"
+                          size="sm"
+                          onClick={() => {
+                            setSelectedArticle(item);
+                            setModalMode('reject');
+                          }}
+                          className="min-h-[44px] flex-1 flex items-center justify-center"
+                        >
+                          <X className="w-3.5 h-3.5 mr-1" />
+                          <span>Tolak</span>
+                        </Button>
+                      </>
+                    )}
 
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => {
-                                setSelectedArticle(item);
-                                setModalMode('reject');
-                              }}
-                              className="border-border text-destructive hover:bg-destructive hover:text-white hover:border-destructive transition-colors"
-                              title="Tolak Naskah"
-                            >
-                              <X className="w-3.5 h-3.5 mr-1" />
-                              <span>Tolak</span>
-                            </Button>
-                          </>
+                    {statusFilter === ArticleStatus.PUBLISHED && (
+                      <button
+                        onClick={() => handleToggleFeatured(item.id, item.isFeatured)}
+                        className={cn(
+                          'min-h-[44px] px-4 border font-mono text-[11px] uppercase tracking-wider flex-1 inline-flex items-center justify-center gap-1.5 transition-colors',
+                          item.isFeatured
+                            ? 'bg-foreground text-background border-foreground font-bold'
+                            : 'bg-transparent text-muted border-border hover:border-foreground'
                         )}
-
-                        {statusFilter === ArticleStatus.PUBLISHED && (
-                          <button
-                            onClick={() => handleToggleFeatured(item.id, item.isFeatured)}
-                            title={item.isFeatured ? 'Hapus dari Pilihan Redaksi' : 'Jadikan Pilihan Redaksi (Featured)'}
-                            className={cn(
-                              'p-1.5 border transition-colors inline-flex items-center gap-1',
-                              item.isFeatured
-                                ? 'bg-amber-400 text-black border-amber-500 font-bold'
-                                : 'bg-transparent text-muted border-border hover:border-foreground'
-                            )}
-                          >
-                            <Star className={cn('w-3.5 h-3.5', item.isFeatured && 'fill-current')} />
-                            <span>{item.isFeatured ? 'Unggulan' : 'Jadikan Unggulan'}</span>
-                          </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+                      >
+                        <Star className={cn('w-3.5 h-3.5', item.isFeatured && 'fill-current')} />
+                        <span>{item.isFeatured ? 'Unggulan' : 'Jadikan Unggulan'}</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </>
       )}
 
       {/* Empty State */}
@@ -625,7 +737,7 @@ export default function DashboardCuratorPage() {
       {/* QUICK INLINE PREVIEW MODAL / DRAWER WITH INLINE ANNOTATIONS */}
       {previewSlug && (
         <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-2 sm:p-6 overflow-y-auto">
-          <div className="border-2 border-foreground bg-background w-full max-w-4xl max-h-[94vh] flex flex-col shadow-2xl animate-in fade-in-50 duration-200">
+          <div className="border-2 border-foreground bg-background w-full max-w-4xl max-h-[94vh] flex flex-col animate-in fade-in-50 duration-200">
             {/* Drawer Header */}
             <div className="p-4 sm:p-5 border-b border-border-hairline bg-surface-muted/40 flex items-center justify-between gap-4 shrink-0">
               <div className="space-y-0.5">
@@ -711,7 +823,7 @@ export default function DashboardCuratorPage() {
                   {previewArticle.status === ArticleStatus.PENDING_REVIEW && (
                     <div className="p-3 bg-surface-muted/60 border border-border-hairline flex items-center justify-between gap-2 font-mono text-[11px] text-muted">
                       <div className="flex items-center gap-2">
-                        <Sparkles className="w-4 h-4 text-amber-500 shrink-0" />
+                        <Sparkles className="w-4 h-4 text-foreground shrink-0" />
                         <span>Arahkan kursor ke tiap paragraf untuk memberi <strong>Catatan Blok Redaksi</strong>.</span>
                       </div>
                       {annotationCount > 0 && (
@@ -754,7 +866,7 @@ export default function DashboardCuratorPage() {
                           className={cn(
                             'group relative transition-all duration-150 rounded-none',
                             hasNote
-                              ? 'border-l-4 border-amber-500 bg-amber-500/[0.04] pl-4 py-2'
+                              ? 'border-l-4 border-foreground bg-surface-muted/60 pl-4 py-2'
                               : 'hover:bg-surface-muted/30 pl-2 -ml-2 py-1'
                           )}
                         >
@@ -779,9 +891,9 @@ export default function DashboardCuratorPage() {
                             <div className="opacity-0 group-hover:opacity-100 transition-opacity mt-1.5 flex items-center justify-end">
                               <button
                                 onClick={() => handleStartAnnotation(block.id, block.text)}
-                                className="px-2 py-1 bg-surface border border-border-hairline hover:border-foreground text-muted hover:text-foreground font-mono text-[10px] uppercase tracking-wider inline-flex items-center gap-1.5 shadow-sm"
+                                className="px-2 py-1 bg-surface border border-border-hairline hover:border-foreground text-muted hover:text-foreground font-mono text-[10px] uppercase tracking-wider inline-flex items-center gap-1.5"
                               >
-                                <MessageSquarePlus className="w-3 h-3 text-amber-500" />
+                                <MessageSquarePlus className="w-3 h-3 text-foreground" />
                                 <span>+ Catatan Blok</span>
                               </button>
                             </div>
@@ -789,9 +901,9 @@ export default function DashboardCuratorPage() {
 
                           {/* Existing Annotation Card */}
                           {hasNote && !isEditing && (
-                            <div className="mt-3 p-3 border border-amber-500/40 bg-surface shadow-sm font-sans space-y-2">
+                            <div className="mt-3 p-3 border border-border bg-surface font-sans space-y-2">
                               <div className="flex items-center justify-between gap-2 border-b border-border-hairline pb-1.5">
-                                <span className="font-mono text-[10px] uppercase tracking-widest text-amber-600 font-bold flex items-center gap-1.5">
+                                <span className="font-mono text-[10px] uppercase tracking-widest text-foreground font-bold flex items-center gap-1.5">
                                   <CornerDownRight className="w-3 h-3" />
                                   Catatan Redaksi (Blok #{block.id + 1})
                                 </span>
@@ -805,7 +917,7 @@ export default function DashboardCuratorPage() {
                                   </button>
                                   <button
                                     onClick={() => handleDeleteAnnotation(block.id)}
-                                    className="p-1 text-muted hover:text-destructive hover:bg-surface-muted"
+                                    className="p-1 text-muted hover:text-foreground hover:bg-surface-muted"
                                     title="Hapus catatan"
                                   >
                                     <Trash2 className="w-3 h-3" />
@@ -820,7 +932,7 @@ export default function DashboardCuratorPage() {
 
                           {/* Inline Editing Form */}
                           {isEditing && (
-                            <div className="mt-3 p-3.5 border-2 border-foreground bg-surface shadow-md space-y-3">
+                            <div className="mt-3 p-3.5 border-2 border-foreground bg-surface space-y-3">
                               <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-wider text-muted">
                                 <span className="font-bold text-foreground">
                                   Catatan Redaksi untuk Paragraf #{block.id + 1}
@@ -879,7 +991,7 @@ export default function DashboardCuratorPage() {
                 <div className="font-mono text-xs text-muted flex items-center gap-3">
                   <span>Status: <strong className="text-foreground uppercase">{previewArticle.status}</strong></span>
                   {annotationCount > 0 && (
-                    <span className="px-2 py-0.5 bg-amber-500/10 border border-amber-500 text-amber-700 dark:text-amber-400 font-bold inline-flex items-center gap-1 text-[10px]">
+                    <span className="px-2 py-0.5 border border-foreground bg-surface-muted text-foreground font-bold inline-flex items-center gap-1 text-[10px]">
                       <MessageSquare className="w-3 h-3" />
                       {annotationCount} Catatan Blok Siap Dikirim
                     </span>
@@ -894,7 +1006,7 @@ export default function DashboardCuratorPage() {
                   {previewArticle.status === ArticleStatus.PENDING_REVIEW && (
                     <>
                       <Button
-                        variant="outline"
+                        variant="danger"
                         size="sm"
                         onClick={() => {
                           const matched = articles.find((a) => a.id === previewArticle.id) || {
@@ -913,7 +1025,6 @@ export default function DashboardCuratorPage() {
                           setSelectedArticle(matched);
                           setModalMode('reject');
                         }}
-                        className="border-border text-destructive hover:bg-destructive hover:text-white hover:border-destructive transition-colors"
                       >
                         <X className="w-3.5 h-3.5 mr-1" />
                         Tolak
@@ -940,7 +1051,7 @@ export default function DashboardCuratorPage() {
                         }}
                         className="hover:bg-foreground hover:text-background"
                       >
-                        <RotateCcw className="w-3.5 h-3.5 mr-1 text-amber-600" />
+                        <RotateCcw className="w-3.5 h-3.5 mr-1" />
                         <span>Minta Revisi {annotationCount > 0 ? `(${annotationCount} Catatan)` : ''}</span>
                       </Button>
 
@@ -980,7 +1091,7 @@ export default function DashboardCuratorPage() {
       {/* CURATION DECISION MODAL DIALOG */}
       {modalMode && selectedArticle && (
         <div className="fixed inset-0 z-[60] bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="border-2 border-foreground bg-background p-6 sm:p-8 max-w-xl w-full space-y-6 shadow-2xl">
+          <div className="border-2 border-foreground bg-background p-6 sm:p-8 max-w-xl w-full space-y-6">
             <div className="space-y-1">
               <span className="font-mono text-[10px] uppercase tracking-widest text-muted">
                 TINDAKAN KURASI REDAKSI
@@ -1029,7 +1140,7 @@ export default function DashboardCuratorPage() {
                       Catatan Perbaikan untuk Penulis (Wajib)
                     </label>
                     {annotationCount > 0 && (
-                      <span className="font-mono text-[10px] text-amber-600 font-bold">
+                      <span className="font-mono text-[10px] text-foreground font-bold">
                         {annotationCount} Catatan Blok Terangkum Otomatis
                       </span>
                     )}
@@ -1100,11 +1211,10 @@ export default function DashboardCuratorPage() {
                     Batal
                   </Button>
                   <Button
-                    variant="solid"
+                    variant="danger"
                     size="sm"
                     onClick={() => handleReject(selectedArticle.id)}
                     isLoading={isProcessing}
-                    className="bg-destructive border-destructive text-white hover:bg-destructive/90"
                   >
                     Konfirmasi Tolak Naskah
                   </Button>

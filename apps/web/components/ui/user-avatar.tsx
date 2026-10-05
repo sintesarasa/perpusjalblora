@@ -9,19 +9,19 @@ export interface UserAvatarProps {
   name?: string | null;
   username?: string | null;
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl';
-  shape?: 'circle' | 'square';
+  shape?: 'square' | 'circle'; // shape preserved in props for backwards compatibility, strictly rendered 0px rounded-none
   className?: string;
   linkToProfile?: boolean;
   priority?: boolean;
 }
 
 const SIZE_MAP = {
-  xs: { box: 'w-6 h-6', text: 'text-[9px]', icon: 'w-3 h-3' },
-  sm: { box: 'w-9 h-9', text: 'text-xs', icon: 'w-4 h-4' },
-  md: { box: 'w-11 h-11', text: 'text-sm', icon: 'w-5 h-5' },
-  lg: { box: 'w-14 h-14', text: 'text-base', icon: 'w-6 h-6' },
-  xl: { box: 'w-20 h-20', text: 'text-2xl', icon: 'w-8 h-8' },
-  '2xl': { box: 'w-24 h-24 sm:w-28 sm:h-28', text: 'text-3xl sm:text-4xl', icon: 'w-10 h-10' },
+  xs: { box: 'w-6 h-6', text: 'text-[9px]' },
+  sm: { box: 'w-9 h-9', text: 'text-xs' },
+  md: { box: 'w-11 h-11', text: 'text-sm' },
+  lg: { box: 'w-14 h-14', text: 'text-base' },
+  xl: { box: 'w-20 h-20', text: 'text-2xl' },
+  '2xl': { box: 'w-24 h-24 sm:w-28 sm:h-28', text: 'text-3xl sm:text-4xl' },
 };
 
 /**
@@ -42,7 +42,6 @@ export function UserAvatar({
   name,
   username,
   size = 'md',
-  shape = 'circle',
   className,
   linkToProfile = false,
 }: UserAvatarProps) {
@@ -55,13 +54,13 @@ export function UserAvatar({
     setImageError(false);
   }, [src]);
 
+  // MUTLAK 0px Radius: rounded-none, hairline/bold border khas cetak monokrom sastra
   const avatarContent = (
     <div
       className={cn(
-        'relative shrink-0 overflow-hidden flex items-center justify-center select-none font-serif font-bold transition-all duration-150',
+        'relative shrink-0 overflow-hidden flex items-center justify-center select-none font-mono font-bold transition-colors',
+        'rounded-none border border-foreground bg-surface text-foreground',
         sizeConfig.box,
-        shape === 'circle' ? 'rounded-full' : 'rounded-sm',
-        'border-2 border-foreground/80 bg-surface shadow-xs text-foreground',
         className
       )}
     >
@@ -69,14 +68,14 @@ export function UserAvatar({
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={src}
-          alt={name || username || 'Avatar'}
+          alt={name || username || 'Avatar Anggota'}
           onError={() => setImageError(true)}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover rounded-none grayscale contrast-125"
         />
       ) : (
         <span
           className={cn(
-            'tracking-wider font-mono font-bold uppercase flex items-center justify-center w-full h-full bg-surface-muted text-foreground',
+            'tracking-wider uppercase flex items-center justify-center w-full h-full bg-surface-muted text-foreground',
             sizeConfig.text
           )}
           title={name || username || 'Pengguna Perpusjal'}
@@ -91,7 +90,7 @@ export function UserAvatar({
     return (
       <Link
         href={`/warga/${username}`}
-        className="inline-block transition-transform duration-150 hover:scale-105 hover:opacity-95 focus:outline-none"
+        className="inline-block rounded-none transition-opacity hover:opacity-85 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-foreground focus-visible:ring-offset-2 focus-visible:ring-offset-background"
         title={`Buka profil ${name || `@${username}`}`}
         onClick={(e) => e.stopPropagation()}
       >

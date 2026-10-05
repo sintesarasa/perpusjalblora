@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { cn } from '@/lib/utils';
-import { Clock, Calendar, Sparkles, MapPin } from 'lucide-react';
+import { Clock, Calendar, MapPin } from 'lucide-react';
 
 interface EventCountdownProps {
   targetDate?: Date | string | null;
@@ -101,7 +101,7 @@ export function EventCountdown({
 
     const days = Math.floor(difference / (1000 * 60 * 60 * 24));
     const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+    const minutes = Math.floor((difference % (1000 * 60)) / (1000 * 60));
     const seconds = Math.floor((difference % (1000 * 60)) / 1000);
 
     return {
@@ -142,7 +142,7 @@ export function EventCountdown({
   if (!mounted) {
     if (variant === 'embedded') {
       return (
-        <div className={cn('p-3 sm:p-3.5 border border-border-hairline bg-surface-muted/50 rounded-xs', className)}>
+        <div className={cn('p-3 sm:p-3.5 border border-border-hairline bg-surface-muted/50 rounded-none', className)}>
           <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-foreground font-bold">
             <Clock className="w-3.5 h-3.5 animate-pulse text-foreground" />
             <span>MEMUAT HITUNG MUNDUR...</span>
@@ -151,7 +151,7 @@ export function EventCountdown({
       );
     }
     return (
-      <div className={cn('bg-surface text-foreground p-6 border-2 border-foreground rounded-xs', className)}>
+      <div className={cn('bg-surface text-foreground p-6 border-2 border-foreground rounded-none', className)}>
         <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-foreground font-bold">
           <Clock className="w-3.5 h-3.5" />
           <span>MEMUAT PENGHITUNG WAKTU...</span>
@@ -166,12 +166,12 @@ export function EventCountdown({
   if (variant === 'embedded') {
     if (time.isLive) {
       return (
-        <div className={cn('p-3 sm:p-3.5 bg-emerald-500/10 border-2 border-emerald-500/70 rounded-xs flex items-center justify-between gap-3 text-emerald-800 dark:text-emerald-300 font-mono select-none', className)}>
+        <div className={cn('p-3 sm:p-3.5 bg-foreground text-background border-2 border-foreground rounded-none flex items-center justify-between gap-3 font-mono select-none', className)}>
           <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
-            <span>SESI SEDANG BERLANGSUNG DI ALUN-ALUN SAAT INI</span>
+            <span className="w-2 h-2 rounded-none bg-background animate-pulse" />
+            <span>[ ● SESI SEDANG BERLANGSUNG DI ALUN-ALUN ]</span>
           </div>
-          <span className="text-[11px] font-semibold hidden sm:inline text-muted">Merapat Langsung &bull; Gratis</span>
+          <span className="text-[11px] font-semibold hidden sm:inline text-background/85">Merapat Langsung &bull; Terbuka Untuk Umum</span>
         </div>
       );
     }
@@ -179,14 +179,14 @@ export function EventCountdown({
     return (
       <div
         className={cn(
-          'p-3 sm:p-3.5 bg-surface-muted/60 border border-border-hairline rounded-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 select-none transition-colors hover:border-foreground/30',
+          'p-3 sm:p-3.5 bg-surface-muted/60 border border-border-hairline rounded-none flex flex-col sm:flex-row sm:items-center justify-between gap-3 select-none transition-colors hover:border-foreground/40',
           className
         )}
       >
         <div className="space-y-0.5">
           <div className="flex items-center gap-1.5 font-mono text-[10px] uppercase font-bold text-foreground tracking-wider">
             <Clock className="w-3.5 h-3.5 text-foreground shrink-0" />
-            <span>[ ⏳ WAKTU TERSISA MENUJU TERPAL ]</span>
+            <span>[ WAKTU TERSISA MENUJU TERPAL ]</span>
           </div>
           <p className="font-serif italic text-xs text-muted leading-tight">
             {isRecurringSunday ? 'Hitung mundur otomatis ke sesi Minggu pagi terdekat.' : 'Persiapkan kehadiranmu di atas terpal.'}
@@ -195,7 +195,7 @@ export function EventCountdown({
 
         {/* 4 Digit Boxes */}
         <div className="grid grid-cols-4 gap-1.5 sm:gap-2 shrink-0 select-none">
-          <div className="bg-surface border border-foreground/30 px-2 sm:px-2.5 py-1 text-center rounded-xs min-w-[44px] sm:min-w-[50px] shadow-2xs">
+          <div className="bg-surface border border-foreground/30 px-2 sm:px-2.5 py-1 text-center rounded-none min-w-[44px] sm:min-w-[50px]">
             <span className="font-mono font-black text-lg sm:text-xl text-foreground block leading-tight">
               {formatUnit(time.days)}
             </span>
@@ -204,7 +204,7 @@ export function EventCountdown({
             </span>
           </div>
 
-          <div className="bg-surface border border-foreground/30 px-2 sm:px-2.5 py-1 text-center rounded-xs min-w-[44px] sm:min-w-[50px] shadow-2xs">
+          <div className="bg-surface border border-foreground/30 px-2 sm:px-2.5 py-1 text-center rounded-none min-w-[44px] sm:min-w-[50px]">
             <span className="font-mono font-black text-lg sm:text-xl text-foreground block leading-tight">
               {formatUnit(time.hours)}
             </span>
@@ -213,7 +213,7 @@ export function EventCountdown({
             </span>
           </div>
 
-          <div className="bg-surface border border-foreground/30 px-2 sm:px-2.5 py-1 text-center rounded-xs min-w-[44px] sm:min-w-[50px] shadow-2xs">
+          <div className="bg-surface border border-foreground/30 px-2 sm:px-2.5 py-1 text-center rounded-none min-w-[44px] sm:min-w-[50px]">
             <span className="font-mono font-black text-lg sm:text-xl text-foreground block leading-tight">
               {formatUnit(time.minutes)}
             </span>
@@ -222,7 +222,7 @@ export function EventCountdown({
             </span>
           </div>
 
-          <div className="bg-surface border border-foreground/30 px-2 sm:px-2.5 py-1 text-center rounded-xs min-w-[44px] sm:min-w-[50px] shadow-2xs">
+          <div className="bg-surface border border-foreground/30 px-2 sm:px-2.5 py-1 text-center rounded-none min-w-[44px] sm:min-w-[50px]">
             <span className="font-mono font-black text-lg sm:text-xl text-foreground block leading-tight">
               {formatUnit(time.seconds)}
             </span>
@@ -242,26 +242,26 @@ export function EventCountdown({
     return (
       <div
         className={cn(
-          'relative bg-[#090a0c] text-white p-6 sm:p-8 border-2 border-emerald-500 shadow-[0_0_30px_rgba(16,185,129,0.25)] rounded-xs overflow-hidden',
+          'relative bg-surface text-foreground p-6 sm:p-8 border-2 border-foreground rounded-none overflow-hidden select-none',
           className
         )}
       >
-        <div className="flex items-center gap-2 font-mono text-[11px] uppercase font-bold tracking-widest text-emerald-400 mb-3">
-          <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
-          <span>SESI SEDANG BERLANGSUNG SAAT INI</span>
+        <div className="flex items-center gap-2 font-mono text-[11px] uppercase font-bold tracking-widest text-foreground mb-3">
+          <span className="w-2 h-2 rounded-none bg-foreground animate-pulse" />
+          <span>[ ● SESI SEDANG BERLANGSUNG SAAT INI ]</span>
         </div>
 
-        <h3 className="font-serif text-2xl sm:text-3xl font-black text-white leading-tight">
+        <h3 className="font-serif text-2xl sm:text-3xl font-black text-foreground uppercase leading-tight">
           {title || (isRecurringSunday ? 'Lapak CFD Alun-Alun Blora Sedang Digelar' : 'Kegiatan Sedang Berlangsung')}
         </h3>
 
-        <p className="font-serif text-sm text-zinc-300 mt-2 max-w-xl">
+        <p className="font-serif text-sm text-foreground/80 mt-2 max-w-xl">
           Terpal telah dihamparkan! Mari merapat langsung untuk membaca bersila, meminjam buku, atau sekadar bertukar sapa.
         </p>
 
         {locationName && (
-          <div className="mt-4 pt-3 border-t border-zinc-800 flex items-center gap-2 font-mono text-xs text-amber-300">
-            <MapPin className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+          <div className="mt-4 pt-3 border-t border-border-hairline flex items-center gap-2 font-mono text-xs text-foreground">
+            <MapPin className="w-3.5 h-3.5 text-foreground shrink-0" />
             <span>{locationName}</span>
           </div>
         )}
@@ -272,32 +272,28 @@ export function EventCountdown({
   return (
     <div
       className={cn(
-        'relative bg-[#090a0c] text-white p-6 sm:p-8 border-2 border-amber-500/80 shadow-[0_20px_50px_rgba(0,0,0,0.85)] rounded-xs select-none',
+        'relative bg-surface text-foreground p-6 sm:p-8 border-2 border-foreground rounded-none select-none',
         className
       )}
-      style={{
-        backgroundImage:
-          'radial-gradient(circle at 100% 0%, rgba(245, 158, 11, 0.12) 0%, transparent 45%), radial-gradient(circle at 0% 100%, rgba(245, 158, 11, 0.08) 0%, transparent 40%)',
-      }}
     >
       {/* Corner vintage marks */}
-      <div className="absolute top-2 left-2 w-3 h-3 border-t-2 border-l-2 border-amber-400/80 pointer-events-none" />
-      <div className="absolute top-2 right-2 w-3 h-3 border-t-2 border-r-2 border-amber-400/80 pointer-events-none" />
-      <div className="absolute bottom-2 left-2 w-3 h-3 border-b-2 border-l-2 border-amber-400/80 pointer-events-none" />
-      <div className="absolute bottom-2 right-2 w-3 h-3 border-b-2 border-r-2 border-amber-400/80 pointer-events-none" />
+      <div className="absolute top-2 left-2 w-3 h-3 border-t-2 border-l-2 border-foreground pointer-events-none" />
+      <div className="absolute top-2 right-2 w-3 h-3 border-t-2 border-r-2 border-foreground pointer-events-none" />
+      <div className="absolute bottom-2 left-2 w-3 h-3 border-b-2 border-l-2 border-foreground pointer-events-none" />
+      <div className="absolute bottom-2 right-2 w-3 h-3 border-b-2 border-r-2 border-foreground pointer-events-none" />
 
       {/* Header Info */}
-      <div className="flex flex-wrap items-center justify-between gap-3 pb-4 mb-5 border-b border-amber-500/30">
-        <div className="flex items-center gap-2 font-mono text-[10px] sm:text-[11px] uppercase font-bold tracking-widest text-amber-400">
-          <Sparkles className="w-3.5 h-3.5 animate-pulse" />
+      <div className="flex flex-wrap items-center justify-between gap-3 pb-4 mb-5 border-b border-border-hairline">
+        <div className="flex items-center gap-2 font-mono text-[10px] sm:text-[11px] uppercase font-bold tracking-widest text-foreground">
+          <Clock className="w-3.5 h-3.5 text-foreground" />
           <span>
             {isRecurringSunday
               ? 'SESI LAPAK RUTIN MINGGU PAGI // CFD ALUN-ALUN'
               : 'HITUNG MUNDUR KEGIATAN MENDATANG'}
           </span>
         </div>
-        <div className="font-mono text-[10px] sm:text-[11px] text-zinc-400 flex items-center gap-1.5">
-          <Calendar className="w-3 h-3 text-amber-400" />
+        <div className="font-mono text-[10px] sm:text-[11px] text-muted flex items-center gap-1.5">
+          <Calendar className="w-3 h-3 text-foreground" />
           <span>
             {actualStart.toLocaleDateString('id-ID', {
               weekday: 'long',
@@ -312,53 +308,53 @@ export function EventCountdown({
 
       {/* Countdown Grid (4 Digit Blocks) */}
       <div className="grid grid-cols-4 gap-2.5 sm:gap-4 max-w-lg mx-auto py-2">
-        <div className="bg-zinc-950/90 border border-amber-500/40 p-3 sm:p-4 text-center rounded-xs shadow-inner">
-          <span className="font-mono font-black text-3xl sm:text-5xl text-amber-300 block tracking-tight">
+        <div className="bg-surface-muted border-2 border-foreground p-3 sm:p-4 text-center rounded-none">
+          <span className="font-mono font-black text-3xl sm:text-5xl text-foreground block tracking-tight">
             {formatUnit(time.days)}
           </span>
-          <span className="font-mono text-[8px] sm:text-[10px] uppercase font-bold tracking-widest text-zinc-400 block mt-1">
+          <span className="font-mono text-[8px] sm:text-[10px] uppercase font-bold tracking-widest text-muted block mt-1">
             HARI
           </span>
         </div>
 
-        <div className="bg-zinc-950/90 border border-amber-500/40 p-3 sm:p-4 text-center rounded-xs shadow-inner">
-          <span className="font-mono font-black text-3xl sm:text-5xl text-amber-300 block tracking-tight">
+        <div className="bg-surface-muted border-2 border-foreground p-3 sm:p-4 text-center rounded-none">
+          <span className="font-mono font-black text-3xl sm:text-5xl text-foreground block tracking-tight">
             {formatUnit(time.hours)}
           </span>
-          <span className="font-mono text-[8px] sm:text-[10px] uppercase font-bold tracking-widest text-zinc-400 block mt-1">
+          <span className="font-mono text-[8px] sm:text-[10px] uppercase font-bold tracking-widest text-muted block mt-1">
             JAM
           </span>
         </div>
 
-        <div className="bg-zinc-950/90 border border-amber-500/40 p-3 sm:p-4 text-center rounded-xs shadow-inner">
-          <span className="font-mono font-black text-3xl sm:text-5xl text-amber-300 block tracking-tight">
+        <div className="bg-surface-muted border-2 border-foreground p-3 sm:p-4 text-center rounded-none">
+          <span className="font-mono font-black text-3xl sm:text-5xl text-foreground block tracking-tight">
             {formatUnit(time.minutes)}
           </span>
-          <span className="font-mono text-[8px] sm:text-[10px] uppercase font-bold tracking-widest text-zinc-400 block mt-1">
+          <span className="font-mono text-[8px] sm:text-[10px] uppercase font-bold tracking-widest text-muted block mt-1">
             MENIT
           </span>
         </div>
 
-        <div className="bg-zinc-950/90 border border-amber-500/40 p-3 sm:p-4 text-center rounded-xs shadow-inner">
-          <span className="font-mono font-black text-3xl sm:text-5xl text-amber-400 block tracking-tight">
+        <div className="bg-surface-muted border-2 border-foreground p-3 sm:p-4 text-center rounded-none">
+          <span className="font-mono font-black text-3xl sm:text-5xl text-foreground block tracking-tight">
             {formatUnit(time.seconds)}
           </span>
-          <span className="font-mono text-[8px] sm:text-[10px] uppercase font-bold tracking-widest text-zinc-400 block mt-1">
+          <span className="font-mono text-[8px] sm:text-[10px] uppercase font-bold tracking-widest text-muted block mt-1">
             DETIK
           </span>
         </div>
       </div>
 
       {/* Subtitle / Venue context */}
-      <div className="mt-5 pt-4 border-t border-zinc-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs font-mono">
-        <div className="flex items-center gap-2 text-zinc-300">
-          <MapPin className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+      <div className="mt-5 pt-4 border-t border-border-hairline flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs font-mono">
+        <div className="flex items-center gap-2 text-foreground">
+          <MapPin className="w-3.5 h-3.5 text-foreground shrink-0" />
           <span>
             {locationName ||
               'Trotoar Depan Pendopo Kabupaten Blora &bull; Car Free Day (06.00 – 09.00 WIB)'}
           </span>
         </div>
-        <div className="text-amber-300/90 font-bold uppercase tracking-wider text-[11px]">
+        <div className="text-foreground font-bold uppercase tracking-wider text-[11px]">
           [ BEBAS BERSILA &bull; TANPA TIKET ]
         </div>
       </div>

@@ -450,7 +450,7 @@ export default function AdminEditBookPage() {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="w-full py-3 bg-foreground text-background font-bold text-xs uppercase tracking-widest hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2 shadow-sm"
+                  className="w-full py-3 bg-foreground text-background font-bold text-xs uppercase tracking-widest hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   <Save className="w-4 h-4" />
                   <span>{submitting ? 'Menyimpan Perubahan...' : 'Simpan Perubahan'}</span>

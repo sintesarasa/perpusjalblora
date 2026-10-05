@@ -33,6 +33,19 @@ export function errorHandler(
     });
   }
 
+  // Handle Prisma unique constraint violation (P2002)
+  if ((err as any)?.code === 'P2002') {
+    const target = Array.isArray((err as any)?.meta?.target)
+      ? (err as any).meta.target.join(', ')
+      : String((err as any)?.meta?.target || 'data');
+    return res.status(409).json({
+      error: {
+        code: 'CONFLICT',
+        message: `Terjadi duplikasi data unik pada ${target}. Silakan gunakan nilai lain atau periksa data yang sudah ada.`,
+      },
+    });
+  }
+
   const statusCode = err.statusCode || 500;
 
   const response = {

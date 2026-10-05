@@ -5,18 +5,14 @@ import QRCode from 'qrcode';
 import {
   Sparkles,
   Download,
-  Share2,
   Check,
   X,
   RefreshCw,
   Quote,
   Loader2,
-  ShieldCheck,
-  Award,
-  ExternalLink,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Logo, LogoIcon } from '@/components/logo';
+import { Logo } from '@/components/logo';
 import { BadgeInsignia } from './badge-insignia';
 import { getTierInfo } from '@/lib/badge-tier-styles';
 import { UserAvatar } from '@/components/ui/user-avatar';
@@ -52,6 +48,7 @@ function TwitterXIcon({ className }: { className?: string }) {
     </svg>
   );
 }
+
 import {
   CitizenQuote,
   getQuoteByUsername,
@@ -118,8 +115,8 @@ export function MemberCardModal({ user, triggerClassName }: MemberCardModalProps
       margin: 1,
       errorCorrectionLevel: 'M',
       color: {
-        dark: '#f4f4f0',
-        light: '#0b0c0e',
+        dark: '#000000',
+        light: '#ffffff',
       },
     })
       .then((svg) => setQrSvg(svg))
@@ -153,13 +150,14 @@ export function MemberCardModal({ user, triggerClassName }: MemberCardModalProps
       const { toPng } = await import('html-to-image');
       const width = node.offsetWidth;
       const height = node.scrollHeight;
+      const isDark = document.documentElement.classList.contains('dark');
 
       const dataUrl = await toPng(node, {
         width,
         height: height + 8,
         pixelRatio: 2,
         cacheBust: true,
-        backgroundColor: '#090a0c',
+        backgroundColor: isDark ? '#0a0a0a' : '#f9f9f7',
         style: {
           margin: '0',
           transform: 'none',
@@ -185,16 +183,16 @@ export function MemberCardModal({ user, triggerClassName }: MemberCardModalProps
 
     try {
       const { toPng } = await import('html-to-image');
-      // Calculate precise dimensions with safety margin so no border is cut off
       const width = node.offsetWidth;
       const height = node.scrollHeight;
+      const isDark = document.documentElement.classList.contains('dark');
 
       const dataUrl = await toPng(node, {
         width,
         height: height + 8,
         pixelRatio: 2,
         cacheBust: true,
-        backgroundColor: '#090a0c',
+        backgroundColor: isDark ? '#0a0a0a' : '#f9f9f7',
         style: {
           margin: '0',
           transform: 'none',
@@ -258,7 +256,6 @@ export function MemberCardModal({ user, triggerClassName }: MemberCardModalProps
   const handleShareInstagram = async () => {
     const { shareText } = getShareDetails();
 
-    // If mobile browser supports sharing files directly (e.g. Android/iOS Instagram target)
     if (typeof navigator !== 'undefined' && navigator.canShare) {
       const file = await generateCardPngFile();
       if (file && navigator.canShare({ files: [file] })) {
@@ -275,7 +272,6 @@ export function MemberCardModal({ user, triggerClassName }: MemberCardModalProps
       }
     }
 
-    // Auto-download HD image & copy caption for easy IG upload
     await handleDownloadImage();
     try {
       await navigator.clipboard.writeText(shareText);
@@ -305,12 +301,12 @@ export function MemberCardModal({ user, triggerClassName }: MemberCardModalProps
         type="button"
         onClick={() => setIsOpen(true)}
         className={cn(
-          'inline-flex items-center gap-1.5 px-3 py-1.5 border-2 border-foreground bg-surface hover:bg-foreground hover:text-background font-mono text-xs uppercase font-bold tracking-wider transition-colors shadow-xs cursor-pointer',
+          'inline-flex items-center gap-1.5 px-3 py-1.5 border-2 border-foreground bg-surface hover:bg-foreground hover:text-background font-mono text-xs uppercase font-bold tracking-wider transition-colors cursor-pointer rounded-none min-h-[44px]',
           triggerClassName
         )}
         title="Buka Kartu Kehormatan Warga Literasi"
       >
-        <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+        <Sparkles className="w-3.5 h-3.5 text-foreground" />
         <span>Kartu Kehormatan Warga</span>
       </button>
 
@@ -318,23 +314,23 @@ export function MemberCardModal({ user, triggerClassName }: MemberCardModalProps
         <div
           role="dialog"
           aria-modal="true"
-          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-sm animate-in fade-in-50 overflow-y-auto"
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-background/80 backdrop-blur-sm animate-in fade-in-50 overflow-y-auto"
           onClick={() => setIsOpen(false)}
         >
           <div
-            className="relative w-full max-w-lg bg-[#111215] border-2 border-amber-500/60 shadow-[0_25px_60px_-10px_rgba(0,0,0,0.95),0_0_30px_rgba(245,158,11,0.2)] p-4 sm:p-6 space-y-4 my-auto"
+            className="relative w-full max-w-lg bg-surface text-foreground border-2 border-foreground rounded-none p-4 sm:p-6 space-y-4 my-auto max-h-[92dvh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Top Modal Controls */}
-            <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
-              <div className="flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-widest text-amber-400">
-                <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
-                <span>KARTU KEHORMATAN WARGA • SIAP MEDSOS</span>
+            <div className="flex items-center justify-between border-b border-border-hairline pb-3">
+              <div className="flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-widest text-foreground">
+                <span className="w-2 h-2 rounded-none bg-foreground animate-pulse" />
+                <span>KARTU KEHORMATAN WARGA // SIAP MEDSOS</span>
               </div>
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
-                className="p-1 text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors cursor-pointer"
+                className="p-2 text-muted hover:text-foreground border border-transparent hover:border-foreground transition-colors cursor-pointer rounded-none min-w-[36px] min-h-[36px] flex items-center justify-center"
                 title="Tutup"
               >
                 <X className="w-5 h-5" />
@@ -342,9 +338,9 @@ export function MemberCardModal({ user, triggerClassName }: MemberCardModalProps
             </div>
 
             {/* Quote Selector Bar */}
-            <div className="flex flex-wrap items-center justify-between gap-2 p-2 bg-zinc-900/80 border border-zinc-800 font-mono text-xs">
-              <span className="text-[11px] text-zinc-400 flex items-center gap-1.5">
-                <Quote className="w-3 h-3 text-amber-400" />
+            <div className="flex flex-wrap items-center justify-between gap-2 p-2 bg-surface-muted border border-border-hairline font-mono text-xs rounded-none">
+              <span className="text-[11px] text-muted flex items-center gap-1.5">
+                <Quote className="w-3 h-3 text-foreground" />
                 <span>Pilih Kutipan Kartu:</span>
               </span>
 
@@ -352,11 +348,11 @@ export function MemberCardModal({ user, triggerClassName }: MemberCardModalProps
                 <button
                   type="button"
                   onClick={handleShuffleQuote}
-                  className="px-2.5 py-1 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 font-mono text-[10px] uppercase font-bold tracking-wider inline-flex items-center gap-1 transition-colors cursor-pointer"
+                  className="px-2.5 py-1 bg-surface hover:bg-foreground hover:text-background text-foreground border border-foreground font-mono text-[10px] uppercase font-bold tracking-wider inline-flex items-center gap-1 transition-colors cursor-pointer rounded-none min-h-[32px]"
                   title="Pilih kutipan cadas lainnya secara acak"
                 >
                   <RefreshCw className="w-3 h-3 animate-spin-hover" />
-                  <span>Acak Kutipan 🎲</span>
+                  <span>Acak Kutipan</span>
                 </button>
 
                 {user.bio && (
@@ -364,62 +360,58 @@ export function MemberCardModal({ user, triggerClassName }: MemberCardModalProps
                     type="button"
                     onClick={() => setIsCustomBio(!isCustomBio)}
                     className={cn(
-                      'px-2.5 py-1 font-mono text-[10px] uppercase font-bold tracking-wider border transition-colors cursor-pointer',
+                      'px-2.5 py-1 font-mono text-[10px] uppercase font-bold tracking-wider border border-foreground transition-colors cursor-pointer rounded-none min-h-[32px]',
                       isCustomBio
-                        ? 'bg-amber-400 text-black border-amber-400 font-black'
-                        : 'bg-zinc-800 text-zinc-300 border-zinc-700 hover:bg-zinc-700'
+                        ? 'bg-foreground text-background font-black'
+                        : 'bg-surface text-foreground hover:bg-foreground hover:text-background'
                     )}
                   >
-                    {isCustomBio ? '✓ Bio Saya' : 'Gunakan Bio'}
+                    {isCustomBio ? '✓ Bio Kamu' : 'Gunakan Bio'}
                   </button>
                 )}
               </div>
             </div>
 
-            {/* ── THE STUNNING DARK CITIZEN SOCIAL CARD ── */}
+            {/* ── THE EDITORIAL MONOCHROME CITIZEN SOCIAL CARD ── */}
             <div
               ref={cardRef}
               id="citizen-social-card"
-              className="relative bg-[#090a0c] text-[#f4f4f0] p-5 sm:p-6 pb-6 sm:pb-7 border-2 border-amber-500/70 shadow-[0_15px_40px_rgba(0,0,0,0.9)] select-none space-y-4 box-border"
-              style={{
-                backgroundImage:
-                  'radial-gradient(circle at 100% 0%, rgba(245, 158, 11, 0.08) 0%, transparent 40%), radial-gradient(circle at 0% 100%, rgba(245, 158, 11, 0.05) 0%, transparent 35%)',
-              }}
+              className="relative bg-background text-foreground p-5 sm:p-6 pb-6 sm:pb-7 border-2 border-foreground select-none space-y-4 box-border rounded-none"
             >
-              {/* Background decorative wrapper (clipped to container bounds) */}
+              {/* Background decorative wrapper */}
               <div className="absolute inset-0 overflow-hidden pointer-events-none rounded-none">
                 {/* Corner Ornamental Accents */}
-                <div className="absolute top-2 left-2 w-3 h-3 border-t-2 border-l-2 border-amber-400/60" />
-                <div className="absolute top-2 right-2 w-3 h-3 border-t-2 border-r-2 border-amber-400/60" />
-                <div className="absolute bottom-2 left-2 w-3 h-3 border-b-2 border-l-2 border-amber-400/60" />
-                <div className="absolute bottom-2 right-2 w-3 h-3 border-b-2 border-r-2 border-amber-400/60" />
+                <div className="absolute top-2 left-2 w-3 h-3 border-t-2 border-l-2 border-foreground" />
+                <div className="absolute top-2 right-2 w-3 h-3 border-t-2 border-r-2 border-foreground" />
+                <div className="absolute bottom-2 left-2 w-3 h-3 border-b-2 border-l-2 border-foreground" />
+                <div className="absolute bottom-2 right-2 w-3 h-3 border-b-2 border-r-2 border-foreground" />
 
                 {/* Background Watermark */}
-                <div className="absolute right-2 -bottom-2 font-mono font-black text-7xl text-amber-500/[0.04] select-none tracking-tighter">
+                <div className="absolute right-2 -bottom-2 font-mono font-black text-7xl text-foreground/[0.04] select-none tracking-tighter">
                   PERPUSJAL
                 </div>
               </div>
 
               {/* 1. Card Top Ribbon / Masthead */}
-              <div className="relative z-10 border-b border-amber-500/30 pb-2.5 space-y-2">
+              <div className="relative z-10 border-b border-border-hairline pb-2.5 space-y-2">
                 <div className="flex items-center justify-between gap-4">
-                  <Logo className="h-7 sm:h-8 w-auto text-amber-400 shrink-0" />
+                  <Logo className="h-7 sm:h-8 w-auto text-foreground shrink-0" />
 
                   <div className="text-right shrink-0">
-                    <span className="font-mono text-[7.5px] uppercase font-bold tracking-widest text-zinc-400 block mb-0.5">
+                    <span className="font-mono text-[7.5px] uppercase font-bold tracking-widest text-muted block mb-0.5">
                       NO. REGISTRASI
                     </span>
-                    <span className="font-mono text-[11px] font-bold text-amber-300 tracking-wider px-2.5 py-0.5 bg-amber-500/10 border border-amber-500/30 rounded-xs inline-block">
+                    <span className="font-mono text-[11px] font-bold text-background bg-foreground tracking-wider px-2.5 py-0.5 rounded-none inline-block">
                       {memberRegNo}
                     </span>
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between gap-2 pt-1.5 border-t border-zinc-800/70">
-                  <span className="font-mono text-[8.5px] uppercase font-bold tracking-[0.2em] text-amber-400">
+                <div className="flex items-center justify-between gap-2 pt-1.5 border-t border-border-hairline">
+                  <span className="font-mono text-[8.5px] uppercase font-bold tracking-[0.2em] text-foreground">
                     KARTU KEHORMATAN WARGA
                   </span>
-                  <span className="font-serif italic text-xs text-zinc-200">
+                  <span className="font-serif italic text-xs text-muted">
                     Membaca dan Berbahagia.
                   </span>
                 </div>
@@ -433,23 +425,23 @@ export function MemberCardModal({ user, triggerClassName }: MemberCardModalProps
                     name={user.name}
                     username={user.username}
                     size="xl"
-                    shape="circle"
-                    className="ring-2 ring-amber-400/80 shadow-[0_0_20px_rgba(245,158,11,0.25)]"
+                    shape="square"
+                    className="border-2 border-foreground"
                   />
-                  <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-amber-400 text-black flex items-center justify-center font-bold text-[9px] shadow-sm">
+                  <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-none bg-foreground text-background flex items-center justify-center font-bold text-[9px] border border-background">
                     ✓
                   </div>
                 </div>
 
                 <div className="flex-1 min-w-0 space-y-1">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h4 className="font-serif font-black text-xl sm:text-2xl text-white tracking-tight leading-tight truncate">
+                    <h4 className="font-serif font-black text-xl sm:text-2xl text-foreground tracking-tight leading-tight truncate">
                       {user.name}
                     </h4>
                   </div>
 
-                  <div className="flex items-center gap-2 font-mono text-[10.5px] text-zinc-400">
-                    <span className="text-amber-300 font-semibold">@{user.username}</span>
+                  <div className="flex items-center gap-2 font-mono text-[10.5px] text-muted">
+                    <span className="text-foreground font-semibold">@{user.username}</span>
                     <span>&bull;</span>
                     <span>Warga Sejak {joinedYear}</span>
                   </div>
@@ -457,7 +449,7 @@ export function MemberCardModal({ user, triggerClassName }: MemberCardModalProps
                   {/* Active Equipped Title Ribbon */}
                   <div className="pt-0.5">
                     {user.equippedTitle ? (
-                      <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border border-amber-400/60 bg-amber-500/15 text-amber-300 text-[10px] font-mono font-bold uppercase tracking-wider shadow-[0_0_12px_rgba(245,158,11,0.2)]">
+                      <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-none border border-foreground bg-surface-muted text-foreground text-[10px] font-mono font-bold uppercase tracking-wider">
                         {user.equippedBadge && (
                           <BadgeInsignia
                             code={user.equippedBadge.code}
@@ -472,7 +464,7 @@ export function MemberCardModal({ user, triggerClassName }: MemberCardModalProps
                         <span>GELAR: {user.equippedTitle}</span>
                       </div>
                     ) : (
-                      <span className="inline-block px-2 py-0.5 bg-zinc-800/80 border border-zinc-700 text-zinc-300 font-mono text-[9px] uppercase font-bold tracking-wider">
+                      <span className="inline-block px-2 py-0.5 bg-surface-muted border border-border-hairline text-foreground font-mono text-[9px] uppercase font-bold tracking-wider rounded-none">
                         WARGA LITERASI AKTIF
                       </span>
                     )}
@@ -481,17 +473,17 @@ export function MemberCardModal({ user, triggerClassName }: MemberCardModalProps
               </div>
 
               {/* 3. The Bold & Inspiring Quote / Bio Block */}
-              <div className="relative z-10 p-3.5 bg-gradient-to-r from-amber-500/15 via-zinc-900/90 to-zinc-900/60 border-l-3 border-amber-400 rounded-xs">
-                <Quote className="w-5 h-5 text-amber-400/25 absolute top-2 right-2 pointer-events-none" />
-                <p className="font-serif italic text-xs sm:text-[13px] text-[#f4f4f0] leading-relaxed pr-5">
-                  "{isCustomBio && user.bio ? user.bio : currentQuote.quote}"
+              <div className="relative z-10 p-3.5 bg-surface-muted border-l-4 border-foreground rounded-none">
+                <Quote className="w-5 h-5 text-foreground/20 absolute top-2 right-2 pointer-events-none" />
+                <p className="font-serif italic text-xs sm:text-[13px] text-foreground leading-relaxed pr-5">
+                  &ldquo;{isCustomBio && user.bio ? user.bio : currentQuote.quote}&rdquo;
                 </p>
                 <div className="mt-2 flex items-center justify-between font-mono text-[9.5px]">
-                  <span className="font-bold text-amber-300 uppercase tracking-wider">
+                  <span className="font-bold text-foreground uppercase tracking-wider">
                     — {isCustomBio ? `${user.name} (Bio Warga)` : currentQuote.author}
                   </span>
                   {!isCustomBio && (
-                    <span className="text-zinc-500 text-[8.5px] uppercase tracking-widest font-semibold">
+                    <span className="text-muted text-[8.5px] uppercase tracking-widest font-semibold">
                       #{currentQuote.category}
                     </span>
                   )}
@@ -500,56 +492,54 @@ export function MemberCardModal({ user, triggerClassName }: MemberCardModalProps
 
               {/* 4. 4 Metric Pillars of Citizen Achievements */}
               <div className="relative z-10 grid grid-cols-4 gap-2 pt-1 font-mono text-center">
-                <div className="p-2 border border-zinc-800/90 bg-zinc-900/80 rounded-xs">
-                  <span className="text-[7.5px] uppercase tracking-wider text-zinc-400 block font-semibold">
+                <div className="p-2 border border-border-hairline bg-surface rounded-none">
+                  <span className="text-[7.5px] uppercase tracking-wider text-muted block font-semibold">
                     Tulisan
                   </span>
-                  <span className="font-serif font-black text-base text-amber-300">
+                  <span className="font-serif font-black text-base text-foreground">
                     {user.stats.totalArticles}
                   </span>
                 </div>
-                <div className="p-2 border border-zinc-800/90 bg-zinc-900/80 rounded-xs">
-                  <span className="text-[7.5px] uppercase tracking-wider text-zinc-400 block font-semibold">
+                <div className="p-2 border border-border-hairline bg-surface rounded-none">
+                  <span className="text-[7.5px] uppercase tracking-wider text-muted block font-semibold">
                     Lencana
                   </span>
-                  <span className="font-serif font-black text-base text-amber-300">
+                  <span className="font-serif font-black text-base text-foreground">
                     {user.stats.badgesCount}
                   </span>
                 </div>
-                <div className="p-2 border border-zinc-800/90 bg-zinc-900/80 rounded-xs">
-                  <span className="text-[7.5px] uppercase tracking-wider text-zinc-400 block font-semibold">
+                <div className="p-2 border border-border-hairline bg-surface rounded-none">
+                  <span className="text-[7.5px] uppercase tracking-wider text-muted block font-semibold">
                     Pinjaman
                   </span>
-                  <span className="font-serif font-black text-base text-amber-300">
+                  <span className="font-serif font-black text-base text-foreground">
                     {user.stats.loansCount ?? 0}
                   </span>
                 </div>
-                <div className="p-2 border border-zinc-800/90 bg-zinc-900/80 rounded-xs">
-                  <span className="text-[7.5px] uppercase tracking-wider text-zinc-400 block font-semibold">
+                <div className="p-2 border border-border-hairline bg-surface rounded-none">
+                  <span className="text-[7.5px] uppercase tracking-wider text-muted block font-semibold">
                     Amanah
                   </span>
-                  <span className="font-serif font-black text-base text-amber-300">
+                  <span className="font-serif font-black text-base text-foreground">
                     {user.stats.onTimeStreak ?? 0}x
                   </span>
                 </div>
               </div>
 
               {/* 5. Bottom Brand & Clean QR Marketing Hook */}
-              <div className="relative z-10 flex items-center justify-between pt-2.5 border-t border-zinc-800/80 gap-3">
-                {/* Official Logo Perpusjal (Menggantikan stempel bulat) */}
+              <div className="relative z-10 flex items-center justify-between pt-2.5 border-t border-border-hairline gap-3">
                 <div className="shrink-0 flex items-center">
-                  <Logo className="h-7 sm:h-8 w-auto text-amber-400" />
+                  <Logo className="h-7 sm:h-8 w-auto text-foreground" />
                 </div>
 
-                {/* Slogan & Verification text */}
                 <div className="flex-1 min-w-0 space-y-0.5 pl-1">
-                  <span className="font-mono text-[8px] uppercase tracking-wider text-amber-400 block font-bold truncate">
+                  <span className="font-mono text-[8px] uppercase tracking-wider text-foreground block font-bold truncate">
                     perpusjalblora.id/warga/@{user.username}
                   </span>
-                  <p className="font-serif text-[10px] text-zinc-300 leading-snug truncate">
+                  <p className="font-serif text-[10px] text-foreground/80 leading-snug truncate">
                     Buku Bebas di Trotoar &bull; Suara Merdeka Warga
                   </p>
-                  <span className="font-mono text-[7px] text-zinc-500 uppercase block tracking-widest">
+                  <span className="font-mono text-[7px] text-muted uppercase block tracking-widest">
                     PINDAI QR &bull; PINJAM BUKU GRATIS
                   </span>
                 </div>
@@ -557,11 +547,11 @@ export function MemberCardModal({ user, triggerClassName }: MemberCardModalProps
                 {/* Vector QR Code */}
                 {qrSvg ? (
                   <div
-                    className="w-14 h-14 sm:w-16 sm:h-16 bg-[#0b0c0e] p-1 border border-amber-500/40 rounded-xs inline-flex items-center justify-center shrink-0 shadow-xs [&>svg]:w-full [&>svg]:h-full"
+                    className="w-14 h-14 sm:w-16 sm:h-16 bg-white p-1 border-2 border-foreground rounded-none inline-flex items-center justify-center shrink-0 [&>svg]:w-full [&>svg]:h-full"
                     dangerouslySetInnerHTML={{ __html: qrSvg }}
                   />
                 ) : (
-                  <div className="w-14 h-14 sm:w-16 sm:h-16 bg-zinc-900 border border-zinc-800 rounded-xs flex items-center justify-center text-[8px] font-mono text-zinc-500 shrink-0">
+                  <div className="w-14 h-14 sm:w-16 sm:h-16 bg-surface-muted border-2 border-foreground rounded-none flex items-center justify-center text-[8px] font-mono text-muted shrink-0">
                     QR
                   </div>
                 )}
@@ -575,7 +565,7 @@ export function MemberCardModal({ user, triggerClassName }: MemberCardModalProps
                 type="button"
                 onClick={handleDownloadImage}
                 disabled={isDownloading}
-                className="w-full py-3 px-5 bg-amber-400 hover:bg-amber-300 active:bg-amber-500 text-black font-black uppercase tracking-wider text-xs sm:text-sm inline-flex items-center justify-center gap-2.5 transition-all shadow-[0_4px_20px_rgba(245,158,11,0.25)] cursor-pointer disabled:opacity-50"
+                className="w-full py-3 px-5 bg-foreground text-background font-mono font-bold uppercase tracking-wider text-xs sm:text-sm inline-flex items-center justify-center gap-2.5 hover:bg-foreground/90 transition-colors cursor-pointer rounded-none disabled:opacity-50 min-h-[44px]"
               >
                 {isDownloading ? (
                   <>
@@ -584,7 +574,7 @@ export function MemberCardModal({ user, triggerClassName }: MemberCardModalProps
                   </>
                 ) : downloaded ? (
                   <>
-                    <Check className="w-4 h-4 text-black stroke-[3]" />
+                    <Check className="w-4 h-4 stroke-[3]" />
                     <span>Gambar Kartu Berhasil Diunduh!</span>
                   </>
                 ) : (
@@ -597,7 +587,7 @@ export function MemberCardModal({ user, triggerClassName }: MemberCardModalProps
 
               {/* Direct Social Media Sharing Buttons */}
               <div className="space-y-1.5">
-                <span className="font-mono text-[9px] uppercase tracking-widest text-zinc-400 block font-bold">
+                <span className="font-mono text-[9px] uppercase tracking-widest text-muted block font-bold">
                   BAGIKAN LANGSUNG KE MEDIA SOSIAL:
                 </span>
 
@@ -606,7 +596,7 @@ export function MemberCardModal({ user, triggerClassName }: MemberCardModalProps
                   <button
                     type="button"
                     onClick={handleShareWhatsApp}
-                    className="py-2.5 px-3 bg-[#111b15] hover:bg-[#1a2e22] text-[#25d366] border border-[#25d366]/40 font-bold uppercase tracking-wider inline-flex items-center justify-center gap-2 transition-colors cursor-pointer rounded-xs"
+                    className="py-2.5 px-3 bg-surface hover:bg-foreground hover:text-background text-foreground border border-foreground font-bold uppercase tracking-wider inline-flex items-center justify-center gap-2 transition-colors cursor-pointer rounded-none min-h-[44px]"
                     title="Bagikan ke WhatsApp"
                   >
                     <WhatsAppIcon className="w-4 h-4 shrink-0" />
@@ -617,10 +607,10 @@ export function MemberCardModal({ user, triggerClassName }: MemberCardModalProps
                   <button
                     type="button"
                     onClick={handleShareInstagram}
-                    className="py-2.5 px-3 bg-[#1e121d] hover:bg-[#2e192c] text-[#f472b6] border border-[#e1306c]/40 font-bold uppercase tracking-wider inline-flex items-center justify-center gap-2 transition-colors cursor-pointer rounded-xs"
+                    className="py-2.5 px-3 bg-surface hover:bg-foreground hover:text-background text-foreground border border-foreground font-bold uppercase tracking-wider inline-flex items-center justify-center gap-2 transition-colors cursor-pointer rounded-none min-h-[44px]"
                     title="Bagikan ke Instagram Story"
                   >
-                    <InstagramIcon className="w-4 h-4 shrink-0 text-[#e1306c]" />
+                    <InstagramIcon className="w-4 h-4 shrink-0" />
                     <span>Instagram</span>
                   </button>
 
@@ -628,10 +618,10 @@ export function MemberCardModal({ user, triggerClassName }: MemberCardModalProps
                   <button
                     type="button"
                     onClick={handleShareFacebook}
-                    className="py-2.5 px-3 bg-[#0d1627] hover:bg-[#14233e] text-[#60a5fa] border border-[#1877f2]/40 font-bold uppercase tracking-wider inline-flex items-center justify-center gap-2 transition-colors cursor-pointer rounded-xs"
+                    className="py-2.5 px-3 bg-surface hover:bg-foreground hover:text-background text-foreground border border-foreground font-bold uppercase tracking-wider inline-flex items-center justify-center gap-2 transition-colors cursor-pointer rounded-none min-h-[44px]"
                     title="Bagikan ke Facebook"
                   >
-                    <FacebookIcon className="w-4 h-4 shrink-0 text-[#1877f2]" />
+                    <FacebookIcon className="w-4 h-4 shrink-0" />
                     <span>Facebook</span>
                   </button>
 
@@ -639,7 +629,7 @@ export function MemberCardModal({ user, triggerClassName }: MemberCardModalProps
                   <button
                     type="button"
                     onClick={handleShareTwitter}
-                    className="py-2.5 px-3 bg-[#18181b] hover:bg-[#27272a] text-zinc-100 border border-zinc-700 font-bold uppercase tracking-wider inline-flex items-center justify-center gap-2 transition-colors cursor-pointer rounded-xs"
+                    className="py-2.5 px-3 bg-surface hover:bg-foreground hover:text-background text-foreground border border-foreground font-bold uppercase tracking-wider inline-flex items-center justify-center gap-2 transition-colors cursor-pointer rounded-none min-h-[44px]"
                     title="Bagikan ke X (Twitter)"
                   >
                     <TwitterXIcon className="w-3.5 h-3.5 shrink-0" />
@@ -650,10 +640,10 @@ export function MemberCardModal({ user, triggerClassName }: MemberCardModalProps
 
               {/* Instagram / Clipboard Notification Banner */}
               {igCopiedNotification && (
-                <div className="p-2.5 bg-gradient-to-r from-pink-500/20 via-purple-500/15 to-transparent border border-pink-500/40 text-[11px] text-pink-200 flex items-center gap-2 animate-in fade-in-50 duration-200">
-                  <Check className="w-4 h-4 text-pink-400 shrink-0" />
+                <div className="p-2.5 bg-surface-muted border border-foreground text-[11px] text-foreground flex items-center gap-2 animate-in fade-in-50 duration-200 rounded-none">
+                  <Check className="w-4 h-4 text-foreground shrink-0" />
                   <span>
-                    Gambar kartu HD tersimpan & caption disalin! Buka Instagram untuk memasang di Story/Feed.
+                    Gambar kartu HD tersimpan &amp; caption disalin! Buka Instagram untuk memasang di Story/Feed.
                   </span>
                 </div>
               )}

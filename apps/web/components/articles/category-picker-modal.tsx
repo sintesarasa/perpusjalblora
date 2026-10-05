@@ -210,12 +210,12 @@ export function CategoryPickerModal({
       onClick={onClose}
     >
       <div
-        className="w-full sm:max-w-2xl bg-background border-t-2 sm:border-2 border-foreground rounded-t-2xl sm:rounded-none max-h-[90vh] sm:max-h-[85vh] flex flex-col shadow-2xl overflow-hidden"
+        className="w-full sm:max-w-2xl bg-background border-t-2 sm:border-2 border-foreground rounded-none max-h-[90vh] sm:max-h-[85vh] flex flex-col overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Mobile Drag Indicator */}
         <div className="flex justify-center pt-3 pb-1 sm:hidden">
-          <div className="w-10 h-1 bg-border rounded-full" />
+          <div className="w-10 h-0.5 bg-border rounded-none" />
         </div>
 
         {/* ── Modal Header ── */}
@@ -225,10 +225,10 @@ export function CategoryPickerModal({
               // PANDUAN TAKSONOMI REDAKSI
             </p>
             <h2 className="font-serif text-xl sm:text-2xl font-normal tracking-tight text-foreground mt-0.5">
-              Pilih Rubrik Tulisan Anda
+              Pilih Rubrik Tulisanmu
             </h2>
             <p className="font-sans text-xs text-muted mt-1 leading-snug">
-              Pahami corak dan panduan tiap rubrik di bawah agar naskah Anda terkurasi tepat sasaran.
+              Pahami corak dan panduan tiap rubrik di bawah agar naskahmu terkurasi tepat sasaran.
             </p>
           </div>
           <button
@@ -278,7 +278,7 @@ export function CategoryPickerModal({
                 className={cn(
                   'border-2 p-4 cursor-pointer transition-all duration-150 relative text-left select-none',
                   isSelected
-                    ? 'border-foreground bg-surface-muted/40 shadow-xs ring-1 ring-foreground'
+                    ? 'border-foreground bg-surface-muted/40 ring-1 ring-foreground'
                     : 'border-border hover:border-foreground/60 bg-surface hover:bg-surface-muted/20'
                 )}
               >

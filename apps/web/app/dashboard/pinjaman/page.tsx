@@ -295,7 +295,7 @@ export default function MemberLoansDashboardPage() {
               {waitlists.map((w) => (
                 <div
                   key={w.id}
-                  className="border-2 border-foreground bg-surface p-6 space-y-6 shadow-sm"
+                  className="border-2 border-foreground bg-surface p-6 space-y-6"
                 >
                   {/* Top row */}
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border-hairline pb-4 font-mono text-xs">
@@ -402,7 +402,7 @@ export default function MemberLoansDashboardPage() {
             {loans.map((loan) => (
               <div
                 key={loan.id}
-                className="border-2 border-foreground bg-surface p-6 space-y-6 shadow-sm"
+                className="border-2 border-foreground bg-surface p-6 space-y-6"
               >
                 {/* Top header row */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border-hairline pb-4 font-mono text-xs">

@@ -165,7 +165,7 @@ export function ArticleCoverUploader({
               key={m}
               type="button"
               onClick={() => setMode(m)}
-              className={`px-2.5 py-1 text-[11px] uppercase tracking-wider font-semibold transition-colors rounded-sm ${
+              className={`px-2.5 py-1 text-[11px] uppercase tracking-wider font-semibold transition-colors rounded-none ${
                 mode === m ? 'bg-foreground text-background' : 'text-muted hover:text-foreground'
               }`}
             >

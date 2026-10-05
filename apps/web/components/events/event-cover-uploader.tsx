@@ -167,7 +167,7 @@ export function EventCoverUploader({ value, onChange, className = '' }: EventCov
                 : 'text-muted hover:text-foreground bg-surface-muted/50'
             }`}
           >
-            <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+            <Sparkles className="w-3.5 h-3.5 text-foreground" />
             <span>Preset Terpal</span>
           </button>
 
@@ -222,13 +222,13 @@ export function EventCoverUploader({ value, onChange, className = '' }: EventCov
             onClick={() => !isProcessing && fileInputRef.current?.click()}
             className={`border-2 border-dashed p-4 sm:p-5 text-center cursor-pointer transition-all ${
               isDragging
-                ? 'border-amber-500 bg-amber-500/10'
+                ? 'border-foreground bg-foreground/10'
                 : 'border-foreground/50 hover:border-foreground bg-surface-muted/30 hover:bg-surface-muted/60'
             } ${isProcessing ? 'pointer-events-none opacity-80' : ''}`}
           >
             <div className="space-y-2 flex flex-col items-center">
-              <div className="w-9 h-9 rounded-full bg-foreground/5 border border-foreground/20 flex items-center justify-center text-foreground">
-                <UploadCloud className="w-5 h-5 text-amber-500" />
+              <div className="w-9 h-9 rounded-none bg-surface border border-foreground flex items-center justify-center text-foreground">
+                <UploadCloud className="w-5 h-5 text-foreground" />
               </div>
               <div className="space-y-0.5">
                 <p className="font-mono text-xs font-bold uppercase tracking-wider text-foreground">
@@ -257,7 +257,7 @@ export function EventCoverUploader({ value, onChange, className = '' }: EventCov
                 onClick={() => onChange(preset.url)}
                 className={`p-2 border text-left font-mono text-[10px] transition-all space-y-1 ${
                   value === preset.url
-                    ? 'border-foreground bg-foreground text-background font-bold shadow-xs'
+                    ? 'border-foreground bg-foreground text-background font-bold'
                     : 'border-border-hairline bg-surface hover:bg-surface-muted text-foreground'
                 }`}
               >
@@ -296,9 +296,9 @@ export function EventCoverUploader({ value, onChange, className = '' }: EventCov
         <div className="p-3 bg-surface border border-foreground space-y-1.5 font-mono text-xs animate-in fade-in">
           <div className="flex items-center justify-between text-[11px]">
             <span className="font-bold text-foreground flex items-center gap-1.5">
-              {stage === 'compressing' && <RefreshCw className="w-3.5 h-3.5 animate-spin text-amber-500" />}
-              {stage === 'uploading' && <UploadCloud className="w-3.5 h-3.5 animate-pulse text-amber-500" />}
-              {stage === 'complete' && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />}
+              {stage === 'compressing' && <RefreshCw className="w-3.5 h-3.5 animate-spin text-foreground" />}
+              {stage === 'uploading' && <UploadCloud className="w-3.5 h-3.5 animate-pulse text-foreground" />}
+              {stage === 'complete' && <CheckCircle2 className="w-3.5 h-3.5 text-foreground" />}
               <span>{statusMessage}</span>
             </span>
             <span className="text-muted text-[10px]">{sizeTelemetry}</span>
@@ -306,12 +306,12 @@ export function EventCoverUploader({ value, onChange, className = '' }: EventCov
 
           <div className="w-full h-1.5 bg-surface-muted border border-foreground/30 overflow-hidden">
             <div
-              className={`h-full transition-all duration-300 ${
+              className={`h-full transition-all duration-300 bg-foreground ${
                 stage === 'compressing'
-                  ? 'w-1/2 bg-amber-500'
+                  ? 'w-1/2'
                   : stage === 'uploading'
-                  ? 'w-4/5 bg-amber-500'
-                  : 'w-full bg-emerald-500'
+                  ? 'w-4/5'
+                  : 'w-full'
               }`}
             />
           </div>

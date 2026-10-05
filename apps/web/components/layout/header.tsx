@@ -85,10 +85,10 @@ export function Header() {
     <>
       <header
         className={cn(
-          'sticky top-0 z-50 transition-all duration-300 print:hidden',
+          'sticky top-0 z-50 transition-all duration-150 print:hidden',
           isScrolled
-            ? 'bg-background/90 backdrop-blur-xl border-b border-foreground/25 dark:border-white/25 shadow-[0_4px_24px_rgba(0,0,0,0.08)] dark:shadow-[0_6px_30px_rgba(0,0,0,0.9)]'
-            : 'bg-background/80 backdrop-blur-md border-b border-border-hairline dark:border-white/10'
+            ? 'bg-background/95 backdrop-blur-xl border-b border-foreground'
+            : 'bg-background/80 backdrop-blur-md border-b border-border-hairline'
         )}
       >
         {/* Scroll reading progress indicator at bottom hairline */}
@@ -184,7 +184,7 @@ export function Header() {
             <button
               type="button"
               onClick={() => setSearchModalOpen(true)}
-              className="px-2 sm:px-2.5 py-1.5 text-muted hover:text-foreground hover:bg-surface-muted transition-colors flex items-center gap-1.5 text-xs font-mono uppercase tracking-wider border border-border-hairline hover:border-foreground cursor-pointer shadow-2xs"
+              className="px-2 sm:px-2.5 py-1.5 text-muted hover:text-foreground hover:bg-surface-muted transition-colors flex items-center gap-1.5 text-xs font-mono uppercase tracking-wider border border-border-hairline hover:border-foreground cursor-pointer"
               title="Pencarian cepat arsip (Cmd+K atau /)"
               aria-label="Buka pencarian global (Cmd+K)"
             >
@@ -205,14 +205,15 @@ export function Header() {
             {/* User Session Dropdown / Login */}
             <UserMenu />
 
-            {/* Mobile Hamburger Toggle */}
+            {/* Mobile Hamburger Toggle (44px min touch target & aria-expanded) */}
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-1.5 text-foreground hover:bg-surface-muted transition-colors border border-border-hairline cursor-pointer"
+              className="lg:hidden min-w-[44px] min-h-[44px] flex items-center justify-center text-foreground hover:bg-surface-muted transition-colors border border-border-hairline cursor-pointer"
               aria-label={mobileMenuOpen ? 'Tutup navigasi' : 'Buka navigasi'}
+              aria-expanded={mobileMenuOpen}
             >
-              {mobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
           </div>
         </div>
@@ -225,7 +226,7 @@ export function Header() {
               onClick={() => setMobileMenuOpen(false)}
               aria-hidden="true"
             />
-            <div className="relative z-50 lg:hidden border-t border-border-hairline bg-surface p-5 shadow-2xl max-h-[calc(100vh-4rem)] overflow-y-auto font-mono text-xs">
+            <div className="relative z-50 lg:hidden border-t border-b-2 border-border-hairline border-b-foreground bg-surface p-5 max-h-[calc(100vh-4rem)] overflow-y-auto font-mono text-xs">
               {/* Quick Search in Mobile Drawer */}
               <div className="pb-3 border-b border-border-hairline">
                 <button

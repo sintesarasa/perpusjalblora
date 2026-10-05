@@ -312,7 +312,7 @@ export function CameraQrScannerModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-xs font-sans animate-in fade-in duration-200">
-      <div className="bg-surface border-2 border-foreground max-w-md w-full shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
+      <div className="bg-surface border-2 border-foreground max-w-md w-full rounded-none overflow-hidden flex flex-col max-h-[92dvh]">
         {/* Header */}
         <div className="p-4 border-b-2 border-foreground flex items-center justify-between bg-surface-muted">
           <div className="flex items-center gap-2">
@@ -349,8 +349,8 @@ export function CameraQrScannerModal({
                 <div className="absolute bottom-0 left-0 w-6 h-6 border-b-4 border-l-4 border-white" />
                 <div className="absolute bottom-0 right-0 w-6 h-6 border-b-4 border-r-4 border-white" />
 
-                {/* Animated Laser Scanning Line */}
-                <div className="absolute inset-x-0 h-0.5 bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)] animate-pulse top-1/2 -translate-y-1/2" />
+                {/* Monochrome Laser Scanning Line */}
+                <div className="absolute inset-x-0 h-0.5 bg-foreground animate-pulse top-1/2 -translate-y-1/2" />
               </div>
             </div>
           )}

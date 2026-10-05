@@ -35,7 +35,7 @@ export function StickerPrintQueueDrawer({ isOpen, onClose }: StickerPrintQueueDr
         />
 
         {/* Slide-over Drawer Panel */}
-        <div className="relative w-full max-w-md bg-surface border-l-2 border-foreground h-full shadow-2xl flex flex-col font-mono text-xs z-10 animate-in slide-in-from-right duration-200">
+        <div className="relative w-full max-w-md bg-surface border-l-2 border-foreground h-full flex flex-col font-mono text-xs z-10 animate-in slide-in-from-right duration-200">
           {/* 1. Header */}
           <div className="p-4 sm:p-5 border-b border-border-hairline flex items-center justify-between bg-surface-muted/30">
             <div className="flex items-center gap-2 font-bold text-sm text-foreground">
@@ -154,7 +154,7 @@ export function StickerPrintQueueDrawer({ isOpen, onClose }: StickerPrintQueueDr
               type="button"
               disabled={queue.length === 0}
               onClick={() => setIsSheetOpen(true)}
-              className="w-full py-2.5 bg-foreground text-background font-bold uppercase tracking-wider text-xs inline-flex items-center justify-center gap-2 hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed shadow-md transition-opacity"
+              className="w-full min-h-[44px] py-2.5 bg-foreground text-background font-bold uppercase tracking-wider text-xs inline-flex items-center justify-center gap-2 hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed rounded-none transition-opacity cursor-pointer"
             >
               <Printer className="w-4 h-4" />
               <span>Cetak Lembar A4 ({totalCount} Stiker)</span>

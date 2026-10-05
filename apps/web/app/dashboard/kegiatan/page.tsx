@@ -201,10 +201,10 @@ export default function DashboardKegiatanPage() {
               setFormModalMode('archive');
               setIsFormModalOpen(true);
             }}
-            className="px-3.5 py-2.5 border-2 border-foreground bg-surface text-foreground hover:bg-surface-muted font-mono text-xs uppercase tracking-wider font-bold transition-colors flex items-center gap-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,0.9)]"
+            className="px-3.5 py-2.5 border-2 border-foreground bg-surface text-foreground hover:bg-surface-muted font-mono text-xs uppercase tracking-wider font-bold transition-colors flex items-center gap-2"
             title="Tambah dokumentasi kegiatan yang sudah selesai di masa lampau"
           >
-            <Archive className="w-3.5 h-3.5 text-amber-500" />
+            <Archive className="w-3.5 h-3.5 text-foreground" />
             <span>+ Rekam Arsip Lampau</span>
           </button>
 
@@ -216,7 +216,7 @@ export default function DashboardKegiatanPage() {
               setFormModalMode('upcoming');
               setIsFormModalOpen(true);
             }}
-            className="px-4 py-2.5 border-2 border-foreground bg-foreground text-background font-mono text-xs uppercase tracking-wider font-bold hover:bg-foreground/90 transition-colors flex items-center gap-2 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] dark:shadow-[3px_3px_0px_0px_rgba(255,255,255,0.9)]"
+            className="px-4 py-2.5 border-2 border-foreground bg-foreground text-background font-mono text-xs uppercase tracking-wider font-bold hover:bg-foreground/90 transition-colors flex items-center gap-2"
             title="Terbitkan agenda baru yang akan diselenggarakan"
           >
             <Plus className="w-4 h-4" />
@@ -227,7 +227,7 @@ export default function DashboardKegiatanPage() {
 
       {/* 2. Metric Stat Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="p-4 bg-surface border-2 border-foreground space-y-1 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] dark:shadow-[3px_3px_0px_0px_rgba(255,255,255,0.9)]">
+        <div className="p-4 bg-surface border-2 border-foreground space-y-1">
           <span className="font-mono text-[10px] uppercase text-muted tracking-widest block font-bold">
             TOTAL AGENDA
           </span>
@@ -237,8 +237,8 @@ export default function DashboardKegiatanPage() {
           <span className="text-[11px] text-muted block">Agenda terdata di sistem</span>
         </div>
 
-        <div className="p-4 bg-surface border-2 border-foreground space-y-1 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] dark:shadow-[3px_3px_0px_0px_rgba(255,255,255,0.9)]">
-          <span className="font-mono text-[10px] uppercase text-amber-600 dark:text-amber-400 tracking-widest block font-bold">
+        <div className="p-4 bg-surface border-2 border-foreground space-y-1">
+          <span className="font-mono text-[10px] uppercase text-foreground tracking-widest block font-bold">
             AGENDA AKTIF
           </span>
           <div className="font-mono text-2xl sm:text-3xl font-bold text-foreground">
@@ -247,7 +247,7 @@ export default function DashboardKegiatanPage() {
           <span className="text-[11px] text-muted block">Menerima pendaftaran warga</span>
         </div>
 
-        <div className="p-4 bg-surface border-2 border-foreground space-y-1 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] dark:shadow-[3px_3px_0px_0px_rgba(255,255,255,0.9)]">
+        <div className="p-4 bg-surface border-2 border-foreground space-y-1">
           <span className="font-mono text-[10px] uppercase text-muted tracking-widest block font-bold">
             ARSIP LAMPAU
           </span>
@@ -257,7 +257,7 @@ export default function DashboardKegiatanPage() {
           <span className="text-[11px] text-muted block">Kegiatan selesai diselenggarakan</span>
         </div>
 
-        <div className="p-4 bg-surface border-2 border-foreground space-y-1 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] dark:shadow-[3px_3px_0px_0px_rgba(255,255,255,0.9)]">
+        <div className="p-4 bg-surface border-2 border-foreground space-y-1">
           <span className="font-mono text-[10px] uppercase text-muted tracking-widest block font-bold">
             TOTAL PARTISIPASI
           </span>
@@ -271,7 +271,7 @@ export default function DashboardKegiatanPage() {
       </div>
 
       {/* 3. Filter & Search Controls */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 bg-surface border-2 border-foreground shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] dark:shadow-[3px_3px_0px_0px_rgba(255,255,255,0.9)]">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 bg-surface border-2 border-foreground">
         {/* Status Tabs */}
         <div className="flex flex-wrap items-center gap-1 font-mono text-xs">
           {[
@@ -349,12 +349,12 @@ export default function DashboardKegiatanPage() {
           </h3>
           <p className="font-sans text-xs text-muted max-w-sm mx-auto">
             {searchQuery || typeFilter !== 'ALL' || statusFilter !== 'all'
-              ? 'Tidak ada agenda yang cocok dengan filter pencarian Anda.'
+              ? 'Tidak ada agenda yang cocok dengan filter pencarian kamu.'
               : 'Belum ada agenda lapak yang tercatat. Klik tombol di atas untuk membuat kegiatan baru atau merekam arsip kegiatan lampau.'}
           </p>
         </div>
       ) : (
-        <div className="border-2 border-foreground bg-surface overflow-x-auto shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.9)]">
+        <div className="border-2 border-foreground bg-surface overflow-x-auto">
           <table className="w-full text-left font-sans text-xs">
             <thead>
               <tr className="border-b-2 border-foreground bg-surface-muted/80 font-mono text-[10px] uppercase tracking-wider text-muted select-none">
@@ -387,7 +387,7 @@ export default function DashboardKegiatanPage() {
                   <tr
                     key={ev.id}
                     className={`hover:bg-surface-muted/30 transition-colors ${
-                      isSpotlight ? 'bg-amber-500/5' : ''
+                      isSpotlight ? 'bg-surface-muted/30' : ''
                     }`}
                   >
                     {/* Status & Type */}
@@ -397,7 +397,7 @@ export default function DashboardKegiatanPage() {
                         // {ev.type}
                       </span>
                       {isSpotlight && (
-                        <div className="inline-flex items-center gap-1 px-1.5 py-0.5 border border-amber-500 bg-amber-500 text-black font-mono text-[8px] font-extrabold uppercase tracking-widest shadow-2xs">
+                        <div className="inline-flex items-center gap-1 px-1.5 py-0.5 border border-foreground bg-foreground text-background font-mono text-[8px] font-extrabold uppercase tracking-widest">
                           <Sparkles className="w-2.5 h-2.5" />
                           <span>SOROTAN UTAMA</span>
                         </div>
@@ -442,7 +442,7 @@ export default function DashboardKegiatanPage() {
                     {/* Schedule & Location */}
                     <td className="py-3.5 px-4 align-top whitespace-nowrap">
                       <div className="font-mono text-xs font-bold text-foreground flex items-center gap-1.5">
-                        <Clock className="w-3 h-3 text-amber-500" />
+                        <Clock className="w-3 h-3 text-foreground" />
                         <span>{dateStr} • {timeStr}</span>
                       </div>
                       <div className="text-[11px] text-muted flex items-center gap-1 mt-0.5 truncate max-w-xs">
@@ -479,7 +479,7 @@ export default function DashboardKegiatanPage() {
                         {/* Presensi Peserta Button */}
                         <Link
                           href={`/dashboard/kegiatan/${ev.id}`}
-                          className="px-2.5 py-1.5 bg-foreground text-background font-mono text-[11px] uppercase tracking-wider font-bold hover:bg-foreground/90 transition-colors inline-flex items-center gap-1 shadow-xs"
+                          className="px-2.5 py-1.5 bg-foreground text-background font-mono text-[11px] uppercase tracking-wider font-bold hover:bg-foreground/90 transition-colors inline-flex items-center gap-1"
                           title="Buka Meja Presensi & Daftar Hadir Peserta"
                         >
                           <CalendarCheck className="w-3.5 h-3.5" />

@@ -54,16 +54,52 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function BookDetailPage({ params }: PageProps) {
   const { slug } = await params;
+  let book: BookDetail | null = null;
+  try {
+    const res = await apiClient<BookDetail>(`/books/${slug}`);
+    book = res.data || null;
+  } catch {
+    // Fallback if API is offline or during build time
+  }
 
   return (
-    <React.Suspense
-      fallback={
-        <div className="min-h-screen flex items-center justify-center">
-          <CustomLoader size="md" label="MEMUAT KATALOG BUKU..." />
-        </div>
-      }
-    >
-      <BookDetailClient slug={slug} />
-    </React.Suspense>
+    <>
+      {book && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'Book',
+              name: book.title,
+              author: {
+                '@type': 'Person',
+                name: book.author,
+              },
+              isbn: book.isbn || undefined,
+              publisher: book.publisher
+                ? {
+                    '@type': 'Organization',
+                    name: book.publisher,
+                  }
+                : undefined,
+              description: book.description || undefined,
+              image: book.coverImage || undefined,
+              inLanguage: book.language === 'ID' ? 'id-ID' : 'jv-ID',
+              numberOfPages: book.pages || undefined,
+            }),
+          }}
+        />
+      )}
+      <React.Suspense
+        fallback={
+          <div className="min-h-screen flex items-center justify-center">
+            <CustomLoader size="md" label="MEMUAT KATALOG BUKU..." />
+          </div>
+        }
+      >
+        <BookDetailClient slug={slug} />
+      </React.Suspense>
+    </>
   );
 }

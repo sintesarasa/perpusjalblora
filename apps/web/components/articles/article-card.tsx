@@ -33,13 +33,13 @@ export function ArticleCard({
     return (
       <article
         className={cn(
-          'group p-6 sm:p-7 bg-surface border-2 border-foreground transition-all duration-200 hover:-translate-y-1 hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[5px_5px_0px_0px_rgba(255,255,255,0.9)] relative flex flex-col md:flex-row gap-6 items-start',
+          'group p-6 sm:p-7 bg-surface border-2 border-foreground transition-all duration-200 hover:-translate-y-1 relative flex flex-col md:flex-row gap-6 items-start',
           className
         )}
       >
         {/* Cover Photo only if image exists */}
         {showImage && article.coverImage && (
-          <div className="w-full md:w-56 shrink-0 aspect-[16/10] overflow-hidden border-2 border-foreground bg-zinc-950 relative shadow-2xs">
+          <div className="w-full md:w-56 shrink-0 aspect-[16/10] overflow-hidden border-2 border-foreground bg-zinc-950 relative">
             <img
               src={article.coverImage}
               alt={article.title}
@@ -47,7 +47,7 @@ export function ArticleCard({
               loading="lazy"
             />
             {article.isFeatured && (
-              <div className="absolute top-2 left-2 bg-foreground text-background font-mono text-[8px] uppercase tracking-widest px-1.5 py-0.5 font-bold border border-background shadow-xs">
+              <div className="absolute top-2 left-2 bg-foreground text-background font-mono text-[8px] uppercase tracking-widest px-1.5 py-0.5 font-bold border border-background">
                 ★ PILIHAN
               </div>
             )}
@@ -91,7 +91,7 @@ export function ArticleCard({
                 username={article.author?.username}
                 size="xs"
                 shape="square"
-                className="border border-foreground shrink-0 shadow-2xs"
+                className="border border-foreground shrink-0"
               />
               <div className="flex items-center gap-2 font-mono text-xs flex-wrap">
                 <span className="text-foreground font-bold">
@@ -135,7 +135,7 @@ export function ArticleCard({
                 <button
                   type="button"
                   onClick={() => onQuickRead(article)}
-                  className="px-3 py-1.5 border-2 border-foreground bg-surface hover:bg-foreground hover:text-background text-foreground text-[10px] tracking-widest font-bold transition-colors flex items-center gap-1 shadow-2xs cursor-pointer active:translate-x-0.5 active:translate-y-0.5"
+                  className="px-3 py-1.5 border-2 border-foreground bg-surface hover:bg-foreground hover:text-background text-foreground text-[10px] tracking-widest font-bold transition-colors flex items-center gap-1 cursor-pointer active:translate-x-0.5 active:translate-y-0.5"
                 >
                   <BookOpen className="w-3 h-3" />
                   <span>BACA KILAS</span>
@@ -143,7 +143,7 @@ export function ArticleCard({
               )}
               <Link
                 href={`/artikel/${article.slug}`}
-                className="px-3.5 py-1.5 bg-foreground text-background font-bold text-[10px] tracking-widest hover:bg-foreground/90 transition-opacity flex items-center gap-1 shadow-2xs cursor-pointer active:translate-x-0.5 active:translate-y-0.5"
+                className="px-3.5 py-1.5 bg-foreground text-background font-bold text-[10px] tracking-widest hover:bg-foreground/90 transition-opacity flex items-center gap-1 cursor-pointer active:translate-x-0.5 active:translate-y-0.5"
               >
                 <span>BACA LENGKAP</span>
                 <ArrowRight className="w-3 h-3" />
@@ -159,14 +159,14 @@ export function ArticleCard({
   return (
     <article
       className={cn(
-        'group flex flex-col justify-between p-6 bg-surface border-2 border-foreground transition-all duration-200 hover:-translate-y-1 hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[5px_5px_0px_0px_rgba(255,255,255,0.9)] relative',
+        'group flex flex-col justify-between p-6 bg-surface border-2 border-foreground transition-all duration-200 hover:-translate-y-1 relative',
         className
       )}
     >
       <div className="space-y-4">
         {/* Cover Photo: ONLY rendered if image actually exists */}
         {showImage && article.coverImage && (
-          <div className="w-full aspect-[16/10] overflow-hidden border-2 border-foreground bg-zinc-950 mb-2 relative shadow-2xs">
+          <div className="w-full aspect-[16/10] overflow-hidden border-2 border-foreground bg-zinc-950 mb-2 relative">
             <img
               src={article.coverImage}
               alt={article.title}
@@ -174,7 +174,7 @@ export function ArticleCard({
               loading="lazy"
             />
             {article.isFeatured && (
-              <div className="absolute top-2 left-2 bg-foreground text-background font-mono text-[8px] uppercase tracking-widest px-1.5 py-0.5 font-bold border border-background shadow-xs">
+              <div className="absolute top-2 left-2 bg-foreground text-background font-mono text-[8px] uppercase tracking-widest px-1.5 py-0.5 font-bold border border-background">
                 ★ PILIHAN
               </div>
             )}
@@ -207,7 +207,7 @@ export function ArticleCard({
             username={article.author?.username}
             size="xs"
             shape="square"
-            className="border border-foreground shrink-0 shadow-2xs"
+            className="border border-foreground shrink-0"
           />
           <div className="min-w-0 flex-1 space-y-0.5">
             <div className="flex items-center gap-1.5 flex-wrap">

@@ -170,7 +170,7 @@ export default function EventDetailPage() {
       <div className="flex flex-col min-h-screen bg-background text-foreground font-sans editorial-grain">
         <Header />
         <main className="flex-1 max-w-3xl mx-auto w-full px-4 sm:px-8 py-20 text-center space-y-6">
-          <div className="border-2 border-foreground p-10 sm:p-14 bg-surface space-y-4 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.9)]">
+          <div className="border-2 border-foreground p-10 sm:p-14 bg-surface space-y-4">
             <span className="font-mono text-xs uppercase tracking-widest text-muted">
               DOKUMEN AGENDA // 404
             </span>
@@ -178,7 +178,7 @@ export default function EventDetailPage() {
               Agenda Tidak Ditemukan
             </h1>
             <p className="font-serif text-sm text-foreground/80 max-w-md mx-auto leading-relaxed">
-              {error || 'Agenda yang Anda cari tidak tersedia atau tautan telah kedaluwarsa.'}
+              {error || 'Agenda yang kamu cari tidak tersedia atau tautan telah kedaluwarsa.'}
             </p>
             <div className="pt-4">
               <Link
@@ -239,7 +239,7 @@ export default function EventDetailPage() {
       );
     }
     return (
-      <span className="font-mono text-[9px] uppercase tracking-wider px-2.5 py-0.5 border border-amber-500/60 bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold">
+      <span className="font-mono text-[9px] uppercase tracking-wider px-2.5 py-0.5 border border-foreground/40 bg-surface-muted text-foreground font-bold">
         TERBUKA UMUM
       </span>
     );
@@ -270,11 +270,11 @@ export default function EventDetailPage() {
         </div>
 
         {/* Hero Event Banner Card */}
-        <section className="border-2 border-foreground bg-surface p-6 sm:p-9 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.9)] space-y-6">
+        <section className="border-2 border-foreground bg-surface p-6 sm:p-9 space-y-6">
           {/* Top Status Strip */}
           <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-border-hairline text-xs font-mono">
             <div className="flex items-center gap-2.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="w-2 h-2 rounded-none bg-foreground animate-pulse" />
               <span className="font-bold text-foreground uppercase tracking-wider text-[11px]">
                 {event.type}
               </span>
@@ -288,7 +288,7 @@ export default function EventDetailPage() {
                 href={whatsappShareUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-mono text-[10px] font-bold uppercase tracking-wider inline-flex items-center gap-1.5 transition-colors shadow-2xs"
+                className="px-2.5 py-1 border border-foreground bg-foreground text-background hover:bg-background hover:text-foreground font-mono text-[10px] font-bold uppercase tracking-wider inline-flex items-center gap-1.5 transition-colors"
                 title="Bagikan kabar kegiatan ini ke WhatsApp kawan-kawan"
               >
                 <MessageCircle className="w-3 h-3" />
@@ -301,10 +301,10 @@ export default function EventDetailPage() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             {/* Left: Tactile Editorial Photography Cover (5 cols) */}
             <div className="lg:col-span-5 flex justify-center w-full">
-              <div className="relative w-full max-w-md bg-surface border-2 border-foreground p-3.5 shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] dark:shadow-[5px_5px_0px_0px_rgba(255,255,255,0.9)] select-none">
+              <div className="relative w-full max-w-md bg-surface border-2 border-foreground p-3.5 select-none">
                 <div className="flex items-center justify-between pb-2 mb-2 border-b border-border-hairline font-mono text-[9px] uppercase tracking-widest text-muted">
                   <span>[ DOKUMENTASI TERPAL // PERPUSJAL ]</span>
-                  <span className="font-bold text-amber-600 dark:text-amber-400">2026</span>
+                  <span className="font-bold text-foreground">2026</span>
                 </div>
 
                 <div className="relative aspect-[4/3] w-full overflow-hidden border border-foreground/30 bg-zinc-950">
@@ -318,12 +318,12 @@ export default function EventDetailPage() {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
 
-                  <div className="absolute top-2.5 right-2.5 px-2 py-0.5 bg-amber-500 text-black font-mono text-[8px] font-extrabold uppercase tracking-widest border border-black shadow-xs">
+                  <div className="absolute top-2.5 right-2.5 px-2 py-0.5 bg-foreground text-background font-mono text-[8px] font-extrabold uppercase tracking-widest border border-background">
                     ✦ TERPAL RAKYAT ✦
                   </div>
 
                   <div className="absolute bottom-2.5 left-3 right-3 text-white">
-                    <p className="font-serif italic text-xs leading-snug drop-shadow-md">
+                    <p className="font-serif italic text-xs leading-snug">
                       &ldquo;Membaca adalah hak warga; merawat perjumpaan adalah kerja kebudayaan.&rdquo;
                     </p>
                   </div>
@@ -339,7 +339,7 @@ export default function EventDetailPage() {
             {/* Right: Event Headline & Venue Pillars (7 cols) */}
             <div className="lg:col-span-7 space-y-5">
               <div className="space-y-2">
-                <div className="inline-block px-2.5 py-0.5 border border-amber-500/50 bg-amber-500/10 text-amber-600 dark:text-amber-400 font-mono text-[9px] uppercase font-bold tracking-widest">
+                <div className="inline-block px-2.5 py-0.5 border border-foreground bg-surface-muted text-foreground font-mono text-[9px] uppercase font-bold tracking-widest">
                   <span>✦ LEMBAR DOKUMEN AGENDA RESMI ✦</span>
                 </div>
 
@@ -356,7 +356,7 @@ export default function EventDetailPage() {
               {/* 3 Key Venue Pillars Strip */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1 font-mono text-xs text-muted">
                 <div className="flex items-center gap-2 p-2.5 bg-surface-muted/60 border border-border-hairline">
-                  <Clock className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                  <Clock className="w-3.5 h-3.5 text-foreground shrink-0" />
                   <div className="truncate">
                     <span className="text-[10px] text-muted block uppercase">Waktu</span>
                     <span className="text-foreground font-semibold text-[11px]">
@@ -366,7 +366,7 @@ export default function EventDetailPage() {
                 </div>
 
                 <div className="flex items-center gap-2 p-2.5 bg-surface-muted/60 border border-border-hairline truncate">
-                  <MapPin className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                  <MapPin className="w-3.5 h-3.5 text-foreground shrink-0" />
                   <div className="truncate">
                     <span className="text-[10px] text-muted block uppercase">Lokasi</span>
                     <span className="text-foreground font-semibold text-[11px] truncate block">
@@ -376,7 +376,7 @@ export default function EventDetailPage() {
                 </div>
 
                 <div className="flex items-center gap-2 p-2.5 bg-surface-muted/60 border border-border-hairline">
-                  <Users className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                  <Users className="w-3.5 h-3.5 text-foreground shrink-0" />
                   <div>
                     <span className="text-[10px] text-muted block uppercase">Partisipasi</span>
                     <span className="text-foreground font-semibold text-[11px]">
@@ -394,7 +394,7 @@ export default function EventDetailPage() {
                   rel="noreferrer"
                   className="px-3 py-1.5 border border-border-hairline hover:border-foreground bg-surface text-foreground transition-colors inline-flex items-center gap-1.5"
                 >
-                  <CalendarPlus className="w-3.5 h-3.5 text-amber-500" />
+                  <CalendarPlus className="w-3.5 h-3.5 text-foreground" />
                   <span>Google Calendar</span>
                 </a>
 
@@ -405,7 +405,7 @@ export default function EventDetailPage() {
                     rel="noreferrer"
                     className="px-3 py-1.5 border border-border-hairline hover:border-foreground bg-surface text-foreground transition-colors inline-flex items-center gap-1.5"
                   >
-                    <ExternalLink className="w-3.5 h-3.5 text-amber-500" />
+                    <ExternalLink className="w-3.5 h-3.5 text-foreground" />
                     <span>Petunjuk Rute Maps</span>
                   </a>
                 )}
@@ -420,7 +420,7 @@ export default function EventDetailPage() {
           <div className="lg:col-span-8 space-y-10">
             {/* Online Meeting Link (Only if registered) */}
             {event.isOnline && event.meetingUrl && (
-              <div className="p-4 bg-surface-muted border-2 border-foreground font-mono text-xs space-y-2 shadow-xs">
+              <div className="p-4 bg-surface-muted border-2 border-foreground font-mono text-xs space-y-2">
                 <span className="font-bold text-foreground flex items-center gap-2">
                   <Video className="w-4 h-4 text-foreground" />
                   TAUTAN TEMU DARING (KHUSUS PESERTA TERDAFTAR):
@@ -439,7 +439,7 @@ export default function EventDetailPage() {
             {/* Description Narrative */}
             <div className="space-y-4">
               <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-widest font-bold text-foreground border-b-2 border-foreground pb-2">
-                <FileText className="w-4 h-4 text-amber-500" />
+                <FileText className="w-4 h-4 text-foreground" />
                 <span>CATATAN &amp; NARASI KEGIATAN</span>
               </div>
 
@@ -456,18 +456,18 @@ export default function EventDetailPage() {
 
             {/* Post-Event Documentation & Reflection (FR-EVT-05 & Arsip Lampau) */}
             {event.summary && (
-              <div className="border-2 border-foreground bg-surface p-6 sm:p-8 space-y-6 shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] dark:shadow-[5px_5px_0px_0px_rgba(255,255,255,0.9)]">
+              <div className="border-2 border-foreground bg-surface p-6 sm:p-8 space-y-6">
                 <div className="flex items-center justify-between border-b border-border-hairline pb-3">
                   <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-widest font-bold text-foreground">
-                    <Camera className="w-4 h-4 text-amber-500" />
+                    <Camera className="w-4 h-4 text-foreground" />
                     <span>JEJAK DOKUMENTASI &amp; REFLEKSI LAPAK</span>
                   </div>
-                  <span className="font-mono text-[9px] uppercase px-2 py-0.5 bg-amber-500/15 text-amber-600 dark:text-amber-400 font-bold border border-amber-500/30">
+                  <span className="font-mono text-[9px] uppercase px-2 py-0.5 bg-foreground text-background font-bold border border-foreground">
                     PASCA-KEGIATAN
                   </span>
                 </div>
 
-                <div className="p-4 sm:p-5 bg-surface-muted/50 border-l-4 border-l-amber-500 font-serif text-base sm:text-lg italic leading-relaxed text-foreground/90 whitespace-pre-line">
+                <div className="p-4 sm:p-5 bg-surface-muted/50 border-l-4 border-l-foreground font-serif text-base sm:text-lg italic leading-relaxed text-foreground/90 whitespace-pre-line">
                   &ldquo;{event.summary}&rdquo;
                 </div>
 
@@ -537,7 +537,7 @@ export default function EventDetailPage() {
             )}
 
             {/* Ticket & Registration Status Box */}
-            <div className="border-2 border-foreground bg-surface p-6 space-y-6 shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] dark:shadow-[5px_5px_0px_0px_rgba(255,255,255,0.9)] font-sans">
+            <div className="border-2 border-foreground bg-surface p-6 space-y-6 font-sans">
               <div className="border-b border-border-hairline pb-3">
                 <span className="font-mono text-[10px] text-muted uppercase tracking-widest block font-bold">
                   [ TIKET KEHADIRAN ]
@@ -548,8 +548,8 @@ export default function EventDetailPage() {
               </div>
 
               {actionMessage && (
-                <div className="p-3 bg-surface-muted border-2 border-emerald-500 font-mono text-xs text-foreground flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                <div className="p-3 bg-surface-muted border-2 border-foreground font-mono text-xs text-foreground flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-foreground shrink-0" />
                   <span>{actionMessage}</span>
                 </div>
               )}
@@ -573,7 +573,7 @@ export default function EventDetailPage() {
                     {ticketQrSvg && (
                       <div className="flex justify-center py-1">
                         <div
-                          className="bg-white p-2 border-2 border-foreground inline-block shadow-xs"
+                          className="bg-white p-2 border-2 border-foreground inline-block"
                           dangerouslySetInnerHTML={{ __html: ticketQrSvg }}
                           title={`QR Code Hadir: ${myReg.attendanceCode}`}
                         />
@@ -592,9 +592,9 @@ export default function EventDetailPage() {
                     <a
                       href={myReg.calendarUrl}
                       download
-                      className="w-full py-2.5 border-2 border-foreground text-foreground hover:bg-foreground hover:text-background font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-2 shadow-xs"
+                      className="w-full py-2.5 border-2 border-foreground text-foreground hover:bg-foreground hover:text-background font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-2"
                     >
-                      <CalendarPlus className="w-4 h-4 text-amber-500" />
+                      <CalendarPlus className="w-4 h-4 text-foreground" />
                       <span>Unduh File Kalender (.ics)</span>
                     </a>
 
@@ -618,7 +618,7 @@ export default function EventDetailPage() {
               ) : isPast ? (
                 /* Status 2: Event Completed / Past Archive */
                 <div className="p-4 bg-surface-muted border-2 border-border-hairline text-center space-y-2 font-mono text-xs">
-                  <Archive className="w-5 h-5 text-amber-500 mx-auto" />
+                  <Archive className="w-5 h-5 text-foreground mx-auto" />
                   <span className="font-bold text-foreground block uppercase">
                     KEGIATAN INI TELAH SELESAI
                   </span>
@@ -654,9 +654,9 @@ export default function EventDetailPage() {
                     type="button"
                     onClick={handleRegister}
                     disabled={actionLoading}
-                    className="w-full py-3.5 bg-foreground text-background border-2 border-foreground font-mono text-xs uppercase tracking-widest font-bold hover:bg-foreground/90 disabled:opacity-40 transition-colors flex items-center justify-center gap-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,0.9)]"
+                    className="w-full py-3.5 bg-foreground text-background border-2 border-foreground font-mono text-xs uppercase tracking-widest font-bold hover:bg-foreground/90 disabled:opacity-40 transition-colors flex items-center justify-center gap-2"
                   >
-                    <CheckCircle2 className="w-4 h-4 text-amber-500" />
+                    <CheckCircle2 className="w-4 h-4 text-background" />
                     <span>{actionLoading ? 'Mendaftarkan...' : 'AMBIL TIKET QR HADIR'}</span>
                   </button>
 

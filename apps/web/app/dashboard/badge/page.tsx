@@ -246,7 +246,7 @@ export default function DashboardBadgesPage() {
           <button
             type="button"
             onClick={() => setShowHandbook(!showHandbook)}
-            className="px-3 py-2 border-2 border-foreground bg-surface hover:bg-surface-muted font-mono text-xs font-bold uppercase tracking-wider text-foreground inline-flex items-center gap-1.5 transition-colors shadow-xs"
+            className="px-3 py-2 border-2 border-foreground bg-surface hover:bg-surface-muted font-mono text-xs font-bold uppercase tracking-wider text-foreground inline-flex items-center gap-1.5 transition-colors"
           >
             <HelpCircle className="w-3.5 h-3.5 text-foreground" />
             <span>{showHandbook ? 'Tutup Panduan' : 'Buku Panduan & Aturan'}</span>
@@ -254,7 +254,7 @@ export default function DashboardBadgesPage() {
           </button>
 
           {data && (
-            <span className="px-3.5 py-2 border-2 border-foreground bg-foreground text-background font-mono text-xs font-bold uppercase tracking-wider shadow-xs">
+            <span className="px-3.5 py-2 border-2 border-foreground bg-foreground text-background font-mono text-xs font-bold uppercase tracking-wider">
               {data.earnedCount} / {data.totalCount} Lencana Terbuka
             </span>
           )}
@@ -263,7 +263,7 @@ export default function DashboardBadgesPage() {
 
       {/* ── 2. Petunjuk Jelas & Panduan Sistem (Collapsible Handbook) ── */}
       {showHandbook && (
-        <section className="border-2 border-foreground bg-surface p-5 sm:p-7 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.95)] animate-in fade-in-50 duration-150 space-y-6">
+        <section className="border-2 border-foreground bg-surface p-5 sm:p-7 animate-in fade-in-50 duration-150 space-y-6">
           <div className="border-b border-border-hairline pb-3 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="inline-block w-2.5 h-2.5 bg-foreground" />
@@ -334,7 +334,7 @@ export default function DashboardBadgesPage() {
 
       {/* ── 3. Player Dossier Card (Status Gelar Utama & Statistik Diri) ── */}
       {data && (
-        <section className="border-2 border-foreground bg-surface p-5 sm:p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.9)] space-y-5">
+        <section className="border-2 border-foreground bg-surface p-5 sm:p-6 space-y-5">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b-2 border-foreground pb-4">
             <div className="space-y-1">
               <span className="font-mono text-[10px] uppercase font-bold tracking-widest text-muted block">
@@ -344,7 +344,7 @@ export default function DashboardBadgesPage() {
                 <h2 className="font-serif text-2xl sm:text-3xl font-bold text-foreground">
                   {data.equippedTitle ? (
                     <span className="inline-flex items-center gap-2">
-                      <span className="text-amber-500">✦</span>
+                      <span className="text-foreground">✦</span>
                       <span>"{data.equippedTitle}"</span>
                     </span>
                   ) : (
@@ -556,7 +556,7 @@ export default function DashboardBadgesPage() {
             className={cn(
               'px-3 py-1.5 border-2 transition-all font-bold uppercase tracking-wider',
               viewMode === 'PILLARS'
-                ? 'border-foreground bg-foreground text-background shadow-xs'
+                ? 'border-foreground bg-foreground text-background'
                 : 'border-border-hairline bg-surface text-muted hover:border-foreground hover:text-foreground'
             )}
           >
@@ -568,7 +568,7 @@ export default function DashboardBadgesPage() {
             className={cn(
               'px-3 py-1.5 border-2 transition-all font-bold uppercase tracking-wider',
               viewMode === 'GRID'
-                ? 'border-foreground bg-foreground text-background shadow-xs'
+                ? 'border-foreground bg-foreground text-background'
                 : 'border-border-hairline bg-surface text-muted hover:border-foreground hover:text-foreground'
             )}
           >
@@ -624,12 +624,12 @@ export default function DashboardBadgesPage() {
             return (
               <section
                 key={cat}
-                className="border-2 border-foreground bg-surface p-5 sm:p-7 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.9)] space-y-6"
+                className="border-2 border-foreground bg-surface p-5 sm:p-7 space-y-6"
               >
                 {/* Pillar Header */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b-2 border-foreground pb-4">
                   <div className="flex items-start sm:items-center gap-3">
-                    <div className="w-10 h-10 border-2 border-foreground bg-surface flex items-center justify-center shrink-0 shadow-xs">
+                    <div className="w-10 h-10 border-2 border-foreground bg-surface flex items-center justify-center shrink-0">
                       <PillarIcon className="w-5 h-5 text-foreground" />
                     </div>
                     <div>
@@ -667,7 +667,7 @@ export default function DashboardBadgesPage() {
                       <div
                         key={item.badge.id}
                         className={cn(
-                          'p-3.5 flex flex-col justify-between transition-all duration-150 relative rounded-sm bg-surface min-h-[390px]',
+                          'p-3.5 flex flex-col justify-between transition-all duration-150 relative rounded-none bg-surface min-h-[390px]',
                           item.earned
                             ? tierInfo.cardEarnedBg
                             : cn('border border-dashed', tierInfo.cardLockedBorder)
@@ -676,12 +676,12 @@ export default function DashboardBadgesPage() {
                         <div>
                           {/* Tier & Status Bar */}
                           <div className="flex items-center justify-between gap-1 pb-2 border-b border-border-hairline mb-2.5">
-                            <span className={cn('px-2 py-0.5 text-[9px] font-mono font-bold uppercase tracking-wider rounded-full border shadow-xs whitespace-nowrap', tierInfo.headerTagClass)}>
+                            <span className={cn('px-2 py-0.5 text-[9px] font-mono font-bold uppercase tracking-wider rounded-none border whitespace-nowrap', tierInfo.headerTagClass)}>
                               T{item.badge.tier} &bull; {tierInfo.name}
                             </span>
                             {item.earned ? (
                               <span
-                                className="text-emerald-700 dark:text-emerald-400 inline-flex items-center p-0.5 shrink-0"
+                                className="text-foreground inline-flex items-center p-0.5 shrink-0"
                                 title="Diraih"
                               >
                                 <CheckCircle2 className="w-3.5 h-3.5" />
@@ -716,7 +716,7 @@ export default function DashboardBadgesPage() {
                               <div className="flex justify-center">
                                 <span
                                   className={cn(
-                                    'font-mono text-[9px] px-2.5 py-0.5 rounded-full border font-semibold inline-flex items-center gap-1 max-w-full shadow-xs',
+                                    'font-mono text-[9px] px-2.5 py-0.5 rounded-none border font-semibold inline-flex items-center gap-1 max-w-full',
                                     tierInfo.honorBadgeClass
                                   )}
                                   title={`Gelar Kehormatan: "${item.badge.titleReward}"`}
@@ -745,10 +745,10 @@ export default function DashboardBadgesPage() {
                                 {item.currentValue} / {item.targetValue}
                               </span>
                             </div>
-                            <div className="w-full h-1.5 rounded-full overflow-hidden bg-surface-muted border border-border-hairline p-0">
+                            <div className="w-full h-1.5 rounded-none overflow-hidden bg-surface-muted border border-border-hairline p-0">
                               <div
                                 className={cn(
-                                  'h-full rounded-full transition-all duration-300',
+                                  'h-full rounded-none transition-all duration-300',
                                   item.earned ? tierInfo.progressBarClass : cn(tierInfo.progressBarClass, 'opacity-70')
                                 )}
                                 style={{ width: `${Math.min(100, item.percent)}%` }}
@@ -760,7 +760,7 @@ export default function DashboardBadgesPage() {
                           <div className="text-center font-mono pt-0.5">
                             {item.earned ? (
                               isEquipped ? (
-                                <span className={cn('w-full py-1.5 rounded-sm border font-bold text-[9px] uppercase tracking-wider block shadow-xs', tierInfo.badgeTagClass)}>
+                                <span className={cn('w-full py-1.5 rounded-none border font-bold text-[9px] uppercase tracking-wider block', tierInfo.badgeTagClass)}>
                                   ✓ Gelar Aktif
                                 </span>
                               ) : item.badge.titleReward ? (
@@ -768,7 +768,7 @@ export default function DashboardBadgesPage() {
                                   type="button"
                                   disabled={equipping}
                                   onClick={() => handleEquipTitle(item.badge.titleReward || null)}
-                                  className="w-full py-1.5 rounded-sm border border-foreground bg-foreground text-background hover:bg-foreground/90 font-bold text-[9px] uppercase tracking-wider transition-colors block cursor-pointer shadow-xs"
+                                  className="w-full py-1.5 rounded-none border border-foreground bg-foreground text-background hover:bg-foreground/90 font-bold text-[9px] uppercase tracking-wider transition-colors block cursor-pointer"
                                 >
                                   Pasang Gelar
                                 </button>
@@ -801,11 +801,11 @@ export default function DashboardBadgesPage() {
             const earnedSecretCount = secretBadges.filter((b) => b.earned).length;
 
             return (
-              <section className="border-2 border-foreground bg-surface p-5 sm:p-7 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.9)] space-y-6">
+              <section className="border-2 border-foreground bg-surface p-5 sm:p-7 space-y-6">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b-2 border-foreground pb-4">
                   <div className="flex items-start sm:items-center gap-3">
-                    <div className="w-10 h-10 border-2 border-foreground bg-surface flex items-center justify-center shrink-0 shadow-xs">
-                      <Sparkles className="w-5 h-5 text-amber-500" />
+                    <div className="w-10 h-10 border-2 border-foreground bg-surface flex items-center justify-center shrink-0">
+                      <Sparkles className="w-5 h-5 text-foreground" />
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
@@ -813,7 +813,7 @@ export default function DashboardBadgesPage() {
                           KOLOFON KHUSUS
                         </span>
                         <span className="text-border-hairline">//</span>
-                        <span className="font-mono text-[9px] uppercase font-bold text-amber-600 dark:text-amber-400">
+                        <span className="font-mono text-[9px] uppercase font-bold text-foreground">
                           Easter Eggs & Kejutan
                         </span>
                       </div>
@@ -821,7 +821,7 @@ export default function DashboardBadgesPage() {
                         Pencapaian Rahasia
                       </h3>
                       <p className="font-sans text-xs text-muted max-w-xl">
-                        Pencapaian misterius yang tidak tercantum dalam katalog biasa. Terbuka secara otomatis saat Anda melakukan aksi tak terduga dalam aktivitas literasi rakyat.
+                        Pencapaian misterius yang tidak tercantum dalam katalog biasa. Terbuka secara otomatis saat kamu melakukan aksi tak terduga dalam aktivitas literasi rakyat.
                       </p>
                     </div>
                   </div>
@@ -848,7 +848,7 @@ export default function DashboardBadgesPage() {
                       <div
                         key={item.badge.id}
                         className={cn(
-                          'p-4 flex flex-col justify-between transition-all duration-150 relative min-h-[220px] rounded-sm',
+                          'p-4 flex flex-col justify-between transition-all duration-150 relative min-h-[220px] rounded-none',
                           item.earned
                             ? cn('border-2', tierInfo.cardEarnedBg)
                             : 'border border-dashed border-border-hairline bg-surface/40 hover:border-foreground/40'
@@ -856,12 +856,12 @@ export default function DashboardBadgesPage() {
                       >
                         <div>
                           <div className="flex items-center justify-between font-mono text-[9px] pb-2 border-b border-border-hairline mb-2.5">
-                            <span className={cn('px-2 py-0.5 rounded-sm font-bold uppercase tracking-wider', item.earned ? tierInfo.headerTagClass : 'bg-surface-muted text-muted')}>
+                            <span className={cn('px-2 py-0.5 rounded-none font-bold uppercase tracking-wider', item.earned ? tierInfo.headerTagClass : 'bg-surface-muted text-muted')}>
                               {item.earned ? `TIER ${item.badge.tier} • ${tierInfo.name}` : 'TERSELUBUNG'}
                             </span>
                             {item.earned ? (
                               <span
-                                className="text-emerald-700 dark:text-emerald-400 inline-flex items-center p-0.5 shrink-0"
+                                className="text-foreground inline-flex items-center p-0.5 shrink-0"
                                 title="Diraih"
                               >
                                 <CheckCircle2 className="w-3.5 h-3.5" />
@@ -892,7 +892,7 @@ export default function DashboardBadgesPage() {
                             </h4>
                             {item.earned && item.badge.titleReward && (
                               <div className="flex justify-center">
-                                <span className={cn('font-mono text-[9px] px-2 py-0.5 rounded-full border font-semibold inline-flex items-center gap-1 shadow-xs', tierInfo.honorBadgeClass)}>
+                                <span className={cn('font-mono text-[9px] px-2 py-0.5 rounded-none border font-semibold inline-flex items-center gap-1', tierInfo.honorBadgeClass)}>
                                   <span className="opacity-70">Gelar:</span>
                                   <span className="font-bold">"{item.badge.titleReward}"</span>
                                 </span>
@@ -908,7 +908,7 @@ export default function DashboardBadgesPage() {
                         <div className="pt-2 border-t border-border-hairline text-center font-mono">
                           {item.earned ? (
                             isEquipped ? (
-                              <span className={cn('w-full py-1 rounded-sm border font-bold text-[9px] uppercase tracking-wider block', tierInfo.badgeTagClass)}>
+                              <span className={cn('w-full py-1 rounded-none border font-bold text-[9px] uppercase tracking-wider block', tierInfo.badgeTagClass)}>
                                 ✓ Gelar Aktif
                               </span>
                             ) : item.badge.titleReward ? (
@@ -916,7 +916,7 @@ export default function DashboardBadgesPage() {
                                 type="button"
                                 disabled={equipping}
                                 onClick={() => handleEquipTitle(item.badge.titleReward || null)}
-                                className="w-full py-1 rounded-sm border border-foreground hover:bg-foreground hover:text-background font-bold text-[9px] uppercase tracking-wider transition-colors block"
+                                className="w-full py-1 rounded-none border border-foreground hover:bg-foreground hover:text-background font-bold text-[9px] uppercase tracking-wider transition-colors block"
                               >
                                 Pasang Gelar
                               </button>
@@ -954,7 +954,7 @@ export default function DashboardBadgesPage() {
                   <article
                     key={item.badge.id}
                     className={cn(
-                      'p-4 flex flex-col justify-between transition-all duration-150 rounded-sm',
+                      'p-4 flex flex-col justify-between transition-all duration-150 rounded-none',
                       item.earned
                         ? cn('border-2', tierInfo.cardEarnedBg)
                         : cn('border border-dashed', tierInfo.cardLockedBorder)
@@ -964,7 +964,7 @@ export default function DashboardBadgesPage() {
                       {/* Top Bar */}
                       <div className="flex items-center justify-between pb-2 border-b border-border-hairline mb-3">
                         <div className="flex items-center gap-1.5">
-                          <span className={cn('px-2 py-0.5 text-[9px] font-mono font-bold uppercase tracking-wider rounded-sm border shadow-xs', tierInfo.headerTagClass)}>
+                          <span className={cn('px-2 py-0.5 text-[9px] font-mono font-bold uppercase tracking-wider rounded-none border', tierInfo.headerTagClass)}>
                             T{item.badge.tier} &bull; {tierInfo.name}
                           </span>
                           <span className="font-mono text-[9.5px] uppercase text-muted tracking-wider font-semibold">
@@ -974,7 +974,7 @@ export default function DashboardBadgesPage() {
 
                         {item.earned ? (
                           <span
-                            className="text-emerald-700 dark:text-emerald-400 inline-flex items-center p-0.5 shrink-0"
+                            className="text-foreground inline-flex items-center p-0.5 shrink-0"
                             title="Diraih"
                           >
                             <CheckCircle2 className="w-3.5 h-3.5" />
@@ -1003,7 +1003,7 @@ export default function DashboardBadgesPage() {
                             {item.badge.name}
                           </h4>
                           {item.badge.titleReward && (
-                            <span className={cn('font-mono text-[9px] px-2 py-0.5 rounded-full border font-semibold inline-flex items-center gap-1 shadow-xs', tierInfo.honorBadgeClass)}>
+                            <span className={cn('font-mono text-[9px] px-2 py-0.5 rounded-none border font-semibold inline-flex items-center gap-1', tierInfo.honorBadgeClass)}>
                               <span className="opacity-70">Gelar:</span>
                               <span className="font-bold">"{item.badge.titleReward}"</span>
                             </span>
@@ -1026,10 +1026,10 @@ export default function DashboardBadgesPage() {
                             {item.currentValue} / {item.targetValue} ({item.percent}%)
                           </span>
                         </div>
-                        <div className="w-full h-2 rounded-full overflow-hidden bg-surface-muted border border-border-hairline p-0">
+                        <div className="w-full h-2 rounded-none overflow-hidden bg-surface-muted border border-border-hairline p-0">
                           <div
                             className={cn(
-                              'h-full rounded-full transition-all duration-300',
+                              'h-full rounded-none transition-all duration-300',
                               item.earned ? tierInfo.progressBarClass : cn(tierInfo.progressBarClass, 'opacity-70')
                             )}
                             style={{ width: `${Math.min(100, item.percent)}%` }}
@@ -1050,7 +1050,7 @@ export default function DashboardBadgesPage() {
                             </span>
 
                             {isEquipped ? (
-                              <span className="px-2 py-0.5 rounded-sm border border-foreground bg-foreground text-background font-bold text-[10px] uppercase">
+                              <span className="px-2 py-0.5 rounded-none border border-foreground bg-foreground text-background font-bold text-[10px] uppercase">
                                 ✓ Gelar Aktif
                               </span>
                             ) : item.badge.titleReward ? (

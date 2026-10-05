@@ -186,12 +186,13 @@ export default function StyleguidePage() {
             <div className="flex flex-wrap gap-3 items-center pt-2">
               <span className="font-mono text-[11px] text-muted mr-3">Status Buku &amp; Sirkulasi:</span>
               <StatusPill status="available" count={3} />
+              <StatusPill status="last_copy" />
               <StatusPill status="borrowed" />
               <StatusPill status="reference" />
               <StatusPill status="review" />
               <StatusPill status="published" />
               <StatusPill status="draft" />
-              <StatusPill status="overdue" />
+              <StatusPill status="overdue" daysOverdue={3} />
             </div>
           </div>
         </section>

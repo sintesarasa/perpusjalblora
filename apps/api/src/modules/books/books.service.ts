@@ -459,9 +459,34 @@ export class BooksService {
    * Create a new Book with initial copies
    */
   async createBook(input: BookCreateInput) {
+    // 1. Cek duplikasi ISBN jika dicantumkan
+    if (input.isbn && input.isbn.trim()) {
+      const trimmedIsbn = input.isbn.trim();
+      const existingWithIsbn = await prisma.book.findFirst({
+        where: {
+          isbn: trimmedIsbn,
+          deletedAt: null,
+        },
+        select: { id: true, title: true },
+      });
+      if (existingWithIsbn) {
+        throw HttpError.conflict(
+          `Buku dengan nomor ISBN '${trimmedIsbn}' sudah terdaftar dalam katalog ("${existingWithIsbn.title}"). Silakan tambahkan eksemplar fisik ke judul buku tersebut.`
+        );
+      }
+    }
+
+    // 2. Generate slug cerdas (bersih tanpa akhiran acak kecuali saat tabrakan/collision)
     const baseSlug = slugify(input.title);
-    const randomSuffix = Math.random().toString(36).substring(2, 7);
-    const slug = `${baseSlug}-${randomSuffix}`;
+    let slug = baseSlug;
+    const existingWithSlug = await prisma.book.findUnique({
+      where: { slug },
+      select: { id: true },
+    });
+    if (existingWithSlug) {
+      const randomSuffix = Math.random().toString(36).substring(2, 7);
+      slug = `${baseSlug}-${randomSuffix}`;
+    }
 
     const initialCopiesCount = input.initialCopies || 0;
     const year = new Date().getFullYear();
@@ -525,6 +550,23 @@ export class BooksService {
     const existing = await prisma.book.findUnique({ where: { id } });
     if (!existing || existing.deletedAt) {
       throw HttpError.notFound('Buku tidak ditemukan.');
+    }
+
+    if (input.isbn && input.isbn.trim()) {
+      const trimmedIsbn = input.isbn.trim();
+      const existingWithIsbn = await prisma.book.findFirst({
+        where: {
+          isbn: trimmedIsbn,
+          id: { not: id },
+          deletedAt: null,
+        },
+        select: { id: true, title: true },
+      });
+      if (existingWithIsbn) {
+        throw HttpError.conflict(
+          `Nomor ISBN '${trimmedIsbn}' sudah digunakan oleh judul buku lain ("${existingWithIsbn.title}").`
+        );
+      }
     }
 
     const updated = await prisma.book.update({

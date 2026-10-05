@@ -91,7 +91,7 @@ export function ArticleReaderToolbar({
       className={cn(
         'transition-all duration-300 print:hidden',
         isZenMode
-          ? 'fixed bottom-6 right-6 z-50 bg-background/95 backdrop-blur border-2 border-foreground shadow-2xl p-2 flex items-center gap-2 font-mono text-xs'
+          ? 'fixed bottom-6 right-6 z-50 bg-background/95 backdrop-blur border-2 border-foreground p-2 flex items-center gap-2 font-mono text-xs'
           : 'border-y border-border-hairline py-3 my-6 flex flex-wrap items-center justify-between gap-4 font-mono text-xs bg-surface/50'
       )}
     >

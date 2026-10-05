@@ -197,7 +197,7 @@ export function TagPicker({
         <div className="ml-auto flex items-center gap-2 shrink-0">
           <span
             className={`font-mono text-[10px] uppercase tracking-wider ${
-              selectedIds.length >= maxTags ? 'text-amber-600 dark:text-amber-400 font-bold' : 'text-muted'
+              selectedIds.length >= maxTags ? 'text-foreground font-bold' : 'text-muted'
             }`}
           >
             {selectedIds.length}/{maxTags} Tag
@@ -210,7 +210,7 @@ export function TagPicker({
 
       {/* ── Dropdown Suggestions (Floating seamlessly) ── */}
       {isOpen && (
-        <div className="absolute left-0 right-0 top-full mt-1 border border-foreground bg-surface shadow-2xl max-h-60 overflow-hidden flex flex-col z-50">
+        <div className="absolute left-0 right-0 top-full mt-1 border-2 border-foreground bg-surface rounded-none max-h-60 overflow-hidden flex flex-col z-50">
           {errorMsg && (
             <div className="px-3 py-1.5 bg-destructive/10 text-destructive text-[11px] font-sans">
               {errorMsg}

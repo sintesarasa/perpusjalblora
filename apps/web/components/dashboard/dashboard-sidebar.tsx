@@ -169,7 +169,7 @@ export function DashboardSidebar({ user, onNavigate }: DashboardSidebarProps) {
                           'font-mono text-[9px] px-1.5 py-0.2 font-bold leading-tight',
                           isActive
                             ? 'bg-background text-foreground'
-                            : 'bg-foreground text-background shadow-[1px_1px_0px_0px_rgba(0,0,0,0.4)]'
+                            : 'bg-foreground text-background'
                         )}
                       >
                         {item.badge > 9 ? '9+' : item.badge}

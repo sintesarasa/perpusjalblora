@@ -377,12 +377,12 @@ export default function DashboardEditArticlePage() {
   if (!article) {
     return (
       <div className="min-h-[65vh] flex flex-col items-center justify-center p-6 text-center max-w-md mx-auto">
-        <div className="w-14 h-14 rounded-full bg-surface-muted border border-border flex items-center justify-center mb-5 text-foreground">
+        <div className="w-14 h-14 border-2 border-foreground bg-surface flex items-center justify-center mb-5 text-foreground">
           <AlertCircle className="w-7 h-7 text-destructive" />
         </div>
         <h2 className="font-serif text-2xl font-bold mb-2">Naskah Tidak Ditemukan</h2>
         <p className="text-sm font-sans text-muted mb-6 leading-relaxed">
-          {errorMessage || 'Naskah yang ingin Anda sunting tidak ditemukan, telah dihapus, atau Anda belum memiliki hak akses.'}
+          {errorMessage || 'Naskah yang ingin kamu sunting tidak ditemukan, telah dihapus, atau kamu belum memiliki hak akses.'}
         </p>
         <div className="flex flex-wrap items-center justify-center gap-3">
           <Button
@@ -436,14 +436,14 @@ export default function DashboardEditArticlePage() {
                 <span className="sm:hidden">Tersimpan</span>
               </span>
             ) : isDirty ? (
-              <span className="text-amber-600 dark:text-amber-400 border border-amber-500/30 px-1.5 py-0.5 rounded-xs flex items-center gap-1">
-                <span className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-pulse" />
-                <span className="hidden xs:inline">Draf Diubah</span>
-                <span className="xs:hidden">Draf</span>
+              <span className="text-foreground border border-foreground px-1.5 py-0.5 rounded-none flex items-center gap-1 font-mono text-[10px]">
+                <span className="w-1.5 h-1.5 bg-foreground rounded-none animate-pulse" />
+                <span className="hidden xs:inline">[ ▫ DRAF DIUBAH ]</span>
+                <span className="xs:hidden">[ ▫ DRAF ]</span>
               </span>
             ) : (
-              <span className="text-muted border border-border-hairline px-1.5 py-0.5 rounded-xs">
-                [ EDITING ]
+              <span className="text-muted border border-border-hairline px-1.5 py-0.5 rounded-none font-mono text-[10px]">
+                [ ▫ EDITING ]
               </span>
             )}
           </div>
@@ -462,7 +462,7 @@ export default function DashboardEditArticlePage() {
             type="button"
             onClick={() => setIsSettingsOpen(!isSettingsOpen)}
             className={cn(
-              'h-8 px-2.5 sm:px-3 border font-mono text-[10px] sm:text-[11px] uppercase tracking-wider inline-flex items-center gap-1.5 transition-colors relative',
+              'h-8 px-2.5 sm:px-3 border font-mono text-[10px] sm:text-[11px] uppercase tracking-wider inline-flex items-center gap-1.5 transition-colors relative rounded-none',
               isSettingsOpen
                 ? 'bg-foreground text-background border-foreground'
                 : 'border-border text-muted hover:text-foreground hover:border-foreground bg-surface-muted/20'
@@ -473,7 +473,7 @@ export default function DashboardEditArticlePage() {
             <span className="hidden sm:inline">Pengaturan</span>
             {!hasCover && (
               <span
-                className="w-2 h-2 rounded-full bg-amber-500 shrink-0"
+                className="w-1.5 h-1.5 rounded-none bg-foreground shrink-0"
                 title="Gambar sampul belum diunggah"
               />
             )}
@@ -525,7 +525,7 @@ export default function DashboardEditArticlePage() {
       <main className="max-w-[740px] mx-auto px-4 sm:px-6 pt-8 sm:pt-12 pb-[45vh] space-y-6 sm:space-y-8">
         {/* Offline Local Recovery Banner */}
         {hasLocalBackup && (
-          <div className="p-3.5 sm:p-4 border-2 border-foreground bg-surface flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+          <div className="p-3.5 sm:p-4 border-2 border-foreground bg-surface flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div className="flex items-start gap-2.5">
               <RotateCcw className="w-4 h-4 text-foreground mt-0.5 shrink-0" />
               <div>
@@ -560,14 +560,14 @@ export default function DashboardEditArticlePage() {
 
         {/* Curator Revision Notes Callout if article was returned for revision */}
         {article.status === 'REVISION' && (
-          <div className="p-4 border-2 border-amber-600 bg-amber-50 dark:bg-amber-950/20 text-foreground flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+          <div className="p-4 border-2 border-foreground bg-surface text-foreground flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-foreground shrink-0 mt-0.5" />
             <div className="flex-1 min-w-0">
-              <h4 className="font-mono text-xs uppercase tracking-wider font-bold text-amber-900 dark:text-amber-300">
-                Naskah Memerlukan Revisi Redaksi
+              <h4 className="font-mono text-xs uppercase tracking-wider font-bold text-foreground">
+                [ ◓ CATATAN KURATOR: PERLU REVISI ]
               </h4>
               <p className="font-sans text-xs sm:text-sm text-foreground/90 mt-1 leading-relaxed">
-                Tim kurator redaksi telah meninjau tulisan Anda dan meminta sedikit penyempurnaan. Silakan lakukan revisi pada lembar kerja di bawah, lalu klik <strong>Ajukan ke Redaksi</strong> kembali.
+                Tim kurator redaksi telah meninjau tulisan kamu dan meminta sedikit penyempurnaan. Silakan lakukan revisi pada lembar kerja di bawah, lalu klik <strong>Ajukan ke Redaksi</strong> kembali.
               </p>
             </div>
           </div>
@@ -575,7 +575,7 @@ export default function DashboardEditArticlePage() {
 
         {/* Global Error Banner */}
         {errorMessage && (
-          <div className="p-3.5 sm:p-4 border-2 border-foreground bg-surface flex items-start gap-3 shadow-xs">
+          <div className="p-3.5 sm:p-4 border-2 border-foreground bg-surface flex items-start gap-3">
             <AlertCircle className="w-4 h-4 mt-0.5 text-foreground shrink-0" />
             <div className="flex-1 min-w-0">
               <p className="font-mono text-[10px] font-bold uppercase tracking-wider text-muted">
@@ -613,7 +613,7 @@ export default function DashboardEditArticlePage() {
                 className="inline-flex items-center gap-1.5 font-mono text-[10px] tracking-widest uppercase font-bold text-foreground bg-surface-muted/60 hover:bg-surface-muted px-2.5 py-1 border border-border hover:border-foreground transition-colors group cursor-pointer"
                 title="Klik untuk panduan lengkap & memilih rubrik"
               >
-                <span className="w-1.5 h-1.5 bg-foreground rounded-full inline-block group-hover:scale-125 transition-transform" />
+                <span className="w-1.5 h-1.5 bg-foreground rounded-none inline-block group-hover:scale-125 transition-transform" />
                 <span>
                   {selectedCategory
                     ? `${selectedCategoryGuide?.number || '•'} // ${selectedCategory.name}`
@@ -767,7 +767,7 @@ export default function DashboardEditArticlePage() {
       {/* Drawer Panel */}
       <aside
         className={cn(
-          'fixed inset-y-0 right-0 z-50 w-full sm:w-[460px] bg-background border-l border-border shadow-2xl flex flex-col transition-transform duration-300 ease-in-out',
+          'fixed inset-y-0 right-0 z-50 w-full sm:w-[460px] bg-background border-l-2 border-foreground flex flex-col transition-transform duration-300 ease-in-out',
           isSettingsOpen ? 'translate-x-0' : 'translate-x-full'
         )}
         aria-label="Pengaturan Naskah"
@@ -781,7 +781,7 @@ export default function DashboardEditArticlePage() {
           <button
             type="button"
             onClick={() => setIsSettingsOpen(false)}
-            className="w-8 h-8 rounded-full border border-border flex items-center justify-center text-muted hover:text-foreground hover:border-foreground transition-colors cursor-pointer"
+            className="w-8 h-8 rounded-none border border-border flex items-center justify-center text-muted hover:text-foreground hover:border-foreground transition-colors cursor-pointer"
             title="Tutup Pengaturan (Esc)"
           >
             <X className="w-4 h-4" />

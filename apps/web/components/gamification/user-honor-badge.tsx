@@ -89,7 +89,7 @@ export function UserHonorBadge({
             setIsOpen(!isOpen);
           }}
           className={cn(
-            'group relative inline-flex items-center gap-1.5 transition-all duration-150 cursor-pointer font-bold rounded-full shadow-xs',
+            'group relative inline-flex items-center gap-1.5 transition-all duration-150 cursor-pointer font-bold rounded-none',
             tierInfo.honorBadgeClass,
             size === 'sm'
               ? 'px-2.5 py-0.5 text-[9.5px] hover:-translate-y-0.5'
@@ -122,10 +122,10 @@ export function UserHonorBadge({
             setIsOpen(!isOpen);
           }}
           className={cn(
-            'inline-flex items-center gap-1 border border-foreground/70 bg-surface text-foreground font-mono font-bold tracking-tight rounded-full transition-all duration-150 cursor-pointer',
+            'inline-flex items-center gap-1 border border-foreground/70 bg-surface text-foreground font-mono font-bold tracking-tight rounded-none transition-all duration-150 cursor-pointer',
             size === 'sm'
-              ? 'px-2 py-0.5 text-[9px] shadow-xs hover:-translate-y-0.5'
-              : 'px-2.5 py-0.5 text-[10px] shadow-xs hover:-translate-y-0.5',
+              ? 'px-2 py-0.5 text-[9px] hover:-translate-y-0.5'
+              : 'px-2.5 py-0.5 text-[10px] hover:-translate-y-0.5',
             isOpen && 'bg-foreground text-background'
           )}
           title={`Lihat ${earnedBadgesCount} total lencana & gelar`}
@@ -139,7 +139,7 @@ export function UserHonorBadge({
       {/* ── 3. Popover Collection Folio (Koleksi Lencana & Julukan) ── */}
       {isOpen && (
         <div
-          className="absolute left-0 top-full mt-2 w-72 sm:w-80 bg-surface border-2 border-foreground shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] dark:shadow-[5px_5px_0px_0px_rgba(255,255,255,0.95)] z-50 p-4 animate-in fade-in-50 zoom-in-95 duration-100"
+          className="absolute left-0 top-full mt-2 w-72 sm:w-80 bg-surface border-2 border-foreground z-50 p-4 animate-in fade-in-50 zoom-in-95 duration-100 rounded-none"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Folio Header */}
@@ -161,7 +161,7 @@ export function UserHonorBadge({
 
           {/* Active Equipped Title Plaque */}
           {equippedTitle && (
-            <div className={cn('mb-3 p-2.5 border-2 flex items-center justify-between gap-2 shadow-xs rounded-sm', tierInfo.honorBadgeClass)}>
+            <div className={cn('mb-3 p-2.5 border-2 flex items-center justify-between gap-2 rounded-none', tierInfo.honorBadgeClass)}>
               <div className="min-w-0">
                 <span className="font-mono text-[8.5px] uppercase tracking-wider font-bold block opacity-80">
                   GELAR UTAMA TERPASANG (TIER {activeTier} • {tierInfo.name})

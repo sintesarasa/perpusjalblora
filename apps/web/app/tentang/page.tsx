@@ -280,7 +280,7 @@ export default function AboutPage() {
               <span className="hidden sm:inline">[ MANIFESTO &amp; DOKUMEN HISTORIS // SWADAYA RAKYAT ]</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-foreground animate-pulse" />
+              <span className="w-1.5 h-1.5 rounded-none bg-foreground animate-pulse" />
               <span>BERJALAN SEJAK 2017</span>
             </div>
             <div className="hidden lg:flex items-center gap-2">
@@ -374,7 +374,7 @@ export default function AboutPage() {
             {/* Right Pull Quote Scene Card with Stamp Reveal */}
             <div className="lg:col-span-5">
               <RevealOnScroll variant="stamp" delayMs={100}>
-                <div className="border-2 border-foreground bg-surface p-6 sm:p-8 space-y-6 shadow-[5px_5px_0px_0px_currentColor]">
+                <div className="border-2 border-foreground bg-surface p-6 sm:p-8 space-y-6">
                   <div className="font-mono text-[10px] uppercase tracking-ultra text-muted border-b border-foreground pb-2 flex items-center justify-between">
                     <span>[ AMANAT PATABA ]</span>
                     <span className="text-foreground font-bold">KUTHO KIDUL, BLORA</span>
@@ -456,7 +456,7 @@ export default function AboutPage() {
                     {/* Spine Node Badge in Center with Stamp Effect */}
                     <div className="absolute left-6 md:left-1/2 top-0 -translate-x-1/2 z-20 flex items-center justify-center">
                       <RevealOnScroll variant="stamp" delayMs={50}>
-                        <div className="w-10 h-10 sm:w-12 sm:h-12 border-2 border-foreground bg-background text-foreground font-mono font-black text-xs sm:text-sm flex items-center justify-center shadow-[3px_3px_0px_0px_currentColor] group-hover:bg-foreground group-hover:text-background transition-colors cursor-default">
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 border-2 border-foreground bg-background text-foreground font-mono font-black text-xs sm:text-sm flex items-center justify-center group-hover:bg-foreground group-hover:text-background transition-colors cursor-default">
                           {event.year.slice(-2)}
                         </div>
                       </RevealOnScroll>
@@ -470,7 +470,7 @@ export default function AboutPage() {
                       >
                         <div
                           className={cn(
-                            'border-2 border-foreground bg-surface p-6 sm:p-8 relative overflow-hidden shadow-[4px_4px_0px_0px_currentColor] transition-all duration-300 hover:shadow-[7px_7px_0px_0px_currentColor]',
+                            'border-2 border-foreground bg-surface p-6 sm:p-8 relative overflow-hidden transition-all duration-300',
                             isEven ? 'md:mr-8 lg:md:mr-12' : 'md:ml-8 lg:md:ml-12'
                           )}
                         >
@@ -605,7 +605,7 @@ export default function AboutPage() {
 
           {/* Active Wing Content Card with Stamp Reveal */}
           <RevealOnScroll variant="stamp" delayMs={50}>
-            <div className="border-2 border-foreground bg-surface p-6 sm:p-10 shadow-[6px_6px_0px_0px_currentColor] relative">
+            <div className="border-2 border-foreground bg-surface p-6 sm:p-10 relative">
               {activeWing === 'KOTA' ? (
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
                   <div className="lg:col-span-7 space-y-4">
@@ -729,7 +729,7 @@ export default function AboutPage() {
           </RevealOnScroll>
 
           <RevealOnScroll variant="fade-up" delayMs={100}>
-            <div className="border-2 border-foreground overflow-x-auto bg-surface shadow-[4px_4px_0px_0px_currentColor]">
+            <div className="border-2 border-foreground overflow-x-auto bg-surface">
               <table className="w-full text-left font-sans text-xs sm:text-sm">
                 <thead>
                   <tr className="border-b-2 border-foreground bg-surface-muted font-mono text-[11px] uppercase tracking-wider text-foreground">
@@ -815,7 +815,7 @@ export default function AboutPage() {
               const isOpen = openFaq === faq.id;
               return (
                 <RevealOnScroll key={faq.id} variant="fade-up" delayMs={idx * 50}>
-                  <div className="border-2 border-foreground bg-surface overflow-hidden transition-all shadow-[2px_2px_0px_0px_currentColor]">
+                  <div className="border-2 border-foreground bg-surface overflow-hidden transition-all">
                     <button
                       type="button"
                       onClick={() => toggleFaq(faq.id)}
@@ -855,7 +855,7 @@ export default function AboutPage() {
         {/* ========================================================= */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6">
           <RevealOnScroll variant="stamp" delayMs={50}>
-            <div className="border-4 border-foreground bg-surface p-6 sm:p-12 lg:p-14 space-y-8 shadow-[6px_6px_0px_0px_currentColor]">
+            <div className="border-4 border-foreground bg-surface p-6 sm:p-12 lg:p-14 space-y-8">
               <div className="max-w-2xl mx-auto text-center space-y-3">
                 <div className="inline-block border border-foreground px-3 py-1 font-mono text-[9px] sm:text-[10px] uppercase tracking-widest font-bold bg-surface-muted">
                   PINTU TERPAL TERBUKA LEBAR
@@ -892,7 +892,7 @@ export default function AboutPage() {
                 </div>
 
                 {/* Opsi 2 */}
-                <div className="p-5 border-2 border-foreground bg-background space-y-3 flex flex-col justify-between shadow-xs">
+                <div className="p-5 border-2 border-foreground bg-background space-y-3 flex flex-col justify-between">
                   <div className="space-y-2">
                     <div className="text-[10px] font-bold text-foreground uppercase tracking-wider">
                       [ PERAN 02 // DONASI BUKU ]

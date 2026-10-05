@@ -28,7 +28,7 @@ export function ArticleFeatured({
   return (
     <section
       className={cn(
-        'border-2 border-foreground bg-surface p-6 sm:p-9 lg:p-10 relative overflow-hidden shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.9)] space-y-6 sm:space-y-8',
+        'border-2 border-foreground bg-surface p-6 sm:p-9 lg:p-10 relative overflow-hidden space-y-6 sm:space-y-8',
         className
       )}
     >
@@ -88,14 +88,14 @@ export function ArticleFeatured({
         {/* Right Column: Visual Frame (5 cols) */}
         <div className="lg:col-span-5">
           {article.coverImage ? (
-            <div className="border-2 border-foreground p-2.5 bg-surface shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.9)]">
+            <div className="border-2 border-foreground p-2.5 bg-surface">
               <div className="aspect-[4/3] overflow-hidden bg-zinc-950 relative group border border-foreground/30">
                 <img
                   src={article.coverImage}
                   alt={article.title}
                   className="w-full h-full object-cover grayscale contrast-110 group-hover:grayscale-0 group-hover:contrast-100 transition-all duration-500"
                 />
-                <div className="absolute top-2 right-2 px-2 py-0.5 bg-foreground text-background font-mono text-[8px] font-black uppercase tracking-widest border border-background shadow-xs">
+                <div className="absolute top-2 right-2 px-2 py-0.5 bg-foreground text-background font-mono text-[8px] font-black uppercase tracking-widest border border-background">
                   ✦ FOTO LEMBARAN ✦
                 </div>
               </div>
@@ -106,7 +106,7 @@ export function ArticleFeatured({
               )}
             </div>
           ) : (
-            <div className="border-2 border-foreground p-7 bg-surface-muted flex flex-col items-center justify-center text-center space-y-3 min-h-[260px] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.9)]">
+            <div className="border-2 border-foreground p-7 bg-surface-muted flex flex-col items-center justify-center text-center space-y-3 min-h-[260px]">
               <Quote className="w-7 h-7 text-foreground/40" />
               <span className="font-serif italic text-xl text-foreground font-bold">
                 Perpustakaan Jalanan Blora
@@ -130,7 +130,7 @@ export function ArticleFeatured({
             username={article.author?.username}
             size="md"
             shape="square"
-            className="border-2 border-foreground shrink-0 shadow-2xs"
+            className="border-2 border-foreground shrink-0"
           />
 
           <div className="space-y-1 min-w-0">
@@ -173,7 +173,7 @@ export function ArticleFeatured({
             <button
               type="button"
               onClick={() => onQuickRead(article)}
-              className="px-4 py-2.5 border-2 border-foreground bg-surface hover:bg-surface-muted text-foreground font-mono text-xs uppercase tracking-wider font-bold transition-all flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer active:translate-x-0.5 active:translate-y-0.5"
+              className="px-4 py-2.5 border-2 border-foreground bg-surface hover:bg-surface-muted text-foreground font-mono text-xs uppercase tracking-wider font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer active:translate-x-0.5 active:translate-y-0.5"
             >
               <BookOpen className="w-3.5 h-3.5" />
               <span>Baca Kilas</span>
@@ -181,7 +181,7 @@ export function ArticleFeatured({
           )}
 
           <Link href={`/artikel/${article.slug}`}>
-            <span className="px-5 py-2.5 bg-foreground text-background font-mono text-xs uppercase tracking-wider font-bold hover:bg-foreground/90 transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer active:translate-x-0.5 active:translate-y-0.5">
+            <span className="px-5 py-2.5 bg-foreground text-background font-mono text-xs uppercase tracking-wider font-bold hover:bg-foreground/90 transition-all flex items-center justify-center gap-2 cursor-pointer active:translate-x-0.5 active:translate-y-0.5">
               <span>Lembaran Penuh</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </span>

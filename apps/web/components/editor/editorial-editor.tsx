@@ -90,12 +90,12 @@ function InlineImageModal({
       onClick={onClose}
     >
       <div
-        className="w-full sm:max-w-md bg-background border-t-2 sm:border-2 border-foreground rounded-t-2xl sm:rounded-none max-h-[80vh] flex flex-col"
+        className="w-full sm:max-w-md bg-background border-t-2 sm:border-2 border-foreground rounded-none max-h-[80vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Handle */}
         <div className="flex justify-center pt-3 pb-1 sm:hidden">
-          <div className="w-10 h-1 bg-border rounded-full" />
+          <div className="w-10 h-0.5 bg-border rounded-none" />
         </div>
 
         {/* Header */}
@@ -123,7 +123,7 @@ function InlineImageModal({
 
         <div className="p-5 space-y-4 overflow-y-auto">
           {error && (
-            <div className="p-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-[11px] flex gap-2 items-center">
+            <div className="p-3 bg-surface border border-destructive text-destructive text-[11px] font-mono flex gap-2 items-center">
               <AlertCircle className="w-3.5 h-3.5 shrink-0" />
               <span>{error}</span>
             </div>
@@ -139,7 +139,7 @@ function InlineImageModal({
               value={altText}
               onChange={(e) => setAltText(e.target.value)}
               placeholder="Deskripsi singkat isi gambar..."
-              className="w-full h-10 px-3 border border-border-hairline bg-surface font-sans text-sm sm:text-xs focus:border-foreground focus:outline-none"
+              className="w-full h-10 px-3 border border-border-hairline bg-surface font-sans text-sm sm:text-xs focus:border-foreground focus:outline-none rounded-none"
             />
           </div>
 
@@ -150,7 +150,7 @@ function InlineImageModal({
               />
               {isUploading ? (
                 <div className="space-y-2">
-                  <div className="h-2 bg-surface-muted rounded-full overflow-hidden">
+                  <div className="h-2 bg-surface-muted rounded-none overflow-hidden">
                     <div
                       className="h-full bg-foreground transition-all duration-300"
                       style={{ width: `${uploadProgress}%` }}
@@ -209,7 +209,7 @@ function LinkModal({ onInsert, onClose }: { onInsert: (url: string, text: string
       onClick={onClose}
     >
       <div
-        className="w-full sm:max-w-sm bg-background border-t-2 sm:border-2 border-foreground rounded-t-2xl sm:rounded-none p-5 space-y-4"
+        className="w-full sm:max-w-sm bg-background border-t-2 sm:border-2 border-foreground rounded-none p-5 space-y-4"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">
@@ -219,18 +219,18 @@ function LinkModal({ onInsert, onClose }: { onInsert: (url: string, text: string
         <div className="space-y-1">
           <label className="font-mono text-[10px] uppercase text-muted font-bold">Teks Tautan (Opsional)</label>
           <input type="text" value={text} onChange={(e) => setText(e.target.value)}
-            placeholder="Klik di sini untuk membaca..." className="w-full h-10 px-3 border border-border-hairline bg-surface font-sans text-sm sm:text-xs focus:border-foreground focus:outline-none" />
+            placeholder="Klik di sini untuk membaca..." className="w-full h-10 px-3 border border-border-hairline bg-surface font-sans text-sm sm:text-xs focus:border-foreground focus:outline-none rounded-none" />
         </div>
         <div className="space-y-1">
           <label className="font-mono text-[10px] uppercase text-muted font-bold">URL</label>
           <input type="url" value={url} onChange={(e) => setUrl(e.target.value)}
-            placeholder="https://..." className="w-full h-10 px-3 border border-border-hairline bg-surface font-mono text-xs focus:border-foreground focus:outline-none" />
+            placeholder="https://..." className="w-full h-10 px-3 border border-border-hairline bg-surface font-mono text-xs focus:border-foreground focus:outline-none rounded-none" />
         </div>
         <button
           type="button"
           disabled={!url.trim() || url === 'https://'}
           onClick={() => onInsert(url, text)}
-          className="w-full h-11 bg-foreground text-background font-mono text-xs uppercase tracking-wider disabled:opacity-40"
+          className="w-full h-11 bg-foreground text-background font-mono text-xs uppercase tracking-wider disabled:opacity-40 rounded-none hover:bg-foreground/90 transition-colors"
         >
           Sisipkan Tautan
         </button>
@@ -1070,7 +1070,7 @@ export function EditorialEditor({
         {/* ── Sticky Toolbar ── */}
         <div
           className={cn(
-            'z-20 bg-background/98 backdrop-blur-md border-b border-border select-none shadow-[0_2px_4px_rgba(0,0,0,0.04)] dark:shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-shadow',
+            'z-20 bg-background/98 backdrop-blur-md border-b border-border select-none',
             isFocusMode ? 'sticky top-0' : stickyTopOffset
           )}
         >
@@ -1142,7 +1142,7 @@ export function EditorialEditor({
               )}
               {!isSaving && lastSaved && (
                 <span className="font-mono text-[10px] text-muted hidden sm:flex items-center gap-1">
-                  <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                  <CheckCircle2 className="w-3 h-3 text-foreground" />
                   {lastSaved.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
                 </span>
               )}
@@ -1150,7 +1150,7 @@ export function EditorialEditor({
                 type="button"
                 onMouseDown={(e) => { e.preventDefault(); setIsFocusMode(!isFocusMode); }}
                 title={isFocusMode ? 'Keluar Focus Mode' : 'Focus Mode — tulis tanpa gangguan'}
-                className="w-9 h-9 sm:w-8 sm:h-8 flex items-center justify-center text-muted hover:text-foreground border border-transparent hover:border-border transition-colors"
+                className="w-9 h-9 sm:w-8 sm:h-8 flex items-center justify-center text-muted hover:text-foreground border border-transparent hover:border-border transition-colors rounded-none"
               >
                 {isFocusMode ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
               </button>
@@ -1181,7 +1181,7 @@ export function EditorialEditor({
           <button
             type="button"
             onClick={() => setIsFocusMode(false)}
-            className="h-10 px-4 bg-foreground text-background font-mono text-[11px] uppercase tracking-wider flex items-center gap-2 shadow-lg hover:opacity-90"
+            className="h-10 px-4 bg-foreground text-background font-mono text-[11px] uppercase tracking-wider flex items-center gap-2 border border-background hover:opacity-90 rounded-none"
           >
             <Minimize2 className="w-3.5 h-3.5" />
             Keluar Focus Mode

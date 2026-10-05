@@ -47,12 +47,12 @@ export function NotificationToast() {
     <div
       role="alert"
       aria-live="assertive"
-      className="fixed bottom-5 right-5 z-50 max-w-sm sm:max-w-md w-[calc(100vw-2.5rem)] bg-surface border-2 border-foreground shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.9)] animate-in slide-in-from-bottom-5 fade-in duration-200"
+      className="fixed bottom-5 right-5 z-50 max-w-sm sm:max-w-md w-[calc(100vw-2.5rem)] bg-surface border-2 border-foreground animate-in slide-in-from-bottom-5 fade-in duration-200"
     >
       {/* Top Banner / Ticker */}
       <div className="flex items-center justify-between border-b border-foreground bg-foreground text-background px-3 py-1.5">
         <div className="flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-widest">
-          <span className="inline-block w-2 h-2 bg-red-500 animate-pulse rounded-full" />
+          <span className="inline-block w-2 h-2 bg-background animate-pulse rounded-none" />
           <span>WARTA KILAT REAL-TIME</span>
         </div>
         <button

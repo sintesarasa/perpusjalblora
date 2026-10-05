@@ -141,11 +141,29 @@ export class LoansService {
       // 1. Check user status
       const userDb = await tx.user.findUnique({
         where: { id: user.userId },
-        select: { id: true, status: true, phoneNumber: true, deletedAt: true },
+        select: {
+          id: true,
+          status: true,
+          phoneNumber: true,
+          deletedAt: true,
+          borrowSuspendedUntil: true,
+          suspensionReason: true,
+        },
       });
 
       if (!userDb || userDb.deletedAt || userDb.status === 'SUSPENDED' || userDb.status === 'DEACTIVATED') {
         throw HttpError.forbidden('Akun Anda dalam status pembatasan dan tidak dapat meminjam buku.');
+      }
+
+      if (userDb.borrowSuspendedUntil && userDb.borrowSuspendedUntil > new Date()) {
+        const untilStr = userDb.borrowSuspendedUntil.toLocaleDateString('id-ID', {
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+        });
+        throw HttpError.forbidden(
+          `Hak pinjam Anda sedang disuspensi hingga ${untilStr}. Alasan: ${userDb.suspensionReason || 'Pelanggaran batas waktu sirkulasi buku.'}`
+        );
       }
 
       // Update phone number if provided or missing
@@ -537,6 +555,17 @@ export class LoansService {
 
       if (member.status === 'SUSPENDED' || member.status === 'DEACTIVATED') {
         throw HttpError.forbidden(`Akun member ${member.name} sedang dalam status pembatasan.`);
+      }
+
+      if (member.borrowSuspendedUntil && member.borrowSuspendedUntil > new Date()) {
+        const untilStr = member.borrowSuspendedUntil.toLocaleDateString('id-ID', {
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+        });
+        throw HttpError.forbidden(
+          `Member ${member.name} sedang dalam masa penangguhan pinjam hingga ${untilStr}. Alasan: ${member.suspensionReason || 'Keterlambatan sirkulasi'}`
+        );
       }
 
       // Check overdue loans

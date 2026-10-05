@@ -156,7 +156,7 @@ export function AdminEditBookModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-xs font-sans">
-      <div className="relative w-full max-w-4xl bg-surface border-2 border-foreground shadow-2xl max-h-[94vh] flex flex-col animate-in fade-in zoom-in-95 duration-150">
+      <div className="relative w-full max-w-4xl bg-surface border-2 border-foreground rounded-none max-h-[94dvh] flex flex-col animate-in fade-in zoom-in-95 duration-150">
         {/* Modal Header */}
         <div className="p-4 sm:p-5 border-b border-border-hairline flex items-start justify-between bg-surface-muted/30">
           <div>

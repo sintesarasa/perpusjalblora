@@ -9,7 +9,8 @@
     "typecheck": "turbo run typecheck",
     "db:generate": "prisma generate --schema=prisma/schema.prisma",
     "db:push": "prisma db push --schema=prisma/schema.prisma",
-    "db:seed": "pnpm --filter api exec tsx ../../prisma/seed.ts"
+    "db:seed": "pnpm --filter api exec tsx ../../prisma/seed.ts",
+    "test:e2e": "pnpm --filter @perpusjal/web test:e2e"
   },
   "devDependencies": {
     "turbo": "^2.4.4",

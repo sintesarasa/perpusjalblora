@@ -193,19 +193,13 @@ export function BadgeInsignia({
     2: 'border-2',
     3: 'border-2',
     4: 'border-2',
-    5: 'border-2 ring-1 ring-purple-400/30 dark:ring-purple-400/40',
-    6: 'border-2 ring-2 ring-amber-400/40 dark:ring-yellow-400/50 shadow-[0_0_12px_rgba(250,204,21,0.25)]',
+    5: 'border-2 outline outline-1 outline-foreground/30',
+    6: 'border-2 outline outline-2 outline-foreground',
   }[tier] || 'border-2';
 
-  // Distinct subtle locked medallion styling per tier (gentle tint, no visual noise)
-  const lockedInsigniaClass = {
-    1: 'border-emerald-700/30 dark:border-emerald-400/30 text-emerald-800/60 dark:text-emerald-300/50 bg-emerald-500/5 dark:bg-emerald-950/20 border-dashed',
-    2: 'border-orange-700/30 dark:border-orange-400/30 text-orange-800/60 dark:text-orange-300/50 bg-orange-500/5 dark:bg-orange-950/20 border-dashed',
-    3: 'border-sky-700/30 dark:border-sky-400/30 text-sky-800/60 dark:text-sky-300/50 bg-sky-500/5 dark:bg-sky-950/20 border-dashed',
-    4: 'border-slate-500/30 dark:border-slate-300/30 text-slate-700/60 dark:text-slate-200/50 bg-slate-500/5 dark:bg-slate-900/20 border-dashed',
-    5: 'border-purple-700/30 dark:border-purple-400/30 text-purple-800/60 dark:text-purple-300/50 bg-purple-500/5 dark:bg-purple-950/20 border-dashed',
-    6: 'border-amber-600/30 dark:border-yellow-400/30 text-amber-800/60 dark:text-yellow-300/50 bg-amber-500/5 dark:bg-yellow-950/20 border-dashed',
-  }[tier] || 'border-border-hairline bg-surface-muted/50 text-muted/60 border-dashed';
+  // Distinct stark monochrome locked medallion styling
+  const lockedInsigniaClass =
+    'border-border-hairline bg-surface-muted/50 text-muted/60 border-dashed';
 
   const solidInvertedClass =
     tier === 6
@@ -218,7 +212,7 @@ export function BadgeInsignia({
     <div className={cn('relative inline-flex flex-col items-center justify-center shrink-0', className)}>
       <div
         className={cn(
-          'relative flex items-center justify-center rounded-full transition-transform duration-200 select-none shrink-0',
+          'relative flex items-center justify-center rounded-none transition-transform duration-200 select-none shrink-0',
           sizeBoxClass,
           variant === 'solid-inverted' ? 'border' : tierFrameStyle,
           variant === 'solid-inverted'
@@ -233,14 +227,14 @@ export function BadgeInsignia({
 
         {/* Minimalist Locked Padlock Accent if not earned */}
         {!earned && (
-          <div className="absolute -bottom-0.5 -right-0.5 bg-surface border border-border-hairline rounded-full p-0.5 shadow-xs">
+          <div className="absolute -bottom-0.5 -right-0.5 bg-surface border border-border-hairline rounded-none p-0.5">
             <Lock className="w-2.5 h-2.5 text-muted" />
           </div>
         )}
 
         {/* Tier 6 Crown Accents */}
         {tier === 6 && earned && (
-          <div className="absolute -top-1 -right-1 bg-amber-500 dark:bg-yellow-400 text-slate-950 p-0.5 rounded-full shadow-xs">
+          <div className="absolute -top-1 -right-1 bg-foreground text-background p-0.5 rounded-none">
             <Crown className="w-2.5 h-2.5" />
           </div>
         )}

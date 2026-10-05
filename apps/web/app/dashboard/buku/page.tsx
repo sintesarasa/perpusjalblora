@@ -460,7 +460,7 @@ export default function DashboardBookManagementPage() {
           <button
             type="button"
             onClick={handleExportCSV}
-            className="px-3.5 py-2.5 border border-border-hairline bg-surface hover:border-foreground text-foreground font-mono text-xs uppercase tracking-widest font-bold inline-flex items-center gap-2 shadow-sm transition-colors"
+            className="px-3.5 py-2.5 border border-border-hairline bg-surface hover:border-foreground text-foreground font-mono text-xs uppercase tracking-widest font-bold inline-flex items-center gap-2 transition-colors"
             title="Unduh seluruh data katalog saat ini ke format CSV"
           >
             <Download className="w-4 h-4 text-muted" />
@@ -470,7 +470,7 @@ export default function DashboardBookManagementPage() {
           <button
             type="button"
             onClick={() => setIsQueueOpen(true)}
-            className="px-4 py-2.5 border border-foreground bg-surface hover:bg-surface-muted text-foreground font-mono text-xs uppercase tracking-widest font-bold inline-flex items-center gap-2 shadow-sm transition-colors relative"
+            className="px-4 py-2.5 border border-foreground bg-surface hover:bg-surface-muted text-foreground font-mono text-xs uppercase tracking-widest font-bold inline-flex items-center gap-2 transition-colors relative"
             title="Buka antrean cetak stiker punggung buku A4"
           >
             <Tag className="w-4 h-4" />
@@ -485,7 +485,7 @@ export default function DashboardBookManagementPage() {
           <button
             type="button"
             onClick={() => setIsAddModalOpen(true)}
-            className="px-4 py-2.5 bg-foreground text-background font-mono text-xs uppercase tracking-widest font-bold hover:opacity-90 transition-opacity inline-flex items-center gap-2 shadow-sm"
+            className="px-4 py-2.5 bg-foreground text-background font-mono text-xs uppercase tracking-widest font-bold hover:opacity-90 transition-opacity inline-flex items-center gap-2"
           >
             <Plus className="w-4 h-4" />
             <span>Tambah Koleksi Buku</span>
@@ -577,7 +577,7 @@ export default function DashboardBookManagementPage() {
             className={cn(
               "px-3 py-2 border font-mono text-xs uppercase tracking-wider font-bold inline-flex items-center gap-1.5 transition-colors cursor-pointer",
               publishFilter === 'featured'
-                ? "bg-foreground text-background border-foreground shadow-xs"
+                ? "bg-foreground text-background border-foreground"
                 : "bg-surface text-foreground border-border-hairline hover:border-foreground"
             )}
             title="Saring hanya buku yang tampil di slider etalase sorotan lapak"
@@ -585,7 +585,7 @@ export default function DashboardBookManagementPage() {
             <Star
               className={cn(
                 "w-3.5 h-3.5",
-                publishFilter === 'featured' ? "fill-background text-background" : "text-amber-500 fill-amber-500"
+                publishFilter === 'featured' ? "fill-background text-background" : "text-foreground fill-foreground"
               )}
             />
             <span>Sorotan Lapak</span>
@@ -664,10 +664,10 @@ export default function DashboardBookManagementPage() {
 
       {/* 4b. GUIDANCE BANNER FOR CURATOR SPOTLIGHT MODE */}
       {publishFilter === 'featured' && (
-        <div className="p-4 border-2 border-foreground bg-surface flex flex-col sm:flex-row sm:items-center justify-between gap-4 font-mono text-xs animate-editorial-slide shadow-xs">
+        <div className="p-4 border-2 border-foreground bg-surface flex flex-col sm:flex-row sm:items-center justify-between gap-4 font-mono text-xs animate-editorial-slide">
           <div className="flex items-start sm:items-center gap-3">
             <div className="w-8 h-8 bg-foreground text-background flex items-center justify-center shrink-0">
-              <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
+              <Star className="w-4 h-4 fill-background text-background" />
             </div>
             <div className="space-y-0.5">
               <div className="flex items-center gap-2 flex-wrap">
@@ -1110,7 +1110,7 @@ export default function DashboardBookManagementPage() {
             aria-hidden="true"
           />
           <div className="flex min-h-full items-center justify-center p-4">
-            <div className="relative w-full max-w-lg bg-surface border-2 border-foreground p-6 sm:p-8 shadow-2xl space-y-5 animate-in fade-in zoom-in-95 duration-200">
+            <div className="relative w-full max-w-lg bg-surface border-2 border-foreground p-6 sm:p-8 rounded-none space-y-5 animate-in fade-in zoom-in-95 duration-200">
               <div className="flex items-center justify-between border-b-2 border-foreground pb-3">
                 <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-widest font-bold text-foreground">
                   <Star className="w-4 h-4 fill-foreground" />

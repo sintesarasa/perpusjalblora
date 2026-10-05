@@ -812,7 +812,7 @@ export default function DashboardCirculationPage() {
               Meja Sirkulasi Lapak
             </h1>
             <span className="px-2 py-0.5 bg-foreground text-background font-mono text-[10px] font-bold uppercase tracking-wider inline-flex items-center gap-1.5 shrink-0">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="w-1.5 h-1.5 rounded-none bg-background animate-pulse" />
               LAPAK AKTIF
             </span>
           </div>
@@ -826,9 +826,9 @@ export default function DashboardCirculationPage() {
               setWalkInSuccess(null);
               setWalkInModalOpen(true);
             }}
-            className="h-10 sm:h-9 px-4 bg-foreground text-background font-bold uppercase tracking-wider inline-flex items-center justify-center gap-1.5 hover:bg-foreground/90 transition-colors shadow-sm"
+            className="h-10 sm:h-9 px-4 bg-foreground text-background font-bold uppercase tracking-wider inline-flex items-center justify-center gap-1.5 hover:bg-foreground/90 transition-colors"
           >
-            <Zap className="w-4 h-4 fill-amber-300 text-amber-300 shrink-0" />
+            <Zap className="w-4 h-4 fill-background text-background shrink-0" />
             <span>⚡ Pinjam Langsung (Walk-in)</span>
           </button>
 
@@ -857,9 +857,9 @@ export default function DashboardCirculationPage() {
 
       {/* Maintenance Notification Banner */}
       {maintenanceMessage && (
-        <div className="p-3 bg-surface border border-foreground font-mono text-xs text-foreground flex items-center justify-between gap-2 shadow-sm animate-in fade-in">
+        <div className="p-3 bg-surface border border-foreground font-mono text-xs text-foreground flex items-center justify-between gap-2 animate-in fade-in">
           <div className="flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+            <CheckCircle2 className="w-4 h-4 text-foreground shrink-0" />
             <span>{maintenanceMessage}</span>
           </div>
           <button onClick={() => setMaintenanceMessage(null)} className="text-muted hover:text-foreground p-1">
@@ -1129,7 +1129,7 @@ export default function DashboardCirculationPage() {
           {/* Volunteer Action Feedback Banner */}
           {actionBanner && (
             <div
-              className={`p-3 border font-mono text-xs flex items-center justify-between gap-2 shadow-sm ${
+              className={`p-3 border font-mono text-xs flex items-center justify-between gap-2 ${
                 actionBanner.type === 'success'
                   ? 'bg-surface border-foreground text-foreground'
                   : 'bg-destructive/10 border-destructive text-destructive'
@@ -1137,7 +1137,7 @@ export default function DashboardCirculationPage() {
             >
               <div className="flex items-center gap-2">
                 {actionBanner.type === 'success' ? (
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <CheckCircle2 className="w-4 h-4 text-foreground shrink-0" />
                 ) : (
                   <AlertTriangle className="w-4 h-4 text-destructive shrink-0" />
                 )}
@@ -1270,7 +1270,7 @@ export default function DashboardCirculationPage() {
                   className={cn(
                     'p-3 sm:p-3.5 border-2 text-left transition-all relative flex flex-col justify-between group min-h-[96px]',
                     showActiveLoansDrawer
-                      ? 'border-foreground bg-foreground text-background shadow-sm'
+                      ? 'border-foreground bg-foreground text-background'
                       : 'border-foreground bg-surface text-foreground hover:bg-surface-muted'
                   )}
                 >
@@ -1496,7 +1496,7 @@ export default function DashboardCirculationPage() {
                                 <button
                                   type="button"
                                   onClick={() => handleBoardQuickReturn(loan.loanCode)}
-                                  className="w-full h-10 border-2 border-foreground bg-surface text-foreground font-mono text-xs uppercase font-bold hover:bg-foreground hover:text-background transition-colors flex items-center justify-center gap-1.5 shadow-sm"
+                                  className="w-full h-10 border-2 border-foreground bg-surface text-foreground font-mono text-xs uppercase font-bold hover:bg-foreground hover:text-background transition-colors flex items-center justify-center gap-1.5"
                                 >
                                   <RotateCcw className="w-4 h-4" />
                                   <span>Catat Pengembalian Buku</span>
@@ -1524,10 +1524,10 @@ export default function DashboardCirculationPage() {
                                     href={waHref}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="h-10 border-2 border-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 font-mono text-xs uppercase font-bold hover:bg-emerald-600 hover:text-white transition-colors flex items-center justify-center gap-1.5 shadow-sm"
+                                    className="h-10 border border-border-hairline bg-surface hover:border-foreground text-foreground font-mono text-xs uppercase font-bold transition-colors flex items-center justify-center gap-1.5"
                                     title={`Chat WhatsApp ${loan.borrower?.name || 'Peminjam'}`}
                                   >
-                                    <MessageCircle className="w-4 h-4 fill-emerald-600 text-white dark:fill-emerald-400 dark:text-emerald-950" />
+                                    <MessageCircle className="w-4 h-4 text-foreground shrink-0" />
                                     <span>Chat WA</span>
                                   </a>
                                 </div>
@@ -1745,10 +1745,10 @@ export default function DashboardCirculationPage() {
                                 href={waHref}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="w-full h-9 border-2 border-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-600 hover:text-white transition-colors flex items-center justify-center gap-1.5 font-mono text-[11px] uppercase font-bold shadow-sm"
+                                className="w-full h-9 border border-border-hairline bg-surface hover:border-foreground text-foreground transition-colors flex items-center justify-center gap-1.5 font-mono text-[11px] uppercase font-bold"
                                 title="Kirim pesan WhatsApp buku siap diambil"
                               >
-                                <MessageCircle className="w-4 h-4 fill-emerald-600 text-white dark:fill-emerald-400 dark:text-emerald-950" />
+                                <MessageCircle className="w-4 h-4 text-foreground shrink-0" />
                                 <span>Chat WA Siap Ambil</span>
                               </a>
                             </div>
@@ -1766,7 +1766,7 @@ export default function DashboardCirculationPage() {
                       <Calendar className="w-3.5 h-3.5 text-foreground" />
                       Jatuh Tempo Besok ({boardData.dueTomorrow?.length || 0})
                     </span>
-                    <span className="text-[10px] font-bold text-amber-600">H-1</span>
+                    <span className="text-[10px] font-bold text-foreground">H-1</span>
                   </div>
 
                   {!boardData.dueTomorrow || boardData.dueTomorrow.length === 0 ? (
@@ -1826,10 +1826,10 @@ export default function DashboardCirculationPage() {
                                   href={waHref}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="h-9 border-2 border-amber-600 bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 hover:bg-amber-600 hover:text-white transition-colors flex items-center justify-center gap-1 font-mono text-[10px] uppercase font-bold shadow-sm"
+                                  className="h-9 border border-border-hairline bg-surface hover:border-foreground text-foreground transition-colors flex items-center justify-center gap-1 font-mono text-[10px] uppercase font-bold"
                                   title="Kirim pengingat WhatsApp H-1"
                                 >
-                                  <MessageCircle className="w-3.5 h-3.5 fill-amber-600 text-white dark:fill-amber-400 dark:text-amber-950" />
+                                  <MessageCircle className="w-3.5 h-3.5 text-foreground shrink-0" />
                                   <span>Chat WA</span>
                                 </a>
                               </div>
@@ -1905,10 +1905,10 @@ export default function DashboardCirculationPage() {
                                   href={waHref}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="h-9 border-2 border-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-600 hover:text-white transition-colors flex items-center justify-center gap-1 font-mono text-[10px] uppercase font-bold shadow-sm"
+                                  className="h-9 border border-border-hairline bg-surface hover:border-foreground text-foreground transition-colors flex items-center justify-center gap-1 font-mono text-[10px] uppercase font-bold"
                                   title="Kirim pengingat WhatsApp jatuh tempo hari ini"
                                 >
-                                  <MessageCircle className="w-3.5 h-3.5 fill-emerald-600 text-white dark:fill-emerald-400 dark:text-emerald-950" />
+                                  <MessageCircle className="w-3.5 h-3.5 text-foreground shrink-0" />
                                   <span>Chat WA</span>
                                 </a>
                               </div>
@@ -1972,10 +1972,10 @@ export default function DashboardCirculationPage() {
                                 href={waHref}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="w-full h-9 border-2 border-destructive bg-destructive/10 text-destructive hover:bg-destructive hover:text-white transition-colors flex items-center justify-center gap-1.5 font-mono text-[11px] uppercase font-bold shadow-sm"
+                                className="w-full h-9 border border-destructive bg-destructive/10 text-destructive hover:bg-destructive hover:text-white transition-colors flex items-center justify-center gap-1.5 font-mono text-[11px] uppercase font-bold"
                                 title="Kirim teguran WhatsApp keterlambatan"
                               >
-                                <MessageCircle className="w-3.5 h-3.5" />
+                                <MessageCircle className="w-3.5 h-3.5 shrink-0" />
                                 <span>Tegur Lewat WhatsApp</span>
                               </a>
                             </div>
@@ -2079,10 +2079,10 @@ export default function DashboardCirculationPage() {
       {/* MODAL PINJAM LANGSUNG (WALK-IN LOAN) */}
       {walkInModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/70 flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-y-auto">
-          <div className="bg-surface border-t-2 sm:border-2 border-foreground max-w-lg w-full p-5 sm:p-6 space-y-4 font-mono text-xs shadow-2xl max-h-[92vh] sm:max-h-[90vh] overflow-y-auto rounded-t-lg sm:rounded-none">
+          <div className="bg-surface border-t-2 sm:border-2 border-foreground max-w-lg w-full p-5 sm:p-6 space-y-4 font-mono text-xs max-h-[92dvh] sm:max-h-[90dvh] overflow-y-auto rounded-none">
             <div className="flex items-center justify-between border-b border-border-hairline pb-2">
               <div className="flex items-center gap-2">
-                <Zap className="w-4 h-4 text-amber-500 fill-amber-500 shrink-0" />
+                <Zap className="w-4 h-4 text-foreground fill-foreground shrink-0" />
                 <h3 className="font-serif text-lg font-bold text-foreground">
                   Pinjam Langsung di Lapak (Walk-in)
                 </h3>
@@ -2243,7 +2243,7 @@ export default function DashboardCirculationPage() {
       {/* MODAL SERAH-TERIMA BUKU (PICKUP) */}
       {pickupLoan && (
         <div className="fixed inset-0 z-50 bg-black/70 flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-y-auto">
-          <div className="bg-surface border-t-2 sm:border-2 border-foreground max-w-lg w-full p-5 sm:p-6 space-y-4 font-mono text-xs shadow-2xl max-h-[92vh] sm:max-h-[90vh] overflow-y-auto rounded-t-lg sm:rounded-none">
+          <div className="bg-surface border-t-2 sm:border-2 border-foreground max-w-lg w-full p-5 sm:p-6 space-y-4 font-mono text-xs max-h-[92dvh] sm:max-h-[90dvh] overflow-y-auto rounded-none">
             <div className="flex items-center justify-between border-b border-border-hairline pb-2">
               <div className="flex items-center gap-2">
                 <UserCheck className="w-4 h-4 text-foreground shrink-0" />
@@ -2367,7 +2367,7 @@ export default function DashboardCirculationPage() {
       {/* MODAL PENGEMBALIAN BUKU (RETURN) */}
       {returnLoan && (
         <div className="fixed inset-0 z-50 bg-black/70 flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-y-auto">
-          <div className="bg-surface border-t-2 sm:border-2 border-foreground max-w-lg w-full p-5 sm:p-6 space-y-4 font-mono text-xs shadow-2xl max-h-[92vh] sm:max-h-[90vh] overflow-y-auto rounded-t-lg sm:rounded-none">
+          <div className="bg-surface border-t-2 sm:border-2 border-foreground max-w-lg w-full p-5 sm:p-6 space-y-4 font-mono text-xs max-h-[92dvh] sm:max-h-[90dvh] overflow-y-auto rounded-none">
             <div className="flex items-center justify-between border-b border-border-hairline pb-2">
               <div className="flex items-center gap-2">
                 <RotateCcw className="w-4 h-4 text-foreground shrink-0" />
@@ -2555,7 +2555,7 @@ export default function DashboardCirculationPage() {
       {/* MODAL PENOLAKAN PENGAJUAN */}
       {rejectModalLoan && (
         <div className="fixed inset-0 z-50 bg-black/70 flex items-end sm:items-center justify-center p-0 sm:p-4">
-          <div className="bg-surface border-t-2 sm:border-2 border-foreground max-w-md w-full p-5 sm:p-6 space-y-4 font-mono text-xs shadow-2xl rounded-t-lg sm:rounded-none">
+          <div className="bg-surface border-t-2 sm:border-2 border-foreground max-w-md w-full p-5 sm:p-6 space-y-4 font-mono text-xs max-h-[92dvh] overflow-y-auto rounded-none">
             <div className="flex items-center justify-between border-b border-border-hairline pb-2">
               <h3 className="font-serif text-lg font-bold text-foreground">Tolak Pengajuan Pinjaman</h3>
               <button

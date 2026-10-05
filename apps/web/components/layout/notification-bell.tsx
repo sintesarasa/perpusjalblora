@@ -93,14 +93,14 @@ export function NotificationBell() {
       >
         <Bell className="w-4 h-4" />
         {unreadCount > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 font-mono text-[9px] bg-foreground text-background px-1 py-0.2 leading-tight font-bold rounded-none shadow-[2px_2px_0px_0px_rgba(0,0,0,0.5)]">
+          <span className="absolute -top-0.5 -right-0.5 font-mono text-[9px] bg-foreground text-background px-1 py-0.2 leading-tight font-bold rounded-none border border-background">
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-surface border-2 border-foreground shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.9)] z-50 rounded-none animate-in fade-in-50 duration-150">
+        <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-surface border-2 border-foreground z-50 rounded-none animate-in fade-in-50 duration-150">
           {/* Header */}
           <div className="flex items-center justify-between p-3 border-b border-border-hairline bg-surface-muted/50">
             <div className="flex items-center gap-2">
@@ -109,7 +109,7 @@ export function NotificationBell() {
               </span>
               {isConnected && (
                 <span className="inline-flex items-center gap-1 font-mono text-[9px] text-muted">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="w-1.5 h-1.5 rounded-none bg-foreground animate-pulse" />
                   Live
                 </span>
               )}

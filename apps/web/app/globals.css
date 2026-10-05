@@ -12,14 +12,8 @@
     --border-hairline: #e2e2db;
     --border-subtle: #ecece6;
     --muted: #666661;
-
-    /* Heritage Amber & Gold Tokens */
-    --gold: #f59e0b;
-    --gold-primary: #d97706;
-    --gold-surface: #fffbeb;
-    --gold-border: #fcd34d;
-    --gold-light: #fef3c7;
-    --gold-glow: rgba(245, 158, 11, 0.18);
+    --font-serif: var(--font-playfair), Lora, Georgia, serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
   }
 
   .dark {
@@ -31,14 +25,8 @@
     --border-hairline: #292926;
     --border-subtle: #1f1f1d;
     --muted: #999993;
-
-    /* Heritage Amber & Gold Tokens */
-    --gold: #fbbf24;
-    --gold-primary: #f59e0b;
-    --gold-surface: #14110b;
-    --gold-border: #92400e;
-    --gold-light: #291804;
-    --gold-glow: rgba(245, 158, 11, 0.25);
+    --font-serif: var(--font-playfair), Lora, Georgia, serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
   }
 
   body {
@@ -355,7 +343,7 @@
   font-size: 1.025rem;
   line-height: 1.8;
   color: hsl(var(--foreground) / 0.95);
-  border-radius: 0 4px 4px 0;
+  border-radius: 0;
 }
 
 /* Editorial Blockquote — Pull Quote (Centered Literary Statement) */
@@ -523,7 +511,7 @@
   font-size: 0.85rem;
   line-height: 1.55;
   overflow-x: auto;
-  border-radius: 2px;
+  border-radius: 0;
 }
 
 .editorial-editor-content code {
@@ -532,7 +520,7 @@
   font-family: var(--font-mono), monospace;
   font-size: 0.85em;
   border: 1px solid hsl(var(--border-hairline));
-  border-radius: 2px;
+  border-radius: 0;
 }
 
 .editorial-editor-content pre code {
@@ -616,5 +604,73 @@ body.editor-focus-mode nav {
   animation-name: sliderProgressBar;
   animation-timing-function: linear;
   animation-fill-mode: forwards;
+}
+
+/* ── Accessibility: Respect User Motion Preferences (WCAG 2.1 AAA SC 2.3.3) ── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ── Universal Stark Monochrome Print Stylesheet (@media print) ────────── */
+@media print {
+  @page {
+    margin: 15mm 15mm 15mm 15mm;
+  }
+
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-size: 11pt !important;
+    line-height: 1.5 !important;
+  }
+
+  /* Hide navigation, chrome, floating buttons, toasts, and search triggers */
+  header,
+  footer,
+  nav,
+  aside,
+  [role="toolbar"],
+  [aria-label="Pengaturan Naskah"],
+  [role="alert"],
+  .no-print,
+  .print\:hidden {
+    display: none !important;
+  }
+
+  /* Expand main content to full width */
+  main {
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Remove distracting digital shadows and glows */
+  * {
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  a {
+    color: #000000 !important;
+    text-decoration: underline !important;
+  }
+
+  /* Prevent awkward page-breaks inside crucial elements */
+  h1, h2, h3, h4 {
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+
+  blockquote, pre, figure, table, tr, img {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
 }
 

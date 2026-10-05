@@ -82,7 +82,7 @@ export default function MemberCardPage() {
   if (!user) {
     return (
       <div className="max-w-md mx-auto w-full px-4 py-20 text-center space-y-4 font-sans">
-        <p className="text-muted text-sm">Silakan masuk untuk melihat Kartu Tanda Anggota Anda.</p>
+        <p className="text-muted text-sm">Silakan masuk untuk melihat Kartu Tanda Anggotamu.</p>
         <Link
           href="/masuk"
           className="px-5 py-2.5 bg-foreground text-background font-mono text-xs uppercase tracking-widest font-bold inline-block"
@@ -128,13 +128,13 @@ export default function MemberCardPage() {
       </div>
 
       {/* Helper Banner for circulation desk */}
-      <div className="p-4 border-2 border-amber-500/40 bg-amber-500/5 font-mono text-xs space-y-1.5 no-print">
-        <div className="flex items-center gap-2 font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">
+      <div className="p-4 border border-foreground bg-surface font-mono text-xs space-y-1.5 no-print">
+        <div className="flex items-center gap-2 font-bold text-foreground uppercase tracking-wider">
           <QrCodeIcon className="w-4 h-4 shrink-0" />
           <span>Kartu Sirkulasi Peminjaman (KTA Lapak Baca) &bull; Dokumen Privat</span>
         </div>
         <p className="font-sans text-xs text-muted leading-relaxed">
-          Tunjukkan QR Code pada kartu ini secara langsung kepada relawan/kurator di lapak baca fisik saat melakukan serah-terima atau pengembalian buku. <strong>Jaga kerahasiaan kartu ini dan jangan dibagikan secara publik untuk melindungi kuota peminjaman akun Anda.</strong>
+          Tunjukkan QR Code pada kartu ini secara langsung kepada relawan/kurator di lapak baca fisik saat melakukan serah-terima atau pengembalian buku. <strong>Jaga kerahasiaan kartu ini dan jangan dibagikan secara publik untuk melindungi kuota peminjaman akunmu.</strong>
         </p>
       </div>
 
@@ -142,46 +142,42 @@ export default function MemberCardPage() {
       <div className="flex justify-center py-4">
         <div
           id="digital-member-card"
-          className="relative w-full max-w-md bg-[#090a0c] text-[#f4f4f0] p-6 sm:p-7 border-2 border-amber-500/70 shadow-[0_15px_40px_rgba(0,0,0,0.9)] select-none space-y-5 box-border"
-          style={{
-            backgroundImage:
-              'radial-gradient(circle at 100% 0%, rgba(245, 158, 11, 0.08) 0%, transparent 40%), radial-gradient(circle at 0% 100%, rgba(245, 158, 11, 0.05) 0%, transparent 35%)',
-          }}
+          className="relative w-full max-w-md bg-surface text-foreground p-6 sm:p-7 border-2 border-foreground select-none space-y-5 box-border rounded-none"
         >
           {/* Background decorative wrapper (strictly clipped to inner container) */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none rounded-none no-print">
             {/* Corner Ornamental Accents */}
-            <div className="absolute top-2 left-2 w-3 h-3 border-t-2 border-l-2 border-amber-400/60" />
-            <div className="absolute top-2 right-2 w-3 h-3 border-t-2 border-r-2 border-amber-400/60" />
-            <div className="absolute bottom-2 left-2 w-3 h-3 border-b-2 border-l-2 border-amber-400/60" />
-            <div className="absolute bottom-2 right-2 w-3 h-3 border-b-2 border-r-2 border-amber-400/60" />
+            <div className="absolute top-2 left-2 w-3 h-3 border-t-2 border-l-2 border-foreground/40" />
+            <div className="absolute top-2 right-2 w-3 h-3 border-t-2 border-r-2 border-foreground/40" />
+            <div className="absolute bottom-2 left-2 w-3 h-3 border-b-2 border-l-2 border-foreground/40" />
+            <div className="absolute bottom-2 right-2 w-3 h-3 border-b-2 border-r-2 border-foreground/40" />
 
             {/* Background Watermark */}
-            <div className="absolute right-2 -bottom-2 font-mono font-black text-7xl text-amber-500/[0.04] select-none tracking-tighter">
+            <div className="absolute right-2 -bottom-2 font-mono font-black text-7xl text-foreground/[0.03] select-none tracking-tighter">
               PERPUSJAL
             </div>
           </div>
 
           {/* 1. Top Ribbon / Masthead */}
-          <div className="relative z-10 border-b border-amber-500/30 pb-2.5 space-y-2">
+          <div className="relative z-10 border-b border-border pb-2.5 space-y-2">
             <div className="flex items-center justify-between gap-4">
-              <Logo className="h-7 sm:h-8 w-auto text-amber-400 shrink-0" />
+              <Logo className="h-7 sm:h-8 w-auto text-foreground shrink-0" />
 
               <div className="text-right shrink-0">
-                <span className="font-mono text-[7.5px] uppercase font-bold tracking-widest text-zinc-400 block mb-0.5">
+                <span className="font-mono text-[7.5px] uppercase font-bold tracking-widest text-muted block mb-0.5">
                   NO. SIRKULASI
                 </span>
-                <span className="font-mono text-[11px] font-bold text-amber-300 tracking-wider px-2.5 py-0.5 bg-amber-500/10 border border-amber-500/30 rounded-xs inline-block">
+                <span className="font-mono text-[11px] font-bold text-foreground tracking-wider px-2.5 py-0.5 bg-surface-muted border border-border inline-block rounded-none">
                   {memberCode}
                 </span>
               </div>
             </div>
 
-            <div className="flex items-center justify-between gap-2 pt-1.5 border-t border-zinc-800/70">
-              <span className="font-mono text-[8.5px] uppercase font-bold tracking-[0.2em] text-amber-400">
+            <div className="flex items-center justify-between gap-2 pt-1.5 border-t border-border-hairline">
+              <span className="font-mono text-[8.5px] uppercase font-bold tracking-[0.2em] text-foreground">
                 KARTU SIRKULASI LAPAK BACA
               </span>
-              <span className="font-serif italic text-xs text-zinc-200">
+              <span className="font-serif italic text-xs text-foreground/80">
                 Membaca dan Berbahagia.
               </span>
             </div>
@@ -190,71 +186,71 @@ export default function MemberCardPage() {
           {/* 2. Member Persona Details */}
           <div className="relative z-10 flex items-center justify-between gap-4 py-1">
             <div className="space-y-0.5 min-w-0">
-              <span className="font-mono text-[8.5px] uppercase tracking-widest text-zinc-400 block font-semibold">
+              <span className="font-mono text-[8.5px] uppercase tracking-widest text-muted block font-semibold">
                 PEMEGANG KARTU
               </span>
-              <h2 className="font-serif font-black text-xl sm:text-2xl text-white tracking-tight leading-tight truncate">
+              <h2 className="font-serif font-black text-xl sm:text-2xl text-foreground tracking-tight leading-tight truncate">
                 {user.name}
               </h2>
-              <div className="flex items-center gap-2 font-mono text-[11px] text-zinc-400">
-                <span className="text-amber-300 font-semibold">@{user.username}</span>
+              <div className="flex items-center gap-2 font-mono text-[11px] text-muted">
+                <span className="text-foreground font-semibold">@{user.username}</span>
                 <span>&bull;</span>
-                <span className="uppercase text-zinc-300">{user.role}</span>
+                <span className="uppercase text-muted">{user.role}</span>
               </div>
             </div>
 
             <div className="text-right shrink-0 space-y-1">
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 border border-amber-400/60 bg-amber-500/15 text-amber-300 text-[9.5px] font-mono font-bold uppercase tracking-wider rounded-xs shadow-[0_0_12px_rgba(245,158,11,0.15)]">
-                <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 border border-foreground bg-foreground text-background text-[9.5px] font-mono font-bold uppercase tracking-wider rounded-none">
+                <ShieldCheck className="w-3.5 h-3.5" />
                 <span>AKTIF</span>
               </span>
-              <span className="block font-mono text-[8.5px] text-zinc-400 uppercase tracking-wider">
+              <span className="block font-mono text-[8.5px] text-muted uppercase tracking-wider">
                 AMANAH &bull; LVL {user.trustLevel}
               </span>
             </div>
           </div>
 
           {/* 3. Authentic Large Vector QR Code (Scanner-Ready for Lapak Baca) */}
-          <div className="relative z-10 p-5 bg-gradient-to-b from-zinc-900/90 to-[#0b0c0e] border-2 border-amber-500/50 rounded-xs text-center space-y-3.5 shadow-inner">
+          <div className="relative z-10 p-5 bg-surface-muted border-2 border-foreground rounded-none text-center space-y-3.5">
             <div className="flex justify-center items-center">
               {qrSvg ? (
                 <div
-                  className="w-48 h-48 sm:w-56 sm:h-56 bg-white p-3.5 border-2 border-amber-400/80 rounded-xs inline-flex items-center justify-center [&>svg]:w-full [&>svg]:h-full [&>svg]:object-contain shadow-[0_0_30px_rgba(245,158,11,0.2)]"
+                  className="w-48 h-48 sm:w-56 sm:h-56 bg-background p-3.5 border-2 border-foreground rounded-none inline-flex items-center justify-center [&>svg]:w-full [&>svg]:h-full [&>svg]:object-contain"
                   dangerouslySetInnerHTML={{ __html: qrSvg }}
                 />
               ) : (
-                <div className="w-48 h-48 sm:w-56 sm:h-56 bg-zinc-900 flex items-center justify-center text-zinc-500 font-mono text-xs border border-dashed border-zinc-700">
+                <div className="w-48 h-48 sm:w-56 sm:h-56 bg-surface-muted flex items-center justify-center text-muted font-mono text-xs border border-dashed border-border rounded-none">
                   Membuat QR...
                 </div>
               )}
             </div>
 
             <div className="space-y-1">
-              <span className="font-mono text-sm sm:text-base font-black text-amber-300 tracking-widest uppercase block">
+              <span className="font-mono text-sm sm:text-base font-bold text-foreground tracking-widest uppercase block">
                 * {memberCode} *
               </span>
-              <span className="font-mono text-[10px] text-zinc-200 uppercase tracking-widest block font-bold">
+              <span className="font-mono text-[10px] text-muted uppercase tracking-widest block font-bold">
                 PINDAI UNTUK PINJAM & KEMBALIKAN BUKU
               </span>
-              <span className="font-mono text-[8px] text-zinc-500 uppercase tracking-wider block">
+              <span className="font-mono text-[8px] text-muted uppercase tracking-wider block">
                 VALIDASI SIRKULASI LAPAK BACA TROTOAR PERPUSJAL BLORA
               </span>
             </div>
           </div>
 
           {/* 4. Footer Slogan & Privacy Notice */}
-          <div className="relative z-10 text-center space-y-1 pt-1 border-t border-zinc-800/80">
-            <p className="font-serif italic text-xs text-zinc-300 leading-relaxed">
+          <div className="relative z-10 text-center space-y-1 pt-1 border-t border-border-hairline">
+            <p className="font-serif italic text-xs text-foreground/80 leading-relaxed">
               &ldquo;Membaca adalah melawan kebodohan, meminjam adalah merawat amanah.&rdquo;
             </p>
-            <span className="font-mono text-[7.5px] text-amber-400/80 uppercase tracking-widest block font-bold">
+            <span className="font-mono text-[7.5px] text-muted uppercase tracking-widest block font-bold">
               DOKUMEN SIRKULASI PRIVAT &bull; PERPUSTAKAAN JALANAN BLORA
             </span>
           </div>
         </div>
       </div>
 
-      {/* Print CSS Injection */}
+      {/* Print CSS Injection: Ink-Saving Crisp Stark Monochrome Paper Card */}
       <style jsx global>{`
         @media print {
           body * {
@@ -274,7 +270,10 @@ export default function MemberCardPage() {
             transform: translate(-50%, -50%);
             margin: 0 !important;
             page-break-inside: avoid;
-            background: #090a0c !important;
+            background: #ffffff !important;
+            color: #000000 !important;
+            border: 2px solid #000000 !important;
+            box-shadow: none !important;
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
           }

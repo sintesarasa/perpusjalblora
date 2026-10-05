@@ -175,7 +175,7 @@ export function RichTextRenderer({
               'editorial-rich-blockquote my-8 relative font-serif text-foreground/90',
               quoteStyle === 'pull'
                 ? 'max-w-2xl mx-auto py-8 px-4 sm:px-8 border-y border-border text-center text-xl sm:text-2xl leading-relaxed'
-                : 'border-l-[3px] border-foreground bg-surface-muted/35 pl-5 sm:pl-7 pr-4 sm:pr-6 py-3.5 sm:py-4 text-[17px] sm:text-[18px] leading-[1.8] sm:leading-[1.85] rounded-r'
+                : 'border-l-[3px] border-foreground bg-surface-muted/35 pl-5 sm:pl-7 pr-4 sm:pr-6 py-3.5 sm:py-4 text-[17px] sm:text-[18px] leading-[1.8] sm:leading-[1.85] rounded-none'
             )}
           >
             {node.content?.map((child, cIdx) => {

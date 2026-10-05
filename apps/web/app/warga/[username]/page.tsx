@@ -117,7 +117,7 @@ export default async function UserProfilePage({
 
       <main className="max-w-5xl mx-auto px-4 sm:px-8 pt-8 sm:pt-12 space-y-10">
         {/* ── 2. Profile Dossier Banner ── */}
-        <section className="border-2 border-foreground bg-surface p-6 sm:p-10 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.9)] relative">
+        <section className="border-2 border-foreground bg-surface p-6 sm:p-10 relative">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 sm:gap-8 pb-8 border-b border-border-hairline">
             {/* Avatar / Monogram */}
             <UserAvatar
@@ -125,8 +125,8 @@ export default async function UserProfilePage({
               name={user.name}
               username={user.username}
               size="2xl"
-              shape="circle"
-              className="border-2 border-foreground shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,0.9)] shrink-0"
+              shape="square"
+              className="border-2 border-foreground shrink-0"
             />
 
             {/* Core Info */}
@@ -164,7 +164,7 @@ export default async function UserProfilePage({
                     {user.equippedTitle ? (
                       <div
                         className={cn(
-                          'inline-flex items-center gap-1.5 px-3 py-1 rounded-full border-2 font-mono text-xs font-bold uppercase tracking-wider shadow-xs',
+                          'inline-flex items-center gap-1.5 px-3 py-1 border-2 font-mono text-xs font-bold uppercase tracking-wider',
                           tierInfo.honorBadgeClass
                         )}
                         title={`Gelar Kehormatan: "${user.equippedTitle}" (Tier ${activeTier} • ${tierInfo.name})`}
@@ -276,10 +276,10 @@ export default async function UserProfilePage({
           <section className="space-y-6">
             {/* ── 3.1 Etalase 3 Lencana Kebanggaan ── */}
             {user.showcaseBadges && user.showcaseBadges.length > 0 && (
-              <div className="border-2 border-foreground bg-surface p-5 sm:p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.9)] space-y-4">
+              <div className="border-2 border-foreground bg-surface p-5 sm:p-6 space-y-4">
                 <div className="flex items-center justify-between border-b-2 border-foreground pb-2.5">
                   <div className="flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-amber-500" />
+                    <Sparkles className="w-4 h-4 text-foreground" />
                     <h3 className="font-serif text-lg font-bold text-foreground">
                       Etalase Lencana Kebanggaan
                     </h3>
@@ -296,11 +296,11 @@ export default async function UserProfilePage({
                       <div
                         key={sb.code || idx}
                         className={cn(
-                          'border p-4 flex flex-col items-center justify-center text-center space-y-2 shadow-xs transition-all rounded-sm bg-surface',
+                          'border-2 p-4 flex flex-col items-center justify-center text-center space-y-2 transition-all bg-surface',
                           sbTierInfo.cardEarnedBg
                         )}
                       >
-                        <span className={cn('px-2.5 py-0.5 text-[9px] font-mono font-bold uppercase tracking-wider rounded-full border shadow-xs whitespace-nowrap', sbTierInfo.headerTagClass)}>
+                        <span className={cn('px-2.5 py-0.5 text-[9px] font-mono font-bold uppercase tracking-wider border whitespace-nowrap', sbTierInfo.headerTagClass)}>
                           T{sb.tier} &bull; {sbTierInfo.name}
                         </span>
                         <div className="py-1">
@@ -317,7 +317,7 @@ export default async function UserProfilePage({
                             {sb.name}
                           </h4>
                           {sb.titleReward && (
-                            <span className={cn('font-mono text-[9px] px-2.5 py-0.5 rounded-full border font-semibold inline-block truncate max-w-full shadow-xs', sbTierInfo.honorBadgeClass)}>
+                            <span className={cn('font-mono text-[9px] px-2.5 py-0.5 border font-semibold inline-block truncate max-w-full', sbTierInfo.honorBadgeClass)}>
                               "{sb.titleReward}"
                             </span>
                           )}
@@ -357,7 +357,7 @@ export default async function UserProfilePage({
                       <div
                         key={b.badge.id}
                         className={cn(
-                          'p-4 flex items-start gap-3.5 shadow-xs transition-all rounded-sm bg-surface border',
+                          'p-4 flex items-start gap-3.5 transition-all bg-surface border-2',
                           bTierInfo.cardEarnedBg
                         )}
                       >
@@ -370,7 +370,7 @@ export default async function UserProfilePage({
                         />
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center justify-between pb-1.5 border-b border-border-hairline mb-2 gap-1">
-                            <span className={cn('px-2 py-0.5 text-[8.5px] font-mono font-bold uppercase tracking-wider rounded-full border shadow-xs whitespace-nowrap', bTierInfo.headerTagClass)}>
+                            <span className={cn('px-2 py-0.5 text-[8.5px] font-mono font-bold uppercase tracking-wider border whitespace-nowrap', bTierInfo.headerTagClass)}>
                               T{b.badge.tier || 1} &bull; {bTierInfo.name}
                             </span>
                             <span className="font-mono text-[9px] uppercase text-muted tracking-wider font-semibold whitespace-nowrap">
@@ -381,7 +381,7 @@ export default async function UserProfilePage({
                             {b.badge.name}
                           </h3>
                           {b.badge.titleReward && (
-                            <span className={cn('font-mono text-[9px] px-2.5 py-0.5 rounded-full border font-semibold inline-block mt-1 shadow-xs', bTierInfo.honorBadgeClass)}>
+                            <span className={cn('font-mono text-[9px] px-2.5 py-0.5 border font-semibold inline-block mt-1', bTierInfo.honorBadgeClass)}>
                               Gelar: "{b.badge.titleReward}"
                             </span>
                           )}

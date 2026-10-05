@@ -88,7 +88,7 @@ export function EventCompleteModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-xs font-sans animate-in fade-in duration-150">
-      <div className="bg-surface border-2 border-foreground max-w-lg w-full shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+      <div className="bg-surface border-2 border-foreground max-w-lg w-full rounded-none overflow-hidden flex flex-col max-h-[92dvh]">
         {/* Header */}
         <div className="p-4 sm:p-5 border-b-2 border-foreground flex items-center justify-between bg-surface-muted shrink-0">
           <div className="flex items-center gap-2.5">

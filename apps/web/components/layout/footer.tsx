@@ -23,7 +23,7 @@ export function Footer() {
               Gerakan literasi akar rumput di atas terpal Alun-Alun Blora. Bebas baca, bebas pinjam tanpa jaminan dan tanpa denda sepeser pun.
             </p>
             <div className="font-mono text-[10px] text-muted uppercase tracking-wider flex items-center gap-2 pt-0.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
+              <span className="w-1.5 h-1.5 rounded-none bg-foreground inline-block" />
               <span>CFD Minggu (06.00–09.00) &bull; Basecamp (16.00–21.00)</span>
             </div>
           </div>

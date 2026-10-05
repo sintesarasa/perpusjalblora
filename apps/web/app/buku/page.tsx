@@ -224,31 +224,31 @@ function BookCatalogContent() {
   const getStatusBadge = (availability: BookAvailabilityStatus, isBorrowable: boolean) => {
     if (!isBorrowable) {
       return (
-        <span className="font-mono text-[8px] uppercase tracking-wider px-1.5 py-0.5 border border-foreground/60 text-foreground bg-background/95 font-semibold backdrop-blur-xs">
-          BACA DI TEMPAT
+        <span className="font-mono text-[8px] uppercase tracking-wider px-1.5 py-0.5 border border-dashed border-foreground text-foreground bg-background font-semibold">
+          ◓ BACA DI TEMPAT
         </span>
       );
     }
     switch (availability) {
       case 'AVAILABLE':
         return (
-          <span className="font-mono text-[8px] uppercase tracking-wider px-1.5 py-0.5 bg-foreground text-background font-bold inline-flex items-center gap-1 shadow-xs">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-            TERSEDIA
+          <span className="font-mono text-[8px] uppercase tracking-wider px-1.5 py-0.5 border border-border-hairline text-foreground bg-background font-bold inline-flex items-center gap-1">
+            <span>●</span>
+            <span>TERSEDIA</span>
           </span>
         );
       case 'LAST_ONE':
         return (
-          <span className="font-mono text-[8px] uppercase tracking-wider px-1.5 py-0.5 border border-foreground bg-background text-foreground font-bold inline-flex items-center gap-1 backdrop-blur-xs">
-            <AlertCircle className="w-2.5 h-2.5 text-amber-500" />
-            SISA 1
+          <span className="font-mono text-[8px] uppercase tracking-wider px-1.5 py-0.5 border-2 border-foreground text-foreground bg-background font-bold inline-flex items-center gap-1">
+            <span>◐</span>
+            <span>SISA 1 EKSEMPLAR</span>
           </span>
         );
       case 'BORROWED':
         return (
-          <span className="font-mono text-[8px] uppercase tracking-wider px-1.5 py-0.5 border border-border-hairline text-muted bg-background/90 inline-flex items-center gap-1 backdrop-blur-xs">
-            <Clock className="w-2.5 h-2.5" />
-            KELANA
+          <span className="font-mono text-[8px] uppercase tracking-wider px-1.5 py-0.5 border border-border-hairline text-muted bg-surface-muted inline-flex items-center gap-1">
+            <span>○</span>
+            <span>SEDANG DIPINJAM</span>
           </span>
         );
       default:
@@ -296,7 +296,7 @@ function BookCatalogContent() {
               <span className="hidden sm:inline">[ INVENTARIS BUKU FISIK // PERPUSJAL BLORA ]</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-foreground animate-pulse" />
+              <span className="w-1.5 h-1.5 rounded-none bg-foreground animate-pulse" />
               <span>SIRKULASI TERBUKA // BEBAS DENDA</span>
             </div>
             <div className="hidden lg:flex items-center gap-2">
@@ -380,7 +380,7 @@ function BookCatalogContent() {
           </div>
 
           {/* Search & Filter Toolbar */}
-          <div className="border-2 border-foreground bg-surface p-4 sm:p-5 space-y-4 shadow-xs">
+          <div className="border-2 border-foreground bg-surface p-4 sm:p-5 space-y-4">
             {/* Search Input Row */}
             <form onSubmit={handleSearchSubmit} className="flex gap-2">
               <div className="relative flex-1">
@@ -462,8 +462,8 @@ function BookCatalogContent() {
                 >
                   <span
                     className={cn(
-                      'w-2 h-2 rounded-full',
-                      tersedia ? 'bg-emerald-400' : 'bg-muted'
+                      'w-1.5 h-1.5 rounded-none',
+                      tersedia ? 'bg-foreground' : 'bg-muted'
                     )}
                   />
                   <span>Hanya Siap Pinjam</span>
@@ -507,7 +507,7 @@ function BookCatalogContent() {
             {hasActiveFilters && (
               <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-border-hairline font-mono text-xs">
                 <div className="flex items-center gap-2 flex-wrap text-[11px]">
-                  <span className="w-1.5 h-1.5 rounded-full bg-foreground animate-pulse" />
+                  <span className="w-1.5 h-1.5 rounded-none bg-foreground animate-pulse" />
                   <span className="font-bold text-foreground uppercase tracking-wider">
                     {meta.total} Koleksi Ditemukan
                   </span>
@@ -522,7 +522,7 @@ function BookCatalogContent() {
                     </span>
                   )}
                   {tersedia && (
-                    <span className="px-1.5 py-0.5 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-bold text-[9px] uppercase">
+                    <span className="px-1.5 py-0.5 border border-foreground bg-surface-muted text-foreground font-bold text-[9px] uppercase">
                       Siap Pinjam
                     </span>
                   )}
@@ -577,12 +577,28 @@ function BookCatalogContent() {
 
           {/* Empty State */}
           {!loading && !error && books.length === 0 && (
-            <EmptyState
-              title="Belum Ada Judul yang Cocok"
-              description="Buku yang kamu cari belum terdaftar atau sedang tidak sesuai dengan kriteria saringan saat ini. Coba gunakan kata kunci lain atau usulkan pengadaan buku."
-              actionLabel="Tampilkan Seluruh Koleksi Buku"
-              onAction={clearAllFilters}
-            />
+            <div className="space-y-4">
+              <EmptyState
+                title="Belum Ada Judul yang Cocok"
+                description="Buku yang kamu cari belum terdaftar atau sedang tidak sesuai dengan kriteria saringan saat ini. Coba gunakan kata kunci lain atau usulkan pengadaan buku ke kolektif."
+                actionLabel="Tampilkan Seluruh Koleksi Buku"
+                onAction={clearAllFilters}
+              />
+              <div className="text-center pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (q) setRequestTitle(q);
+                    setBoxTab('request');
+                    requestBoxRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  }}
+                  className="px-4 py-2.5 border-2 border-foreground bg-foreground text-background hover:bg-background hover:text-foreground font-mono text-xs uppercase tracking-wider font-bold transition-all cursor-pointer inline-flex items-center gap-2"
+                >
+                  <Gift className="w-3.5 h-3.5" />
+                  <span>Usulkan Judul Ini ke Komunitas (Kotak Titip Koleksi) &darr;</span>
+                </button>
+              </div>
+            </div>
           )}
 
           {/* Compact Book Cards Grid (2 cols mobile, 4 cols desktop) */}
@@ -601,7 +617,7 @@ function BookCatalogContent() {
                 {books.map((book) => (
                   <article
                     key={book.id}
-                    className="border-2 border-foreground bg-surface hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[3px_3px_0px_0px_rgba(255,255,255,0.2)] transition-shadow duration-150 flex flex-col justify-between group h-full relative"
+                    className="border-2 border-foreground bg-surface hover:bg-surface-muted/20 transition-colors duration-150 flex flex-col justify-between group h-full relative"
                   >
                     <div>
                       {/* Compact Book Cover Frame with Overlay Badge */}
@@ -618,7 +634,7 @@ function BookCatalogContent() {
                         <button
                           type="button"
                           onClick={() => setPeekBook(book)}
-                          className="absolute bottom-2 left-2 z-20 px-2 py-1 bg-background/90 hover:bg-foreground hover:text-background text-foreground text-[10px] font-mono uppercase tracking-wider font-semibold border border-foreground opacity-90 sm:opacity-0 group-hover/cover:opacity-100 transition-opacity flex items-center gap-1 shadow-xs cursor-pointer"
+                          className="absolute bottom-2 left-2 z-20 px-2 py-1 bg-background/90 hover:bg-foreground hover:text-background text-foreground text-[10px] font-mono uppercase tracking-wider font-semibold border border-foreground opacity-90 sm:opacity-0 group-hover/cover:opacity-100 transition-opacity flex items-center gap-1 cursor-pointer"
                           title="Intip Sinopsis Buku"
                         >
                           <Eye className="w-3 h-3" />

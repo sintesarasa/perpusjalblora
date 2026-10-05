@@ -91,7 +91,7 @@ export function UserMenu() {
             name={user.name}
             username={user.username}
             size="xs"
-            shape="circle"
+            shape="square"
             className="shrink-0"
           />
 
@@ -110,7 +110,7 @@ export function UserMenu() {
 
         {/* DROPDOWN MENU */}
         {isOpen && (
-          <div className="absolute right-0 mt-2 w-64 bg-surface border border-foreground shadow-2xl z-50 animate-in fade-in-50 duration-150 divide-y divide-border-hairline">
+          <div className="absolute right-0 mt-2 w-64 bg-surface border-2 border-foreground rounded-none z-50 animate-in fade-in-50 duration-150 divide-y divide-border-hairline">
             {/* User Header */}
             <div className="p-3 bg-surface-muted/40 font-mono flex items-center gap-3">
               <UserAvatar
@@ -118,7 +118,7 @@ export function UserMenu() {
                 name={user.name}
                 username={user.username}
                 size="sm"
-                shape="circle"
+                shape="square"
                 className="shrink-0"
               />
               <div className="min-w-0 flex-1">

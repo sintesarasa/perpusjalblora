@@ -35,10 +35,25 @@ export class CirculationSchedulerService {
           });
         }
 
-        await tx.loan.update({
-          where: { id: loan.id },
-          data: { status: LoanStatus.EXPIRED as unknown as any },
+        const updatedUser = await tx.user.update({
+          where: { id: loan.userId },
+          data: {
+            noShowCount: { increment: 1 },
+          },
+          select: { noShowCount: true },
         });
+
+        // BR-LOAN-08: 3x No-show triggers 14-day borrow suspension
+        if (updatedUser.noShowCount >= 3) {
+          const suspendedUntil = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
+          await tx.user.update({
+            where: { id: loan.userId },
+            data: {
+              borrowSuspendedUntil: suspendedUntil,
+              suspensionReason: 'Sanksi tidak mengambil buku pinjaman di lapak (No-show) sebanyak 3 kali (Suspensi 14 hari).',
+            },
+          });
+        }
       });
 
       // Send in-app notification
@@ -163,13 +178,79 @@ export class CirculationSchedulerService {
   }
 
   /**
+   * 4. BR-LOAN-07: Suspend users with severe overdue loans (>= 14 days overdue)
+   * Non-monetary restorative sanction: 30-day borrow suspension
+   */
+  async applySuspensionForSevereOverdue(): Promise<number> {
+    const now = new Date();
+    const fourteenDaysAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
+
+    const severeLoans = await prisma.loan.findMany({
+      where: {
+        status: LoanStatus.OVERDUE as unknown as any,
+        dueDate: { lte: fourteenDaysAgo },
+        user: {
+          OR: [
+            { borrowSuspendedUntil: null },
+            { borrowSuspendedUntil: { lt: now } },
+          ],
+        },
+      },
+      include: {
+        book: { select: { title: true } },
+      },
+    });
+
+    let count = 0;
+    for (const loan of severeLoans) {
+      const suspendedUntil = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+      const untilStr = suspendedUntil.toLocaleDateString('id-ID', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      });
+
+      await prisma.user.update({
+        where: { id: loan.userId },
+        data: {
+          borrowSuspendedUntil: suspendedUntil,
+          suspensionReason: `Keterlambatan pengembalian buku "${loan.book.title}" melebihi 14 hari (Sanksi suspensi 30 hari).`,
+        },
+      });
+
+      try {
+        await notificationsService.createNotification(loan.userId, {
+          type: 'BORROW_SUSPENDED',
+          title: 'Hak Pinjam Ditangguhkan (30 Hari)',
+          body: `Buku "${loan.book.title}" terlambat lebih dari 14 hari. Hak pinjam Anda ditangguhkan hingga ${untilStr}. Kembalikan buku ke lapak untuk memulihkan status.`,
+          actionUrl: '/dashboard/pinjaman',
+          entityType: 'loan',
+          entityId: loan.id,
+        });
+      } catch {
+        // Ignored
+      }
+
+      count++;
+    }
+
+    return count;
+  }
+
+  /**
    * Run full circulation maintenance job
    */
-  async runMaintenance(): Promise<{ expiredCount: number; overdueCount: number; reminderCount: number }> {
+  async runMaintenance(): Promise<{
+    expiredCount: number;
+    overdueCount: number;
+    reminderCount: number;
+    suspendedCount: number;
+  }> {
     const expiredCount = await this.expireUncollectedLoans();
     const overdueCount = await this.markOverdueLoans();
     const reminderCount = await this.sendDueSoonReminders();
-    return { expiredCount, overdueCount, reminderCount };
+    const suspendedCount = await this.applySuspensionForSevereOverdue();
+    return { expiredCount, overdueCount, reminderCount, suspendedCount };
   }
 
   private schedulerInterval: ReturnType<typeof setInterval> | null = null;

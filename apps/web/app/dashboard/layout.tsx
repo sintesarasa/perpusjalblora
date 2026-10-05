@@ -110,7 +110,7 @@ export default function DashboardLayout({
               className="fixed inset-0 bg-black/60 backdrop-blur-xs"
               onClick={() => setMobileSidebarOpen(false)}
             />
-            <div className="relative w-72 max-w-[80vw] h-full bg-surface z-10 shadow-2xl animate-in slide-in-from-left duration-200">
+            <div className="relative w-72 max-w-[80vw] h-full bg-surface z-10 border-r-2 border-foreground animate-in slide-in-from-left duration-200">
               <DashboardSidebar user={user} onNavigate={() => setMobileSidebarOpen(false)} />
             </div>
           </div>

@@ -93,11 +93,11 @@ export function ArticleQuickReadDrawer({
       />
 
       {/* Drawer Content */}
-      <div className="relative w-full max-w-xl bg-background border-l-2 border-foreground shadow-2xl z-10 flex flex-col h-full overflow-hidden animate-in slide-in-from-right duration-300">
+      <div className="relative w-full max-w-xl bg-background border-l-2 border-foreground z-10 flex flex-col h-full overflow-hidden animate-in slide-in-from-right duration-300">
         {/* Drawer Header */}
         <div className="p-5 sm:p-6 border-b border-border-hairline flex items-center justify-between bg-surface">
           <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-muted">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" />
+            <span className="w-1.5 h-1.5 rounded-none bg-foreground inline-block" />
             <span>PRATINJAU KILAS NASKAH // DOKUMEN PUBLIK</span>
           </div>
           <button

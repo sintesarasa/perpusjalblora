@@ -87,7 +87,7 @@ export function BookSpineStickerSheet({
   return (
     <div className="fixed inset-0 z-50 bg-black/80 flex flex-col items-center justify-start overflow-y-auto p-4 sm:p-6 print:p-0 print:bg-white print:overflow-visible">
       {/* 1. TOP TOOLBAR CONTROLS (HIDDEN DURING PRINT) */}
-      <div className="sticky top-0 z-50 w-full max-w-4xl bg-surface border-2 border-foreground p-4 mb-6 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-4 font-mono text-xs print:hidden">
+      <div className="sticky top-0 z-50 w-full max-w-4xl bg-surface border-2 border-foreground p-4 mb-6 flex flex-col md:flex-row items-center justify-between gap-4 font-mono text-xs print:hidden">
         <div className="flex items-center gap-3">
           <button
             type="button"
@@ -145,7 +145,7 @@ export function BookSpineStickerSheet({
           <button
             type="button"
             onClick={handlePrint}
-            className="px-4 py-2 bg-foreground text-background font-bold uppercase tracking-wider inline-flex items-center gap-2 shadow-md hover:opacity-90"
+            className="min-h-[44px] px-4 py-2 bg-foreground text-background font-bold uppercase tracking-wider inline-flex items-center gap-2 rounded-none hover:opacity-90 cursor-pointer"
           >
             <Printer className="w-4 h-4" />
             <span>Cetak Sekarang</span>
@@ -179,7 +179,7 @@ export function BookSpineStickerSheet({
                 onClick={() => setStartSlotIndex(i)}
                 className={`py-2 px-1 text-[10px] font-mono text-center border transition-all ${
                   isStartingSlot
-                    ? 'border-foreground bg-foreground text-background font-bold shadow-xs'
+                    ? 'border-foreground bg-foreground text-background font-bold'
                     : isPrinting
                     ? 'border-foreground/80 bg-surface text-foreground font-semibold'
                     : isBeforeStart
@@ -223,7 +223,7 @@ export function BookSpineStickerSheet({
       {/* 3. A4 PRINT SHEET (210mm x 297mm) */}
       <div
         id="printable-a4-sheet"
-        className={`bg-white text-black p-[8mm] shadow-2xl print:shadow-none print:m-0 print:p-[5mm] box-border w-[210mm] min-h-[297mm] flex flex-col justify-start relative select-none ${
+        className={`bg-white text-black p-[8mm] border-2 border-foreground print:border-none print:m-0 print:p-[5mm] box-border w-[210mm] min-h-[297mm] flex flex-col justify-start relative select-none rounded-none ${
           showCutGuides ? 'cut-guides-active' : ''
         }`}
       >

@@ -105,7 +105,7 @@ export default function AdminDashboardPage() {
                   href="/admin/sirkulasi"
                   className={`p-5 border transition-all block group ${
                     stats.pendingLoans > 0
-                      ? 'border-foreground bg-surface shadow-sm'
+                      ? 'border-foreground bg-surface'
                       : 'border-border-hairline bg-surface-muted/20 opacity-70'
                   }`}
                 >
@@ -126,7 +126,7 @@ export default function AdminDashboardPage() {
                   href="/admin/sirkulasi"
                   className={`p-5 border transition-all block group ${
                     stats.overdueLoans > 0
-                      ? 'border-foreground bg-surface shadow-sm'
+                      ? 'border-foreground bg-surface'
                       : 'border-border-hairline bg-surface-muted/20 opacity-70'
                   }`}
                 >
@@ -147,7 +147,7 @@ export default function AdminDashboardPage() {
                   href="/admin/kurasi"
                   className={`p-5 border transition-all block group ${
                     stats.pendingArticles > 0
-                      ? 'border-foreground bg-surface shadow-sm'
+                      ? 'border-foreground bg-surface'
                       : 'border-border-hairline bg-surface-muted/20 opacity-70'
                   }`}
                 >
@@ -168,7 +168,7 @@ export default function AdminDashboardPage() {
                   href="/admin/kurasi"
                   className={`p-5 border transition-all block group ${
                     stats.pendingLetters > 0
-                      ? 'border-foreground bg-surface shadow-sm'
+                      ? 'border-foreground bg-surface'
                       : 'border-border-hairline bg-surface-muted/20 opacity-70'
                   }`}
                 >

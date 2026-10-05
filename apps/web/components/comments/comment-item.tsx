@@ -174,7 +174,7 @@ export function CommentItemComponent({
 
             {/* Role / Trust Level Badge */}
             {comment.author.role === 'KURATOR' || comment.author.role === 'ADMIN' ? (
-              <span className="font-mono text-[9px] uppercase tracking-wider px-1.5 py-0.5 bg-foreground text-background font-bold inline-flex items-center gap-1 shadow-xs">
+              <span className="font-mono text-[9px] uppercase tracking-wider px-1.5 py-0.5 bg-foreground text-background font-bold inline-flex items-center gap-1">
                 <ShieldCheck className="w-2.5 h-2.5" />
                 {comment.author.role}
               </span>

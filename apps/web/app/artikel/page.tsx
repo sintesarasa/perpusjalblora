@@ -234,7 +234,7 @@ function ArticlesCatalogContent() {
               <span className="hidden sm:inline">[ WARTA &amp; CATATAN KRITIS // SUARA SWADAYA WARGA ]</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="w-2 h-2 bg-foreground animate-pulse" />
               <span className="font-bold text-foreground">TERBUKA UNTUK SELURUH WARGA</span>
             </div>
             <div className="hidden lg:flex items-center gap-2">
@@ -273,7 +273,7 @@ function ArticlesCatalogContent() {
 
                 <Link
                   href="/dashboard/tulisan"
-                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-foreground text-background font-mono text-xs uppercase tracking-wider font-bold hover:bg-foreground/90 transition-all shrink-0 shadow-xs active:translate-x-0.5 active:translate-y-0.5"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-foreground text-background font-mono text-xs uppercase tracking-wider font-bold hover:bg-foreground/90 transition-all shrink-0"
                 >
                   <PenTool className="w-3.5 h-3.5" />
                   <span>Kirim Naskah Warga</span>
@@ -306,7 +306,7 @@ function ArticlesCatalogContent() {
           aria-label="Alat Pencarian dan Penyaring Naskah"
           className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 sm:pt-14 scroll-mt-20"
         >
-          <div className="border-2 border-foreground bg-surface p-5 sm:p-6 space-y-5 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.9)]">
+          <div className="border-2 border-foreground bg-surface p-5 sm:p-6 space-y-5">
             {/* Top Toolbar: Categories & View Switcher */}
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-border-hairline pb-4">
               {/* Category Pills (Dynamic from Database) */}
@@ -320,7 +320,7 @@ function ArticlesCatalogContent() {
                   className={cn(
                     'px-3 py-1.5 border transition-all cursor-pointer font-bold',
                     !currentCategory
-                      ? 'bg-foreground text-background border-foreground shadow-2xs'
+                      ? 'bg-foreground text-background border-foreground'
                       : 'bg-surface text-foreground border-border hover:border-foreground'
                   )}
                 >
@@ -334,7 +334,7 @@ function ArticlesCatalogContent() {
                     className={cn(
                       'px-3 py-1.5 border transition-all cursor-pointer font-bold',
                       currentCategory === c.slug
-                        ? 'bg-foreground text-background border-foreground shadow-2xs'
+                        ? 'bg-foreground text-background border-foreground'
                         : 'bg-surface text-foreground border-border hover:border-foreground'
                     )}
                   >
@@ -443,7 +443,7 @@ function ArticlesCatalogContent() {
             {hasSearchOrFilter && (
               <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-border-hairline font-mono text-xs">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="w-2 h-2 bg-foreground animate-pulse" />
                   <span className="font-bold text-foreground uppercase tracking-wider">
                     {totalCount} Naskah Ditemukan
                   </span>
@@ -587,7 +587,7 @@ function ArticlesCatalogContent() {
         {/* ========================================================= */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 sm:pt-24">
           <RevealOnScroll variant="stamp" delayMs={50}>
-            <div className="border-2 border-foreground p-8 sm:p-12 lg:p-14 bg-foreground text-background relative overflow-hidden shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.9)]">
+            <div className="border-2 border-foreground p-8 sm:p-12 lg:p-14 bg-foreground text-background relative overflow-hidden">
               {/* Watermark icon */}
               <div className="absolute -right-8 -bottom-8 opacity-10 pointer-events-none text-background">
                 <FileText className="w-72 h-72" />
@@ -611,7 +611,7 @@ function ArticlesCatalogContent() {
                 <div className="pt-2 flex flex-wrap items-center gap-4">
                   <Link
                     href="/dashboard/tulisan"
-                    className="px-6 py-3.5 bg-background text-foreground font-mono text-xs uppercase tracking-wider font-bold hover:bg-background/90 transition-all inline-flex items-center gap-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.5)] active:translate-x-0.5 active:translate-y-0.5"
+                    className="px-6 py-3.5 bg-background text-foreground font-mono text-xs uppercase tracking-wider font-bold hover:bg-background/90 transition-all inline-flex items-center gap-2"
                   >
                     <PenTool className="w-4 h-4" />
                     <span>Mulai Menulis Naskah Baru</span>

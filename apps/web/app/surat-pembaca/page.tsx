@@ -243,7 +243,7 @@ function ReaderLettersContent() {
       {/* Submission Modal */}
       {modalOpen && (
         <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="w-full max-w-xl bg-surface border-2 border-foreground p-6 space-y-5 shadow-2xl font-sans">
+          <div className="w-full max-w-xl bg-surface border-2 border-foreground p-6 space-y-5 rounded-none font-sans max-h-[92dvh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-border-hairline pb-3">
               <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-widest font-bold text-foreground">
                 <PenLine className="w-4 h-4" />

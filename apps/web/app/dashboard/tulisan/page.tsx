@@ -359,12 +359,12 @@ export default function MyArticlesDashboardPage() {
           onClick={() => setRevisionModal((p) => ({ ...p, open: false }))}
         >
           <div
-            className="w-full sm:max-w-lg bg-background border-t-2 sm:border-2 border-foreground rounded-t-2xl sm:rounded-none max-h-[85vh] sm:max-h-[75vh] flex flex-col shadow-xl"
+            className="w-full sm:max-w-lg bg-background border-t-2 sm:border-2 border-foreground rounded-none max-h-[85vh] sm:max-h-[75vh] flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Handle bar (mobile) */}
             <div className="flex justify-center pt-3 pb-1 sm:hidden">
-              <div className="w-10 h-1 bg-border rounded-full" />
+              <div className="w-10 h-0.5 bg-border rounded-none" />
             </div>
 
             {/* Modal Header */}

@@ -164,7 +164,7 @@ export function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModalProps) {
 
       {/* Modal Dialog */}
       <div
-        className="relative w-full max-w-2xl bg-surface border-2 border-foreground shadow-2xl overflow-hidden font-mono animate-in fade-in zoom-in-95 duration-150"
+        className="relative w-full max-w-2xl bg-surface border-2 border-foreground rounded-none overflow-hidden font-mono animate-in fade-in zoom-in-95 duration-150"
         onKeyDown={handleKeyDown}
       >
         {/* Top Header & Search Bar */}
@@ -374,7 +374,7 @@ export function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModalProps) {
                           className={cn(
                             'p-2.5 border transition-all flex items-center justify-between gap-3 cursor-pointer',
                             isSelected
-                              ? 'border-foreground bg-surface-muted shadow-xs'
+                              ? 'border-foreground bg-surface-muted'
                               : 'border-border-hairline bg-surface hover:border-foreground hover:bg-surface-muted/50'
                           )}
                         >
@@ -439,7 +439,7 @@ export function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModalProps) {
                           className={cn(
                             'p-2.5 border transition-all flex items-center justify-between gap-3 cursor-pointer',
                             isSelected
-                              ? 'border-foreground bg-surface-muted shadow-xs'
+                              ? 'border-foreground bg-surface-muted'
                               : 'border-border-hairline bg-surface hover:border-foreground hover:bg-surface-muted/50'
                           )}
                         >

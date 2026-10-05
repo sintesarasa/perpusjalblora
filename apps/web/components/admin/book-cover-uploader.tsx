@@ -301,7 +301,7 @@ export function BookCoverUploader({ value, onChange, className }: BookCoverUploa
       {value && (
         <div className="p-3 border border-border-hairline bg-surface-muted/30 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-12 h-16 bg-surface-muted border border-foreground shrink-0 overflow-hidden shadow-xs">
+            <div className="w-12 h-16 bg-surface-muted border border-foreground shrink-0 overflow-hidden">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={value}

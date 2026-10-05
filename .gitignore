@@ -11,3 +11,6 @@ out
 coverage
 *.tsbuildinfo
 apps/web/public/uploads
+test-results/
+playwright-report/
+blob-report/

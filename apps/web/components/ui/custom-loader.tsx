@@ -141,7 +141,7 @@ export function CustomLoader({
 export function PageLoader() {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/95 backdrop-blur-sm animate-in fade-in-50 duration-200">
-      <div className="border border-foreground bg-surface p-8 max-w-sm text-center shadow-2xl">
+      <div className="border-2 border-foreground bg-surface p-8 max-w-sm text-center rounded-none">
         <CustomLoader size="lg" label="PERPUSJAL // MEMBUKA LEMBARAN..." />
         <p className="font-mono text-[10px] text-muted tracking-widest mt-2 uppercase">
           PERPUSTAKAAN JALANAN BLORA

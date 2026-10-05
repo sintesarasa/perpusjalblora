@@ -341,10 +341,10 @@ export default function CaraMeminjamPage() {
             <div className="flex items-center gap-2 px-2.5 py-0.5 border border-foreground/40 bg-surface">
               <span
                 className={cn(
-                  'w-2 h-2 rounded-full',
+                  'w-2 h-2',
                   currentLapakStatus.active
-                    ? 'bg-emerald-500 animate-ping'
-                    : 'bg-foreground'
+                    ? 'bg-foreground animate-pulse'
+                    : 'bg-muted'
                 )}
               />
               <span className="text-[10px] font-bold text-foreground truncate max-w-[240px] sm:max-w-none">
@@ -390,7 +390,7 @@ export default function CaraMeminjamPage() {
             {/* Right Quick Summary Card */}
             <div className="lg:col-span-4">
               <RevealOnScroll variant="stamp" delayMs={150}>
-                <div className="border-2 border-foreground bg-surface p-4 sm:p-6 font-mono text-xs space-y-3 sm:space-y-4 shadow-[4px_4px_0px_0px_currentColor]">
+                <div className="border-2 border-foreground bg-surface p-4 sm:p-6 font-mono text-xs space-y-3 sm:space-y-4">
                   <div className="flex items-center justify-between border-b border-foreground pb-2">
                     <span className="font-bold tracking-wider">[ MAKLUMAT RESMI ]</span>
                     <span className="text-[10px] bg-foreground text-background px-1.5 py-0.5 font-bold">GRATIS 100%</span>
@@ -459,14 +459,14 @@ export default function CaraMeminjamPage() {
                       className={cn(
                         'p-3 text-left border-2 transition-all font-mono shrink-0 snap-center min-w-[170px] sm:min-w-0 select-none min-h-[56px] focus:outline-none focus:ring-2 focus:ring-foreground',
                         isSelected
-                          ? 'border-foreground bg-foreground text-background shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] dark:shadow-[3px_3px_0px_0px_rgba(255,255,255,1)]'
+                          ? 'border-foreground bg-foreground text-background'
                           : 'border-border-hairline bg-surface hover:border-foreground text-foreground'
                       )}
                       aria-selected={isSelected}
                     >
                       <div className="text-[10px] uppercase tracking-wider opacity-80 flex items-center justify-between">
                         <span>LANGKAH {st.stepNum}</span>
-                        {isSelected && <span className="w-1.5 h-1.5 rounded-full bg-background sm:hidden" />}
+                        {isSelected && <span className="w-1.5 h-1.5 bg-background sm:hidden" />}
                       </div>
                       <div className="font-bold text-xs truncate mt-0.5">{st.title}</div>
                     </button>
@@ -481,7 +481,7 @@ export default function CaraMeminjamPage() {
 
           {/* Active Step Feature Box: Authentic Gazette & Stamp Style */}
           <RevealOnScroll variant="stamp" delayMs={100}>
-            <div className="border-2 border-foreground bg-surface p-4 sm:p-8 lg:p-10 relative overflow-hidden shadow-[4px_4px_0px_0px_currentColor] sm:shadow-[6px_6px_0px_0px_currentColor]">
+            <div className="border-2 border-foreground bg-surface p-4 sm:p-8 lg:p-10 relative overflow-hidden">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 lg:gap-12 items-center">
               {/* Left Column: Authentic Architectural / Gazette Visual Blueprint */}
               <div className="lg:col-span-5 bg-surface-muted border-2 border-foreground p-4 sm:p-6 relative flex flex-col justify-between min-h-[220px] sm:min-h-[300px] select-none">
@@ -498,11 +498,11 @@ export default function CaraMeminjamPage() {
                   {activeTab === 0 && (
                     <div className="w-full max-w-[280px] space-y-2.5 sm:space-y-3 font-mono text-xs">
                       {/* Terminal-like Catalog Search Box */}
-                      <div className="border-2 border-foreground bg-background p-2.5 sm:p-3 shadow-xs">
+                      <div className="border-2 border-foreground bg-background p-2.5 sm:p-3">
                         <div className="flex items-center gap-1.5 pb-2 border-b border-border-hairline text-[9px] sm:text-[10px] text-muted">
-                          <span className="w-2 h-2 rounded-full border border-foreground bg-foreground" />
-                          <span className="w-2 h-2 rounded-full border border-foreground" />
-                          <span className="w-2 h-2 rounded-full border border-foreground" />
+                          <span className="w-2 h-2 border border-foreground bg-foreground" />
+                          <span className="w-2 h-2 border border-foreground" />
+                          <span className="w-2 h-2 border border-foreground" />
                           <span className="ml-auto truncate">KATALOG_PERPUSJAL</span>
                         </div>
                         <div className="pt-2 flex items-center justify-between gap-2">
@@ -555,10 +555,10 @@ export default function CaraMeminjamPage() {
                   {activeTab === 2 && (
                     <div className="w-full max-w-[280px]">
                       {/* Vintage Library Punch Card / Ticket Slip */}
-                      <div className="border-2 border-foreground bg-background p-3 sm:p-4 relative font-mono shadow-[3px_3px_0px_0px_currentColor] sm:shadow-[4px_4px_0px_0px_currentColor]">
+                      <div className="border-2 border-foreground bg-background p-3 sm:p-4 relative font-mono">
                         {/* Perforations */}
-                        <div className="absolute -left-2 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-surface-muted border-r-2 border-foreground" />
-                        <div className="absolute -right-2 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-surface-muted border-l-2 border-foreground" />
+                        <div className="absolute -left-2 top-1/2 -translate-y-1/2 w-4 h-4 bg-surface-muted border-r-2 border-foreground" />
+                        <div className="absolute -right-2 top-1/2 -translate-y-1/2 w-4 h-4 bg-surface-muted border-l-2 border-foreground" />
 
                         <div className="text-center border-b-2 border-dashed border-foreground pb-1.5 sm:pb-2">
                           <div className="text-[8px] uppercase tracking-widest text-muted">BUKTI RESERVASI BUKU</div>
@@ -719,7 +719,7 @@ export default function CaraMeminjamPage() {
         {/* ========================================================= */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
           <RevealOnScroll variant="stamp">
-            <div className="border-2 border-foreground bg-surface p-5 sm:p-8 lg:p-10 shadow-[4px_4px_0px_0px_currentColor]">
+            <div className="border-2 border-foreground bg-surface p-5 sm:p-8 lg:p-10">
               <div className="border-b-2 border-foreground pb-4 mb-6 flex flex-col md:flex-row md:items-end justify-between gap-3">
                 <div>
                   <div className="font-mono text-xs uppercase tracking-widest text-muted flex items-center gap-2">
@@ -816,7 +816,7 @@ export default function CaraMeminjamPage() {
                   </div>
 
                   {/* Point 3 */}
-                  <div className="p-4 border-2 border-foreground bg-background space-y-1 shadow-xs">
+                  <div className="p-4 border-2 border-foreground bg-background space-y-1">
                     <span className="text-[9px] uppercase tracking-wider text-foreground font-black block">
                       HARI KE-7 // TENGGAT
                     </span>
@@ -868,7 +868,7 @@ export default function CaraMeminjamPage() {
                 </div>
 
                 {/* The Physical-Style Digital Borrow Card */}
-                <div className="max-w-md mx-auto bg-surface border-4 border-double border-foreground p-4 sm:p-8 space-y-4 sm:space-y-5 shadow-xl relative font-mono">
+                <div className="max-w-md mx-auto bg-surface border-4 border-double border-foreground p-4 sm:p-8 space-y-4 sm:space-y-5 relative font-mono">
                   {/* Vintage Ticket Header */}
                   <div className="flex items-start justify-between border-b-2 border-foreground pb-3 sm:pb-4">
                     <div>
@@ -967,7 +967,7 @@ export default function CaraMeminjamPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Lokasi 1: Alun-Alun CFD */}
             <RevealOnScroll variant="fade-up" delayMs={50}>
-              <div className="border-2 border-foreground bg-surface p-5 sm:p-6 flex flex-col justify-between shadow-[4px_4px_0px_0px_currentColor] relative group h-full">
+              <div className="border-2 border-foreground bg-surface p-5 sm:p-6 flex flex-col justify-between relative group h-full">
                 <div className="absolute top-3 right-3 font-mono text-[9px] bg-foreground text-background px-2 py-0.5 font-bold uppercase">
                   TERPOPULER
                 </div>
@@ -1009,7 +1009,7 @@ export default function CaraMeminjamPage() {
 
             {/* Lokasi 2: Taman Tirtonadi */}
             <RevealOnScroll variant="fade-up" delayMs={100}>
-              <div className="border-2 border-foreground bg-surface p-5 sm:p-6 flex flex-col justify-between shadow-[4px_4px_0px_0px_currentColor] relative group h-full">
+              <div className="border-2 border-foreground bg-surface p-5 sm:p-6 flex flex-col justify-between relative group h-full">
                 <div className="space-y-4">
                   <div className="w-10 h-10 border-2 border-foreground bg-surface-muted text-foreground flex items-center justify-center font-mono text-sm font-black">
                     02
@@ -1048,7 +1048,7 @@ export default function CaraMeminjamPage() {
 
             {/* Lokasi 3: Basecamp Jl. Pemuda */}
             <RevealOnScroll variant="fade-up" delayMs={150}>
-              <div className="border-2 border-foreground bg-surface p-5 sm:p-6 flex flex-col justify-between shadow-[4px_4px_0px_0px_currentColor] relative group h-full">
+              <div className="border-2 border-foreground bg-surface p-5 sm:p-6 flex flex-col justify-between relative group h-full">
                 <div className="space-y-4">
                   <div className="w-10 h-10 border-2 border-foreground bg-surface-muted text-foreground flex items-center justify-center font-mono text-sm font-black">
                     03
@@ -1092,7 +1092,7 @@ export default function CaraMeminjamPage() {
         {/* ========================================================= */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
           <RevealOnScroll variant="stamp">
-            <div className="border-2 border-foreground bg-surface p-5 sm:p-8 lg:p-10 font-mono text-xs shadow-[4px_4px_0px_0px_currentColor]">
+            <div className="border-2 border-foreground bg-surface p-5 sm:p-8 lg:p-10 font-mono text-xs">
               <div className="flex flex-col md:flex-row md:items-center justify-between border-b-2 border-foreground pb-4 mb-6 gap-2">
                 <div>
                   <span className="text-[10px] uppercase tracking-widest text-muted block">
@@ -1186,7 +1186,7 @@ export default function CaraMeminjamPage() {
               const isOpen = openFaq === faq.id;
               return (
                 <RevealOnScroll key={faq.id} variant="fade-up" delayMs={idx * 50}>
-                  <div className="border-2 border-foreground bg-surface overflow-hidden transition-all shadow-[2px_2px_0px_0px_currentColor]">
+                  <div className="border-2 border-foreground bg-surface overflow-hidden transition-all">
                     <button
                       type="button"
                       onClick={() => toggleFaq(faq.id)}
@@ -1277,7 +1277,7 @@ export default function CaraMeminjamPage() {
                 <div className="pt-3 sm:pt-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 sm:gap-4 font-mono text-xs">
                   <Link
                     href="/buku"
-                    className="min-h-[44px] px-6 py-3 bg-background text-foreground uppercase tracking-wider font-bold inline-flex items-center justify-center gap-2 hover:bg-surface-muted transition-colors shadow-lg"
+                    className="min-h-[44px] px-6 py-3 bg-background text-foreground uppercase tracking-wider font-bold inline-flex items-center justify-center gap-2 hover:bg-surface-muted transition-colors"
                   >
                     <BookOpen className="w-4 h-4" />
                     <span>BUKA KATALOG BUKU SEKARANG</span>

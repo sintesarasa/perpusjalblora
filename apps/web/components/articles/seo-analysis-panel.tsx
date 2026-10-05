@@ -21,9 +21,7 @@ interface CheckItem {
 }
 
 function scoreColor(score: number) {
-  if (score >= 80) return 'text-emerald-600 dark:text-emerald-400';
-  if (score >= 50) return 'text-amber-600 dark:text-amber-400';
-  return 'text-red-600 dark:text-red-400';
+  return 'text-foreground font-bold';
 }
 
 function scoreLabel(score: number) {
@@ -169,9 +167,9 @@ export function SeoAnalysisPanel({ title, plainText, tags, coverImage, className
               <span>Skor Optimasi</span>
               <span className={cn('font-bold text-xs', scoreColor(score))}>{score}%</span>
             </div>
-            <div className="h-2 bg-surface-muted rounded-full overflow-hidden">
+            <div className="h-2 bg-surface-muted border border-border-hairline rounded-none overflow-hidden">
               <div
-                className={cn('h-full rounded-full transition-all duration-500', score >= 80 ? 'bg-emerald-500' : score >= 50 ? 'bg-amber-500' : 'bg-red-500')}
+                className="h-full bg-foreground transition-all duration-500 rounded-none"
                 style={{ width: `${score}%` }}
               />
             </div>
@@ -187,11 +185,11 @@ export function SeoAnalysisPanel({ title, plainText, tags, coverImage, className
                 <div key={check.id} className="flex items-start gap-2.5 py-1.5 border-b border-border-hairline last:border-b-0">
                   <div className="mt-0.5 shrink-0">
                     {check.pass ? (
-                      <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                      <CheckCircle2 className="w-4 h-4 text-foreground" />
                     ) : check.warning ? (
-                      <AlertTriangle className="w-4 h-4 text-amber-500" />
+                      <AlertTriangle className="w-4 h-4 text-foreground/70" />
                     ) : (
-                      <XCircle className="w-4 h-4 text-red-500" />
+                      <XCircle className="w-4 h-4 text-muted" />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -224,7 +222,7 @@ export function SeoAnalysisPanel({ title, plainText, tags, coverImage, className
             <p className="font-mono text-[10px] uppercase tracking-wider text-muted font-bold">
               Pratinjau Hasil Pencarian (Google)
             </p>
-            <div className="p-3 border border-border-hairline bg-white dark:bg-zinc-950 space-y-1 rounded-sm">
+            <div className="p-3 border border-border-hairline bg-surface space-y-1 rounded-none">
               <p className="font-sans text-[11px] text-muted truncate">perpusjalblora.org › artikel</p>
               <p className="font-sans text-sm text-blue-700 dark:text-blue-400 font-medium leading-snug line-clamp-2">
                 {metaTitle}

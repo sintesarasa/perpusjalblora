@@ -151,7 +151,7 @@ export function ArticleDetailClient({
       <div className="flex flex-col min-h-screen">
         <Header />
         <main className="flex-1 max-w-3xl mx-auto w-full px-4 sm:px-8 py-20 text-center space-y-6">
-          <div className="border-2 border-foreground p-12 bg-surface space-y-4 shadow-sm">
+          <div className="border-2 border-foreground p-12 bg-surface space-y-4">
             <span className="font-mono text-xs uppercase tracking-widest text-muted">
               KODE // 404
             </span>
@@ -200,7 +200,7 @@ export function ArticleDetailClient({
 
       {/* Floating Zen Mode Notice */}
       {isZenMode && (
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 px-4 py-1.5 bg-foreground/90 text-background font-mono text-[10px] uppercase tracking-widest backdrop-blur shadow-lg flex items-center gap-2 print:hidden">
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 px-4 py-1.5 bg-foreground/90 text-background font-mono text-[10px] uppercase tracking-widest backdrop-blur border border-foreground flex items-center gap-2 print:hidden">
           <span>MODE FOKUS MEMBACA AKTIF</span>
           <span className="opacity-70">&bull; TEKAN ESC UNTUK KELUAR</span>
         </div>
@@ -236,9 +236,9 @@ export function ArticleDetailClient({
           {/* Article Masthead */}
           <header className="space-y-6 pt-2">
             {(article.preview || article.status !== ArticleStatus.PUBLISHED) && (
-              <div className="p-3.5 border-2 border-foreground bg-surface font-mono text-xs uppercase tracking-wider font-semibold flex flex-wrap items-center justify-between gap-2 shadow-sm">
+              <div className="p-3.5 border-2 border-foreground bg-surface font-mono text-xs uppercase tracking-wider font-semibold flex flex-wrap items-center justify-between gap-2">
                 <span className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                  <span className="w-2 h-2 rounded-none bg-foreground animate-pulse" />
                   Mode Pratinjau Naskah &bull; Status: {article.status || article.preview?.status}
                 </span>
                 <span className="text-[10px] text-muted font-normal lowercase">
@@ -255,7 +255,7 @@ export function ArticleDetailClient({
                 {article.isFeatured && (
                   <>
                     <span>•</span>
-                    <span className="text-amber-600 dark:text-amber-400 font-bold">★ PILIHAN REDAKSI</span>
+                    <span className="text-foreground font-bold">★ PILIHAN REDAKSI</span>
                   </>
                 )}
               </div>
@@ -430,7 +430,7 @@ export function ArticleDetailClient({
                     onClick={handleCopyLink}
                     className="h-8 px-3 border border-border hover:border-foreground hover:bg-foreground hover:text-background transition-colors inline-flex items-center gap-1.5 text-[11px]"
                   >
-                    {copied ? <Check className="w-3 h-3 text-emerald-500" /> : null}
+                    {copied ? <Check className="w-3 h-3 text-foreground" /> : null}
                     <span>{copied ? 'Tersalin' : 'Salin Tautan'}</span>
                   </button>
                 </div>

@@ -73,7 +73,7 @@ export function CitizenContributorsSidebar({
       {/* ========================================================= */}
       {/* 1. KOTAK POS REDAKSI WARGA (SUBMISSION CALLOUT)           */}
       {/* ========================================================= */}
-      <div className="border-2 border-foreground bg-foreground text-background p-5 sm:p-6 relative overflow-hidden shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.9)]">
+      <div className="border-2 border-foreground bg-foreground text-background p-5 sm:p-6 relative overflow-hidden">
         {/* Subtle Watermark */}
         <div className="absolute -right-4 -bottom-6 opacity-10 pointer-events-none font-serif text-8xl font-black">
           ✎
@@ -100,7 +100,7 @@ export function CitizenContributorsSidebar({
           <div className="pt-1">
             <Link
               href="/dashboard/tulisan"
-              className="w-full px-4 py-2.5 bg-background text-foreground hover:bg-background/90 font-mono text-xs font-bold uppercase tracking-wider text-center transition-all inline-flex items-center justify-center gap-2 border border-foreground shadow-[2px_2px_0px_0px_rgba(0,0,0,0.5)] active:translate-x-0.5 active:translate-y-0.5"
+              className="w-full px-4 py-2.5 bg-background text-foreground hover:bg-background/90 font-mono text-xs font-bold uppercase tracking-wider text-center transition-all inline-flex items-center justify-center gap-2 border border-foreground active:translate-x-0.5 active:translate-y-0.5"
             >
               <PenTool className="w-3.5 h-3.5" />
               <span>Kirim Naskah Warga</span>
@@ -113,7 +113,7 @@ export function CitizenContributorsSidebar({
       {/* ========================================================= */}
       {/* 2. ETALASE PENULIS WARGA TERPAL (CITIZEN COLUMNISTS)       */}
       {/* ========================================================= */}
-      <div className="border-2 border-foreground bg-surface p-5 sm:p-6 space-y-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.9)]">
+      <div className="border-2 border-foreground bg-surface p-5 sm:p-6 space-y-4">
         {/* Header */}
         <div className="flex items-center justify-between border-b-2 border-foreground pb-2.5">
           <div className="flex items-center gap-2">
@@ -146,7 +146,7 @@ export function CitizenContributorsSidebar({
                     username={author.username}
                     size="sm"
                     shape="square"
-                    className="border border-foreground shrink-0 shadow-2xs"
+                    className="border border-foreground shrink-0"
                   />
 
                   <div className="min-w-0 space-y-0.5">
@@ -205,7 +205,7 @@ export function CitizenContributorsSidebar({
       {/* ========================================================= */}
       {/* 3. KUTIPAN TERPAL PEKAN INI (WEEKLY PULLQUOTE)             */}
       {/* ========================================================= */}
-      <div className="border-2 border-foreground bg-surface-muted/50 p-5 relative overflow-hidden shadow-xs">
+      <div className="border-2 border-foreground bg-surface-muted/50 p-5 relative overflow-hidden">
         <div className="flex items-center justify-between pb-2 mb-2 border-b border-border-hairline font-mono text-[9px] uppercase tracking-widest text-muted">
           <span className="flex items-center gap-1 font-bold text-foreground">
             <Quote className="w-3 h-3 text-foreground" />

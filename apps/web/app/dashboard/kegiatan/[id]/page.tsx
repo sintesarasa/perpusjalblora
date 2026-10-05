@@ -274,7 +274,7 @@ export default function EventPresensiPage() {
       </div>
 
       {/* 3. Fast Check-in Bar (Interactive Desk) */}
-      <div className="p-5 sm:p-6 bg-surface border-2 border-foreground shadow-md space-y-4">
+      <div className="p-5 sm:p-6 bg-surface border-2 border-foreground space-y-4">
         <div className="flex items-center justify-between border-b border-border-hairline pb-3">
           <div className="flex items-center gap-2">
             <UserCheck className="w-5 h-5 text-foreground" />
@@ -317,7 +317,7 @@ export default function EventPresensiPage() {
           <button
             type="button"
             onClick={() => setIsScannerOpen(true)}
-            className="px-5 py-3 bg-surface border-2 border-foreground hover:bg-surface-muted text-foreground font-mono text-xs uppercase tracking-wider font-bold transition-colors inline-flex items-center justify-center gap-2 shrink-0 shadow-xs"
+            className="px-5 py-3 bg-surface border-2 border-foreground hover:bg-surface-muted text-foreground font-mono text-xs uppercase tracking-wider font-bold transition-colors inline-flex items-center justify-center gap-2 shrink-0"
             title="Gunakan Kamera HP untuk Pindai QR Tiket Warga"
           >
             <Camera className="w-4 h-4" />
@@ -327,8 +327,8 @@ export default function EventPresensiPage() {
 
         {/* Feedback Banners */}
         {checkinSuccessMsg && (
-          <div className="p-3 bg-emerald-950/10 border-2 border-emerald-600 text-emerald-900 font-mono text-xs flex items-center gap-2 animate-in fade-in">
-            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+          <div className="p-3 bg-surface border-2 border-foreground text-foreground font-mono text-xs flex items-center gap-2 animate-in fade-in">
+            <CheckCircle2 className="w-4 h-4 text-foreground shrink-0" />
             <span className="font-bold">{checkinSuccessMsg}</span>
           </div>
         )}
@@ -356,7 +356,7 @@ export default function EventPresensiPage() {
           <span className="font-mono text-[10px] uppercase text-muted tracking-widest block">
             SUDAH PRESENSI (HADIR)
           </span>
-          <div className="font-mono text-2xl font-bold text-emerald-700">
+          <div className="font-mono text-2xl font-bold text-foreground">
             {totalAttended} <span className="text-xs font-normal text-muted">peserta</span>
           </div>
         </div>
@@ -443,7 +443,7 @@ export default function EventPresensiPage() {
             </p>
           </div>
         ) : (
-          <div className="border border-border-hairline bg-surface overflow-x-auto shadow-xs">
+          <div className="border border-border-hairline bg-surface overflow-x-auto">
             <table className="w-full text-left font-sans text-xs">
               <thead>
                 <tr className="border-b-2 border-foreground bg-surface-muted/60 font-mono text-[10px] uppercase tracking-wider text-muted select-none">
@@ -469,7 +469,7 @@ export default function EventPresensiPage() {
                     <tr
                       key={reg.id}
                       className={`hover:bg-surface-muted/30 transition-colors ${
-                        isAttended ? 'bg-emerald-500/[0.03]' : ''
+                        isAttended ? 'bg-surface-muted/40' : ''
                       }`}
                     >
                       {/* Number */}
@@ -509,7 +509,7 @@ export default function EventPresensiPage() {
                       <td className="py-3 px-4 whitespace-nowrap">
                         {isAttended ? (
                           <div className="space-y-0.5">
-                            <span className="px-2 py-0.5 border border-emerald-600 bg-emerald-600 text-white font-mono text-[9px] uppercase font-bold tracking-wider inline-flex items-center gap-1">
+                            <span className="px-2 py-0.5 border border-foreground bg-foreground text-background font-mono text-[9px] uppercase font-bold tracking-wider inline-flex items-center gap-1">
                               <CheckCircle2 className="w-3 h-3" />
                               <span>HADIR</span>
                             </span>
@@ -543,7 +543,7 @@ export default function EventPresensiPage() {
                             <span>Presensikan</span>
                           </button>
                         ) : (
-                          <span className="font-mono text-[10px] text-emerald-700 font-bold">
+                          <span className="font-mono text-[10px] text-foreground font-bold">
                             Terkonfirmasi
                           </span>
                         )}

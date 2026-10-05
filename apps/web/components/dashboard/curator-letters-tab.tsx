@@ -239,7 +239,7 @@ export function CuratorLettersTab() {
 
       {/* Queue Table */}
       {!loading && !error && letters.length > 0 && (
-        <div className="border border-border bg-surface overflow-x-auto shadow-sm">
+        <div className="border border-border bg-surface overflow-x-auto">
           <table className="w-full text-left font-sans text-xs">
             <thead className="bg-surface-muted/60 border-b border-border font-mono text-[10px] uppercase tracking-wider text-muted select-none">
               <tr>
@@ -333,7 +333,7 @@ export function CuratorLettersTab() {
       {/* QUICK DRAWER: BACA & SUNTING SURAT PEMBACA */}
       {drawerOpen && selectedLetter && (
         <div className="fixed inset-0 z-50 overflow-hidden bg-black/60 backdrop-blur-sm flex justify-end animate-in fade-in duration-200">
-          <div className="w-full max-w-2xl bg-background border-l-2 border-foreground h-full flex flex-col shadow-2xl animate-in slide-in-from-right duration-300">
+          <div className="w-full max-w-2xl bg-background border-l-2 border-foreground h-full flex flex-col animate-in slide-in-from-right duration-300">
             {/* Drawer Header */}
             <div className="p-4 sm:p-5 border-b border-border-hairline flex items-center justify-between bg-surface">
               <div className="space-y-0.5">
