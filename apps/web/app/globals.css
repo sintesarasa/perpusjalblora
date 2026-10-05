@@ -61,6 +61,16 @@
   background-size: 16px 16px;
 }
 
+/* Skeleton Shimmer Sweep (Editorial Newsprint Wireframe) */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(200%);
+  }
+}
+
 /* Authentic Press Double Rule */
 .double-rule {
   position: relative;
@@ -256,6 +266,66 @@
   will-change: transform, opacity, filter;
 }
 
+/* Tactile Stamp Impact (Vintage Physical Library Stamp) */
+@keyframes stampImpact {
+  0% {
+    transform: scale(1.6) rotate(-8deg);
+    opacity: 0;
+    filter: blur(2px);
+  }
+  60% {
+    transform: scale(0.96) rotate(-2deg);
+    opacity: 0.95;
+    filter: blur(0px);
+  }
+  80% {
+    transform: scale(1.02) rotate(-3.5deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(-3deg);
+    opacity: 1;
+  }
+}
+
+.animate-stamp-impact {
+  animation: stampImpact 420ms cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  will-change: transform, opacity;
+}
+
+/* Typewriter Mechanical Carriage Cursor Blink */
+@keyframes typewriterBlink {
+  0%, 49% {
+    opacity: 1;
+  }
+  50%, 100% {
+    opacity: 0;
+  }
+}
+
+.animate-typewriter-cursor {
+  animation: typewriterBlink 1s steps(1) infinite;
+}
+
+/* Lapak Warta Ticker Marquee */
+@keyframes tickerSlide {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.animate-ticker-continuous {
+  animation: tickerSlide 45s linear infinite;
+}
+
+.animate-ticker-continuous:hover {
+  animation-play-state: paused;
+}
+
+
 /* Editorial Drop Cap */
 .drop-cap::first-letter {
   font-family: var(--font-playfair), Georgia, serif;
@@ -284,6 +354,33 @@
 /* ── Editorial Editor — Comprehensive Typography & Elements ──────────────── */
 .editorial-editor-content {
   color: hsl(var(--foreground));
+}
+
+/* ── Typewriter Mode Focus & Carriage Cursor ── */
+.typewriter-mode-active > *:not(.typewriter-active-block) {
+  opacity: 0.32;
+  filter: blur(0.2px);
+  transition: opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1), filter 0.22s ease;
+}
+
+.typewriter-mode-active > .typewriter-active-block {
+  opacity: 1;
+  filter: none;
+  transition: opacity 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+}
+
+@media (min-width: 640px) {
+  .typewriter-mode-active > .typewriter-active-block::before {
+    content: '▸';
+    position: absolute;
+    left: -1.5rem;
+    top: 0;
+    font-family: monospace;
+    font-size: 13px;
+    color: hsl(var(--foreground));
+    opacity: 0.75;
+  }
 }
 
 .editorial-editor-content p {

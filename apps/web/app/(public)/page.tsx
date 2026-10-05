@@ -11,6 +11,9 @@ import { StatusPill } from '@/components/ui/status-pill';
 import { Logo } from '@/components/logo';
 import { apiClient } from '@/lib/api';
 import { BookItem } from '@perpusjal/types';
+import { LapakWartaTicker } from '@/components/home/lapak-warta-ticker';
+import { InteractiveLiteraryIndex } from '@/components/home/interactive-literary-index';
+import { BookGridSkeleton } from '@/components/books/book-card-skeleton';
 import {
   ArrowRight,
   ArrowUpRight,
@@ -310,6 +313,7 @@ export default function HomePage() {
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground selection:bg-foreground selection:text-background editorial-grain">
       <Header />
+      <LapakWartaTicker />
 
       <main className="flex-1">
         {/* ========================================================= */}
@@ -739,8 +743,17 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Book Cards Grid with Real Book Covers */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* Book Cards Grid with Real Book Covers or Editorial Skeleton */}
+          {loadingBooks && books.length === 0 ? (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest text-muted border-b border-border-hairline pb-2">
+                <span>Memindai Rak Koleksi Terpal...</span>
+                <span className="animate-pulse">Menghubungkan ke Inventaris...</span>
+              </div>
+              <BookGridSkeleton count={8} />
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {displayBooks.slice(0, 8).map((book, idx) => {
               const shelf = ('shelfLocation' in book && book.shelfLocation) ? book.shelfLocation : 'RAK-CFD';
               const availability = ('availability' in book) ? book.availability : (('status' in book && book.status === 'BORROWED') ? 'BORROWED' : 'AVAILABLE');
@@ -824,7 +837,17 @@ export default function HomePage() {
               );
             })}
           </div>
-        </section>
+        )}
+      </section>
+
+      {/* ========================================================= */}
+      {/* 3B. INDEKS SASTRA INTERAKTIF & KANON KURASI LAPAK         */}
+      {/* ========================================================= */}
+      <section className="border-b-2 border-foreground max-w-7xl mx-auto py-14 sm:py-20 px-4 sm:px-6 lg:px-8">
+        <RevealOnScroll variant="fade-up">
+          <InteractiveLiteraryIndex />
+        </RevealOnScroll>
+      </section>
 
         {/* ========================================================= */}
         {/* 4. GRAND CALL TO ACTION: LESEHAN DI ALUN-ALUN BLORA       */}

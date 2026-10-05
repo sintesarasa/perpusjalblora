@@ -1,5 +1,11 @@
+'use client';
+
 import * as React from 'react';
 import { cn } from '@/lib/utils';
+import {
+  EditorialParallelogramWatermark,
+  EditorialSkeletonLine,
+} from '@/components/ui/editorial-skeleton';
 
 interface ArticleCardSkeletonProps {
   viewMode?: 'grid' | 'broadsheet';
@@ -14,34 +20,43 @@ export function ArticleCardSkeleton({
     return (
       <div
         className={cn(
-          'p-6 bg-surface border border-border flex flex-col md:flex-row gap-6 items-start animate-pulse',
+          'p-6 bg-surface border-2 border-foreground/30 flex flex-col md:flex-row gap-6 items-start animate-pulse rounded-none relative overflow-hidden',
           className
         )}
       >
-        {/* Image skeleton */}
-        <div className="w-full md:w-56 shrink-0 aspect-[16/10] bg-surface-muted border border-border-hairline" />
+        {/* Corner Crop Accents */}
+        <div className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-foreground/30 pointer-events-none" />
+        <div className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-foreground/30 pointer-events-none" />
+
+        {/* Image skeleton with constructivist watermark */}
+        <div className="w-full md:w-56 shrink-0 aspect-[16/10] bg-surface-muted border border-border-hairline relative flex items-center justify-center">
+          <EditorialParallelogramWatermark size="sm" />
+          <div className="absolute bottom-1.5 left-2 font-mono text-[8px] text-muted tracking-wider">
+            [ ARSIP-FOTO ]
+          </div>
+        </div>
 
         {/* Content skeleton */}
         <div className="flex-1 w-full space-y-4">
           <div className="flex items-center justify-between border-b border-border-hairline pb-2">
-            <div className="h-3 w-24 bg-foreground/10 rounded-none" />
-            <div className="h-3 w-20 bg-foreground/10 rounded-none" />
+            <EditorialSkeletonLine width="w-24" height="h-2.5" />
+            <EditorialSkeletonLine width="w-20" height="h-2.5" />
           </div>
 
           <div className="space-y-2">
-            <div className="h-6 w-3/4 bg-foreground/15 rounded-none" />
-            <div className="h-6 w-1/2 bg-foreground/15 rounded-none" />
+            <EditorialSkeletonLine width="w-3/4" height="h-5 sm:h-6" />
+            <EditorialSkeletonLine width="w-1/2" height="h-5 sm:h-6" />
           </div>
 
           <div className="space-y-1.5 pt-1">
-            <div className="h-3 w-full bg-foreground/10 rounded-none" />
-            <div className="h-3 w-5/6 bg-foreground/10 rounded-none" />
-            <div className="h-3 w-2/3 bg-foreground/10 rounded-none" />
+            <EditorialSkeletonLine width="w-full" height="h-3" />
+            <EditorialSkeletonLine width="w-5/6" height="h-3" />
+            <EditorialSkeletonLine width="w-2/3" height="h-3" />
           </div>
 
           <div className="pt-4 border-t border-border-hairline flex items-center justify-between">
-            <div className="h-3 w-32 bg-foreground/10 rounded-none" />
-            <div className="h-7 w-28 bg-foreground/10 rounded-none" />
+            <EditorialSkeletonLine width="w-32" height="h-3" />
+            <EditorialSkeletonLine width="w-24" height="h-3" />
           </div>
         </div>
       </div>
@@ -51,39 +66,48 @@ export function ArticleCardSkeleton({
   return (
     <div
       className={cn(
-        'p-6 bg-surface border border-border flex flex-col justify-between space-y-4 animate-pulse',
+        'p-6 bg-surface border-2 border-foreground/30 flex flex-col justify-between space-y-4 animate-pulse rounded-none relative overflow-hidden',
         className
       )}
     >
+      {/* Corner Crop Accents */}
+      <div className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-foreground/30 pointer-events-none" />
+      <div className="absolute top-0 right-0 w-2 h-2 border-t-2 border-r-2 border-foreground/30 pointer-events-none" />
+
       <div className="space-y-4">
         {/* Cover image skeleton */}
-        <div className="w-full aspect-[16/9] bg-surface-muted border border-border-hairline" />
+        <div className="w-full aspect-[16/9] bg-surface-muted border border-border-hairline relative flex items-center justify-center">
+          <EditorialParallelogramWatermark size="sm" />
+          <div className="absolute bottom-1.5 left-2 font-mono text-[8px] text-muted tracking-wider">
+            [ WARTA-CETAK ]
+          </div>
+        </div>
 
         {/* Category & read time */}
         <div className="flex items-center justify-between border-b border-border-hairline pb-2.5">
-          <div className="h-3 w-20 bg-foreground/10 rounded-none" />
-          <div className="h-3 w-16 bg-foreground/10 rounded-none" />
+          <EditorialSkeletonLine width="w-20" height="h-2.5" />
+          <EditorialSkeletonLine width="w-16" height="h-2.5" />
         </div>
 
         {/* Title skeleton */}
         <div className="space-y-2 pt-1">
-          <div className="h-5 w-full bg-foreground/15 rounded-none" />
-          <div className="h-5 w-4/5 bg-foreground/15 rounded-none" />
+          <EditorialSkeletonLine width="w-full" height="h-5" />
+          <EditorialSkeletonLine width="w-4/5" height="h-5" />
         </div>
 
         {/* Excerpt skeleton */}
         <div className="space-y-1.5 pt-1">
-          <div className="h-3 w-full bg-foreground/10 rounded-none" />
-          <div className="h-3 w-5/6 bg-foreground/10 rounded-none" />
-          <div className="h-3 w-3/4 bg-foreground/10 rounded-none" />
+          <EditorialSkeletonLine width="w-full" height="h-3" />
+          <EditorialSkeletonLine width="w-5/6" height="h-3" />
+          <EditorialSkeletonLine width="w-3/4" height="h-3" />
         </div>
       </div>
 
       {/* Footer byline skeleton */}
       <div className="pt-4 border-t border-border-hairline space-y-2">
         <div className="flex items-center justify-between">
-          <div className="h-3 w-28 bg-foreground/10 rounded-none" />
-          <div className="h-3 w-20 bg-foreground/10 rounded-none" />
+          <EditorialSkeletonLine width="w-28" height="h-3" />
+          <EditorialSkeletonLine width="w-20" height="h-3" />
         </div>
       </div>
     </div>

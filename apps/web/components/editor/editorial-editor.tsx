@@ -12,7 +12,9 @@ import {
   RotateCcw, RotateCw, Eraser,
   CheckCircle2, Maximize2, Minimize2,
   UploadCloud, X, AlertCircle,
+  Volume2, VolumeX, Keyboard,
 } from 'lucide-react';
+import { typewriterSynth } from './typewriter-sound-synth';
 
 interface EditorialEditorProps {
   initialContent?: unknown;
@@ -256,6 +258,29 @@ export function EditorialEditor({
   const [isFocusMode, setIsFocusMode] = React.useState(false);
   const [showImageModal, setShowImageModal] = React.useState(false);
   const [showLinkModal, setShowLinkModal] = React.useState(false);
+  const [isTypewriterMode, setIsTypewriterMode] = React.useState(false);
+  const [isTypewriterSoundOn, setIsTypewriterSoundOn] = React.useState(false);
+
+  // Typewriter mode: track active block to highlight current paragraph
+  const updateTypewriterHighlight = React.useCallback(() => {
+    if (!editorRef.current) return;
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0) return;
+    let node: Node | null = sel.getRangeAt(0).commonAncestorContainer;
+    if (node.nodeType === Node.TEXT_NODE) node = node.parentNode;
+    // Walk up to find top-level child of editorRef
+    let topChild: Node | null = node;
+    while (topChild && topChild.parentNode !== editorRef.current) {
+      topChild = topChild.parentNode;
+    }
+    // Remove all previous active marks
+    Array.from(editorRef.current.children).forEach((child) => {
+      child.classList.remove('typewriter-active-block');
+    });
+    if (topChild && topChild.nodeType === Node.ELEMENT_NODE) {
+      (topChild as HTMLElement).classList.add('typewriter-active-block');
+    }
+  }, []);
 
   const [activeFormats, setActiveFormats] = React.useState<{
     bold: boolean;
@@ -552,10 +577,11 @@ export function EditorialEditor({
   React.useEffect(() => {
     const handleSelectionChange = () => {
       updateActiveFormats();
+      if (isTypewriterMode) updateTypewriterHighlight();
     };
     document.addEventListener('selectionchange', handleSelectionChange);
     return () => document.removeEventListener('selectionchange', handleSelectionChange);
-  }, [updateActiveFormats]);
+  }, [updateActiveFormats, isTypewriterMode, updateTypewriterHighlight]);
 
   const toggleBlock = (tag: 'h1' | 'h2' | 'h3' | 'pre') => {
     editorRef.current?.focus();
@@ -747,6 +773,19 @@ export function EditorialEditor({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    // 0. Typewriter Sound Synthesis (zero-latency Web Audio API)
+    if (isTypewriterSoundOn) {
+      if (e.key === 'Enter') {
+        typewriterSynth.playCarriageReturn();
+      } else if (e.key === ' ') {
+        typewriterSynth.playSpacebar();
+      } else if (e.key === 'Backspace' || e.key === 'Delete') {
+        typewriterSynth.playBackspace();
+      } else if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        typewriterSynth.playKeyClick();
+      }
+    }
+
     // 1. Smart typing shortcut: '> ' at the start of a block converts to blockquote
     if (e.key === ' ' && !e.shiftKey && !e.ctrlKey && !e.metaKey && !e.altKey) {
       const sel = window.getSelection();
@@ -1146,6 +1185,57 @@ export function EditorialEditor({
                   {lastSaved.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
                 </span>
               )}
+
+              {/* Typewriter Mode Toggle */}
+              <button
+                type="button"
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  setIsTypewriterMode((prev) => {
+                    const next = !prev;
+                    if (!next && editorRef.current) {
+                      Array.from(editorRef.current.children).forEach((child) =>
+                        child.classList.remove('typewriter-active-block')
+                      );
+                    }
+                    return next;
+                  });
+                }}
+                title={isTypewriterMode ? 'Nonaktifkan Typewriter Focus Mode' : 'Aktifkan Typewriter Focus Mode — sorot baris aktif'}
+                className={cn(
+                  'w-9 h-9 sm:w-8 sm:h-8 flex items-center justify-center border transition-colors rounded-none',
+                  isTypewriterMode
+                    ? 'bg-foreground text-background border-foreground'
+                    : 'text-muted hover:text-foreground border-transparent hover:border-border'
+                )}
+              >
+                <Keyboard className="w-3.5 h-3.5" />
+              </button>
+
+              {/* Typewriter Sound Toggle */}
+              <button
+                type="button"
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  setIsTypewriterSoundOn((prev) => {
+                    const next = !prev;
+                    typewriterSynth.setEnabled(next);
+                    if (next) typewriterSynth.playKeyClick();
+                    return next;
+                  });
+                }}
+                title={isTypewriterSoundOn ? 'Matikan Suara Mesin Tik' : 'Nyalakan Suara Mesin Tik Fisik (Web Audio API)'}
+                className={cn(
+                  'w-9 h-9 sm:w-8 sm:h-8 flex items-center justify-center border transition-colors rounded-none',
+                  isTypewriterSoundOn
+                    ? 'bg-foreground text-background border-foreground'
+                    : 'text-muted hover:text-foreground border-transparent hover:border-border'
+                )}
+              >
+                {isTypewriterSoundOn ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />}
+              </button>
+
+              {/* Focus Mode */}
               <button
                 type="button"
                 onMouseDown={(e) => { e.preventDefault(); setIsFocusMode(!isFocusMode); }}
@@ -1166,10 +1256,13 @@ export function EditorialEditor({
             onInput={handleInput}
             onKeyDown={handleKeyDown}
             onPaste={handlePaste}
-            onKeyUp={updateActiveFormats}
-            onMouseUp={updateActiveFormats}
+            onKeyUp={() => { updateActiveFormats(); if (isTypewriterMode) updateTypewriterHighlight(); }}
+            onMouseUp={() => { updateActiveFormats(); if (isTypewriterMode) updateTypewriterHighlight(); }}
             suppressContentEditableWarning
-            className="editorial-editor-content min-h-[400px] sm:min-h-[520px] outline-none font-serif text-base sm:text-[18px] text-foreground/90 empty:before:content-[attr(data-placeholder)] empty:before:text-muted/40 empty:before:pointer-events-none"
+            className={cn(
+              'editorial-editor-content min-h-[400px] sm:min-h-[520px] outline-none font-serif text-base sm:text-[18px] text-foreground/90 empty:before:content-[attr(data-placeholder)] empty:before:text-muted/40 empty:before:pointer-events-none',
+              isTypewriterMode && 'typewriter-mode-active'
+            )}
             data-placeholder={placeholder}
           />
         </div>

@@ -12,6 +12,15 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { Logo, LogoIcon } from '@/components/logo';
 import { CustomLoader } from '@/components/ui/custom-loader';
 import { BrandStamp } from '@/components/ui/brand-stamp';
+import { DigitalStampEffect } from '@/components/circulation/digital-stamp-effect';
+import { LibraryCheckoutSlip } from '@/components/circulation/library-checkout-slip';
+import {
+  EditorialNewspaperSkeleton,
+  EditorialSkeletonBlock,
+  EditorialSkeletonLine,
+  EditorialParallelogramWatermark,
+} from '@/components/ui/editorial-skeleton';
+import { BookCardSkeleton } from '@/components/books/book-card-skeleton';
 
 export default function StyleguidePage() {
   return (
@@ -260,6 +269,68 @@ export default function StyleguidePage() {
             actionLabel="KIRIM TULISAN SEKARANG"
             onAction={() => alert('Mengarah ke formulir tulis naskah')}
           />
+        </section>
+
+        {/* 6. STEMPEL DIGITAL & KARTU PEMINJAMAN JADUL */}
+        <section className="mb-16 pb-12 border-b border-border-hairline space-y-8">
+          <div className="font-mono text-xs uppercase tracking-widest font-bold border-b border-foreground pb-2 flex items-center justify-between">
+            <span>06 // STEMPEL DIGITAL &amp; KARTU PEMINJAMAN JADUL</span>
+            <span className="text-muted text-[10px]">KLIK CAP UNTUK MEMICU ANIMASI HENTAKAN</span>
+          </div>
+
+          <div className="space-y-6">
+            <div>
+              <span className="font-mono text-[10px] uppercase tracking-widest text-muted block mb-3">
+                [ SPESIMEN CAP STEMPEL SIRKULASI // MOTIF PARALELOGRAM RESMI ]
+              </span>
+              <div className="flex flex-wrap gap-6 items-center p-6 border border-border-hairline bg-surface">
+                <DigitalStampEffect variant="TERSEDIA" rotation={-3} />
+                <DigitalStampEffect variant="DIPINJAM" rotation={2} />
+                <DigitalStampEffect variant="JATUH_TEMPO" rotation={-4} />
+                <DigitalStampEffect variant="KEMBALI_LENGKAP" rotation={3} />
+                <DigitalStampEffect variant="BACA_DI_TEMPAT" rotation={-2} />
+              </div>
+            </div>
+
+            <div>
+              <span className="font-mono text-[10px] uppercase tracking-widest text-muted block mb-3">
+                [ VISUAL KARTU PEMINJAMAN FISIK // DUE DATE SLIP ]
+              </span>
+              <LibraryCheckoutSlip
+                bookCode="PJ-2026-0001"
+                bookTitle="Bumi Manusia"
+                bookAuthor="Pramoedya Ananta Toer"
+                shelfLocation="RAK-SAS-01 (TERPAL ALUN-ALUN BLORA)"
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* 7. EDITORIAL SKELETON & WIREFRAME */}
+        <section className="mb-16 space-y-8">
+          <div className="font-mono text-xs uppercase tracking-widest font-bold border-b border-foreground pb-2">
+            07 // EDITORIAL SKELETON WIREFRAME &amp; LOADING SYSTEM
+          </div>
+
+          <div className="space-y-6">
+            <div>
+              <span className="font-mono text-[10px] uppercase tracking-widest text-muted block mb-3">
+                [ SKELETON KARTU BUKU DENGAN WATERMARK PARALELOGRAM ]
+              </span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                <BookCardSkeleton />
+                <BookCardSkeleton />
+                <BookCardSkeleton />
+              </div>
+            </div>
+
+            <div>
+              <span className="font-mono text-[10px] uppercase tracking-widest text-muted block mb-3">
+                [ SKELETON BROADSHEET KORAN RESMI // WATERMARK KINETIK ]
+              </span>
+              <EditorialNewspaperSkeleton />
+            </div>
+          </div>
         </section>
       </main>
 

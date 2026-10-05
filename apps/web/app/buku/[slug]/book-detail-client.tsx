@@ -6,6 +6,9 @@ import { useParams, useRouter } from 'next/navigation';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { CustomLoader } from '@/components/ui/custom-loader';
+import { EditorialPageSkeleton } from '@/components/ui/editorial-skeleton';
+import { LibraryCheckoutSlip } from '@/components/circulation/library-checkout-slip';
+import { DigitalStampEffect } from '@/components/circulation/digital-stamp-effect';
 import { apiClient } from '@/lib/api';
 import { BookDetail, BookAvailabilityResponse, LoanItem, WaitlistItem, BookReviewItem } from '@perpusjal/types';
 import {
@@ -213,8 +216,8 @@ export function BookDetailClient({ slug: initialSlug }: { slug?: string } = {}) 
     return (
       <div className="flex flex-col min-h-screen bg-background">
         <Header />
-        <main className="flex-1 flex items-center justify-center p-12">
-          <CustomLoader size="lg" label="MEMBUKA BERKAS PUSTAKA..." />
+        <main className="flex-1">
+          <EditorialPageSkeleton title="MEMBUKA BERKAS PUSTAKA // ARSIP LAPAK BLORA" />
         </main>
         <Footer />
       </div>
@@ -599,6 +602,44 @@ export function BookDetailClient({ slug: initialSlug }: { slug?: string } = {}) 
                 </div>
               </div>
             )}
+
+            {/* VINTAGE LIBRARY CHECKOUT SLIP & DIGITAL INK STAMP */}
+            <div className="space-y-4 pt-6 border-t-2 border-foreground">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <h3 className="font-mono text-xs uppercase tracking-widest font-bold text-foreground flex items-center gap-2">
+                    <span className="w-2 h-2 bg-foreground inline-block" />
+                    <span>KARTU KENDALI SIRKULASI FISIK (DUE DATE SLIP)</span>
+                  </h3>
+                  <p className="font-mono text-[10px] text-muted mt-0.5">
+                    Visual slip peminjaman klasik yang tertempel pada sampul dalam buku. Klik cap stempel untuk animasi stempel fisik.
+                  </p>
+                </div>
+                <div className="shrink-0">
+                  <DigitalStampEffect
+                    variant={book.availableCopies > 0 ? 'TERSEDIA' : 'DIPINJAM'}
+                    size="sm"
+                  />
+                </div>
+              </div>
+
+              <LibraryCheckoutSlip
+                bookCode={book.copies?.[0]?.inventoryCode || `PJ-2026-${book.id.slice(-4).toUpperCase()}`}
+                bookTitle={book.title}
+                bookAuthor={book.author}
+                shelfLocation={book.shelfLocation || 'RAK-CFD-01 (TERPAL ALUN-ALUN)'}
+                activeLoan={
+                  book.availableCopies <= 0
+                    ? {
+                        borrowDate: 'Sirkulasi Aktif',
+                        dueDate: 'Lapak CFD Mendatang',
+                        borrowerName: 'Sedang Dibaca Warga',
+                        status: 'DIPINJAM',
+                      }
+                    : null
+                }
+              />
+            </div>
           </div>
         </div>
 
