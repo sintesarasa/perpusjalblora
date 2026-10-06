@@ -28,10 +28,12 @@ import {
   CornerDownRight,
   Sparkles,
   Mail,
+  BookOpen,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { CuratorLettersTab } from '@/components/dashboard/curator-letters-tab';
 import { CuratorCommentsTab } from '@/components/dashboard/curator-comments-tab';
+import { CuratorCanonsTab } from '@/components/dashboard/curator-canons-tab';
 
 interface AdminArticleItem {
   id: string;
@@ -52,7 +54,7 @@ interface BlockNote {
   note: string;
 }
 
-type MainTab = 'ARTICLES' | 'LETTERS' | 'COMMENTS';
+type MainTab = 'ARTICLES' | 'LETTERS' | 'COMMENTS' | 'CANONS';
 
 export default function DashboardCuratorPage() {
   const [currentUser, setCurrentUser] = React.useState<{ id: string; role: Role; name: string } | null>(null);
@@ -448,6 +450,20 @@ export default function DashboardCuratorPage() {
         >
           <MessageSquare className="w-3.5 h-3.5" />
           <span>Moderasi Komentar &amp; Laporan</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setMainTab('CANONS')}
+          className={cn(
+            'px-4 py-2.5 transition-colors flex items-center gap-2 border-t-2 border-x-2 -mb-[2px]',
+            mainTab === 'CANONS'
+              ? 'border-foreground bg-surface text-foreground font-bold'
+              : 'border-transparent text-muted hover:text-foreground hover:bg-surface-muted/50'
+          )}
+        >
+          <BookOpen className="w-3.5 h-3.5" />
+          <span>Kanon Sastra &amp; Buku Lapak</span>
         </button>
       </div>
 
@@ -1234,6 +1250,9 @@ export default function DashboardCuratorPage() {
 
       {/* TAB 3: COMMENTS */}
       {mainTab === 'COMMENTS' && <CuratorCommentsTab />}
+
+      {/* TAB 4: CANONS */}
+      {mainTab === 'CANONS' && <CuratorCanonsTab />}
     </div>
   );
 }

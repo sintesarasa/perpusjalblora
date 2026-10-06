@@ -10,10 +10,11 @@ import { RevealOnScroll } from '@/components/ui/reveal-on-scroll';
 import { StatusPill } from '@/components/ui/status-pill';
 import { Logo } from '@/components/logo';
 import { apiClient } from '@/lib/api';
-import { BookItem } from '@perpusjal/types';
+import { BookItem, LandingPublicConfigResponse, DEFAULT_LANDING_SETTINGS } from '@perpusjal/types';
 import { LapakWartaTicker } from '@/components/home/lapak-warta-ticker';
 import { InteractiveLiteraryIndex } from '@/components/home/interactive-literary-index';
 import { BookGridSkeleton } from '@/components/books/book-card-skeleton';
+import { FeaturedEventDossier } from '@/components/home/featured-event-dossier';
 import {
   ArrowRight,
   ArrowUpRight,
@@ -27,6 +28,7 @@ import {
   Flame,
   Award,
   BookMarked,
+  AlertTriangle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -234,6 +236,12 @@ export default function HomePage() {
   const [loadingBooks, setLoadingBooks] = React.useState(true);
   const [searchQuery, setSearchQuery] = React.useState('');
 
+  // Dynamic Landing Config (Featured Event, Ticker, CFD Schedule)
+  const [landingConfig, setLandingConfig] = React.useState<LandingPublicConfigResponse>({
+    settings: DEFAULT_LANDING_SETTINGS,
+    featuredEventData: null,
+  });
+
   // Subtle Mouse Parallax on Hero Watermark
   const [heroMouseOffset, setHeroMouseOffset] = React.useState({ x: 0, y: 0 });
 
@@ -277,22 +285,32 @@ export default function HomePage() {
     });
   };
 
-  // Fetch real books from backend
+  // Fetch real books and landing config from backend
   React.useEffect(() => {
     let isMounted = true;
-    async function loadBooks() {
+    async function loadInitialData() {
       try {
-        const res = await apiClient<BooksApiResponse>('/books?perPage=8&sort=terbaru');
-        if (isMounted && res.data && res.data.data && res.data.data.length > 0) {
-          setBooks(res.data.data);
+        const [booksRes, landingRes] = await Promise.all([
+          apiClient<BooksApiResponse>('/books?perPage=8&sort=terbaru'),
+          apiClient<LandingPublicConfigResponse>('/landing/config'),
+        ]);
+
+        if (!isMounted) return;
+
+        if (booksRes.data && booksRes.data.data && booksRes.data.data.length > 0) {
+          setBooks(booksRes.data.data);
+        }
+
+        if (landingRes.data?.settings) {
+          setLandingConfig(landingRes.data);
         }
       } catch (err) {
-        console.error('Failed to load books from API:', err);
+        console.error('Failed to load initial data from API:', err);
       } finally {
         if (isMounted) setLoadingBooks(false);
       }
     }
-    loadBooks();
+    loadInitialData();
     return () => {
       isMounted = false;
     };
@@ -313,7 +331,9 @@ export default function HomePage() {
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground selection:bg-foreground selection:text-background editorial-grain">
       <Header />
-      <LapakWartaTicker />
+      {landingConfig?.settings?.ticker?.isActive !== false && (
+        <LapakWartaTicker items={landingConfig?.settings?.ticker?.items} />
+      )}
 
       <main className="flex-1">
         {/* ========================================================= */}
@@ -335,17 +355,45 @@ export default function HomePage() {
           </div>
 
           {/* Authentic Gazette Masthead Top Ledger */}
-          <div className="flex flex-wrap items-center justify-between border-b border-border-hairline pb-3.5 mb-10 sm:mb-14 text-[10px] sm:text-[11px] font-mono uppercase tracking-widest text-muted gap-2 relative z-10">
+          <div className="flex flex-wrap items-center justify-between border-b border-border-hairline pb-3.5 mb-8 sm:mb-12 text-[10px] sm:text-[11px] font-mono uppercase tracking-widest text-muted gap-2 relative z-10">
             <div className="flex items-center gap-2 sm:gap-3">
               <BrandStamp edition="KRONIK UTAMA" year="2026" />
               <span className="hidden sm:inline">[ EDISI RESMI // GERAKAN SWADAYA RAKYAT ]</span>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-none bg-foreground animate-pulse" />
-              <span className="text-foreground font-semibold">LAPAK CFD: SETIAP MINGGU PAGI</span>
-            </div>
+            {landingConfig?.settings?.cfdSchedule?.isActive !== false && (
+              <div className="flex items-center gap-2">
+                <span
+                  className={cn(
+                    'w-1.5 h-1.5 rounded-none animate-pulse',
+                    landingConfig?.settings?.cfdSchedule?.status === 'LIBUR_CFD'
+                      ? 'bg-red-600'
+                      : landingConfig?.settings?.cfdSchedule?.status === 'PINDAH_LOKASI'
+                      ? 'bg-amber-600'
+                      : 'bg-foreground'
+                  )}
+                />
+                <span className="text-foreground font-semibold">
+                  {landingConfig?.settings?.cfdSchedule?.badgeText || 'LAPAK CFD: SETIAP MINGGU PAGI'}
+                </span>
+              </div>
+            )}
             <div className="hidden lg:block">BLORA, JAWA TENGAH &bull; RUANG BACA RAKYAT</div>
           </div>
+
+          {/* Urgent / Special Lapak CFD Notice Banner */}
+          {landingConfig?.settings?.cfdSchedule?.alertNotice && (
+            <div className="mb-8 p-3.5 sm:p-4 border-2 border-foreground bg-surface font-mono text-xs flex items-start sm:items-center gap-3 relative z-10 rounded-none">
+              <AlertTriangle className="w-4 h-4 text-foreground shrink-0 mt-0.5 sm:mt-0" />
+              <div className="flex-1">
+                <span className="font-bold uppercase tracking-wider mr-2 text-[11px]">
+                  [ MAKLUMAT LAPAK CFD ]:
+                </span>
+                <span className="font-serif italic text-xs sm:text-sm text-foreground">
+                  {landingConfig.settings.cfdSchedule.alertNotice}
+                </span>
+              </div>
+            </div>
+          )}
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 relative z-10 items-start">
             {/* Left Big Lead (7 cols) */}
@@ -443,262 +491,26 @@ export default function HomePage() {
         </section>
 
         {/* ========================================================= */}
-        {/* 2. SHOWCASE: KARTU IDENTITAS WARGA (TACTILE PRESS PASS)    */}
+        {/* 1.5. SOROTAN EVENT AKBAR (BROADSHEET DOSSIER TIPE B)      */}
         {/* ========================================================= */}
-        <section className="border-b-2 border-foreground bg-foreground text-background py-16 sm:py-24 relative overflow-hidden select-none">
-          {/* Subtle Background Watermark */}
-          <div className="absolute right-0 top-1/2 -translate-y-1/2 opacity-[0.035] pointer-events-none font-serif text-[180px] sm:text-[280px] font-black leading-none text-background tracking-tighter">
-            WARGA
-          </div>
+        {landingConfig?.settings?.featuredEvent?.isActive && landingConfig?.featuredEventData && (
+          <section className="border-b-2 border-foreground max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16">
+            <RevealOnScroll variant="fade-up">
+              <FeaturedEventDossier
+                setting={landingConfig.settings.featuredEvent}
+                event={landingConfig.featuredEventData}
+              />
+            </RevealOnScroll>
+          </section>
+        )}
 
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-14 items-center">
-              {/* Left Column: Narrative & Rank Progression Ledger (7 cols) */}
-              <div className="lg:col-span-7">
-                <RevealOnScroll variant="fade-up">
-                  <div className="space-y-6 sm:space-y-8">
-                    <div>
-                      <div className="inline-flex items-center gap-2 px-3 py-1 border border-background/40 bg-background/10 font-mono text-[9px] sm:text-[10px] uppercase font-bold tracking-widest text-background">
-                        <Sparkles className="w-3.5 h-3.5 text-background" />
-                        <span>ARSIP IDENTITAS // KARTU SIRKULASI TERPAL</span>
-                      </div>
-
-                      <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black uppercase tracking-tight text-background leading-[1.05] mt-4">
-                        Jejak Bacamu Adalah <br />
-                        <span className="italic font-serif font-normal text-background/90">
-                          Kehormatan Tertinggi.
-                        </span>
-                      </h2>
-
-                      <p className="font-serif text-base sm:text-lg text-background/80 leading-relaxed max-w-2xl mt-4">
-                        Di Perpusjal Blora, membaca bukan sekadar kegiatan pasif. Setiap buku yang kamu
-                        pinjam dan warta yang kamu tulis mencatatkan reputasi literasi terbuka dalam{' '}
-                        <strong className="text-background font-bold">Kartu Warga Literasi</strong> bersertifikasi publik
-                        — tanpa uang jaminan dan tanpa denda rupiah seumur hidup.
-                      </p>
-                    </div>
-
-                    {/* Streamlined Citizen Rank Progression (Summary of Unique Titles) */}
-                    <div className="space-y-3 pt-2 border-t border-background/20 font-mono">
-                      <div className="text-[10px] uppercase tracking-widest text-background/70 font-bold">
-                        [ SISTEM REPUTASI // JENJANG GELAR KEHORMATAN ]
-                      </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                        <div className="p-3 bg-background/5 border border-background/20 flex items-start gap-3 rounded-none">
-                          <span className="text-background font-mono font-bold text-[11px] shrink-0 border border-background/30 px-1.5 py-0.5">
-                            01
-                          </span>
-                          <div>
-                            <div className="font-bold text-background uppercase tracking-wide text-[11px]">
-                              Warga Pemula
-                            </div>
-                            <div className="font-serif text-[11px] text-background/75 mt-0.5">
-                              Langkah awal terdaftar di hamparan terpal.
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="p-3 bg-background/5 border border-background/20 flex items-start gap-3 rounded-none">
-                          <span className="text-background font-mono font-bold text-[11px] shrink-0 border border-background/30 px-1.5 py-0.5">
-                            02
-                          </span>
-                          <div>
-                            <div className="font-bold text-background uppercase tracking-wide text-[11px]">
-                              Pembaca Terpal
-                            </div>
-                            <div className="font-serif text-[11px] text-background/75 mt-0.5">
-                              Menuntaskan 3 peminjaman buku amanah.
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="p-3 bg-background/5 border border-background/20 flex items-start gap-3 rounded-none">
-                          <span className="text-background font-mono font-bold text-[11px] shrink-0 border border-background/30 px-1.5 py-0.5">
-                            03
-                          </span>
-                          <div>
-                            <div className="font-bold text-background uppercase tracking-wide text-[11px]">
-                              Pengelana Kata
-                            </div>
-                            <div className="font-serif text-[11px] text-background/75 mt-0.5">
-                              Aktif mengulas buku atau menulis warta warga.
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="p-3 bg-background/5 border border-background/20 flex items-start gap-3 rounded-none">
-                          <span className="text-background font-mono font-bold text-[11px] shrink-0 border border-background/30 px-1.5 py-0.5">
-                            04
-                          </span>
-                          <div>
-                            <div className="font-bold text-background uppercase tracking-wide text-[11px]">
-                              Penjaga Nyala
-                            </div>
-                            <div className="font-serif text-[11px] text-background/75 mt-0.5">
-                              Pilar penggerak literasi swadaya Blora.
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Micro-chips of Sample Badges */}
-                      <div className="flex flex-wrap items-center gap-2 pt-2">
-                        <span className="text-[10px] uppercase text-background/60 tracking-wider">
-                          Lencana Kehormatan:
-                        </span>
-                        {[
-                          { name: 'Pena Emas', icon: Award },
-                          { name: 'Penjaga Nyala', icon: Flame },
-                          { name: 'Kolektor Lembaran', icon: BookMarked },
-                          { name: 'Warga Amanah', icon: ShieldCheck },
-                        ].map((badge) => {
-                          const IconComp = badge.icon;
-                          return (
-                            <span
-                              key={badge.name}
-                              className="px-2.5 py-1 bg-background/10 border border-background/25 text-background text-[10px] font-bold uppercase tracking-wider inline-flex items-center gap-1.5 rounded-none"
-                            >
-                              <IconComp className="w-3 h-3 text-background" />
-                              <span>{badge.name}</span>
-                            </span>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    {/* CTA Action Buttons */}
-                    <div className="pt-2 flex flex-wrap items-center gap-3 sm:gap-4">
-                      <Link
-                        href="/masuk"
-                        className="px-6 py-3.5 bg-background text-foreground font-mono text-xs font-bold uppercase tracking-wider hover:bg-background/90 transition-colors inline-flex items-center gap-2"
-                      >
-                        <Sparkles className="w-4 h-4 text-foreground" />
-                        <span>BUAT KARTU MILIKMU SEKARANG</span>
-                        <ArrowRight className="w-3.5 h-3.5 text-foreground" />
-                      </Link>
-
-                      <Link
-                        href="/kontributor"
-                        className="px-5 py-3.5 border-2 border-background text-background hover:bg-background hover:text-foreground font-mono text-xs font-bold uppercase tracking-wider transition-colors inline-flex items-center gap-2"
-                      >
-                        <span>JELAJAHI DAFTAR WARGA &rarr;</span>
-                      </Link>
-                    </div>
-                  </div>
-                </RevealOnScroll>
-              </div>
-
-              {/* Right Column: Tactile Light-Sheen Press Pass (5 cols) */}
-              <div className="lg:col-span-5 flex flex-col items-center">
-                <RevealOnScroll variant="stamp" delayMs={200} className="w-full max-w-md">
-                  <div
-                    ref={cardRef}
-                    onMouseMove={handleCardMouseMove}
-                    onMouseLeave={handleCardMouseLeave}
-                    style={{
-                      transform: `perspective(1000px) rotateX(${cardTilt.rotateX}deg) rotateY(${cardTilt.rotateY}deg)`,
-                      transition: 'transform 0.15s ease-out',
-                    }}
-                    className="relative group cursor-pointer"
-                  >
-                    <div
-                      style={{
-                        backgroundImage: `radial-gradient(circle at ${cardTilt.sheenX}% ${cardTilt.sheenY}%, rgba(255, 255, 255, ${cardTilt.sheenOpacity}) 0%, transparent 60%)`,
-                      }}
-                      className="relative bg-background text-foreground p-6 pb-6 border-2 border-background select-none space-y-4 box-border rounded-none overflow-hidden"
-                    >
-                      {/* Decorative corner markers */}
-                      <div className="absolute top-2 left-2 w-3 h-3 border-t-2 border-l-2 border-foreground pointer-events-none" />
-                      <div className="absolute top-2 right-2 w-3 h-3 border-t-2 border-r-2 border-foreground pointer-events-none" />
-                      <div className="absolute bottom-2 left-2 w-3 h-3 border-b-2 border-l-2 border-foreground pointer-events-none" />
-                      <div className="absolute bottom-2 right-2 w-3 h-3 border-b-2 border-r-2 border-foreground pointer-events-none" />
-
-                      {/* Top Bar of the Card */}
-                      <div className="border-b border-border-hairline pb-3 space-y-2">
-                        <div className="flex items-center justify-between gap-4">
-                          <Logo className="h-7 w-auto text-foreground shrink-0" />
-                          <div className="text-right shrink-0">
-                            <span className="font-mono text-[7.5px] uppercase font-bold tracking-widest text-muted block mb-0.5">
-                              NO. REGISTRASI RESMI
-                            </span>
-                            <span className="font-mono text-[10.5px] font-bold text-background bg-foreground tracking-wider px-2 py-0.5 rounded-none inline-block">
-                              BLR-2026-WARGA01
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center justify-between gap-2 pt-2 border-t border-border-hairline">
-                          <span className="font-mono text-[8.5px] uppercase font-bold tracking-[0.2em] text-foreground">
-                            KARTU KEHORMATAN WARGA
-                          </span>
-                          <span className="font-serif italic text-xs text-muted">
-                            Membaca dan Berbahagia.
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Persona Identity Strip */}
-                      <div className="flex items-center gap-3.5 py-1">
-                        <div className="w-12 h-12 rounded-none border-2 border-foreground bg-surface flex items-center justify-center font-serif text-xl font-bold text-foreground shrink-0">
-                          P
-                        </div>
-                        <div className="flex-1 min-w-0 space-y-0.5">
-                          <h4 className="font-serif font-black text-xl text-foreground tracking-wide truncate">
-                            Pramono Wibowo
-                          </h4>
-                          <p className="font-mono text-[10.5px] text-muted">@pramono &bull; Warga Penggerak 2024</p>
-                          <div className="pt-0.5">
-                            <span className="inline-block px-2.5 py-0.5 bg-foreground text-background font-mono text-[8px] uppercase font-bold tracking-wider rounded-none">
-                              GELAR: PENJAGA NYALA LITERASI
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Inspiring Quote Box */}
-                      <div className="p-3.5 bg-surface-muted/60 border-l-4 border-foreground rounded-none space-y-1">
-                        <p className="font-serif italic text-xs text-foreground/90 leading-relaxed">
-                          &ldquo;Tangan yang membolak-balik buku adalah tangan yang merawat masa depan bangsa.&rdquo;
-                        </p>
-                        <div className="text-right font-mono text-[8.5px] text-muted font-semibold uppercase">
-                          — Pramono Wibowo (Catatan Warga)
-                        </div>
-                      </div>
-
-                      {/* 4 Achievement Pillars */}
-                      <div className="grid grid-cols-4 gap-2 font-mono text-center pt-0.5">
-                        <div className="p-2 border border-border-hairline bg-surface rounded-none">
-                          <span className="text-[7.5px] uppercase tracking-wider text-muted block">Tulisan</span>
-                          <span className="font-serif font-black text-base text-foreground">8</span>
-                        </div>
-                        <div className="p-2 border border-border-hairline bg-surface rounded-none">
-                          <span className="text-[7.5px] uppercase tracking-wider text-muted block">Lencana</span>
-                          <span className="font-serif font-black text-base text-foreground">6</span>
-                        </div>
-                        <div className="p-2 border border-border-hairline bg-surface rounded-none">
-                          <span className="text-[7.5px] uppercase tracking-wider text-muted block">Pinjaman</span>
-                          <span className="font-serif font-black text-base text-foreground">14</span>
-                        </div>
-                        <div className="p-2 border border-border-hairline bg-surface rounded-none">
-                          <span className="text-[7.5px] uppercase tracking-wider text-muted block">Amanah</span>
-                          <span className="font-serif font-black text-base text-foreground">100%</span>
-                        </div>
-                      </div>
-
-                      {/* Bottom Verification Seal */}
-                      <div className="flex items-center justify-between pt-2.5 border-t border-border-hairline gap-2">
-                        <Logo className="h-6 w-auto text-foreground shrink-0" />
-                        <div className="flex-1 min-w-0 text-right space-y-0.5 font-mono text-[7.5px] text-muted">
-                          <span className="text-foreground block font-bold">perpusjalblora.id/warga/@pramono</span>
-                          <span>DOKUMEN RESMI WARGA LITERASI</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </RevealOnScroll>
-              </div>
-            </div>
-          </div>
+        {/* ========================================================= */}
+        {/* 2. INDEKS SASTRA INTERAKTIF & KANON KURASI LAPAK          */}
+        {/* ========================================================= */}
+        <section className="border-b-2 border-foreground max-w-7xl mx-auto py-14 sm:py-20 px-4 sm:px-6 lg:px-8">
+          <RevealOnScroll variant="fade-up">
+            <InteractiveLiteraryIndex />
+          </RevealOnScroll>
         </section>
 
         {/* ========================================================= */}
@@ -841,17 +653,267 @@ export default function HomePage() {
       </section>
 
       {/* ========================================================= */}
-      {/* 3B. INDEKS SASTRA INTERAKTIF & KANON KURASI LAPAK         */}
+      {/* 4. SHOWCASE: KARTU IDENTITAS WARGA (TACTILE PRESS PASS)    */}
       {/* ========================================================= */}
-      <section className="border-b-2 border-foreground max-w-7xl mx-auto py-14 sm:py-20 px-4 sm:px-6 lg:px-8">
-        <RevealOnScroll variant="fade-up">
-          <InteractiveLiteraryIndex />
-        </RevealOnScroll>
+      <section className="border-b-2 border-foreground bg-surface text-foreground py-16 sm:py-24 relative overflow-hidden">
+        {/* Subtle Background Watermark */}
+        <div className="absolute right-0 top-1/2 -translate-y-1/2 opacity-[0.03] pointer-events-none font-serif text-[180px] sm:text-[280px] font-black leading-none text-foreground tracking-tighter select-none">
+          WARGA
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-14 items-center">
+            {/* Left Column: Narrative & Rank Progression Ledger (7 cols) */}
+            <div className="lg:col-span-7">
+              <RevealOnScroll variant="fade-up">
+                <div className="space-y-6 sm:space-y-8">
+                  <div>
+                    <div className="inline-flex items-center gap-2 px-3 py-1 border border-foreground bg-surface-muted font-mono text-[9px] sm:text-[10px] uppercase font-bold tracking-widest text-foreground">
+                      <Sparkles className="w-3.5 h-3.5 text-foreground" />
+                      <span>ARSIP IDENTITAS // KARTU SIRKULASI TERPAL</span>
+                    </div>
+
+                    <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black uppercase tracking-tight text-foreground leading-[1.05] mt-4">
+                      Jejak Bacamu Adalah <br />
+                      <span className="italic font-serif font-normal text-foreground/85">
+                        Kehormatan Tertinggi.
+                      </span>
+                    </h2>
+
+                    <p className="font-serif text-base sm:text-lg text-foreground/80 leading-relaxed max-w-2xl mt-4">
+                      Di Perpusjal Blora, membaca bukan sekadar kegiatan pasif. Setiap buku yang kamu
+                      pinjam dan warta yang kamu tulis mencatatkan reputasi literasi terbuka dalam{' '}
+                      <strong className="text-foreground font-bold">Kartu Warga Literasi</strong> bersertifikasi publik
+                      — tanpa uang jaminan dan tanpa denda rupiah seumur hidup.
+                    </p>
+                  </div>
+
+                  {/* Streamlined Citizen Rank Progression (Summary of Unique Titles) */}
+                  <div className="space-y-3 pt-2 border-t border-border-hairline font-mono">
+                    <div className="text-[10px] uppercase tracking-widest text-muted font-bold">
+                      [ SISTEM REPUTASI // JENJANG GELAR KEHORMATAN ]
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                      <div className="p-3 bg-background border border-border-hairline hover:border-foreground transition-colors flex items-start gap-3 rounded-none">
+                        <span className="text-foreground font-mono font-bold text-[11px] shrink-0 border border-border-hairline px-1.5 py-0.5">
+                          01
+                        </span>
+                        <div>
+                          <div className="font-bold text-foreground uppercase tracking-wide text-[11px]">
+                            Warga Pemula
+                          </div>
+                          <div className="font-serif text-[11px] text-muted mt-0.5">
+                            Langkah awal terdaftar di hamparan terpal.
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="p-3 bg-background border border-border-hairline hover:border-foreground transition-colors flex items-start gap-3 rounded-none">
+                        <span className="text-foreground font-mono font-bold text-[11px] shrink-0 border border-border-hairline px-1.5 py-0.5">
+                          02
+                        </span>
+                        <div>
+                          <div className="font-bold text-foreground uppercase tracking-wide text-[11px]">
+                            Pembaca Terpal
+                          </div>
+                          <div className="font-serif text-[11px] text-muted mt-0.5">
+                            Menuntaskan 3 peminjaman buku amanah.
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="p-3 bg-background border border-border-hairline hover:border-foreground transition-colors flex items-start gap-3 rounded-none">
+                        <span className="text-foreground font-mono font-bold text-[11px] shrink-0 border border-border-hairline px-1.5 py-0.5">
+                          03
+                        </span>
+                        <div>
+                          <div className="font-bold text-foreground uppercase tracking-wide text-[11px]">
+                            Pengelana Kata
+                          </div>
+                          <div className="font-serif text-[11px] text-muted mt-0.5">
+                            Aktif mengulas buku atau menulis warta warga.
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="p-3 bg-background border border-border-hairline hover:border-foreground transition-colors flex items-start gap-3 rounded-none">
+                        <span className="text-foreground font-mono font-bold text-[11px] shrink-0 border border-border-hairline px-1.5 py-0.5">
+                          04
+                        </span>
+                        <div>
+                          <div className="font-bold text-foreground uppercase tracking-wide text-[11px]">
+                            Penjaga Nyala
+                          </div>
+                          <div className="font-serif text-[11px] text-muted mt-0.5">
+                            Pilar penggerak literasi swadaya Blora.
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Micro-chips of Sample Badges */}
+                    <div className="flex flex-wrap items-center gap-2 pt-2">
+                      <span className="text-[10px] uppercase text-muted tracking-wider">
+                        Lencana Kehormatan:
+                      </span>
+                      {[
+                        { name: 'Pena Emas', icon: Award },
+                        { name: 'Penjaga Nyala', icon: Flame },
+                        { name: 'Kolektor Lembaran', icon: BookMarked },
+                        { name: 'Warga Amanah', icon: ShieldCheck },
+                      ].map((badge) => {
+                        const IconComp = badge.icon;
+                        return (
+                          <span
+                            key={badge.name}
+                            className="px-2.5 py-1 bg-surface-muted border border-border-hairline text-foreground text-[10px] font-bold uppercase tracking-wider inline-flex items-center gap-1.5 rounded-none"
+                          >
+                            <IconComp className="w-3 h-3 text-foreground" />
+                            <span>{badge.name}</span>
+                          </span>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* CTA Action Buttons */}
+                  <div className="pt-2 flex flex-wrap items-center gap-3 sm:gap-4">
+                    <Link
+                      href="/masuk"
+                      className="px-6 py-3.5 bg-foreground text-background font-mono text-xs font-bold uppercase tracking-wider hover:bg-foreground/90 transition-colors inline-flex items-center gap-2 border border-foreground"
+                    >
+                      <Sparkles className="w-4 h-4 text-background" />
+                      <span>BUAT KARTU MILIKMU SEKARANG</span>
+                      <ArrowRight className="w-3.5 h-3.5 text-background" />
+                    </Link>
+
+                    <Link
+                      href="/kontributor"
+                      className="px-5 py-3.5 border-2 border-foreground text-foreground hover:bg-foreground hover:text-background font-mono text-xs font-bold uppercase tracking-wider transition-colors inline-flex items-center gap-2"
+                    >
+                      <span>JELAJAHI DAFTAR WARGA &rarr;</span>
+                    </Link>
+                  </div>
+                </div>
+              </RevealOnScroll>
+            </div>
+
+            {/* Right Column: Tactile Light-Sheen Press Pass (5 cols) */}
+            <div className="lg:col-span-5 flex flex-col items-center">
+              <RevealOnScroll variant="stamp" delayMs={200} className="w-full max-w-md">
+                <div
+                  ref={cardRef}
+                  onMouseMove={handleCardMouseMove}
+                  onMouseLeave={handleCardMouseLeave}
+                  style={{
+                    transform: `perspective(1000px) rotateX(${cardTilt.rotateX}deg) rotateY(${cardTilt.rotateY}deg)`,
+                    transition: 'transform 0.15s ease-out',
+                  }}
+                  className="relative group cursor-pointer"
+                >
+                  <div
+                    style={{
+                      backgroundImage: `radial-gradient(circle at ${cardTilt.sheenX}% ${cardTilt.sheenY}%, rgba(255, 255, 255, ${cardTilt.sheenOpacity}) 0%, transparent 60%)`,
+                    }}
+                    className="relative bg-background text-foreground p-6 pb-6 border-2 border-foreground select-none space-y-4 box-border rounded-none overflow-hidden"
+                  >
+                    {/* Decorative corner markers */}
+                    <div className="absolute top-2 left-2 w-3 h-3 border-t-2 border-l-2 border-foreground pointer-events-none" />
+                    <div className="absolute top-2 right-2 w-3 h-3 border-t-2 border-r-2 border-foreground pointer-events-none" />
+                    <div className="absolute bottom-2 left-2 w-3 h-3 border-b-2 border-l-2 border-foreground pointer-events-none" />
+                    <div className="absolute bottom-2 right-2 w-3 h-3 border-b-2 border-r-2 border-foreground pointer-events-none" />
+
+                    {/* Top Bar of the Card */}
+                    <div className="border-b border-border-hairline pb-3 space-y-2">
+                      <div className="flex items-center justify-between gap-4">
+                        <Logo className="h-7 w-auto text-foreground shrink-0" />
+                        <div className="text-right shrink-0">
+                          <span className="font-mono text-[7.5px] uppercase font-bold tracking-widest text-muted block mb-0.5">
+                            NO. REGISTRASI RESMI
+                          </span>
+                          <span className="font-mono text-[10.5px] font-bold text-background bg-foreground tracking-wider px-2 py-0.5 rounded-none inline-block">
+                            BLR-2026-WARGA01
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between gap-2 pt-2 border-t border-border-hairline">
+                        <span className="font-mono text-[8.5px] uppercase font-bold tracking-[0.2em] text-foreground">
+                          KARTU KEHORMATAN WARGA
+                        </span>
+                        <span className="font-serif italic text-xs text-muted">
+                          Membaca dan Berbahagia.
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Persona Identity Strip */}
+                    <div className="flex items-center gap-3.5 py-1">
+                      <div className="w-12 h-12 rounded-none border-2 border-foreground bg-surface flex items-center justify-center font-serif text-xl font-bold text-foreground shrink-0">
+                        P
+                      </div>
+                      <div className="flex-1 min-w-0 space-y-0.5">
+                        <h4 className="font-serif font-black text-xl text-foreground tracking-wide truncate">
+                          Pramono Wibowo
+                        </h4>
+                        <p className="font-mono text-[10.5px] text-muted">@pramono &bull; Warga Penggerak 2024</p>
+                        <div className="pt-0.5">
+                          <span className="inline-block px-2.5 py-0.5 bg-foreground text-background font-mono text-[8px] uppercase font-bold tracking-wider rounded-none">
+                            GELAR: PENJAGA NYALA LITERASI
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Inspiring Quote Box */}
+                    <div className="p-3.5 bg-surface-muted/60 border-l-4 border-foreground rounded-none space-y-1">
+                      <p className="font-serif italic text-xs text-foreground/90 leading-relaxed">
+                        &ldquo;Tangan yang membolak-balik buku adalah tangan yang merawat masa depan bangsa.&rdquo;
+                      </p>
+                      <div className="text-right font-mono text-[8.5px] text-muted font-semibold uppercase">
+                        — Pramono Wibowo (Catatan Warga)
+                      </div>
+                    </div>
+
+                    {/* 4 Achievement Pillars */}
+                    <div className="grid grid-cols-4 gap-2 font-mono text-center pt-0.5">
+                      <div className="p-2 border border-border-hairline bg-surface rounded-none">
+                        <span className="text-[7.5px] uppercase tracking-wider text-muted block">Tulisan</span>
+                        <span className="font-serif font-black text-base text-foreground">8</span>
+                      </div>
+                      <div className="p-2 border border-border-hairline bg-surface rounded-none">
+                        <span className="text-[7.5px] uppercase tracking-wider text-muted block">Lencana</span>
+                        <span className="font-serif font-black text-base text-foreground">6</span>
+                      </div>
+                      <div className="p-2 border border-border-hairline bg-surface rounded-none">
+                        <span className="text-[7.5px] uppercase tracking-wider text-muted block">Pinjaman</span>
+                        <span className="font-serif font-black text-base text-foreground">14</span>
+                      </div>
+                      <div className="p-2 border border-border-hairline bg-surface rounded-none">
+                        <span className="text-[7.5px] uppercase tracking-wider text-muted block">Amanah</span>
+                        <span className="font-serif font-black text-base text-foreground">100%</span>
+                      </div>
+                    </div>
+
+                    {/* Bottom Verification Seal */}
+                    <div className="flex items-center justify-between pt-2.5 border-t border-border-hairline gap-2">
+                      <Logo className="h-6 w-auto text-foreground shrink-0" />
+                      <div className="flex-1 min-w-0 text-right space-y-0.5 font-mono text-[7.5px] text-muted">
+                        <span className="text-foreground block font-bold">perpusjalblora.id/warga/@pramono</span>
+                        <span>DOKUMEN RESMI WARGA LITERASI</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </RevealOnScroll>
+            </div>
+          </div>
+        </div>
       </section>
 
-        {/* ========================================================= */}
-        {/* 4. GRAND CALL TO ACTION: LESEHAN DI ALUN-ALUN BLORA       */}
-        {/* ========================================================= */}
+      {/* ========================================================= */}
+      {/* 5. GRAND CALL TO ACTION: LESEHAN DI ALUN-ALUN BLORA       */}
+      {/* ========================================================= */}
         <section className="py-20 sm:py-28 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto text-center">
           <RevealOnScroll variant="fade-up">
             <div className="max-w-3xl mx-auto space-y-6">

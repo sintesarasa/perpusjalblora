@@ -67,6 +67,7 @@ export interface ContributorItem {
   articlesCount: number;
   badgesCount: number;
   joinedAt: string;
+  equippedTitle?: string | null;
 }
 
 export interface AdminUserListItem {

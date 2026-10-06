@@ -6,6 +6,8 @@ import { cn } from '@/lib/utils';
 import { BookItem } from '@perpusjal/types';
 import { ArrowRight, BookOpen, Quote, Sparkles } from 'lucide-react';
 import { DigitalStampEffect } from '@/components/circulation/digital-stamp-effect';
+import { apiClient } from '@/lib/api';
+import { parseCuratorCanonNote } from '@/components/dashboard/curator-canons-tab';
 
 export interface IndexCanonItem {
   id: string;
@@ -118,13 +120,67 @@ const SAMPLE_CANONS: IndexCanonItem[] = [
 type CanonFilter = 'SEMUA' | 'PRAMOEDYA' | 'FILSAFAT' | 'SAMIN' | 'PEDAGOGI';
 
 export function InteractiveLiteraryIndex({ className }: { className?: string }) {
+  const [canons, setCanons] = React.useState<IndexCanonItem[]>(SAMPLE_CANONS);
   const [activeFilter, setActiveFilter] = React.useState<CanonFilter>('SEMUA');
   const [selectedItem, setSelectedItem] = React.useState<IndexCanonItem>(SAMPLE_CANONS[0]);
 
+  // Load dynamically curated canon books from backend API
+  React.useEffect(() => {
+    async function fetchFeatured() {
+      try {
+        const res = await apiClient<{ data: BookItem[] }>('/books?featured=true&includeDraft=false&perPage=20');
+        if (res.data?.data && res.data.data.length > 0) {
+          const mapped: IndexCanonItem[] = res.data.data.map((b, idx) => {
+            const parsed = parseCuratorCanonNote(b.curatorNote);
+            const rawTag = (parsed.tag || '').toUpperCase();
+            let canonTag: 'PRAMOEDYA' | 'FILSAFAT' | 'SAMIN' | 'PEDAGOGI' = 'PRAMOEDYA';
+
+            if (rawTag.includes('FILSAFAT')) canonTag = 'FILSAFAT';
+            else if (rawTag.includes('SAMIN')) canonTag = 'SAMIN';
+            else if (rawTag.includes('PEDAGOGI')) canonTag = 'PEDAGOGI';
+            else if (rawTag.includes('PRAM')) canonTag = 'PRAMOEDYA';
+            else {
+              const cat = (b.category?.name || '').toLowerCase();
+              if (cat.includes('filsafat')) canonTag = 'FILSAFAT';
+              else if (cat.includes('sejarah') || cat.includes('samin')) canonTag = 'SAMIN';
+              else if (cat.includes('pedagogi') || cat.includes('pendidikan') || cat.includes('anak')) canonTag = 'PEDAGOGI';
+            }
+
+            return {
+              id: b.id,
+              code: b.isbn ? `PJ-${b.isbn.slice(0, 8)}` : `PJ-2026-${String(idx + 1).padStart(4, '0')}`,
+              slug: b.slug,
+              title: b.title,
+              author: b.author,
+              year: b.publicationYear || 2026,
+              category: b.category?.name || 'Sastra & Roman',
+              canonTag,
+              quote: parsed.quote || b.description || 'Pilihan kurasi koleksi bermartabat Perpustakaan Jalanan Blora.',
+              shelfLocation: b.shelfLocation || 'RAK-LAPAK-01',
+              isAvailable: (b.availableCopies || 0) > 0,
+            };
+          });
+
+          setCanons(mapped);
+          setSelectedItem(mapped[0]);
+        }
+      } catch {
+        // Fallback to SAMPLE_CANONS
+      }
+    }
+    fetchFeatured();
+  }, []);
+
   const filteredItems = React.useMemo(() => {
-    if (activeFilter === 'SEMUA') return SAMPLE_CANONS;
-    return SAMPLE_CANONS.filter((item) => item.canonTag === activeFilter);
-  }, [activeFilter]);
+    if (activeFilter === 'SEMUA') return canons;
+    return canons.filter((item) => item.canonTag === activeFilter);
+  }, [canons, activeFilter]);
+
+  React.useEffect(() => {
+    if (filteredItems.length > 0 && !filteredItems.some((i) => i.id === selectedItem?.id)) {
+      setSelectedItem(filteredItems[0]);
+    }
+  }, [filteredItems, selectedItem]);
 
   return (
     <div className={cn('border-2 border-foreground bg-surface p-6 sm:p-8 space-y-6 rounded-none', className)}>
@@ -147,7 +203,7 @@ export function InteractiveLiteraryIndex({ className }: { className?: string }) 
         <div className="flex flex-wrap gap-1 font-mono text-[10px] uppercase tracking-wider shrink-0">
           {(
             [
-              { key: 'SEMUA', label: 'SEMUA (7)' },
+              { key: 'SEMUA', label: `SEMUA (${canons.length})` },
               { key: 'PRAMOEDYA', label: 'PRAMOEDYA' },
               { key: 'FILSAFAT', label: 'FILSAFAT' },
               { key: 'SAMIN', label: 'SAMIN BLORA' },

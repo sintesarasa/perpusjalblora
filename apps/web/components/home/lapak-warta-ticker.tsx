@@ -5,11 +5,13 @@ import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { Play, Pause } from 'lucide-react';
 
-interface TickerItem {
+export interface TickerItem {
   id: string;
   tag: string;
-  content: string;
-  href?: string;
+  content?: string;
+  text?: string;
+  href?: string | null;
+  link?: string | null;
 }
 
 const DEFAULT_TICKER_ITEMS: TickerItem[] = [
@@ -121,16 +123,16 @@ export function LapakWartaTicker({
                   [{item.tag}]
                 </span>
 
-                {item.href ? (
+                {(item.href || item.link) ? (
                   <Link
-                    href={item.href}
+                    href={item.href || item.link || '#'}
                     className="font-serif text-xs sm:text-sm text-foreground hover:underline decoration-1 underline-offset-2 transition-colors cursor-pointer"
                   >
-                    {item.content}
+                    {item.content || item.text}
                   </Link>
                 ) : (
                   <span className="font-serif text-xs sm:text-sm text-foreground">
-                    {item.content}
+                    {item.content || item.text}
                   </span>
                 )}
               </div>

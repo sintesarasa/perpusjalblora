@@ -259,13 +259,13 @@ async function runSprint78Tests() {
   });
 
   test('Sprint 7', 'TC-S07-11: BR-LOAN-04 Perpanjangan Ditolak Jika Terdapat Pembaca Lain di Antrean (Waitlist)', () => {
-    const waitlistCount = 2; // Ada 2 pembaca menunggu buku ini
+    const waitlistCount: number = 2; // Ada 2 pembaca menunggu buku ini
     const canExtend = waitlistCount === 0;
     expect(canExtend).toBe(false);
   });
 
   test('Sprint 7', 'TC-S07-12: BR-LOAN-04 Perpanjangan Ditolak Jika Pinjaman Sudah Berstatus OVERDUE', () => {
-    const loanStatus = LoanStatus.OVERDUE;
+    const loanStatus: any = LoanStatus.OVERDUE;
     const canExtend = loanStatus === LoanStatus.BORROWED;
     expect(canExtend).toBe(false);
   });

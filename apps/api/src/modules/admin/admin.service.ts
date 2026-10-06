@@ -1,5 +1,12 @@
 import { prisma } from '../../lib/prisma.js';
-import { AdminDashboardStats, AdminAuditLogItem } from '@perpusjal/types';
+import {
+  AdminDashboardStats,
+  AdminAuditLogItem,
+  LandingSettings,
+  DEFAULT_LANDING_SETTINGS,
+  LandingPublicConfigResponse,
+  LandingFeaturedEventData,
+} from '@perpusjal/types';
 
 export class AdminService {
   async getDashboardKPIs(): Promise<AdminDashboardStats> {
@@ -113,6 +120,96 @@ export class AdminService {
       page,
       limit,
       totalPages: Math.ceil(total / limit) || 1,
+    };
+  }
+
+  async getLandingSettings(): Promise<LandingSettings> {
+    const setting = await prisma.setting.findUnique({
+      where: { key: 'LANDING_PAGE_CONFIG' },
+    });
+    if (!setting || !setting.value) {
+      return DEFAULT_LANDING_SETTINGS;
+    }
+    return {
+      ...DEFAULT_LANDING_SETTINGS,
+      ...(setting.value as any),
+    };
+  }
+
+  async updateLandingSettings(userId: string, input: LandingSettings): Promise<LandingSettings> {
+    const updated = await prisma.setting.upsert({
+      where: { key: 'LANDING_PAGE_CONFIG' },
+      update: {
+        value: input as any,
+        updatedById: userId,
+      },
+      create: {
+        key: 'LANDING_PAGE_CONFIG',
+        value: input as any,
+        description: 'Konfigurasi etalase dan promosi beranda utama Perpusjal Blora',
+        updatedById: userId,
+      },
+    });
+    return updated.value as any;
+  }
+
+  async getPublicLandingConfig(): Promise<LandingPublicConfigResponse> {
+    const settings = await this.getLandingSettings();
+    let featuredEventData: LandingFeaturedEventData | null = null;
+
+    if (settings.featuredEvent?.isActive && settings.featuredEvent.eventId) {
+      try {
+        const ev = await prisma.event.findUnique({
+          where: { id: settings.featuredEvent.eventId },
+          include: {
+            _count: {
+              select: {
+                registrations: { where: { status: 'REGISTERED' as any } },
+              },
+            },
+          },
+        });
+
+        if (ev && ev.status !== ('DRAFT' as any) && ev.status !== ('CANCELLED' as any)) {
+          let descPlain = '';
+          if (ev.description) {
+            if (typeof ev.description === 'string') descPlain = ev.description;
+            else if (typeof ev.description === 'object') {
+              descPlain = (ev.description as any).summary || (ev.description as any).text || '';
+              if (!descPlain) {
+                try {
+                  descPlain = JSON.stringify(ev.description);
+                } catch {
+                  descPlain = '';
+                }
+              }
+            }
+          }
+
+          featuredEventData = {
+            id: ev.id,
+            title: ev.title,
+            slug: ev.slug,
+            type: ev.type,
+            descriptionPlain: descPlain.slice(0, 320),
+            coverImage: ev.coverImage,
+            startAt: ev.startAt.toISOString(),
+            endAt: ev.endAt.toISOString(),
+            locationName: ev.locationName,
+            locationDetail: ev.locationDetail,
+            quota: ev.quota,
+            registeredCount: ev._count.registrations,
+            status: ev.status,
+          };
+        }
+      } catch (err) {
+        console.error('Error fetching featured event for landing:', err);
+      }
+    }
+
+    return {
+      settings,
+      featuredEventData,
     };
   }
 }

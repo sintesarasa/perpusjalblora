@@ -9,7 +9,7 @@ import { Logo } from '@/components/logo';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { NotificationBell } from '@/components/layout/notification-bell';
 import { Role } from '@perpusjal/types';
-import { ShieldAlert, ArrowLeft, Users, Layers, ExternalLink } from 'lucide-react';
+import { ShieldAlert, ArrowLeft, Users, Layers, ExternalLink, Megaphone } from 'lucide-react';
 
 export default function AdminLayout({
   children,
@@ -104,6 +104,20 @@ export default function AdminLayout({
             <span className="inline-flex items-center gap-1.5">
               <Layers className="w-3.5 h-3.5" />
               <span>Dasbor</span>
+            </span>
+          </Link>
+
+          <Link
+            href="/admin/beranda"
+            className={`px-3 py-1.5 border transition-colors ${
+              pathname.startsWith('/admin/beranda')
+                ? 'border-foreground bg-foreground text-background font-bold'
+                : 'border-transparent text-muted hover:text-foreground'
+            }`}
+          >
+            <span className="inline-flex items-center gap-1.5">
+              <Megaphone className="w-3.5 h-3.5" />
+              <span>Etalase Beranda</span>
             </span>
           </Link>
 

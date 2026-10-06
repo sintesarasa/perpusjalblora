@@ -22,6 +22,7 @@ import { notificationsRouter } from './modules/notifications/notifications.route
 import { badgesRouter } from './modules/badges/badges.routes.js';
 import { usersRouter } from './modules/users/users.routes.js';
 import { adminRouter } from './modules/admin/admin.routes.js';
+import { adminController } from './modules/admin/admin.controller.js';
 import { waitlistRoutes } from './modules/waitlist/waitlist.routes.js';
 import { circulationSchedulerService } from './modules/loans/circulation-scheduler.service.js';
 import { articleSchedulerService } from './modules/articles/article-scheduler.service.js';
@@ -87,6 +88,11 @@ app.get('/api/v1/moderation/letters', requireRole(Role.KURATOR), (req, res, next
 );
 app.get('/api/v1/admin/articles', requireRole(Role.KURATOR), (req, res, next) =>
   articlesController.getAdminArticles(req, res, next)
+);
+
+// Public Landing Page configuration & featured event
+app.get('/api/v1/landing/config', (req, res, next) =>
+  adminController.getPublicLandingConfig(req, res, next)
 );
 
 // Health check endpoint (PRD §23.2, §31.2)

@@ -25,6 +25,34 @@ export class AdminController {
       next(err);
     }
   }
+
+  async getLandingSettings(req: Request, res: Response, next: NextFunction) {
+    try {
+      const data = await adminService.getLandingSettings();
+      res.json({ success: true, data });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async updateLandingSettings(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user = (req as any).user;
+      const data = await adminService.updateLandingSettings(user?.id || 'admin', req.body);
+      res.json({ success: true, data, message: 'Pengaturan etalase beranda berhasil diperbarui.' });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async getPublicLandingConfig(req: Request, res: Response, next: NextFunction) {
+    try {
+      const data = await adminService.getPublicLandingConfig();
+      res.json({ success: true, data });
+    } catch (err) {
+      next(err);
+    }
+  }
 }
 
 export const adminController = new AdminController();

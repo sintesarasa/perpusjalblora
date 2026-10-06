@@ -171,6 +171,7 @@ export class UsersService {
       articlesCount: u._count.articles,
       badgesCount: u._count.badges,
       joinedAt: u.createdAt.toISOString(),
+      equippedTitle: u.equippedTitle || null,
     }));
 
     return { items, total };
