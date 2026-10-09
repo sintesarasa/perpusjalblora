@@ -110,10 +110,10 @@ export default function AdminUsersPage() {
               <Users className="w-3.5 h-3.5" />
               <span>ADMINISTRASI KEANGGOTAAN</span>
             </div>
-            <h1 className="font-serif text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
+            <h1 className="font-serif text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-foreground">
               Manajemen Pengguna
             </h1>
-            <p className="font-serif text-sm text-muted mt-1">
+            <p className="font-serif text-xs sm:text-sm text-muted mt-1">
               Kelola peran pengguna (Warga, Kurator, Pengurus), status sanksi peminjaman, dan keterbukaan akses.
             </p>
           </div>
@@ -133,7 +133,7 @@ export default function AdminUsersPage() {
           </div>
         )}
 
-        <div className="flex flex-col sm:flex-row items-center gap-4 border border-border-hairline bg-surface p-4">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 border border-border-hairline bg-surface p-4">
           <div className="relative flex-1 w-full">
             <Search className="w-4 h-4 text-muted absolute left-3 top-1/2 -translate-y-1/2" />
             <input
@@ -148,7 +148,7 @@ export default function AdminUsersPage() {
             />
           </div>
 
-          <div className="flex items-center gap-3 w-full sm:w-auto">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
             <select
               value={roleFilter}
               onChange={(e) => {
@@ -178,8 +178,8 @@ export default function AdminUsersPage() {
           </div>
         </div>
 
-        {/* 3. TABLE */}
-        <div className="border border-border-hairline bg-surface overflow-x-auto">
+        {/* 3. TABLE & MOBILE CARDS */}
+        <div className="border border-border-hairline bg-surface">
           {loading ? (
             <div className="p-16 text-center font-mono text-xs text-muted">
               Memuat data pengguna...
@@ -189,68 +189,59 @@ export default function AdminUsersPage() {
               Tidak ada pengguna yang cocok dengan kriteria pencarian.
             </div>
           ) : (
-            <table className="w-full text-left font-mono text-xs border-collapse">
-              <thead>
-                <tr className="border-b border-border-hairline bg-surface-muted/50 uppercase tracking-wider text-[11px] text-muted">
-                  <th className="p-4 font-bold">Identitas Warga</th>
-                  <th className="p-4 font-bold">Peran</th>
-                  <th className="p-4 font-bold">Status</th>
-                  <th className="p-4 font-bold text-center">Pinjaman Aktif</th>
-                  <th className="p-4 font-bold">Bergabung</th>
-                  <th className="p-4 font-bold text-right">Aksi</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border-hairline">
+            <>
+              {/* Mobile Stacked Card View (< 768px) */}
+              <div className="block md:hidden divide-y divide-border-hairline">
                 {users.map((u) => (
-                  <tr key={u.id} className="hover:bg-surface-muted/30 transition-colors">
-                    <td className="p-4">
+                  <div key={u.id} className="p-4 space-y-3 font-mono text-xs">
+                    {/* Header: Name, Username & Email */}
+                    <div>
                       <div className="font-serif font-bold text-sm text-foreground">
                         <Link href={`/u/${u.username}`} className="hover:underline">
                           {u.name}
                         </Link>
                       </div>
-                      <div className="text-muted text-[11px]">@{u.username} • {u.email}</div>
-                    </td>
+                      <div className="text-muted text-[11px] truncate">@{u.username} • {u.email}</div>
+                    </div>
 
-                    <td className="p-4">
-                      <span className="px-2 py-0.5 border border-foreground font-bold text-[10px] uppercase">
-                        {u.role}
-                      </span>
-                    </td>
-
-                    <td className="p-4">
-                      <span
-                        className={`px-2 py-0.5 border text-[10px] uppercase font-bold ${
-                          u.status === UserStatus.ACTIVE
-                            ? 'border-foreground bg-foreground text-background'
-                            : 'border-red-600 bg-red-50 text-red-900'
-                        }`}
-                      >
-                        {u.status}
-                      </span>
-                      {u.suspensionReason && (
-                        <span className="block text-[10px] text-red-800 mt-1 truncate max-w-xs">
-                          Alasan: {u.suspensionReason}
+                    {/* Meta Row: Role & Status & Active Loans */}
+                    <div className="flex flex-wrap items-center justify-between gap-2 text-[10px]">
+                      <div className="flex items-center gap-2">
+                        <span className="px-2 py-0.5 border border-foreground font-bold uppercase">
+                          {u.role}
                         </span>
-                      )}
-                    </td>
-
-                    <td className="p-4 text-center">
-                      <span className="font-serif font-bold text-sm text-foreground">
-                        {u.activeLoansCount}
+                        <span
+                          className={`px-2 py-0.5 border uppercase font-bold ${
+                            u.status === UserStatus.ACTIVE
+                              ? 'border-foreground bg-foreground text-background'
+                              : 'border-red-600 bg-red-50 text-red-900'
+                          }`}
+                        >
+                          {u.status}
+                        </span>
+                      </div>
+                      <span className="text-muted text-[11px]">
+                        Pinjaman Aktif: <strong className="text-foreground">{u.activeLoansCount}</strong>
                       </span>
-                    </td>
+                    </div>
 
-                    <td className="p-4 text-muted text-[11px]">
-                      {new Date(u.createdAt).toLocaleDateString('id-ID', {
-                        day: 'numeric',
-                        month: 'short',
-                        year: 'numeric',
-                      })}
-                    </td>
+                    {u.suspensionReason && (
+                      <div className="text-[10px] text-red-800 bg-red-50/80 p-2 border border-red-200">
+                        Alasan Sanksi: {u.suspensionReason}
+                      </div>
+                    )}
 
-                    <td className="p-4 text-right">
-                      <div className="flex items-center justify-end gap-2">
+                    {/* Footer: Date & Actions */}
+                    <div className="pt-2 border-t border-border-hairline flex items-center justify-between gap-2">
+                      <span className="text-muted text-[10px]">
+                        Bergabung: {new Date(u.createdAt).toLocaleDateString('id-ID', {
+                          day: 'numeric',
+                          month: 'short',
+                          year: 'numeric',
+                        })}
+                      </span>
+
+                      <div className="flex items-center gap-2">
                         <button
                           onClick={() => {
                             setActiveModalUser(u);
@@ -284,11 +275,115 @@ export default function AdminUsersPage() {
                           </button>
                         )}
                       </div>
-                    </td>
-                  </tr>
+                    </div>
+                  </div>
                 ))}
-              </tbody>
-            </table>
+              </div>
+
+              {/* Desktop Tabular View (>= 768px) */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full text-left font-mono text-xs border-collapse">
+                  <thead>
+                    <tr className="border-b border-border-hairline bg-surface-muted/50 uppercase tracking-wider text-[11px] text-muted">
+                      <th className="p-4 font-bold">Identitas Warga</th>
+                      <th className="p-4 font-bold">Peran</th>
+                      <th className="p-4 font-bold">Status</th>
+                      <th className="p-4 font-bold text-center">Pinjaman Aktif</th>
+                      <th className="p-4 font-bold">Bergabung</th>
+                      <th className="p-4 font-bold text-right">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border-hairline">
+                    {users.map((u) => (
+                      <tr key={u.id} className="hover:bg-surface-muted/30 transition-colors">
+                        <td className="p-4">
+                          <div className="font-serif font-bold text-sm text-foreground">
+                            <Link href={`/u/${u.username}`} className="hover:underline">
+                              {u.name}
+                            </Link>
+                          </div>
+                          <div className="text-muted text-[11px]">@{u.username} • {u.email}</div>
+                        </td>
+
+                        <td className="p-4">
+                          <span className="px-2 py-0.5 border border-foreground font-bold text-[10px] uppercase">
+                            {u.role}
+                          </span>
+                        </td>
+
+                        <td className="p-4">
+                          <span
+                            className={`px-2 py-0.5 border text-[10px] uppercase font-bold ${
+                              u.status === UserStatus.ACTIVE
+                                ? 'border-foreground bg-foreground text-background'
+                                : 'border-red-600 bg-red-50 text-red-900'
+                            }`}
+                          >
+                            {u.status}
+                          </span>
+                          {u.suspensionReason && (
+                            <span className="block text-[10px] text-red-800 mt-1 truncate max-w-xs">
+                              Alasan: {u.suspensionReason}
+                            </span>
+                          )}
+                        </td>
+
+                        <td className="p-4 text-center">
+                          <span className="font-serif font-bold text-sm text-foreground">
+                            {u.activeLoansCount}
+                          </span>
+                        </td>
+
+                        <td className="p-4 text-muted text-[11px]">
+                          {new Date(u.createdAt).toLocaleDateString('id-ID', {
+                            day: 'numeric',
+                            month: 'short',
+                            year: 'numeric',
+                          })}
+                        </td>
+
+                        <td className="p-4 text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              onClick={() => {
+                                setActiveModalUser(u);
+                                setSelectedRole(u.role);
+                                setModalType('ROLE');
+                              }}
+                              className="px-2.5 py-1 border border-border-hairline hover:border-foreground text-foreground text-[11px] font-semibold"
+                            >
+                              Ubah Peran
+                            </button>
+
+                            {u.status === UserStatus.ACTIVE ? (
+                              <button
+                                onClick={() => {
+                                  setActiveModalUser(u);
+                                  setModalType('SUSPEND');
+                                }}
+                                className="px-2.5 py-1 border border-red-300 text-red-700 hover:border-red-600 text-[11px]"
+                              >
+                                Tangguhkan
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() => {
+                                  setActiveModalUser(u);
+                                  handleSuspendUser(false);
+                                }}
+                                className="px-2.5 py-1 border border-foreground bg-foreground text-background text-[11px]"
+                              >
+                                Pulihkan
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
         </div>
 

@@ -167,7 +167,7 @@ export default function MemberLoansDashboardPage() {
   };
 
   return (
-    <div className="p-4 sm:p-8 space-y-8 max-w-6xl">
+    <div className="p-3 sm:p-6 md:p-8 space-y-6 sm:space-y-8 max-w-6xl">
       {/* Masthead */}
         <div className="border-b-2 border-foreground pb-4 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div className="space-y-1">
@@ -175,22 +175,22 @@ export default function MemberLoansDashboardPage() {
               <span>Sirkulasi Anggota</span>
               <span>// STATUS PINJAMAN BUKU</span>
             </div>
-            <h1 className="font-serif text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
+            <h1 className="font-serif text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-foreground">
               Dasbor Peminjaman
             </h1>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
             <Link
               href="/dashboard/kartu-anggota"
-              className="px-4 py-2 border border-foreground font-mono text-xs uppercase tracking-wider font-semibold hover:bg-foreground hover:text-background transition-colors inline-flex items-center gap-1.5"
+              className="px-4 py-2 border border-foreground font-mono text-xs uppercase tracking-wider font-semibold hover:bg-foreground hover:text-background transition-colors inline-flex items-center justify-center gap-1.5 text-center"
             >
               <CreditCard className="w-3.5 h-3.5" />
               <span>Kartu Anggota</span>
             </Link>
             <Link
               href="/buku"
-              className="px-4 py-2 bg-foreground text-background font-mono text-xs uppercase tracking-wider font-bold hover:bg-foreground/90 transition-colors inline-flex items-center gap-1.5"
+              className="px-4 py-2 bg-foreground text-background font-mono text-xs uppercase tracking-wider font-bold hover:bg-foreground/90 transition-colors inline-flex items-center justify-center gap-1.5 text-center"
             >
               <BookOpen className="w-3.5 h-3.5" />
               <span>Cari Buku Lain</span>
@@ -199,7 +199,7 @@ export default function MemberLoansDashboardPage() {
         </div>
 
         {/* Tab switchers */}
-        <div className="flex items-center gap-2 border-b border-border-hairline font-mono text-xs uppercase tracking-wider pb-px">
+        <div className="flex flex-wrap items-center gap-2 border-b border-border-hairline font-mono text-xs uppercase tracking-wider pb-px">
           <button
             type="button"
             onClick={() => setActiveTab('aktif')}
@@ -295,7 +295,7 @@ export default function MemberLoansDashboardPage() {
               {waitlists.map((w) => (
                 <div
                   key={w.id}
-                  className="border-2 border-foreground bg-surface p-6 space-y-6"
+                  className="border-2 border-foreground bg-surface p-4 sm:p-6 space-y-4 sm:space-y-6"
                 >
                   {/* Top row */}
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border-hairline pb-4 font-mono text-xs">
@@ -402,7 +402,7 @@ export default function MemberLoansDashboardPage() {
             {loans.map((loan) => (
               <div
                 key={loan.id}
-                className="border-2 border-foreground bg-surface p-6 space-y-6"
+                className="border-2 border-foreground bg-surface p-4 sm:p-6 space-y-4 sm:space-y-6"
               >
                 {/* Top header row */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border-hairline pb-4 font-mono text-xs">
@@ -512,11 +512,11 @@ export default function MemberLoansDashboardPage() {
                       <div />
                     )}
 
-                    <div className="flex items-center gap-3 self-end shrink-0">
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full sm:w-auto sm:self-end shrink-0">
                       {loan.status === LoanStatus.RETURNED && (
                         <Link
                           href={`/buku/${loan.book.slug}#resensi`}
-                          className="px-3 py-1.5 border border-border-hairline text-foreground hover:bg-muted-bg transition-colors inline-flex items-center gap-1.5 uppercase font-medium tracking-wider"
+                          className="px-3 py-1.5 border border-border-hairline text-foreground hover:bg-muted-bg transition-colors inline-flex items-center justify-center gap-1.5 uppercase font-medium tracking-wider text-center"
                         >
                           <Star className="w-3.5 h-3.5 fill-foreground/20 text-foreground" />
                           Tulis Resensi
@@ -528,7 +528,7 @@ export default function MemberLoansDashboardPage() {
                           type="button"
                           onClick={() => handleCancel(loan.id)}
                           disabled={actionLoading}
-                          className="px-3 py-1.5 border border-border-hairline text-muted hover:text-foreground uppercase tracking-wider transition-colors inline-flex items-center gap-1"
+                          className="px-3 py-1.5 border border-border-hairline text-muted hover:text-foreground uppercase tracking-wider transition-colors inline-flex items-center justify-center gap-1 text-center"
                         >
                           <XCircle className="w-3.5 h-3.5" />
                           Batalkan Pengajuan

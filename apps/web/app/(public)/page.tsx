@@ -14,6 +14,7 @@ import { BookItem, LandingPublicConfigResponse, DEFAULT_LANDING_SETTINGS } from 
 import { LapakWartaTicker } from '@/components/home/lapak-warta-ticker';
 import { InteractiveLiteraryIndex } from '@/components/home/interactive-literary-index';
 import { BookGridSkeleton } from '@/components/books/book-card-skeleton';
+import { EmptyState } from '@/components/ui/empty-state';
 import { FeaturedEventDossier } from '@/components/home/featured-event-dossier';
 import { ScrollLitQuote } from '@/components/home/scroll-lit-quote';
 import {
@@ -32,114 +33,6 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
-// High-fidelity fallback books with authentic cover images for instant render
-const INITIAL_CURATED_BOOKS = [
-  {
-    id: 'b-01',
-    code: 'PJ-2026-0001',
-    slug: 'bumi-manusia',
-    title: 'Bumi Manusia',
-    author: 'Pramoedya Ananta Toer',
-    coverImage: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80',
-    category: { id: 'c1', name: 'Sastra & Roman', slug: 'sastra' },
-    status: 'AVAILABLE' as const,
-    publicationYear: 1980,
-    shelfLocation: 'RAK-SAS-01',
-    description: 'Roman sejarah monumental tentang kebangkitan kesadaran manusia merdeka di Hindia Belanda.',
-  },
-  {
-    id: 'b-02',
-    code: 'PJ-2026-0024',
-    slug: 'madilog',
-    title: 'Madilog',
-    author: 'Tan Malaka',
-    coverImage: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=600&q=80',
-    category: { id: 'c2', name: 'Sosial & Filsafat', slug: 'sosial' },
-    status: 'AVAILABLE' as const,
-    publicationYear: 1943,
-    shelfLocation: 'RAK-FIL-03',
-    description: 'Materialisme, Dialektika, dan Logika sebagai fondasi berpikir merdeka rakyat jelata.',
-  },
-  {
-    id: 'b-03',
-    code: 'PJ-2026-0045',
-    slug: 'gadis-pantai',
-    title: 'Gadis Pantai',
-    author: 'Pramoedya Ananta Toer',
-    coverImage: 'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&w=600&q=80',
-    category: { id: 'c1', name: 'Sastra & Roman', slug: 'sastra' },
-    status: 'AVAILABLE' as const,
-    publicationYear: 1982,
-    shelfLocation: 'RAK-SAS-02',
-    description: 'Kisah pilu penindasan feodalisme Jawa terhadap perempuan bersahaja dari kampung nelayan.',
-  },
-  {
-    id: 'b-04',
-    code: 'PJ-2026-0089',
-    slug: 'laut-bercerita',
-    title: 'Laut Bercerita',
-    author: 'Leila S. Chudori',
-    coverImage: '/uploads/books/book-1790203215111-9786024246945-laut-bercerita-c.jpg',
-    category: { id: 'c1', name: 'Sastra & Roman', slug: 'sastra' },
-    status: 'AVAILABLE' as const,
-    publicationYear: 2017,
-    shelfLocation: 'RAK-SAS-03',
-    description: 'Kisah kehilangan, persahabatan, dan penegakan keadilan bagi korban penghilangan paksa.',
-  },
-  {
-    id: 'b-05',
-    code: 'PJ-2026-0112',
-    slug: 'pendidikan-kaum-tertindas',
-    title: 'Pendidikan Kaum Tertindas',
-    author: 'Paulo Freire',
-    coverImage: 'https://images.unsplash.com/photo-1495446815901-a7297e633e8d?auto=format&fit=crop&w=600&q=80',
-    category: { id: 'c4', name: 'Pedagogi Kritis', slug: 'pendidikan' },
-    status: 'AVAILABLE' as const,
-    publicationYear: 1968,
-    shelfLocation: 'RAK-PED-01',
-    description: 'Pedagogi pembebasan yang mengubah pendidikan dari sistem perbankan pasif menjadi dialog kritis.',
-  },
-  {
-    id: 'b-06',
-    code: 'PJ-2026-0140',
-    slug: 'jalan-tak-ada-ujung',
-    title: 'Jalan Tak Ada Ujung',
-    author: 'Mochtar Lubis',
-    coverImage: 'https://images.unsplash.com/photo-1532012164546-f432f2e3777f?auto=format&fit=crop&w=600&q=80',
-    category: { id: 'c1', name: 'Sastra & Roman', slug: 'sastra' },
-    status: 'BORROWED' as const,
-    publicationYear: 1952,
-    shelfLocation: 'RAK-SAS-04',
-    description: 'Eksplorasi psikologis mendalam tentang ketakutan batin, martabat, dan idealisme masa revolusi.',
-  },
-  {
-    id: 'b-07',
-    code: 'PJ-2026-0165',
-    slug: 'cerita-rakyat-nusantara',
-    title: 'Cerita Rakyat Nusantara & Fabel Jawa',
-    author: 'Koleksi Dongeng Rakyat',
-    coverImage: 'https://images.unsplash.com/photo-1516979187457-637abb4f9353?auto=format&fit=crop&w=600&q=80',
-    category: { id: 'c5', name: 'Buku Anak & Fabel', slug: 'anak' },
-    status: 'AVAILABLE' as const,
-    publicationYear: 2019,
-    shelfLocation: 'RAK-ANK-02',
-    description: 'Dongeng bergambar pengantar imajinasi dan kearifan lokal untuk anak-anak pembaca trotoar.',
-  },
-  {
-    id: 'b-08',
-    code: 'PJ-2026-0188',
-    slug: 'samin-surosentiko',
-    title: 'Samin Surosentiko & Gerakan Petani',
-    author: 'Kajian Sejarah Budaya',
-    coverImage: 'https://images.unsplash.com/photo-1457369804613-52c61a468e7d?auto=format&fit=crop&w=600&q=80',
-    category: { id: 'c3', name: 'Sejarah & Samin', slug: 'sejarah' },
-    status: 'AVAILABLE' as const,
-    publicationYear: 2015,
-    shelfLocation: 'RAK-SEJ-02',
-    description: 'Ajaran Sedulur Sikep, perlawanan tanpa kekerasan, dan kedaulatan tanah adat di bumi Blora.',
-  },
-];
 
 // Rotating active verbs for the broadsheet hero
 const ROTATING_WORDS = [
@@ -298,7 +191,7 @@ export default function HomePage() {
 
         if (!isMounted) return;
 
-        if (booksRes.data && booksRes.data.data && booksRes.data.data.length > 0) {
+        if (booksRes.data?.data) {
           setBooks(booksRes.data.data);
         }
 
@@ -325,9 +218,6 @@ export default function HomePage() {
       router.push('/buku');
     }
   };
-
-  // Display books list: API books or fallback curated books
-  const displayBooks = books.length > 0 ? books : INITIAL_CURATED_BOOKS;
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground selection:bg-foreground selection:text-background editorial-grain">
@@ -402,22 +292,22 @@ export default function HomePage() {
             </RevealOnScroll>
           )}
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 relative z-10 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 relative z-10 items-start">
             {/* Left Big Lead (7 cols) */}
-            <div className="lg:col-span-7 flex flex-col justify-between space-y-8">
+            <div className="lg:col-span-7 flex flex-col justify-between space-y-6 sm:space-y-8">
               <RevealOnScroll variant="cinematic" delayMs={120}>
-                <div className="space-y-5 sm:space-y-7">
-                  <div className="inline-flex items-center gap-2 px-3 py-1 border border-foreground font-mono text-[9px] sm:text-[10px] tracking-widest uppercase font-bold bg-foreground text-background">
+                <div className="space-y-4 sm:space-y-7">
+                  <div className="inline-flex items-center gap-2 px-2.5 sm:px-3 py-1 border border-foreground font-mono text-[9px] sm:text-[10px] tracking-widest uppercase font-bold bg-foreground text-background">
                     <span>RUANG PERJUMPAAN MERDEKA</span>
                   </div>
 
-                  {/* Monumental Headline: MEMBACA DAN [LOADING UNDERLINE] */}
-                  <h1 className="font-serif font-black uppercase text-foreground leading-[1.02] sm:leading-[0.92] tracking-tight text-4xl sm:text-6xl md:text-7xl lg:text-8xl break-words">
+                  {/* Monumental Headline: Fluid Scale (Under 36px on compact mobile, monumental on desktop) */}
+                  <h1 className="font-serif font-black uppercase text-foreground leading-[1.05] sm:leading-[0.95] tracking-tight text-3xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl break-words">
                     MEMBACA DAN <br />
                     <LoadingUnderlineHeadline />
                   </h1>
 
-                  <p className="drop-cap font-serif text-lg sm:text-xl text-foreground/90 leading-relaxed max-w-2xl">
+                  <p className="drop-cap font-serif text-base sm:text-lg md:text-xl text-foreground/90 leading-relaxed max-w-2xl">
                     Kami mengembalikan buku ke tempat ia seharusnya bermula: di ruang-ruang terbuka
                     tempat percakapan merdeka dirawat, di bawah naungan pohon trembesi alun-alun kota,
                     hingga tepian hutan jati. Tanpa uang jaminan, tanpa denda rupiah, dan tanpa sekat kelas sosial.
@@ -425,23 +315,23 @@ export default function HomePage() {
                 </div>
               </RevealOnScroll>
 
-              {/* Action Buttons Bar (Clean 2-Action Streamline) */}
+              {/* Action Buttons Bar (Ergonomic full-width stack on mobile, inline on sm+) */}
               <RevealOnScroll variant="cinematic" delayMs={240}>
-                <div className="pt-4 border-t border-border-hairline flex flex-wrap gap-3 sm:gap-4 items-center">
+                <div className="pt-3 sm:pt-4 border-t border-border-hairline flex flex-col sm:flex-row gap-2.5 sm:gap-4 items-stretch sm:items-center">
                   <Link
                     href="/buku"
-                    className="px-6 py-3.5 bg-foreground text-background font-mono text-xs font-bold uppercase tracking-wider hover:bg-foreground/90 transition-all inline-flex items-center gap-2"
+                    className="px-5 sm:px-6 py-3 sm:py-3.5 bg-foreground text-background font-mono text-xs font-bold uppercase tracking-wider hover:bg-foreground/90 transition-all inline-flex items-center justify-center gap-2 text-center"
                   >
-                    <BookOpen className="w-4 h-4" />
+                    <BookOpen className="w-4 h-4 shrink-0" />
                     <span>TELUSURI KATALOG KOLEKSI</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
+                    <ArrowRight className="w-3.5 h-3.5 shrink-0" />
                   </Link>
 
                   <Link
                     href="/artikel"
-                    className="px-5 py-3.5 border-2 border-foreground bg-surface hover:bg-foreground hover:text-background font-mono text-xs font-bold uppercase tracking-wider transition-colors inline-flex items-center gap-2"
+                    className="px-4 sm:px-5 py-3 sm:py-3.5 border-2 border-foreground bg-surface hover:bg-foreground hover:text-background font-mono text-xs font-bold uppercase tracking-wider transition-colors inline-flex items-center justify-center gap-2 text-center"
                   >
-                    <Feather className="w-4 h-4" />
+                    <Feather className="w-4 h-4 shrink-0" />
                     <span>BACA WARTA WARGA</span>
                   </Link>
                 </div>
@@ -449,51 +339,51 @@ export default function HomePage() {
             </div>
 
             {/* Right Side Editorial Callout & Chronicle Dossier (5 cols) */}
-            <div className="lg:col-span-5 border-t-2 lg:border-t-0 lg:border-l-2 border-foreground pt-8 lg:pt-0 lg:pl-8 flex flex-col justify-between space-y-6">
+            <RevealOnScroll
+              variant="cinematic"
+              delayMs={180}
+              className="lg:col-span-5 border-t-2 lg:border-t-0 lg:border-l-2 border-foreground pt-6 sm:pt-8 lg:pt-0 lg:pl-8 flex flex-col justify-between space-y-5 sm:space-y-6"
+            >
               {/* Quote Card (Catatan Pinggir Falsafah) */}
-              <RevealOnScroll variant="slide-right" delayMs={180}>
-                <div className="space-y-4">
-                  <div className="text-[10px] font-mono uppercase tracking-ultra text-muted flex items-center gap-1.5">
-                    <Quote className="w-3.5 h-3.5 text-foreground" />
-                    <span>[ CATATAN PINGGIR // FALSAFAH ]</span>
-                  </div>
-                  <blockquote className="font-serif italic text-2xl sm:text-3xl text-foreground leading-snug">
-                    &ldquo;Buku tidak bernilai jika hanya berdebu di lemari kaca. Ia hidup saat disentuh
-                    jemari dan diperdebatkan di lapak trotoar.&rdquo;
-                  </blockquote>
-                  <cite className="block font-mono text-[11px] uppercase tracking-wider text-muted not-italic">
-                    — Dewan Kolektif Perpusjal Blora
-                  </cite>
+              <div className="space-y-3 sm:space-y-4">
+                <div className="text-[10px] font-mono uppercase tracking-ultra text-muted flex items-center gap-1.5">
+                  <Quote className="w-3.5 h-3.5 text-foreground" />
+                  <span>[ CATATAN PINGGIR // FALSAFAH ]</span>
                 </div>
-              </RevealOnScroll>
+                <blockquote className="font-serif italic text-xl sm:text-2xl lg:text-3xl text-foreground leading-snug">
+                  &ldquo;Buku tidak bernilai jika hanya berdebu di lemari kaca. Ia hidup saat disentuh
+                  jemari dan diperdebatkan di lapak trotoar.&rdquo;
+                </blockquote>
+                <cite className="block font-mono text-[10px] sm:text-[11px] uppercase tracking-wider text-muted not-italic">
+                  — Dewan Kolektif Perpusjal Blora
+                </cite>
+              </div>
 
               {/* Chronicle Movement Manifesto Card */}
-              <RevealOnScroll variant="cinematic" delayMs={280}>
-                <div className="border-2 border-foreground p-5 sm:p-6 bg-surface font-mono space-y-3.5">
-                  <div className="flex items-center justify-between pb-2.5 border-b border-border-hairline text-[10px] uppercase tracking-widest text-muted">
-                    <span>KRONIK GERAKAN // BLORA</span>
-                    <span className="font-bold text-foreground">SWADAYA RAKYAT</span>
-                  </div>
-
-                  <p className="font-serif text-sm text-foreground/85 leading-relaxed">
-                    Tumbuh di tanah kelahiran Pramoedya Ananta Toer dan ajaran Sedulur Sikep Samin Surosentiko.
-                    Sebuah ruang perjumpaan literasi yang dirawat bersama warga untuk merawat nalar sehat dan
-                    kemerdekaan berpikir.
-                  </p>
-
-                  <div className="pt-2.5 border-t border-border-hairline flex items-center justify-between text-[11px] font-bold">
-                    <span className="text-muted text-[10px] uppercase tracking-wider">&bull; 100% BEBAS BIAYA</span>
-                    <Link
-                      href="/tentang"
-                      className="text-foreground hover:underline inline-flex items-center gap-1 uppercase tracking-wider text-[10.5px]"
-                    >
-                      <span>KENALI KISAH KAMI</span>
-                      <ArrowRight className="w-3 h-3" />
-                    </Link>
-                  </div>
+              <div className="border-2 border-foreground p-4 sm:p-5 md:p-6 bg-surface font-mono space-y-3">
+                <div className="flex items-center justify-between pb-2.5 border-b border-border-hairline text-[10px] uppercase tracking-widest text-muted">
+                  <span>KRONIK GERAKAN // BLORA</span>
+                  <span className="font-bold text-foreground">SWADAYA RAKYAT</span>
                 </div>
-              </RevealOnScroll>
-            </div>
+
+                <p className="font-serif text-sm text-foreground/85 leading-relaxed">
+                  Tumbuh di tanah kelahiran Pramoedya Ananta Toer dan ajaran Sedulur Sikep Samin Surosentiko.
+                  Sebuah ruang perjumpaan literasi yang dirawat bersama warga untuk merawat nalar sehat dan
+                  kemerdekaan berpikir.
+                </p>
+
+                <div className="pt-2.5 border-t border-border-hairline flex items-center justify-between text-[11px] font-bold">
+                  <span className="text-muted text-[10px] uppercase tracking-wider">&bull; 100% BEBAS BIAYA</span>
+                  <Link
+                    href="/tentang"
+                    className="text-foreground hover:underline inline-flex items-center gap-1 uppercase tracking-wider text-[10.5px]"
+                  >
+                    <span>KENALI KISAH KAMI</span>
+                    <ArrowRight className="w-3 h-3" />
+                  </Link>
+                </div>
+              </div>
+            </RevealOnScroll>
           </div>
         </section>
 
@@ -573,8 +463,8 @@ export default function HomePage() {
             </RevealOnScroll>
           </div>
 
-          {/* Book Cards Grid with Real Book Covers or Editorial Skeleton */}
-          {loadingBooks && books.length === 0 ? (
+          {/* Book Cards Grid with Real Book Covers, Skeleton, or EmptyState */}
+          {loadingBooks ? (
             <div className="space-y-4">
               <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest text-muted border-b border-border-hairline pb-2">
                 <span>Memindai Rak Koleksi Terpal...</span>
@@ -582,34 +472,41 @@ export default function HomePage() {
               </div>
               <BookGridSkeleton count={8} />
             </div>
+          ) : books.length === 0 ? (
+            <EmptyState
+              title="Belum ada buku yang dikurasi di rak ini"
+              description="Belum ada buku yang dikurasi di rak ini // Hubungi pengurus lapak atau kunjungi lapak baca Minggu pagi CFD Alun-Alun Blora."
+              actionLabel="JELAJAHI SEMUA PUSTAKA"
+              onAction={() => router.push('/buku')}
+            />
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {displayBooks.slice(0, 8).map((book, idx) => {
-              const shelf = ('shelfLocation' in book && book.shelfLocation) ? book.shelfLocation : 'RAK-CFD';
-              const availability = ('availability' in book) ? book.availability : (('status' in book && book.status === 'BORROWED') ? 'BORROWED' : 'AVAILABLE');
-              const bookYear = ('publicationYear' in book && book.publicationYear) ? book.publicationYear : 2024;
-              const categoryName = typeof book.category === 'object' && book.category ? book.category.name : 'Pustaka Terpal';
-              const bookSlug = ('slug' in book && book.slug) ? book.slug : (('code' in book) ? book.code : book.id);
-              const coverImg = ('coverImage' in book && book.coverImage) ? book.coverImage : null;
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5 md:gap-6">
+            {books.slice(0, 8).map((book, idx) => {
+              const shelf = book.shelfLocation || 'RAK-CFD';
+              const availability = book.availability || 'AVAILABLE';
+              const bookYear = book.publicationYear || 2024;
+              const categoryName = book.category?.name || 'Pustaka Terpal';
+              const bookSlug = book.slug || book.id;
+              const coverImg = book.coverImage || null;
 
               return (
                 <RevealOnScroll key={book.id || idx} variant="cinematic" delayMs={(idx % 4) * 90}>
-                  <div className="border-2 border-foreground bg-surface p-5 flex flex-col justify-between group transition-all h-full">
+                  <div className="border-2 border-foreground bg-surface p-3 sm:p-4 md:p-5 flex flex-col justify-between group transition-all h-full">
                     <div>
                       {/* Top Metadata Strip */}
-                      <div className="flex items-center justify-between text-[10px] font-mono pb-2 mb-3 border-b border-border-hairline">
-                        <span className="text-muted font-bold tracking-wider">{shelf}</span>
+                      <div className="flex items-center justify-between text-[9px] sm:text-[10px] font-mono pb-1.5 sm:pb-2 mb-2 sm:mb-3 border-b border-border-hairline">
+                        <span className="text-muted font-bold tracking-wider truncate max-w-[80px] sm:max-w-none">{shelf}</span>
                         <StatusPill status={availability === 'AVAILABLE' ? 'available' : 'borrowed'} />
                       </div>
 
                       {/* Real Book Cover Showcase Container (Aspect 2/3 Book Proportion) */}
-                      <Link href={`/buku/${bookSlug}`} className="block relative aspect-[2/3] w-full mb-4 overflow-hidden border-2 border-foreground bg-surface-muted rounded-none group/cover">
+                      <Link href={`/buku/${bookSlug}`} className="block relative aspect-[2/3] w-full mb-2.5 sm:mb-4 overflow-hidden border-2 border-foreground bg-surface-muted rounded-none group/cover">
                         {coverImg ? (
                           <>
                             {/* Realistic Left Spine Fold Shadow */}
-                            <div className="absolute left-0 top-0 bottom-0 w-3.5 bg-gradient-to-r from-black/40 via-black/15 to-transparent z-10 pointer-events-none" />
+                            <div className="absolute left-0 top-0 bottom-0 w-2.5 sm:w-3.5 bg-gradient-to-r from-black/40 via-black/15 to-transparent z-10 pointer-events-none" />
                             {/* Paper Gloss Line Highlight */}
-                            <div className="absolute left-3.5 top-0 bottom-0 w-px bg-white/25 z-10 pointer-events-none" />
+                            <div className="absolute left-2.5 sm:left-3.5 top-0 bottom-0 w-px bg-white/25 z-10 pointer-events-none" />
 
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
@@ -620,46 +517,46 @@ export default function HomePage() {
                           </>
                         ) : (
                           /* Authentic Broadsheet Fallback Jacket */
-                          <div className="w-full h-full p-4 flex flex-col justify-between border-2 border-foreground/30 bg-[#f4f4ee] dark:bg-[#141414] text-foreground select-none relative">
-                            <div className="absolute left-0 top-0 bottom-0 w-3 bg-foreground border-r border-white/20" />
-                            <div className="pl-2 font-mono text-[8.5px] uppercase tracking-widest text-muted truncate">
+                          <div className="w-full h-full p-2.5 sm:p-4 flex flex-col justify-between border-2 border-foreground/30 bg-[#f4f4ee] dark:bg-[#141414] text-foreground select-none relative">
+                            <div className="absolute left-0 top-0 bottom-0 w-2 sm:w-3 bg-foreground border-r border-white/20" />
+                            <div className="pl-1.5 sm:pl-2 font-mono text-[7.5px] sm:text-[8.5px] uppercase tracking-widest text-muted truncate">
                               PERPUSJAL &bull; {categoryName}
                             </div>
-                            <div className="pl-2 space-y-1 my-auto">
-                              <BookOpen className="w-6 h-6 text-foreground/30 mb-2" />
-                              <h4 className="font-serif font-black text-sm uppercase leading-tight line-clamp-3 text-foreground">
+                            <div className="pl-1.5 sm:pl-2 space-y-0.5 sm:space-y-1 my-auto">
+                              <BookOpen className="w-4 h-4 sm:w-6 sm:h-6 text-foreground/30 mb-1 sm:mb-2" />
+                              <h4 className="font-serif font-black text-xs sm:text-sm uppercase leading-tight line-clamp-3 text-foreground">
                                 {book.title}
                               </h4>
-                              <p className="font-mono text-[10.5px] text-muted line-clamp-1 italic">
+                              <p className="font-mono text-[9px] sm:text-[10.5px] text-muted line-clamp-1 italic">
                                 {book.author}
                               </p>
                             </div>
-                            <div className="pl-2 font-mono text-[8px] text-muted uppercase tracking-widest border-t border-border-hairline pt-1.5">
+                            <div className="pl-1.5 sm:pl-2 font-mono text-[7.5px] sm:text-[8px] text-muted uppercase tracking-widest border-t border-border-hairline pt-1">
                               {shelf} &bull; {bookYear}
                             </div>
                           </div>
                         )}
                       </Link>
 
-                      <h3 className="font-serif text-xl font-bold text-foreground mb-1 leading-snug group-hover:underline line-clamp-1 transition-colors">
+                      <h3 className="font-serif text-sm sm:text-base md:text-lg font-bold text-foreground mb-0.5 sm:mb-1 leading-snug group-hover:underline line-clamp-1 transition-colors">
                         <Link href={`/buku/${bookSlug}`}>{book.title}</Link>
                       </h3>
-                      <p className="font-mono text-xs text-muted mb-2">{book.author}</p>
-                      <p className="font-serif text-xs text-foreground/80 leading-relaxed line-clamp-2">
+                      <p className="font-mono text-[10.5px] sm:text-xs text-muted mb-1 sm:mb-2 line-clamp-1">{book.author}</p>
+                      <p className="font-serif text-[11px] sm:text-xs text-foreground/80 leading-relaxed line-clamp-2 hidden sm:block">
                         {book.description || 'Pustaka pilihan yang siap kamu baca dan diskusikan di lapak Minggu pagi CFD Blora.'}
                       </p>
                     </div>
 
-                    <div className="pt-4 mt-5 border-t border-border-hairline flex items-center justify-between text-xs font-mono">
-                      <span className="text-muted uppercase text-[9.5px] font-semibold truncate max-w-[130px]">
+                    <div className="pt-2 sm:pt-4 mt-2 sm:mt-5 border-t border-border-hairline flex items-center justify-between text-[10px] sm:text-xs font-mono">
+                      <span className="text-muted uppercase text-[8.5px] sm:text-[9.5px] font-semibold truncate max-w-[70px] sm:max-w-[130px]">
                         {categoryName}
                       </span>
                       <Link
                         href={`/buku/${bookSlug}`}
-                        className="font-bold uppercase tracking-wider group-hover:underline flex items-center gap-1 text-foreground transition-colors shrink-0"
+                        className="font-bold uppercase tracking-wider group-hover:underline flex items-center gap-1 text-foreground transition-colors shrink-0 text-[10px] sm:text-xs"
                       >
-                        <span>PINJAM BUKU</span>
-                        <ArrowUpRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                        <span>PINJAM</span>
+                        <ArrowUpRight className="w-3 h-3 sm:w-3.5 sm:h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                       </Link>
                     </div>
                   </div>
@@ -691,14 +588,14 @@ export default function HomePage() {
                       <span>ARSIP IDENTITAS // KARTU SIRKULASI TERPAL</span>
                     </div>
 
-                    <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black uppercase tracking-tight text-foreground leading-[1.05] mt-4">
+                    <h2 className="font-serif text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black uppercase tracking-tight text-foreground leading-[1.08] sm:leading-[1.05] mt-3 sm:mt-4">
                       Jejak Bacamu Adalah <br />
                       <span className="italic font-serif font-normal text-foreground/85">
                         Kehormatan Tertinggi.
                       </span>
                     </h2>
 
-                    <p className="font-serif text-base sm:text-lg text-foreground/80 leading-relaxed max-w-2xl mt-4">
+                    <p className="font-serif text-sm sm:text-base md:text-lg text-foreground/80 leading-relaxed max-w-2xl mt-3 sm:mt-4">
                       Di Perpusjal Blora, membaca bukan sekadar kegiatan pasif. Setiap buku yang kamu
                       pinjam dan warta yang kamu tulis mencatatkan reputasi literasi terbuka dalam{' '}
                       <strong className="text-foreground font-bold">Kartu Warga Literasi</strong> bersertifikasi publik
@@ -799,19 +696,19 @@ export default function HomePage() {
 
                 {/* CTA Action Buttons */}
                 <RevealOnScroll variant="cinematic" delayMs={240}>
-                  <div className="pt-2 flex flex-wrap items-center gap-3 sm:gap-4">
+                  <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-4">
                     <Link
                       href="/masuk"
-                      className="px-6 py-3.5 bg-foreground text-background font-mono text-xs font-bold uppercase tracking-wider hover:bg-foreground/90 transition-colors inline-flex items-center gap-2 border border-foreground"
+                      className="px-5 sm:px-6 py-3 sm:py-3.5 bg-foreground text-background font-mono text-xs font-bold uppercase tracking-wider hover:bg-foreground/90 transition-colors inline-flex items-center justify-center gap-2 border border-foreground text-center"
                     >
-                      <Sparkles className="w-4 h-4 text-background" />
+                      <Sparkles className="w-4 h-4 text-background shrink-0" />
                       <span>BUAT KARTU MILIKMU SEKARANG</span>
-                      <ArrowRight className="w-3.5 h-3.5 text-background" />
+                      <ArrowRight className="w-3.5 h-3.5 text-background shrink-0" />
                     </Link>
 
                     <Link
                       href="/kontributor"
-                      className="px-5 py-3.5 border-2 border-foreground text-foreground hover:bg-foreground hover:text-background font-mono text-xs font-bold uppercase tracking-wider transition-colors inline-flex items-center gap-2"
+                      className="px-4 sm:px-5 py-3 sm:py-3.5 border-2 border-foreground text-foreground hover:bg-foreground hover:text-background font-mono text-xs font-bold uppercase tracking-wider transition-colors inline-flex items-center justify-center gap-2 text-center"
                     >
                       <span>JELAJAHI DAFTAR WARGA &rarr;</span>
                     </Link>
@@ -822,7 +719,7 @@ export default function HomePage() {
 
             {/* Right Column: Tactile Light-Sheen Press Pass (5 cols) */}
             <div className="lg:col-span-5 flex flex-col items-center">
-              <RevealOnScroll variant="stamp" delayMs={200} className="w-full max-w-md">
+              <RevealOnScroll variant="stamp" delayMs={200} className="w-full max-w-sm sm:max-w-md">
                 <div
                   ref={cardRef}
                   onMouseMove={handleCardMouseMove}
@@ -831,13 +728,13 @@ export default function HomePage() {
                     transform: `perspective(1000px) rotateX(${cardTilt.rotateX}deg) rotateY(${cardTilt.rotateY}deg)`,
                     transition: 'transform 0.15s ease-out',
                   }}
-                  className="relative group cursor-pointer"
+                  className="relative group cursor-pointer w-full"
                 >
                   <div
                     style={{
                       backgroundImage: `radial-gradient(circle at ${cardTilt.sheenX}% ${cardTilt.sheenY}%, rgba(255, 255, 255, ${cardTilt.sheenOpacity}) 0%, transparent 60%)`,
                     }}
-                    className="relative bg-background text-foreground p-6 pb-6 border-2 border-foreground select-none space-y-4 box-border rounded-none overflow-hidden"
+                    className="relative bg-background text-foreground p-4 sm:p-6 pb-4 sm:pb-6 border-2 border-foreground select-none space-y-3.5 sm:space-y-4 box-border rounded-none overflow-hidden"
                   >
                     {/* Decorative corner markers */}
                     <div className="absolute top-2 left-2 w-3 h-3 border-t-2 border-l-2 border-foreground pointer-events-none" />
@@ -848,39 +745,39 @@ export default function HomePage() {
                     {/* Top Bar of the Card */}
                     <div className="border-b border-border-hairline pb-3 space-y-2">
                       <div className="flex items-center justify-between gap-4">
-                        <Logo className="h-7 w-auto text-foreground shrink-0" />
+                        <Logo className="h-6 sm:h-7 w-auto text-foreground shrink-0" />
                         <div className="text-right shrink-0">
                           <span className="font-mono text-[7.5px] uppercase font-bold tracking-widest text-muted block mb-0.5">
                             NO. REGISTRASI RESMI
                           </span>
-                          <span className="font-mono text-[10.5px] font-bold text-background bg-foreground tracking-wider px-2 py-0.5 rounded-none inline-block">
+                          <span className="font-mono text-[10px] sm:text-[10.5px] font-bold text-background bg-foreground tracking-wider px-2 py-0.5 rounded-none inline-block">
                             BLR-2026-WARGA01
                           </span>
                         </div>
                       </div>
 
                       <div className="flex items-center justify-between gap-2 pt-2 border-t border-border-hairline">
-                        <span className="font-mono text-[8.5px] uppercase font-bold tracking-[0.2em] text-foreground">
+                        <span className="font-mono text-[8px] sm:text-[8.5px] uppercase font-bold tracking-[0.2em] text-foreground">
                           KARTU KEHORMATAN WARGA
                         </span>
-                        <span className="font-serif italic text-xs text-muted">
+                        <span className="font-serif italic text-[11px] sm:text-xs text-muted">
                           Membaca dan Berbahagia.
                         </span>
                       </div>
                     </div>
 
                     {/* Persona Identity Strip */}
-                    <div className="flex items-center gap-3.5 py-1">
-                      <div className="w-12 h-12 rounded-none border-2 border-foreground bg-surface flex items-center justify-center font-serif text-xl font-bold text-foreground shrink-0">
+                    <div className="flex items-center gap-3 sm:gap-3.5 py-1">
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-none border-2 border-foreground bg-surface flex items-center justify-center font-serif text-lg sm:text-xl font-bold text-foreground shrink-0">
                         P
                       </div>
                       <div className="flex-1 min-w-0 space-y-0.5">
-                        <h4 className="font-serif font-black text-xl text-foreground tracking-wide truncate">
+                        <h4 className="font-serif font-black text-lg sm:text-xl text-foreground tracking-wide truncate">
                           Pramono Wibowo
                         </h4>
-                        <p className="font-mono text-[10.5px] text-muted">@pramono &bull; Warga Penggerak 2024</p>
+                        <p className="font-mono text-[10px] sm:text-[10.5px] text-muted truncate">@pramono &bull; Warga Penggerak 2024</p>
                         <div className="pt-0.5">
-                          <span className="inline-block px-2.5 py-0.5 bg-foreground text-background font-mono text-[8px] uppercase font-bold tracking-wider rounded-none">
+                          <span className="inline-block px-2 sm:px-2.5 py-0.5 bg-foreground text-background font-mono text-[7.5px] sm:text-[8px] uppercase font-bold tracking-wider rounded-none">
                             GELAR: PENJAGA NYALA LITERASI
                           </span>
                         </div>
@@ -888,40 +785,40 @@ export default function HomePage() {
                     </div>
 
                     {/* Inspiring Quote Box */}
-                    <div className="p-3.5 bg-surface-muted/60 border-l-4 border-foreground rounded-none space-y-1">
-                      <p className="font-serif italic text-xs text-foreground/90 leading-relaxed">
+                    <div className="p-3 sm:p-3.5 bg-surface-muted/60 border-l-4 border-foreground rounded-none space-y-1">
+                      <p className="font-serif italic text-[11px] sm:text-xs text-foreground/90 leading-relaxed">
                         &ldquo;Tangan yang membolak-balik buku adalah tangan yang merawat masa depan bangsa.&rdquo;
                       </p>
-                      <div className="text-right font-mono text-[8.5px] text-muted font-semibold uppercase">
+                      <div className="text-right font-mono text-[8px] sm:text-[8.5px] text-muted font-semibold uppercase">
                         — Pramono Wibowo (Catatan Warga)
                       </div>
                     </div>
 
                     {/* 4 Achievement Pillars */}
-                    <div className="grid grid-cols-4 gap-2 font-mono text-center pt-0.5">
-                      <div className="p-2 border border-border-hairline bg-surface rounded-none">
-                        <span className="text-[7.5px] uppercase tracking-wider text-muted block">Tulisan</span>
-                        <span className="font-serif font-black text-base text-foreground">8</span>
+                    <div className="grid grid-cols-4 gap-1.5 sm:gap-2 font-mono text-center pt-0.5">
+                      <div className="p-1.5 sm:p-2 border border-border-hairline bg-surface rounded-none">
+                        <span className="text-[7px] sm:text-[7.5px] uppercase tracking-wider text-muted block">Tulisan</span>
+                        <span className="font-serif font-black text-sm sm:text-base text-foreground">8</span>
                       </div>
-                      <div className="p-2 border border-border-hairline bg-surface rounded-none">
-                        <span className="text-[7.5px] uppercase tracking-wider text-muted block">Lencana</span>
-                        <span className="font-serif font-black text-base text-foreground">6</span>
+                      <div className="p-1.5 sm:p-2 border border-border-hairline bg-surface rounded-none">
+                        <span className="text-[7px] sm:text-[7.5px] uppercase tracking-wider text-muted block">Lencana</span>
+                        <span className="font-serif font-black text-sm sm:text-base text-foreground">6</span>
                       </div>
-                      <div className="p-2 border border-border-hairline bg-surface rounded-none">
-                        <span className="text-[7.5px] uppercase tracking-wider text-muted block">Pinjaman</span>
-                        <span className="font-serif font-black text-base text-foreground">14</span>
+                      <div className="p-1.5 sm:p-2 border border-border-hairline bg-surface rounded-none">
+                        <span className="text-[7px] sm:text-[7.5px] uppercase tracking-wider text-muted block">Pinjaman</span>
+                        <span className="font-serif font-black text-sm sm:text-base text-foreground">14</span>
                       </div>
-                      <div className="p-2 border border-border-hairline bg-surface rounded-none">
-                        <span className="text-[7.5px] uppercase tracking-wider text-muted block">Amanah</span>
-                        <span className="font-serif font-black text-base text-foreground">100%</span>
+                      <div className="p-1.5 sm:p-2 border border-border-hairline bg-surface rounded-none">
+                        <span className="text-[7px] sm:text-[7.5px] uppercase tracking-wider text-muted block">Amanah</span>
+                        <span className="font-serif font-black text-sm sm:text-base text-foreground">100%</span>
                       </div>
                     </div>
 
                     {/* Bottom Verification Seal */}
                     <div className="flex items-center justify-between pt-2.5 border-t border-border-hairline gap-2">
-                      <Logo className="h-6 w-auto text-foreground shrink-0" />
-                      <div className="flex-1 min-w-0 text-right space-y-0.5 font-mono text-[7.5px] text-muted">
-                        <span className="text-foreground block font-bold">perpusjalblora.id/warga/@pramono</span>
+                      <Logo className="h-5 sm:h-6 w-auto text-foreground shrink-0" />
+                      <div className="flex-1 min-w-0 text-right space-y-0.5 font-mono text-[7px] sm:text-[7.5px] text-muted">
+                        <span className="text-foreground block font-bold truncate">perpusjalblora.id/warga/@pramono</span>
                         <span>DOKUMEN RESMI WARGA LITERASI</span>
                       </div>
                     </div>
@@ -936,34 +833,34 @@ export default function HomePage() {
       {/* ========================================================= */}
       {/* 5. GRAND CALL TO ACTION: LESEHAN DI ALUN-ALUN BLORA       */}
       {/* ========================================================= */}
-        <section className="py-20 sm:py-28 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto text-center">
+        <section className="py-16 sm:py-24 md:py-28 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto text-center">
           <RevealOnScroll variant="cinematic" delayMs={60}>
-            <div className="max-w-3xl mx-auto space-y-6">
+            <div className="max-w-3xl mx-auto space-y-5 sm:space-y-6">
               <div className="inline-flex items-center gap-2 px-3 py-1 border border-foreground font-mono text-[9px] uppercase tracking-widest font-bold bg-foreground text-background">
                 <span>PANGGILAN TROTOAR // ALUN-ALUN BLORA</span>
               </div>
-              <h2 className="font-serif text-3xl sm:text-5xl md:text-6xl font-black uppercase tracking-tight text-foreground leading-[1.05]">
+              <h2 className="font-serif text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-black uppercase tracking-tight text-foreground leading-[1.08] sm:leading-[1.05]">
                 Trotoar Menunggu <br />
                 <span className="italic font-serif font-normal">Jejak Langkahmu.</span>
               </h2>
-              <p className="font-serif text-base sm:text-lg text-foreground/85 leading-relaxed max-w-2xl mx-auto">
+              <p className="font-serif text-sm sm:text-base md:text-lg text-foreground/85 leading-relaxed max-w-2xl mx-auto">
                 Setiap Minggu pagi, lembaran terpal biru dihamparkan di depan Pendopo Kabupaten Blora.
                 Mari datang, duduk bersila, temukan buku pilihanmu, atau buat kartu warga digitalmu sekarang.
               </p>
-              <div className="pt-4 flex flex-wrap justify-center gap-4 font-mono text-xs">
+              <div className="pt-3 sm:pt-4 flex flex-col sm:flex-row justify-center items-stretch sm:items-center gap-3 sm:gap-4 font-mono text-xs">
                 <Link
                   href="/tentang#lapak"
-                  className="px-6 py-3.5 bg-foreground text-background font-bold uppercase tracking-wider hover:bg-foreground/90 transition-colors inline-flex items-center gap-2"
+                  className="px-5 sm:px-6 py-3 sm:py-3.5 bg-foreground text-background font-bold uppercase tracking-wider hover:bg-foreground/90 transition-colors inline-flex items-center justify-center gap-2 text-center"
                 >
-                  <MapPin className="w-4 h-4" />
+                  <MapPin className="w-4 h-4 shrink-0" />
                   <span>PETA &amp; JADWAL CFD</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
+                  <ArrowRight className="w-3.5 h-3.5 shrink-0" />
                 </Link>
                 <Link
                   href="/masuk"
-                  className="px-6 py-3.5 border-2 border-foreground bg-surface hover:bg-foreground hover:text-background font-bold uppercase tracking-wider transition-colors inline-flex items-center gap-2"
+                  className="px-5 sm:px-6 py-3 sm:py-3.5 border-2 border-foreground bg-surface hover:bg-foreground hover:text-background font-bold uppercase tracking-wider transition-colors inline-flex items-center justify-center gap-2 text-center"
                 >
-                  <Sparkles className="w-4 h-4" />
+                  <Sparkles className="w-4 h-4 shrink-0" />
                   <span>BUAT KARTU WARGA</span>
                 </Link>
               </div>

@@ -307,19 +307,19 @@ function ArticlesCatalogContent() {
           className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 sm:pt-14 scroll-mt-20"
         >
           <RevealOnScroll variant="cinematic" delayMs={60}>
-            <div className="border-2 border-foreground bg-surface p-5 sm:p-6 space-y-5">
+            <div className="border-2 border-foreground bg-surface p-3.5 sm:p-6 space-y-3.5 sm:space-y-5">
             {/* Top Toolbar: Categories & View Switcher */}
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-border-hairline pb-4">
-              {/* Category Pills (Dynamic from Database) */}
-              <div className="flex flex-wrap items-center gap-1.5 font-mono text-[11px] uppercase tracking-wider">
-                <span className="text-muted text-[10px] font-bold mr-1 flex items-center gap-1">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border-hairline pb-3 sm:pb-4">
+              {/* Category Pills (Horizontal Swipe on Mobile, Wrap on Desktop) */}
+              <div className="flex items-center gap-1.5 font-mono text-[10px] sm:text-[11px] uppercase tracking-wider overflow-x-auto no-scrollbar lg:flex-wrap py-0.5">
+                <span className="text-muted text-[9.5px] sm:text-[10px] font-bold mr-1 flex items-center gap-1 shrink-0">
                   RUBRIK:
                 </span>
                 <button
                   type="button"
                   onClick={() => updateQueryParams({ kategori: null }, { scrollToSearch: false })}
                   className={cn(
-                    'px-3 py-1.5 border transition-all cursor-pointer font-bold',
+                    'px-2.5 sm:px-3 py-1 sm:py-1.5 border transition-all cursor-pointer font-bold shrink-0 whitespace-nowrap',
                     !currentCategory
                       ? 'bg-foreground text-background border-foreground'
                       : 'bg-surface text-foreground border-border hover:border-foreground'
@@ -333,7 +333,7 @@ function ArticlesCatalogContent() {
                     type="button"
                     onClick={() => updateQueryParams({ kategori: c.slug }, { scrollToSearch: false })}
                     className={cn(
-                      'px-3 py-1.5 border transition-all cursor-pointer font-bold',
+                      'px-2.5 sm:px-3 py-1 sm:py-1.5 border transition-all cursor-pointer font-bold shrink-0 whitespace-nowrap',
                       currentCategory === c.slug
                         ? 'bg-foreground text-background border-foreground'
                         : 'bg-surface text-foreground border-border hover:border-foreground'
@@ -345,8 +345,8 @@ function ArticlesCatalogContent() {
               </div>
 
               {/* View Switcher */}
-              <div className="flex items-center gap-2 shrink-0 self-end lg:self-auto font-mono text-[10px] uppercase tracking-wider">
-                <span className="text-muted font-bold">Tampilan:</span>
+              <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto font-mono text-[10px] uppercase tracking-wider">
+                <span className="text-muted font-bold hidden sm:inline">Tampilan:</span>
                 <div className="flex items-center border-2 border-foreground bg-background">
                   <button
                     type="button"
@@ -379,64 +379,66 @@ function ArticlesCatalogContent() {
             </div>
 
             {/* Bottom Row: Search Box, Duration Filter, and Sort */}
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-2.5 sm:gap-3 items-center">
               {/* Search Form with instant clear and enter handler */}
               <form onSubmit={handleSearchSubmit} className="md:col-span-6 relative">
                 <input
                   ref={searchInputRef}
                   type="text"
-                  placeholder="Cari judul, topik esai, atau nama warga... (Cmd+K)"
+                  placeholder="Cari judul, topik esai, atau nama warga..."
                   value={searchInput}
                   onChange={(e) => setSearchInput(e.target.value)}
-                  className="w-full h-11 pl-10 pr-24 bg-background border-2 border-foreground text-xs sm:text-sm font-sans text-foreground focus:outline-none focus:ring-0 rounded-none transition-colors"
+                  className="w-full h-10 sm:h-11 pl-9 sm:pl-10 pr-20 sm:pr-24 bg-background border-2 border-foreground text-xs sm:text-sm font-sans text-foreground focus:outline-none focus:ring-0 rounded-none transition-colors"
                 />
-                <Search className="w-4 h-4 text-muted absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <Search className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-muted absolute left-3 sm:left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
 
                 {searchInput && (
                   <button
                     type="button"
                     onClick={clearSearch}
-                    className="absolute right-16 top-1/2 -translate-y-1/2 text-muted hover:text-foreground p-1 transition-colors cursor-pointer"
+                    className="absolute right-14 sm:right-16 top-1/2 -translate-y-1/2 text-muted hover:text-foreground p-1 transition-colors cursor-pointer"
                     title="Hapus kata kunci"
                   >
-                    <X className="w-4 h-4" />
+                    <X className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   </button>
                 )}
 
                 <button
                   type="submit"
-                  className="absolute right-1.5 top-1/2 -translate-y-1/2 px-3.5 py-1.5 bg-foreground text-background font-mono text-[10px] uppercase tracking-wider font-bold hover:bg-foreground/90 transition-opacity cursor-pointer active:translate-x-0.5 active:translate-y-0.5"
+                  className="absolute right-1 sm:right-1.5 top-1/2 -translate-y-1/2 px-3 sm:px-3.5 py-1 sm:py-1.5 bg-foreground text-background font-mono text-[9.5px] sm:text-[10px] uppercase tracking-wider font-bold hover:bg-foreground/90 transition-opacity cursor-pointer active:translate-x-0.5 active:translate-y-0.5"
                 >
                   Cari
                 </button>
               </form>
 
-              {/* Reading Duration Selector */}
-              <div className="md:col-span-3 flex items-center gap-1 font-mono text-[10px] uppercase tracking-wider">
-                <select
-                  value={readingTimeFilter}
-                  onChange={(e) => setReadingTimeFilter(e.target.value as ReadingTimeFilter)}
-                  className="w-full h-11 bg-background border-2 border-foreground px-3 text-foreground focus:outline-none font-mono text-xs rounded-none cursor-pointer"
-                >
-                  <option value="all">Semua Durasi Baca</option>
-                  <option value="short">Kilas Singkat (&le; 3 Menit)</option>
-                  <option value="medium">Sedang (4 &ndash; 7 Menit)</option>
-                  <option value="long">Esai Mendalam (&gt; 7 Menit)</option>
-                </select>
-              </div>
+              {/* Side-by-side Filter Row on Mobile (2 Columns) */}
+              <div className="md:col-span-6 grid grid-cols-2 gap-2">
+                {/* Reading Duration Selector */}
+                <div className="flex items-center font-mono text-[10px] uppercase tracking-wider">
+                  <select
+                    value={readingTimeFilter}
+                    onChange={(e) => setReadingTimeFilter(e.target.value as ReadingTimeFilter)}
+                    className="w-full h-10 sm:h-11 bg-background border-2 border-foreground px-2 sm:px-3 text-foreground focus:outline-none font-mono text-[11px] sm:text-xs rounded-none cursor-pointer"
+                  >
+                    <option value="all">Semua Durasi</option>
+                    <option value="short">Kilas (&le; 3 Menit)</option>
+                    <option value="medium">Sedang (4–7 Mnt)</option>
+                    <option value="long">Mendalam (&gt; 7 Mnt)</option>
+                  </select>
+                </div>
 
-              {/* Sort Selector */}
-              <div className="md:col-span-3 flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-muted">
-                <SlidersHorizontal className="w-3.5 h-3.5 shrink-0 hidden sm:inline text-foreground" />
-                <select
-                  value={currentSort}
-                  onChange={(e) => updateQueryParams({ sort: e.target.value }, { scrollToSearch: false })}
-                  className="w-full h-11 bg-background border-2 border-foreground px-3 text-foreground focus:outline-none font-mono text-xs rounded-none cursor-pointer"
-                >
-                  <option value="terbaru">Urutan: Terbaru</option>
-                  <option value="populer">Urutan: Terpopuler</option>
-                  <option value="terlama">Urutan: Terlama</option>
-                </select>
+                {/* Sort Selector */}
+                <div className="flex items-center font-mono text-[10px] uppercase tracking-wider text-muted">
+                  <select
+                    value={currentSort}
+                    onChange={(e) => updateQueryParams({ sort: e.target.value }, { scrollToSearch: false })}
+                    className="w-full h-10 sm:h-11 bg-background border-2 border-foreground px-2 sm:px-3 text-foreground focus:outline-none font-mono text-[11px] sm:text-xs rounded-none cursor-pointer"
+                  >
+                    <option value="terbaru">Terbaru</option>
+                    <option value="populer">Terpopuler</option>
+                    <option value="terlama">Terlama</option>
+                  </select>
+                </div>
               </div>
             </div>
 

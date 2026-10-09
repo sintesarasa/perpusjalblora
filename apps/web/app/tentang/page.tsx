@@ -152,37 +152,85 @@ export default function AboutPage() {
   const [activeWing, setActiveWing] = React.useState<'KOTA' | 'DOPE'>('KOTA');
   const [openFaq, setOpenFaq] = React.useState<string | null>('faq-1');
 
-  // Timeline Scroll Progress calculation (Thread Line fills down on scroll)
-  const timelineRef = React.useRef<HTMLDivElement>(null);
-  const [timelineProgress, setTimelineProgress] = React.useState(0);
+  // GPU-Accelerated Timeline Scroll Progress (direct DOM transforms & lerp, zero React re-renders)
+  const timelineTrackRef = React.useRef<HTMLDivElement>(null);
+  const threadLineRef = React.useRef<HTMLDivElement>(null);
+  const threadMarkerRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
-    let ticking = false;
+    let targetProgress = 0;
+    let currentProgress = 0;
+    let rafId: number | null = null;
+    let isRunning = false;
+
+    const updateDOM = () => {
+      // Lerp smoothing (0.22 factor: cushions mouse wheel notches into liquid 60-120fps motion)
+      const diff = targetProgress - currentProgress;
+      if (Math.abs(diff) < 0.0008) {
+        currentProgress = targetProgress;
+      } else {
+        currentProgress += diff * 0.22;
+      }
+
+      if (threadLineRef.current) {
+        threadLineRef.current.style.transform = `scaleY(${currentProgress})`;
+      }
+
+      if (threadMarkerRef.current && timelineTrackRef.current) {
+        const trackHeight = timelineTrackRef.current.offsetHeight;
+        // Total usable travel height (minus 32px for top-4 and bottom-4 offsets)
+        const lineTravel = Math.max(0, trackHeight - 32);
+        const markerY = currentProgress * lineTravel;
+        threadMarkerRef.current.style.transform = `translate3d(0, ${markerY}px, 0)`;
+        threadMarkerRef.current.style.opacity = currentProgress > 0.005 ? '1' : '0';
+      }
+
+      if (currentProgress !== targetProgress) {
+        rafId = window.requestAnimationFrame(updateDOM);
+      } else {
+        isRunning = false;
+      }
+    };
 
     const handleScroll = () => {
-      if (!ticking) {
-        window.requestAnimationFrame(() => {
-          if (timelineRef.current) {
-            const rect = timelineRef.current.getBoundingClientRect();
-            const windowHeight = window.innerHeight;
-            const totalHeight = rect.height;
+      const trackEl = timelineTrackRef.current;
+      if (!trackEl) return;
 
-            // Calculate how far into the timeline section the viewport has scrolled
-            const progress = Math.min(
-              100,
-              Math.max(0, ((windowHeight * 0.7 - rect.top) / totalHeight) * 100)
-            );
-            setTimelineProgress(progress);
-          }
-          ticking = false;
-        });
-        ticking = true;
+      const rect = trackEl.getBoundingClientRect();
+      const windowHeight = window.innerHeight;
+      const totalHeight = rect.height;
+
+      // Start when top of timeline track reaches 60% of viewport
+      // Reach 100% when bottom reaches 45% of viewport
+      const startTrigger = windowHeight * 0.6;
+      const endTrigger = windowHeight * 0.45;
+
+      const scrolledDistance = startTrigger - rect.top;
+      const totalScrollableDistance = totalHeight + (startTrigger - endTrigger);
+
+      const rawProgress = totalScrollableDistance > 0
+        ? scrolledDistance / totalScrollableDistance
+        : 0;
+
+      targetProgress = Math.min(1, Math.max(0, rawProgress));
+
+      if (!isRunning) {
+        isRunning = true;
+        rafId = window.requestAnimationFrame(updateDOM);
       }
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('resize', handleScroll, { passive: true });
     handleScroll();
-    return () => window.removeEventListener('scroll', handleScroll);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleScroll);
+      if (rafId) {
+        window.cancelAnimationFrame(rafId);
+      }
+    };
   }, []);
 
   const handlePrint = () => {
@@ -412,7 +460,7 @@ export default function AboutPage() {
         {/* ========================================================= */}
         {/* 3. THE CINEMATIC TIMELINE RIVER (SCROLL-DRIVEN VOYAGE)     */}
         {/* ========================================================= */}
-        <section ref={timelineRef} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 overflow-x-clip">
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 overflow-x-clip">
           <RevealOnScroll variant="cinematic">
             <div className="border-b-2 border-foreground pb-6 mb-12 sm:mb-20 flex flex-col md:flex-row md:items-end justify-between gap-4">
               <div>
@@ -431,15 +479,25 @@ export default function AboutPage() {
           </RevealOnScroll>
 
           {/* Cinematic Vertical Timeline Track with Progressive Thread Line */}
-          <div className="relative">
+          <div ref={timelineTrackRef} className="relative">
             {/* Background Spine Guide (Faint) */}
             <div className="absolute left-6 md:left-1/2 top-4 bottom-4 w-0.5 -translate-x-1/2 bg-foreground/15" />
 
-            {/* Active Thread Line (Fills down dynamically on scroll) */}
+            {/* Active Thread Line (Silky GPU Transform scaleY, no layout thrashing or stutter) */}
             <div
-              className="absolute left-6 md:left-1/2 top-4 w-1 -translate-x-1/2 bg-foreground transition-all duration-150 ease-out"
-              style={{ height: `${timelineProgress}%` }}
+              ref={threadLineRef}
+              className="absolute left-6 md:left-1/2 top-4 bottom-4 w-1 -translate-x-1/2 bg-foreground origin-top pointer-events-none will-change-transform"
+              style={{ transform: 'scaleY(0)' }}
             />
+
+            {/* Leading Pulse Diamond Node that rides smoothly along the thread */}
+            <div
+              ref={threadMarkerRef}
+              className="absolute left-6 md:left-1/2 top-4 z-30 pointer-events-none will-change-transform transition-opacity duration-200"
+              style={{ transform: 'translate3d(0, 0, 0)', opacity: 0 }}
+            >
+              <div className="w-3 h-3 bg-foreground border-2 border-background rotate-45 shadow-sm -translate-x-1/2 -translate-y-1/2" />
+            </div>
 
             <div className="space-y-12 sm:space-y-24">
               {TIMELINE_EVENTS.map((event, idx) => {

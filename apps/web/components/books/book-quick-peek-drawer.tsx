@@ -55,12 +55,12 @@ export function BookQuickPeekDrawer({ book, isOpen, onClose }: BookQuickPeekDraw
         aria-hidden="true"
       />
 
-      {/* Slide-over Sheet */}
-      <div className="fixed inset-y-0 right-0 max-w-full flex pl-6 sm:pl-10">
-        <div className="w-screen max-w-md sm:max-w-lg bg-surface border-l-2 border-foreground flex flex-col justify-between overflow-y-auto animate-in slide-in-from-right duration-300">
+      {/* Slide-over Sheet (Full width on mobile, max-w-lg on sm+) */}
+      <div className="fixed inset-y-0 right-0 max-w-full flex pl-0 sm:pl-10">
+        <div className="w-screen max-w-full sm:max-w-lg bg-surface border-l-2 border-foreground flex flex-col justify-between overflow-y-auto animate-in slide-in-from-right duration-300">
           {/* Header Strip */}
           <div>
-            <div className="p-4 sm:p-5 border-b-2 border-foreground flex items-center justify-between bg-surface-muted/50">
+            <div className="p-3.5 sm:p-5 border-b-2 border-foreground flex items-center justify-between bg-surface-muted/50">
               <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-muted">
                 <span>[ PRATINJAU PUSTAKA CEPAT ]</span>
               </div>
@@ -75,7 +75,7 @@ export function BookQuickPeekDrawer({ book, isOpen, onClose }: BookQuickPeekDraw
             </div>
 
             {/* Content Body */}
-            <div className="p-6 space-y-6">
+            <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
               {/* Physical Book Cover Frame */}
               <div className="grid grid-cols-1 sm:grid-cols-12 gap-5 items-start">
                 <div className="sm:col-span-5 aspect-[3/4] border-2 border-foreground bg-surface-muted relative overflow-hidden">
@@ -187,7 +187,7 @@ export function BookQuickPeekDrawer({ book, isOpen, onClose }: BookQuickPeekDraw
           </div>
 
           {/* Footer Actions */}
-          <div className="p-4 sm:p-5 border-t-2 border-foreground bg-surface flex flex-wrap items-center gap-3">
+          <div className="p-3.5 sm:p-5 border-t-2 border-foreground bg-surface flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
             <Link
               href={`/buku/${book.slug}`}
               className="flex-1 text-center py-2.5 px-4 bg-foreground text-background font-mono text-xs uppercase tracking-widest font-bold hover:bg-background hover:text-foreground border border-foreground transition-colors inline-flex items-center justify-center gap-1.5"
@@ -199,7 +199,7 @@ export function BookQuickPeekDrawer({ book, isOpen, onClose }: BookQuickPeekDraw
             <button
               type="button"
               onClick={onClose}
-              className="py-2.5 px-4 border border-border-hairline text-muted hover:text-foreground font-mono text-xs uppercase tracking-wider transition-colors cursor-pointer"
+              className="py-2.5 px-4 border border-border-hairline text-muted hover:text-foreground font-mono text-xs uppercase tracking-wider transition-colors cursor-pointer text-center"
             >
               Tutup
             </button>

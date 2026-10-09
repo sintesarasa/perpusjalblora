@@ -256,6 +256,24 @@ export class LoansService {
         );
       }
 
+      // Bind available BookCopy & hold as RESERVED
+      const availableCopy = await tx.bookCopy.findFirst({
+        where: {
+          bookId,
+          status: BookCopyStatus.AVAILABLE as unknown as any,
+        },
+        orderBy: {
+          inventoryCode: 'asc',
+        },
+      });
+
+      if (availableCopy) {
+        await tx.bookCopy.update({
+          where: { id: availableCopy.id },
+          data: { status: BookCopyStatus.RESERVED as unknown as any },
+        });
+      }
+
       // 7. Create Loan
       let loanCode = generateLoanCode();
       // Ensure unique loanCode
@@ -268,6 +286,7 @@ export class LoansService {
           loanCode,
           userId: user.userId,
           bookId,
+          bookCopyId: availableCopy ? availableCopy.id : null,
           status: LoanStatus.PENDING as unknown as any,
           pickupPoint: pickupPoint.trim(),
           pickupDatePlan: pickupDatePlan ? new Date(pickupDatePlan) : null,
@@ -281,6 +300,12 @@ export class LoansService {
               slug: true,
               author: true,
               coverImage: true,
+            },
+          },
+          bookCopy: {
+            select: {
+              id: true,
+              inventoryCode: true,
             },
           },
           user: {
@@ -1012,6 +1037,13 @@ export class LoansService {
         where: { id: loan.bookId },
         data: { availableCopies: { increment: 1 } },
       });
+
+      if (loan.bookCopyId) {
+        await tx.bookCopy.update({
+          where: { id: loan.bookCopyId },
+          data: { status: BookCopyStatus.AVAILABLE as unknown as any },
+        });
+      }
 
       const updated = await tx.loan.update({
         where: { id: loanId },

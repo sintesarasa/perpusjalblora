@@ -133,6 +133,8 @@ export class BooksService {
       orderBy = { borrowCount: 'desc' };
     } else if (sort === 'judul') {
       orderBy = { title: 'asc' };
+    } else if (sort === 'tersedia') {
+      orderBy = [{ availableCopies: 'desc' }, { createdAt: 'desc' }];
     }
 
     const [total, books] = await Promise.all([
@@ -166,6 +168,22 @@ export class BooksService {
               slug: true,
             },
           },
+          copies: {
+            where: {
+              status: BookCopyStatus.AVAILABLE as unknown as any,
+            },
+            select: {
+              id: true,
+              inventoryCode: true,
+              condition: true,
+              status: true,
+              note: true,
+              createdAt: true,
+            },
+            orderBy: {
+              inventoryCode: 'asc',
+            },
+          },
         },
       }),
     ]);
@@ -178,6 +196,16 @@ export class BooksService {
       isbn: b.isbn,
       coverImage: b.coverImage,
       category: b.category,
+      copies: b.copies
+        ? b.copies.map((c) => ({
+            id: c.id,
+            inventoryCode: c.inventoryCode,
+            condition: c.condition as any,
+            status: c.status as any,
+            note: c.note,
+            createdAt: c.createdAt.toISOString(),
+          }))
+        : undefined,
       totalCopies: b.totalCopies,
       availableCopies: b.availableCopies,
       isBorrowable: b.isBorrowable,

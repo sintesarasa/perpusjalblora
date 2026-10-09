@@ -12,7 +12,7 @@ export const bookQuerySchema = z.object({
   bahasa: z.nativeEnum(Language).optional(),
   tahunMin: z.coerce.number().int().optional(),
   tahunMax: z.coerce.number().int().optional(),
-  sort: z.enum(['terbaru', 'populer', 'judul']).default('terbaru'),
+  sort: z.enum(['terbaru', 'populer', 'judul', 'tersedia']).default('terbaru'),
   includeDraft: z
     .union([z.boolean(), z.string().transform((v) => v === 'true' || v === '1')])
     .optional(),
@@ -96,6 +96,7 @@ export interface BookItem {
   isbn?: string | null;
   description?: string | null;
   borrowCount?: number;
+  copies?: BookCopyItem[];
 }
 
 export interface BookCopyItem {

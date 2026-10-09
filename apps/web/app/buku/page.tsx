@@ -318,21 +318,21 @@ function BookCatalogContent() {
                 <span>GERAKAN SIRKULASI TERBUKA BLORA</span>
               </div>
 
-              <h1 className="font-serif text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-black uppercase tracking-tight text-foreground leading-[1.02] sm:leading-[0.95] break-words">
+              <h1 className="font-serif text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-black uppercase tracking-tight text-foreground leading-[1.05] sm:leading-[0.95] break-words">
                 KATALOG BUKU &amp; <br />
                 <span className="italic font-normal lowercase font-serif">sirkulasi terpal merdeka.</span>
               </h1>
 
-              <p className="font-serif text-lg sm:text-2xl text-foreground/90 leading-relaxed pt-1 sm:pt-2 max-w-3xl">
+              <p className="font-serif text-sm sm:text-lg md:text-xl text-foreground/90 leading-relaxed pt-1 sm:pt-2 max-w-3xl">
                 Semua naskah, novel sastra, sejarah lokal Blora, pedagogi kritis, hingga zine alternatif
                 bebas dipinjam di atas terpal tanpa uang jaminan dan tanpa denda sepeser pun.
               </p>
 
-              <div className="pt-4 flex items-center justify-end border-t border-border-hairline">
+              <div className="pt-3 sm:pt-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-end border-t border-border-hairline">
                 <button
                   type="button"
                   onClick={() => requestBoxRef.current?.scrollIntoView({ behavior: 'smooth' })}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-foreground text-background font-mono text-xs uppercase tracking-wider font-bold hover:opacity-85 transition-opacity shrink-0 cursor-pointer"
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-foreground text-background font-mono text-xs uppercase tracking-wider font-bold hover:opacity-85 transition-opacity shrink-0 cursor-pointer text-center"
                 >
                   <Gift className="w-3.5 h-3.5" />
                   <span>Usulkan Judul / Donasi</span>
@@ -380,7 +380,7 @@ function BookCatalogContent() {
           </div>
 
           {/* Search & Filter Toolbar */}
-          <div className="border-2 border-foreground bg-surface p-4 sm:p-5 space-y-4">
+          <div className="border-2 border-foreground bg-surface p-3.5 sm:p-5 space-y-3 sm:space-y-4">
             {/* Search Input Row */}
             <form onSubmit={handleSearchSubmit} className="flex gap-2">
               <div className="relative flex-1">
@@ -389,23 +389,23 @@ function BookCatalogContent() {
                   type="text"
                   value={searchInput}
                   onChange={(e) => setSearchInput(e.target.value)}
-                  placeholder="Cari judul buku, nama pengarang, tokoh Blora, atau nomor ISBN... (Cmd+K)"
-                  className="w-full h-11 pl-10 pr-24 bg-background border border-border text-xs sm:text-sm font-sans focus:outline-none focus:border-foreground rounded-none text-foreground transition-colors"
+                  placeholder="Cari judul, pengarang, tokoh Blora, ISBN..."
+                  className="w-full h-10 sm:h-11 pl-9 sm:pl-10 pr-20 sm:pr-24 bg-background border border-border text-xs sm:text-sm font-sans focus:outline-none focus:border-foreground rounded-none text-foreground transition-colors"
                 />
-                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted pointer-events-none" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 sm:w-4 sm:h-4 text-muted pointer-events-none" />
 
                 {searchInput && (
                   <button
                     type="button"
                     onClick={clearSearch}
-                    className="absolute right-16 top-1/2 -translate-y-1/2 text-muted hover:text-foreground p-1 transition-colors cursor-pointer"
+                    className="absolute right-12 sm:right-16 top-1/2 -translate-y-1/2 text-muted hover:text-foreground p-1 transition-colors cursor-pointer"
                     title="Hapus kata kunci"
                   >
-                    <X className="w-4 h-4" />
+                    <X className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   </button>
                 )}
 
-                <div className="absolute right-2.5 top-1/2 -translate-y-1/2 hidden sm:flex items-center gap-0.5 font-mono text-[9px] text-muted border border-border px-1.5 py-0.5 bg-surface select-none pointer-events-none">
+                <div className="absolute right-2 top-1/2 -translate-y-1/2 hidden sm:flex items-center gap-0.5 font-mono text-[9px] text-muted border border-border px-1.5 py-0.5 bg-surface select-none pointer-events-none">
                   <span>⌘</span>
                   <span>K</span>
                 </div>
@@ -414,15 +414,15 @@ function BookCatalogContent() {
               {/* Submit Search */}
               <button
                 type="submit"
-                className="px-5 h-11 bg-foreground text-background font-mono text-[10px] uppercase tracking-wider font-semibold hover:opacity-85 transition-opacity shrink-0 cursor-pointer"
+                className="px-4 sm:px-5 h-10 sm:h-11 bg-foreground text-background font-mono text-[10px] uppercase tracking-wider font-semibold hover:opacity-85 transition-opacity shrink-0 cursor-pointer"
               >
                 CARI
               </button>
             </form>
 
-            {/* Quick Categories Pills Strip */}
-            <div className="pt-2 border-t border-border-hairline flex flex-wrap items-center gap-1.5 font-mono text-[11px] uppercase tracking-wider">
-              <span className="text-muted mr-1 flex items-center gap-1 text-[10px]">
+            {/* Quick Categories Pills Strip (Horizontal Swipe on Mobile, Wrap on Desktop) */}
+            <div className="pt-2 border-t border-border-hairline flex items-center gap-1.5 font-mono text-[10px] sm:text-[11px] uppercase tracking-wider overflow-x-auto no-scrollbar sm:flex-wrap py-0.5">
+              <span className="text-muted mr-1 flex items-center gap-1 text-[9.5px] sm:text-[10px] shrink-0 font-bold">
                 <Filter className="w-3 h-3 text-muted" />
                 TOPIK:
               </span>
@@ -434,7 +434,7 @@ function BookCatalogContent() {
                     type="button"
                     onClick={() => updateFilters({ kategori: chip.slug || null }, { scrollToSearch: false })}
                     className={cn(
-                      'px-3 py-1.5 border transition-colors select-none cursor-pointer',
+                      'px-2.5 sm:px-3 py-1 sm:py-1.5 border transition-colors select-none cursor-pointer shrink-0 whitespace-nowrap',
                       isSelected
                         ? 'bg-foreground text-background border-foreground font-bold'
                         : 'bg-transparent text-muted border-border hover:border-foreground'
@@ -446,15 +446,15 @@ function BookCatalogContent() {
               })}
             </div>
 
-            {/* Availability & Sorting Row */}
-            <div className="pt-3 border-t border-border-hairline flex flex-wrap items-center justify-between gap-4 font-mono text-xs">
-              <div className="flex flex-wrap items-center gap-3">
+            {/* Availability & Sorting Row (Organized 2-part Grid on Mobile) */}
+            <div className="pt-2.5 sm:pt-3 border-t border-border-hairline flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-4 font-mono text-xs">
+              <div className="flex items-center gap-2 w-full sm:w-auto">
                 {/* Available Only Toggle */}
                 <button
                   type="button"
                   onClick={() => updateFilters({ tersedia: tersedia ? null : 'true' }, { scrollToSearch: false })}
                   className={cn(
-                    'px-3 py-1.5 border transition-colors inline-flex items-center gap-1.5 cursor-pointer text-[11px] uppercase font-semibold select-none',
+                    'px-2.5 sm:px-3 py-1.5 border transition-colors inline-flex items-center gap-1.5 cursor-pointer text-[10px] sm:text-[11px] uppercase font-semibold select-none shrink-0',
                     tersedia
                       ? 'bg-foreground text-background border-foreground font-bold'
                       : 'bg-background text-foreground border-border hover:border-foreground'
@@ -466,19 +466,19 @@ function BookCatalogContent() {
                       tersedia ? 'bg-foreground' : 'bg-muted'
                     )}
                   />
-                  <span>Hanya Siap Pinjam</span>
+                  <span>Siap Pinjam</span>
                 </button>
 
                 {/* Language Filter */}
-                <div className="flex items-center gap-1.5 text-[11px]">
-                  <span className="text-muted uppercase">Bahasa:</span>
+                <div className="flex items-center gap-1 text-[10px] sm:text-[11px] flex-1 sm:flex-initial">
+                  <span className="text-muted uppercase shrink-0">Bhs:</span>
                   <select
                     value={bahasa}
                     onChange={(e) => updateFilters({ bahasa: e.target.value || null }, { scrollToSearch: false })}
-                    className="px-2 py-1.5 bg-background border border-border text-foreground focus:outline-none focus:border-foreground rounded-none uppercase text-xs cursor-pointer font-mono"
+                    className="w-full sm:w-auto px-2 py-1.5 bg-background border border-border text-foreground focus:outline-none focus:border-foreground rounded-none uppercase text-[11px] sm:text-xs cursor-pointer font-mono"
                   >
-                    <option value="">Semua Bahasa</option>
-                    <option value="ID">Bahasa Indonesia</option>
+                    <option value="">Semua</option>
+                    <option value="ID">Indonesia</option>
                     <option value="JV">Basa Jawa</option>
                     <option value="EN">English</option>
                   </select>
@@ -486,20 +486,18 @@ function BookCatalogContent() {
               </div>
 
               {/* Sorting */}
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-1.5 text-[11px]">
-                  <SlidersHorizontal className="w-3 h-3 text-muted shrink-0 hidden sm:inline" />
-                  <span className="text-muted uppercase">Urutan:</span>
-                  <select
-                    value={sort}
-                    onChange={(e) => updateFilters({ sort: e.target.value }, { scrollToSearch: false })}
-                    className="px-2.5 py-1.5 bg-background border border-border text-foreground focus:outline-none focus:border-foreground rounded-none text-xs font-mono uppercase cursor-pointer"
-                  >
-                    <option value="terbaru">Terbaru Terdata</option>
-                    <option value="populer">Paling Sering Berkelana</option>
-                    <option value="judul">Judul (A — Z)</option>
-                  </select>
-                </div>
+              <div className="flex items-center gap-1.5 w-full sm:w-auto justify-end text-[10px] sm:text-[11px]">
+                <SlidersHorizontal className="w-3 h-3 text-muted shrink-0 hidden sm:inline" />
+                <span className="text-muted uppercase shrink-0">Urutan:</span>
+                <select
+                  value={sort}
+                  onChange={(e) => updateFilters({ sort: e.target.value }, { scrollToSearch: false })}
+                  className="flex-1 sm:flex-initial px-2 py-1.5 bg-background border border-border text-foreground focus:outline-none focus:border-foreground rounded-none text-[11px] sm:text-xs font-mono uppercase cursor-pointer"
+                >
+                  <option value="terbaru">Terbaru</option>
+                  <option value="populer">Paling Sering Dipinjam</option>
+                  <option value="judul">Judul (A — Z)</option>
+                </select>
               </div>
             </div>
 
@@ -613,7 +611,7 @@ function BookCatalogContent() {
                 </span>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5 lg:gap-6">
                 {books.map((book, idx) => (
                   <RevealOnScroll key={book.id} variant="cinematic" delayMs={(idx % 4) * 80}>
                     <article

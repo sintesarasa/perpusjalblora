@@ -192,7 +192,7 @@ export default function DashboardKegiatanPage() {
         </div>
 
         {/* Dual Actions: Upcoming Event vs Past Event Archive */}
-        <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full md:w-auto shrink-0">
           {/* Action 1: Add Historical Past Event */}
           <button
             type="button"
@@ -201,7 +201,7 @@ export default function DashboardKegiatanPage() {
               setFormModalMode('archive');
               setIsFormModalOpen(true);
             }}
-            className="px-3.5 py-2.5 border-2 border-foreground bg-surface text-foreground hover:bg-surface-muted font-mono text-xs uppercase tracking-wider font-bold transition-colors flex items-center gap-2"
+            className="px-3.5 py-2.5 border-2 border-foreground bg-surface text-foreground hover:bg-surface-muted font-mono text-xs uppercase tracking-wider font-bold transition-colors flex items-center justify-center gap-2"
             title="Tambah dokumentasi kegiatan yang sudah selesai di masa lampau"
           >
             <Archive className="w-3.5 h-3.5 text-foreground" />
@@ -216,7 +216,7 @@ export default function DashboardKegiatanPage() {
               setFormModalMode('upcoming');
               setIsFormModalOpen(true);
             }}
-            className="px-4 py-2.5 border-2 border-foreground bg-foreground text-background font-mono text-xs uppercase tracking-wider font-bold hover:bg-foreground/90 transition-colors flex items-center gap-2"
+            className="px-4 py-2.5 border-2 border-foreground bg-foreground text-background font-mono text-xs uppercase tracking-wider font-bold hover:bg-foreground/90 transition-colors flex items-center justify-center gap-2"
             title="Terbitkan agenda baru yang akan diselenggarakan"
           >
             <Plus className="w-4 h-4" />
@@ -354,185 +354,337 @@ export default function DashboardKegiatanPage() {
           </p>
         </div>
       ) : (
-        <div className="border-2 border-foreground bg-surface overflow-x-auto">
-          <table className="w-full text-left font-sans text-xs">
-            <thead>
-              <tr className="border-b-2 border-foreground bg-surface-muted/80 font-mono text-[10px] uppercase tracking-wider text-muted select-none">
-                <th className="py-3 px-4">Status &amp; Tipe</th>
-                <th className="py-3 px-4">Judul &amp; Sampul</th>
-                <th className="py-3 px-4">Jadwal &amp; Tempat</th>
-                <th className="py-3 px-4">Partisipasi</th>
-                <th className="py-3 px-4">Penyelenggara</th>
-                <th className="py-3 px-4 text-right">Aksi</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border-hairline">
-              {events.map((ev) => {
-                const startDate = new Date(ev.startAt);
-                const isSpotlight = ev.id === spotlightEventId;
-                const isCompleted = ev.status === EventStatus.COMPLETED;
+        <>
+          {/* Mobile Stacked Card View (< 1024px) */}
+          <div className="block lg:hidden space-y-3">
+            {events.map((ev) => {
+              const startDate = new Date(ev.startAt);
+              const isSpotlight = ev.id === spotlightEventId;
+              const isCompleted = ev.status === EventStatus.COMPLETED;
 
-                const dateStr = startDate.toLocaleDateString('id-ID', {
-                  weekday: 'short',
-                  day: 'numeric',
-                  month: 'short',
-                  year: 'numeric',
-                });
-                const timeStr = startDate.toLocaleTimeString('id-ID', {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                });
+              const dateStr = startDate.toLocaleDateString('id-ID', {
+                weekday: 'short',
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric',
+              });
+              const timeStr = startDate.toLocaleTimeString('id-ID', {
+                hour: '2-digit',
+                minute: '2-digit',
+              });
 
-                return (
-                  <tr
-                    key={ev.id}
-                    className={`hover:bg-surface-muted/30 transition-colors ${
-                      isSpotlight ? 'bg-surface-muted/30' : ''
-                    }`}
-                  >
-                    {/* Status & Type */}
-                    <td className="py-3.5 px-4 align-top space-y-1.5 whitespace-nowrap">
-                      <div>{getStatusBadge(ev.status)}</div>
-                      <span className="font-mono text-[9px] text-muted uppercase tracking-wider block">
+              return (
+                <div
+                  key={ev.id}
+                  className={`border-2 border-foreground bg-surface p-4 space-y-3.5 ${
+                    isSpotlight ? 'bg-surface-muted/20' : ''
+                  }`}
+                >
+                  {/* Header: Status, Type & Spotlight */}
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border-hairline pb-2.5">
+                    <div className="flex items-center gap-2">
+                      {getStatusBadge(ev.status)}
+                      <span className="font-mono text-[9px] text-muted uppercase tracking-wider">
                         // {ev.type}
                       </span>
-                      {isSpotlight && (
-                        <div className="inline-flex items-center gap-1 px-1.5 py-0.5 border border-foreground bg-foreground text-background font-mono text-[8px] font-extrabold uppercase tracking-widest">
-                          <Sparkles className="w-2.5 h-2.5" />
-                          <span>SOROTAN UTAMA</span>
-                        </div>
-                      )}
-                    </td>
+                    </div>
+                    {isSpotlight && (
+                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 border border-foreground bg-foreground text-background font-mono text-[8px] font-extrabold uppercase tracking-widest">
+                        <Sparkles className="w-2.5 h-2.5" />
+                        SOROTAN
+                      </span>
+                    )}
+                  </div>
 
-                    {/* Title & Cover Thumbnail */}
-                    <td className="py-3.5 px-4 align-top max-w-xs sm:max-w-sm">
-                      <div className="flex items-start gap-3">
-                        {ev.coverImage ? (
-                          <div className="w-12 h-9 border border-foreground shrink-0 overflow-hidden bg-zinc-900 hidden sm:block">
-                            <img
-                              src={ev.coverImage}
-                              alt={ev.title}
-                              className="w-full h-full object-cover grayscale contrast-110"
-                            />
-                          </div>
-                        ) : (
-                          <div className="w-12 h-9 border border-border-hairline shrink-0 bg-surface-muted flex items-center justify-center text-muted hidden sm:block">
-                            <ImageIcon className="w-4 h-4" />
+                  {/* Title & Cover */}
+                  <div className="flex items-start gap-3">
+                    {ev.coverImage ? (
+                      <div className="w-14 h-14 border border-foreground shrink-0 overflow-hidden bg-zinc-900">
+                        <img
+                          src={ev.coverImage}
+                          alt={ev.title}
+                          className="w-full h-full object-cover grayscale contrast-110"
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-14 h-14 border border-border-hairline shrink-0 bg-surface-muted flex items-center justify-center text-muted">
+                        <ImageIcon className="w-5 h-5" />
+                      </div>
+                    )}
+
+                    <div className="space-y-1 min-w-0 flex-1">
+                      <h4 className="font-serif font-bold text-sm text-foreground leading-snug line-clamp-2">
+                        {ev.title}
+                      </h4>
+                      <Link
+                        href={`/kegiatan/${ev.slug}`}
+                        target="_blank"
+                        className="font-mono text-[10px] text-muted hover:text-foreground inline-flex items-center gap-1 hover:underline"
+                      >
+                        <span>Lihat Halaman Publik</span>
+                        <ExternalLink className="w-2.5 h-2.5" />
+                      </Link>
+                    </div>
+                  </div>
+
+                  {/* Schedule, Location & Participation */}
+                  <div className="p-3 bg-surface-muted/60 border border-border-hairline space-y-1.5 font-mono text-xs text-muted">
+                    <div className="flex items-center gap-2 text-foreground font-semibold">
+                      <Clock className="w-3.5 h-3.5 shrink-0" />
+                      <span>{dateStr} • {timeStr}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <MapPin className="w-3.5 h-3.5 shrink-0" />
+                      <span className="truncate">{ev.locationName}</span>
+                    </div>
+                    <div className="flex items-center justify-between pt-1 border-t border-border-hairline text-[11px]">
+                      <span className="flex items-center gap-1.5">
+                        <Users className="w-3.5 h-3.5" />
+                        <strong className="text-foreground">{ev.registeredCount}{ev.quota ? `/${ev.quota}` : ''}</strong> terdaftar
+                      </span>
+                      <span>{ev.attendedCount || 0} hadir fisik</span>
+                    </div>
+                  </div>
+
+                  {/* Actions row */}
+                  <div className="pt-1 flex items-center justify-between gap-2 border-t border-border-hairline">
+                    <span className="font-mono text-[10px] text-muted truncate max-w-[120px]">
+                      {ev.organizer?.name || 'Panitia'}
+                    </span>
+
+                    <div className="flex items-center gap-2">
+                      <Link
+                        href={`/dashboard/kegiatan/${ev.id}`}
+                        className="px-3 py-1.5 bg-foreground text-background font-mono text-[11px] uppercase tracking-wider font-bold hover:bg-foreground/90 transition-colors inline-flex items-center gap-1"
+                      >
+                        <CalendarCheck className="w-3.5 h-3.5" />
+                        <span>Presensi</span>
+                      </Link>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditingEvent(ev);
+                          setIsFormModalOpen(true);
+                        }}
+                        className="p-1.5 border border-border-hairline hover:border-foreground bg-surface text-foreground transition-colors"
+                        title="Sunting Agenda"
+                      >
+                        <Edit3 className="w-3.5 h-3.5" />
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCompletingEvent(ev);
+                          setIsCompleteModalOpen(true);
+                        }}
+                        className={`p-1.5 border transition-colors ${
+                          isCompleted
+                            ? 'border-amber-500/50 bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                            : 'border-border-hairline hover:border-foreground bg-surface text-foreground'
+                        }`}
+                        title="Dokumentasi & Selesaikan"
+                      >
+                        <Camera className="w-3.5 h-3.5" />
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteEvent(ev)}
+                        className="p-1.5 border border-border-hairline hover:border-destructive hover:bg-destructive hover:text-destructive-foreground text-muted transition-colors"
+                        title="Hapus Agenda"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Desktop Tabular View (>= 1024px) */}
+          <div className="hidden lg:block border-2 border-foreground bg-surface overflow-x-auto">
+            <table className="w-full text-left font-sans text-xs">
+              <thead>
+                <tr className="border-b-2 border-foreground bg-surface-muted/80 font-mono text-[10px] uppercase tracking-wider text-muted select-none">
+                  <th className="py-3 px-4">Status &amp; Tipe</th>
+                  <th className="py-3 px-4">Judul &amp; Sampul</th>
+                  <th className="py-3 px-4">Jadwal &amp; Tempat</th>
+                  <th className="py-3 px-4">Partisipasi</th>
+                  <th className="py-3 px-4">Penyelenggara</th>
+                  <th className="py-3 px-4 text-right">Aksi</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border-hairline">
+                {events.map((ev) => {
+                  const startDate = new Date(ev.startAt);
+                  const isSpotlight = ev.id === spotlightEventId;
+                  const isCompleted = ev.status === EventStatus.COMPLETED;
+
+                  const dateStr = startDate.toLocaleDateString('id-ID', {
+                    weekday: 'short',
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric',
+                  });
+                  const timeStr = startDate.toLocaleTimeString('id-ID', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  });
+
+                  return (
+                    <tr
+                      key={ev.id}
+                      className={`hover:bg-surface-muted/30 transition-colors ${
+                        isSpotlight ? 'bg-surface-muted/30' : ''
+                      }`}
+                    >
+                      {/* Status & Type */}
+                      <td className="py-3.5 px-4 align-top space-y-1.5 whitespace-nowrap">
+                        <div>{getStatusBadge(ev.status)}</div>
+                        <span className="font-mono text-[9px] text-muted uppercase tracking-wider block">
+                          // {ev.type}
+                        </span>
+                        {isSpotlight && (
+                          <div className="inline-flex items-center gap-1 px-1.5 py-0.5 border border-foreground bg-foreground text-background font-mono text-[8px] font-extrabold uppercase tracking-widest">
+                            <Sparkles className="w-2.5 h-2.5" />
+                            <span>SOROTAN UTAMA</span>
                           </div>
                         )}
+                      </td>
 
-                        <div className="space-y-1">
-                          <div className="font-serif font-bold text-sm text-foreground leading-snug">
-                            {ev.title}
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Link
-                              href={`/kegiatan/${ev.slug}`}
-                              target="_blank"
-                              className="font-mono text-[10px] text-muted hover:text-foreground inline-flex items-center gap-1 hover:underline"
-                            >
-                              <span>Halaman Publik</span>
-                              <ExternalLink className="w-2.5 h-2.5" />
-                            </Link>
+                      {/* Title & Cover Thumbnail */}
+                      <td className="py-3.5 px-4 align-top max-w-xs sm:max-w-sm">
+                        <div className="flex items-start gap-3">
+                          {ev.coverImage ? (
+                            <div className="w-12 h-9 border border-foreground shrink-0 overflow-hidden bg-zinc-900 hidden sm:block">
+                              <img
+                                src={ev.coverImage}
+                                alt={ev.title}
+                                className="w-full h-full object-cover grayscale contrast-110"
+                              />
+                            </div>
+                          ) : (
+                            <div className="w-12 h-9 border border-border-hairline shrink-0 bg-surface-muted flex items-center justify-center text-muted hidden sm:block">
+                              <ImageIcon className="w-4 h-4" />
+                            </div>
+                          )}
+
+                          <div className="space-y-1">
+                            <div className="font-serif font-bold text-sm text-foreground leading-snug">
+                              {ev.title}
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Link
+                                href={`/kegiatan/${ev.slug}`}
+                                target="_blank"
+                                className="font-mono text-[10px] text-muted hover:text-foreground inline-flex items-center gap-1 hover:underline"
+                              >
+                                <span>Halaman Publik</span>
+                                <ExternalLink className="w-2.5 h-2.5" />
+                              </Link>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </td>
+                      </td>
 
-                    {/* Schedule & Location */}
-                    <td className="py-3.5 px-4 align-top whitespace-nowrap">
-                      <div className="font-mono text-xs font-bold text-foreground flex items-center gap-1.5">
-                        <Clock className="w-3 h-3 text-foreground" />
-                        <span>{dateStr} • {timeStr}</span>
-                      </div>
-                      <div className="text-[11px] text-muted flex items-center gap-1 mt-0.5 truncate max-w-xs">
-                        <MapPin className="w-3 h-3 text-muted shrink-0" />
-                        <span className="truncate">{ev.locationName}</span>
-                      </div>
-                    </td>
+                      {/* Schedule & Location */}
+                      <td className="py-3.5 px-4 align-top whitespace-nowrap">
+                        <div className="font-mono text-xs font-bold text-foreground flex items-center gap-1.5">
+                          <Clock className="w-3 h-3 text-foreground" />
+                          <span>{dateStr} • {timeStr}</span>
+                        </div>
+                        <div className="text-[11px] text-muted flex items-center gap-1 mt-0.5 truncate max-w-xs">
+                          <MapPin className="w-3 h-3 text-muted shrink-0" />
+                          <span className="truncate">{ev.locationName}</span>
+                        </div>
+                      </td>
 
-                    {/* Participation Stats */}
-                    <td className="py-3.5 px-4 align-top whitespace-nowrap font-mono text-xs">
-                      <div className="flex items-center gap-1.5">
-                        <Users className="w-3.5 h-3.5 text-muted" />
-                        <span className="font-bold text-foreground">
-                          {ev.registeredCount}
-                          {ev.quota ? ` / ${ev.quota}` : ''}
+                      {/* Participation Stats */}
+                      <td className="py-3.5 px-4 align-top whitespace-nowrap font-mono text-xs">
+                        <div className="flex items-center gap-1.5">
+                          <Users className="w-3.5 h-3.5 text-muted" />
+                          <span className="font-bold text-foreground">
+                            {ev.registeredCount}
+                            {ev.quota ? ` / ${ev.quota}` : ''}
+                          </span>
+                          <span className="text-[10px] text-muted">terdaftar</span>
+                        </div>
+                        <div className="text-[10px] text-muted mt-0.5">
+                          {ev.attendedCount || 0} hadir di lokasi
+                        </div>
+                      </td>
+
+                      {/* Organizer */}
+                      <td className="py-3.5 px-4 align-top whitespace-nowrap">
+                        <span className="font-mono text-xs text-foreground block">
+                          {ev.organizer?.name || 'Panitia'}
                         </span>
-                        <span className="text-[10px] text-muted">terdaftar</span>
-                      </div>
-                      <div className="text-[10px] text-muted mt-0.5">
-                        {ev.attendedCount || 0} hadir di lokasi
-                      </div>
-                    </td>
+                      </td>
 
-                    {/* Organizer */}
-                    <td className="py-3.5 px-4 align-top whitespace-nowrap">
-                      <span className="font-mono text-xs text-foreground block">
-                        {ev.organizer?.name || 'Panitia'}
-                      </span>
-                    </td>
+                      {/* Actions */}
+                      <td className="py-3.5 px-4 align-top text-right whitespace-nowrap">
+                        <div className="flex items-center justify-end gap-1.5">
+                          {/* Presensi Peserta Button */}
+                          <Link
+                            href={`/dashboard/kegiatan/${ev.id}`}
+                            className="px-2.5 py-1.5 bg-foreground text-background font-mono text-[11px] uppercase tracking-wider font-bold hover:bg-foreground/90 transition-colors inline-flex items-center gap-1"
+                            title="Buka Meja Presensi & Daftar Hadir Peserta"
+                          >
+                            <CalendarCheck className="w-3.5 h-3.5" />
+                            <span>Presensi</span>
+                          </Link>
 
-                    {/* Actions */}
-                    <td className="py-3.5 px-4 align-top text-right whitespace-nowrap">
-                      <div className="flex items-center justify-end gap-1.5">
-                        {/* Presensi Peserta Button */}
-                        <Link
-                          href={`/dashboard/kegiatan/${ev.id}`}
-                          className="px-2.5 py-1.5 bg-foreground text-background font-mono text-[11px] uppercase tracking-wider font-bold hover:bg-foreground/90 transition-colors inline-flex items-center gap-1"
-                          title="Buka Meja Presensi & Daftar Hadir Peserta"
-                        >
-                          <CalendarCheck className="w-3.5 h-3.5" />
-                          <span>Presensi</span>
-                        </Link>
+                          {/* Edit Button */}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditingEvent(ev);
+                              setIsFormModalOpen(true);
+                            }}
+                            className="p-1.5 border border-border-hairline hover:border-foreground bg-surface text-foreground transition-colors"
+                            title="Sunting Agenda"
+                          >
+                            <Edit3 className="w-3.5 h-3.5" />
+                          </button>
 
-                        {/* Edit Button */}
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setEditingEvent(ev);
-                            setIsFormModalOpen(true);
-                          }}
-                          className="p-1.5 border border-border-hairline hover:border-foreground bg-surface text-foreground transition-colors"
-                          title="Sunting Agenda"
-                        >
-                          <Edit3 className="w-3.5 h-3.5" />
-                        </button>
+                          {/* Complete & Document Button */}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setCompletingEvent(ev);
+                              setIsCompleteModalOpen(true);
+                            }}
+                            className={`p-1.5 border transition-colors ${
+                              isCompleted
+                                ? 'border-amber-500/50 bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                                : 'border-border-hairline hover:border-foreground bg-surface text-foreground'
+                            }`}
+                            title="Dokumentasi & Selesaikan Kegiatan"
+                          >
+                            <Camera className="w-3.5 h-3.5" />
+                          </button>
 
-                        {/* Complete & Document Button */}
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setCompletingEvent(ev);
-                            setIsCompleteModalOpen(true);
-                          }}
-                          className={`p-1.5 border transition-colors ${
-                            isCompleted
-                              ? 'border-amber-500/50 bg-amber-500/10 text-amber-600 dark:text-amber-400'
-                              : 'border-border-hairline hover:border-foreground bg-surface text-foreground'
-                          }`}
-                          title="Dokumentasi & Selesaikan Kegiatan"
-                        >
-                          <Camera className="w-3.5 h-3.5" />
-                        </button>
-
-                        {/* Delete Button */}
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteEvent(ev)}
-                          className="p-1.5 border border-border-hairline hover:border-destructive hover:text-destructive bg-surface text-muted transition-colors"
-                          title="Hapus Agenda"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+                          {/* Delete Button */}
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteEvent(ev)}
+                            className="p-1.5 border border-border-hairline hover:border-destructive hover:text-destructive bg-surface text-muted transition-colors"
+                            title="Hapus Agenda"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
 
       {/* Form Modal (Create / Edit with Upcoming & Archive Mode) */}
