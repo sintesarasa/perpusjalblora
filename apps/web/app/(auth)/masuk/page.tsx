@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Eye, EyeOff, AlertCircle, Info, ArrowRight } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { RevealOnScroll } from '@/components/ui/reveal-on-scroll';
 import { apiClient } from '@/lib/api';
 import { useAuth } from '@/contexts/auth-context';
 
@@ -108,160 +109,162 @@ function LoginForm() {
   }
 
   return (
-    <div className="space-y-8 animate-in fade-in-50 duration-200">
-      {/* Editorial Heading */}
-      <div className="space-y-2">
-        <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-muted">
-          <span>REGISTRI</span>
-          <span>//</span>
-          <span>AUTENTIKASI</span>
-        </div>
-        <h1 className="font-serif text-3xl sm:text-4xl font-normal tracking-tight">
-          Masuk ke Ruang Baca
-        </h1>
-        <p className="text-xs sm:text-sm text-muted font-sans pt-0.5 leading-relaxed">
-          Akses sirkulasi peminjaman buku jalanan, ruang publikasi naskah warga, dan riwayat kurasi.
-        </p>
-      </div>
-
-      {/* Redirect Notice Banner (if user came from an internal protected link) */}
-      {rawRedirect && (
-        <div className="p-3 border border-foreground/30 bg-surface-muted/50 text-foreground flex items-center gap-2.5 font-mono text-xs">
-          <Info className="w-4 h-4 text-foreground shrink-0" />
-          <span>Silakan masuk terlebih dahulu untuk melanjutkan ke halaman yang dituju.</span>
-        </div>
-      )}
-
-      {/* Error Banner */}
-      {errorMessage && (
-        <div
-          role="alert"
-          className="p-4 border-2 border-foreground bg-surface text-foreground space-y-1 animate-in fade-in-50 duration-150"
-        >
-          <div className="flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-wider">
-            <AlertCircle className="w-4 h-4 text-foreground shrink-0" />
-            <span>Autentikasi Gagal</span>
+    <RevealOnScroll variant="cinematic" delayMs={50}>
+      <div className="space-y-8">
+        {/* Editorial Heading */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-muted">
+            <span>REGISTRI</span>
+            <span>//</span>
+            <span>AUTENTIKASI</span>
           </div>
-          <p className="text-xs font-sans text-foreground/85 pl-6">{errorMessage}</p>
-        </div>
-      )}
-
-      {/* Login Form */}
-      <form onSubmit={handleSubmit} className="space-y-5" noValidate>
-        {/* Email Field */}
-        <div className="space-y-1">
-          <Input
-            label="Alamat Email"
-            type="email"
-            name="email"
-            autoComplete="email"
-            autoFocus
-            placeholder="nama@domain.com"
-            value={email}
-            onChange={(e) => {
-              setEmail(e.target.value);
-              if (fieldErrors.email) {
-                setFieldErrors((prev) => ({ ...prev, email: '' }));
-              }
-            }}
-            required
-            disabled={isLoading}
-            className={fieldErrors.email ? 'border-foreground ring-1 ring-foreground' : ''}
-          />
-          {fieldErrors.email && (
-            <p className="font-mono text-[11px] text-foreground font-semibold pl-1">
-              &bull; {fieldErrors.email}
-            </p>
-          )}
+          <h1 className="font-serif text-3xl sm:text-4xl font-normal tracking-tight">
+            Masuk ke Ruang Baca
+          </h1>
+          <p className="text-xs sm:text-sm text-muted font-sans pt-0.5 leading-relaxed">
+            Akses sirkulasi peminjaman buku jalanan, ruang publikasi naskah warga, dan riwayat kurasi.
+          </p>
         </div>
 
-        {/* Password Field */}
-        <div className="space-y-1">
-          <Input
-            label="Kata Sandi"
-            type={showPassword ? 'text' : 'password'}
-            name="password"
-            autoComplete="current-password"
-            placeholder="••••••••"
-            value={password}
-            onChange={(e) => {
-              setPassword(e.target.value);
-              if (fieldErrors.password) {
-                setFieldErrors((prev) => ({ ...prev, password: '' }));
-              }
-            }}
-            required
-            disabled={isLoading}
-            className={fieldErrors.password ? 'border-foreground ring-1 ring-foreground' : ''}
-            rightElement={
-              <button
-                type="button"
-                onClick={() => setShowPassword((prev) => !prev)}
-                className="text-muted hover:text-foreground transition-colors p-1.5 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-foreground"
-                aria-label={showPassword ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi'}
-                aria-pressed={showPassword}
-              >
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </button>
-            }
-          />
-          {fieldErrors.password && (
-            <p className="font-mono text-[11px] text-foreground font-semibold pl-1">
-              &bull; {fieldErrors.password}
-            </p>
-          )}
-        </div>
+        {/* Redirect Notice Banner (if user came from an internal protected link) */}
+        {rawRedirect && (
+          <div className="p-3 border border-foreground/30 bg-surface-muted/50 text-foreground flex items-center gap-2.5 font-mono text-xs">
+            <Info className="w-4 h-4 text-foreground shrink-0" />
+            <span>Silakan masuk terlebih dahulu untuk melanjutkan ke halaman yang dituju.</span>
+          </div>
+        )}
 
-        {/* Remember Me & Forgot Password */}
-        <div className="flex items-center justify-between pt-1">
-          <label className="flex items-center gap-2.5 cursor-pointer select-none">
-            <input
-              type="checkbox"
-              checked={rememberMe}
-              onChange={(e) => setRememberMe(e.target.checked)}
-              className="w-4 h-4 rounded-none border-2 border-foreground bg-transparent text-foreground accent-foreground cursor-pointer focus:ring-0"
+        {/* Error Banner */}
+        {errorMessage && (
+          <div
+            role="alert"
+            className="p-4 border-2 border-foreground bg-surface text-foreground space-y-1 animate-in fade-in-50 duration-150"
+          >
+            <div className="flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-wider">
+              <AlertCircle className="w-4 h-4 text-foreground shrink-0" />
+              <span>Autentikasi Gagal</span>
+            </div>
+            <p className="text-xs font-sans text-foreground/85 pl-6">{errorMessage}</p>
+          </div>
+        )}
+
+        {/* Login Form */}
+        <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+          {/* Email Field */}
+          <div className="space-y-1">
+            <Input
+              label="Alamat Email"
+              type="email"
+              name="email"
+              autoComplete="email"
+              autoFocus
+              placeholder="nama@domain.com"
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (fieldErrors.email) {
+                  setFieldErrors((prev) => ({ ...prev, email: '' }));
+                }
+              }}
+              required
+              disabled={isLoading}
+              className={fieldErrors.email ? 'border-foreground ring-1 ring-foreground' : ''}
             />
-            <span className="font-mono text-[11px] uppercase tracking-wider text-muted hover:text-foreground transition-colors">
-              Ingat Saya (30 Hari)
-            </span>
-          </label>
+            {fieldErrors.email && (
+              <p className="font-mono text-[11px] text-foreground font-semibold pl-1">
+                &bull; {fieldErrors.email}
+              </p>
+            )}
+          </div>
 
-          <Link
-            href="/lupa-password"
-            className="font-mono text-[11px] uppercase tracking-wider text-muted hover:text-foreground underline underline-offset-4 transition-colors"
-          >
-            Lupa Sandi?
-          </Link>
+          {/* Password Field */}
+          <div className="space-y-1">
+            <Input
+              label="Kata Sandi"
+              type={showPassword ? 'text' : 'password'}
+              name="password"
+              autoComplete="current-password"
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                if (fieldErrors.password) {
+                  setFieldErrors((prev) => ({ ...prev, password: '' }));
+                }
+              }}
+              required
+              disabled={isLoading}
+              className={fieldErrors.password ? 'border-foreground ring-1 ring-foreground' : ''}
+              rightElement={
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  className="text-muted hover:text-foreground transition-colors p-1.5 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-foreground"
+                  aria-label={showPassword ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi'}
+                  aria-pressed={showPassword}
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              }
+            />
+            {fieldErrors.password && (
+              <p className="font-mono text-[11px] text-foreground font-semibold pl-1">
+                &bull; {fieldErrors.password}
+              </p>
+            )}
+          </div>
+
+          {/* Remember Me & Forgot Password */}
+          <div className="flex items-center justify-between pt-1">
+            <label className="flex items-center gap-2.5 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className="w-4 h-4 rounded-none border-2 border-foreground bg-transparent text-foreground accent-foreground cursor-pointer focus:ring-0"
+              />
+              <span className="font-mono text-[11px] uppercase tracking-wider text-muted hover:text-foreground transition-colors">
+                Ingat Saya (30 Hari)
+              </span>
+            </label>
+
+            <Link
+              href="/lupa-password"
+              className="font-mono text-[11px] uppercase tracking-wider text-muted hover:text-foreground underline underline-offset-4 transition-colors"
+            >
+              Lupa Sandi?
+            </Link>
+          </div>
+
+          {/* Submit Button */}
+          <div className="pt-2">
+            <Button
+              type="submit"
+              variant="solid"
+              size="lg"
+              className="w-full flex items-center justify-center gap-2 cursor-pointer font-mono tracking-wider"
+              isLoading={isLoading}
+            >
+              <span>Masuk ke Ruang Baca</span>
+              {!isLoading && <ArrowRight className="w-4 h-4" />}
+            </Button>
+          </div>
+        </form>
+
+        {/* Switch to Register */}
+        <div className="pt-4 border-t border-border-hairline text-center">
+          <p className="text-xs text-muted font-sans">
+            Belum memiliki akun pembaca?{' '}
+            <Link
+              href={rawRedirect ? `/daftar?redirect=${encodeURIComponent(rawRedirect)}` : '/daftar'}
+              className="font-mono text-xs uppercase tracking-wider font-semibold text-foreground underline underline-offset-4 hover:opacity-75 transition-opacity"
+            >
+              Daftar Sekarang
+            </Link>
+          </p>
         </div>
-
-        {/* Submit Button */}
-        <div className="pt-2">
-          <Button
-            type="submit"
-            variant="solid"
-            size="lg"
-            className="w-full flex items-center justify-center gap-2 cursor-pointer font-mono tracking-wider"
-            isLoading={isLoading}
-          >
-            <span>Masuk ke Ruang Baca</span>
-            {!isLoading && <ArrowRight className="w-4 h-4" />}
-          </Button>
-        </div>
-      </form>
-
-      {/* Switch to Register */}
-      <div className="pt-4 border-t border-border-hairline text-center">
-        <p className="text-xs text-muted font-sans">
-          Belum memiliki akun pembaca?{' '}
-          <Link
-            href={rawRedirect ? `/daftar?redirect=${encodeURIComponent(rawRedirect)}` : '/daftar'}
-            className="font-mono text-xs uppercase tracking-wider font-semibold text-foreground underline underline-offset-4 hover:opacity-75 transition-opacity"
-          >
-            Daftar Sekarang
-          </Link>
-        </p>
       </div>
-    </div>
+    </RevealOnScroll>
   );
 }
 

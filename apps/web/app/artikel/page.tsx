@@ -250,7 +250,7 @@ function ArticlesCatalogContent() {
             </div>
           </div>
 
-          <RevealOnScroll variant="fade-up" delayMs={100}>
+          <RevealOnScroll variant="cinematic" delayMs={100}>
             <div className="max-w-4xl space-y-4 sm:space-y-6 relative z-10">
               <div className="inline-flex items-center gap-2 px-2.5 py-1 border border-foreground font-mono text-[9px] sm:text-[10px] tracking-wider uppercase font-bold bg-foreground text-background">
                 <span>MIMBAR BEBAS &bull; PERPUSTAKAAN JALANAN BLORA</span>
@@ -289,7 +289,7 @@ function ArticlesCatalogContent() {
         {/* ========================================================= */}
         {featuredArticle && !isLoading && !hasSearchOrFilter && (
           <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 sm:pt-14">
-            <RevealOnScroll variant="fade-up" delayMs={150}>
+            <RevealOnScroll variant="cinematic" delayMs={150}>
               <ArticleFeatured
                 article={featuredArticle}
                 onQuickRead={(art) => setQuickReadArticle(art)}
@@ -306,7 +306,8 @@ function ArticlesCatalogContent() {
           aria-label="Alat Pencarian dan Penyaring Naskah"
           className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 sm:pt-14 scroll-mt-20"
         >
-          <div className="border-2 border-foreground bg-surface p-5 sm:p-6 space-y-5">
+          <RevealOnScroll variant="cinematic" delayMs={60}>
+            <div className="border-2 border-foreground bg-surface p-5 sm:p-6 space-y-5">
             {/* Top Toolbar: Categories & View Switcher */}
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-border-hairline pb-4">
               {/* Category Pills (Dynamic from Database) */}
@@ -479,6 +480,7 @@ function ArticlesCatalogContent() {
               </div>
             )}
           </div>
+          </RevealOnScroll>
         </section>
 
         {/* ========================================================= */}
@@ -517,7 +519,7 @@ function ArticlesCatalogContent() {
                       {regularArticles.map((article, idx) => (
                         <RevealOnScroll
                           key={article.id}
-                          variant="fade-up"
+                          variant="cinematic"
                           delayMs={(idx % 2) * 100}
                         >
                           <ArticleCard
@@ -533,7 +535,7 @@ function ArticlesCatalogContent() {
                       {regularArticles.map((article, idx) => (
                         <RevealOnScroll
                           key={article.id}
-                          variant="fade-up"
+                          variant="cinematic"
                           delayMs={(idx % 3) * 80}
                         >
                           <ArticleCard
@@ -572,12 +574,14 @@ function ArticlesCatalogContent() {
 
             {/* Kolom Samping (Sidebar): Etalase Penulis Warga & Kotak Pos (4 Grid) */}
             <div className="lg:col-span-4 space-y-8">
-              <CitizenContributorsSidebar
-                articles={articles}
-                onSelectAuthor={(authorName) => {
-                  updateQueryParams({ q: authorName }, { scrollToSearch: true });
-                }}
-              />
+              <RevealOnScroll variant="cinematic" delayMs={120}>
+                <CitizenContributorsSidebar
+                  articles={articles}
+                  onSelectAuthor={(authorName) => {
+                    updateQueryParams({ q: authorName }, { scrollToSearch: true });
+                  }}
+                />
+              </RevealOnScroll>
             </div>
           </div>
         </section>
@@ -638,7 +642,9 @@ function ArticlesCatalogContent() {
         onClose={() => setQuickReadArticle(null)}
       />
 
-      <Footer />
+      <RevealOnScroll variant="fade" delayMs={60}>
+        <Footer />
+      </RevealOnScroll>
     </div>
   );
 }

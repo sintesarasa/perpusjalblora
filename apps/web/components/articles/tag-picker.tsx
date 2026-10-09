@@ -4,6 +4,7 @@ import * as React from 'react';
 import { X, Hash, ChevronDown, Plus, Loader2 } from 'lucide-react';
 import { ArticleTag } from '@perpusjal/types';
 import { apiClient } from '@/lib/api';
+import { cn } from '@/lib/utils';
 
 interface TagPickerProps {
   tags: ArticleTag[];
@@ -33,6 +34,16 @@ export function TagPicker({
     setAllTags(initialTags);
   }, [initialTags]);
 
+  const canAddMore = selectedIds.length < maxTags;
+
+  // Auto-close if max tags reached
+  React.useEffect(() => {
+    if (!canAddMore && isOpen) {
+      setIsOpen(false);
+      setSearch('');
+    }
+  }, [canAddMore, isOpen]);
+
   const selectedTags = allTags.filter((t) => selectedIds.includes(t.id));
   const filteredTags = allTags.filter(
     (t) =>
@@ -60,10 +71,11 @@ export function TagPicker({
   const toggleTag = (tag: ArticleTag) => {
     if (selectedIds.includes(tag.id)) {
       onChange(selectedIds.filter((id) => id !== tag.id));
-    } else if (selectedIds.length < maxTags) {
+    } else if (canAddMore) {
       onChange([...selectedIds, tag.id]);
       setSearch('');
       setErrorMsg(null);
+      setIsOpen(false); // Close dropdown after selection
     }
   };
 
@@ -74,7 +86,7 @@ export function TagPicker({
 
   const handleCreateNewTag = async (tagName: string) => {
     const clean = tagName.trim().replace(/^#+/, '');
-    if (!clean || selectedIds.length >= maxTags || isCreating) return;
+    if (!clean || !canAddMore || isCreating) return;
 
     // Check if already in allTags
     const existing = allTags.find(
@@ -86,6 +98,7 @@ export function TagPicker({
         onChange([...selectedIds, existing.id]);
       }
       setSearch('');
+      setIsOpen(false);
       return;
     }
 
@@ -109,6 +122,7 @@ export function TagPicker({
         if (onTagCreated) onTagCreated(created);
         onChange([...selectedIds, created.id]);
         setSearch('');
+        setIsOpen(false);
       } else if (res.error) {
         setErrorMsg(res.error.message || 'Gagal membuat tag baru.');
       }
@@ -120,6 +134,14 @@ export function TagPicker({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsOpen(false);
+      setSearch('');
+      return;
+    }
+
     if (e.key === 'Enter' || e.key === ',') {
       e.preventDefault();
       if (!search.trim()) return;
@@ -135,29 +157,25 @@ export function TagPicker({
     }
   };
 
-  const canAddMore = selectedIds.length < maxTags;
-
   return (
     <div ref={dropdownRef} className="relative space-y-1.5">
       {/* ── Main Tag Input / Badges Display Container ── */}
       <div
         onClick={() => {
-          if (canAddMore || isOpen) {
-            setIsOpen(true);
-            setTimeout(() => inputRef.current?.focus(), 50);
+          if (canAddMore) {
+            inputRef.current?.focus();
           }
         }}
-        className={`
-          min-h-[46px] px-3 py-2 border flex flex-wrap items-center gap-2 cursor-pointer transition-colors
-          ${isOpen ? 'border-foreground ring-1 ring-foreground' : 'border-border hover:border-foreground'}
-          bg-background
-        `}
+        className={cn(
+          'min-h-[46px] px-3 py-2 border flex flex-wrap items-center gap-2 cursor-text transition-colors bg-background rounded-none',
+          isOpen ? 'border-foreground ring-1 ring-foreground' : 'border-border hover:border-foreground'
+        )}
       >
         {/* Selected Tag Badges */}
         {selectedTags.map((tag) => (
           <span
             key={tag.id}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-foreground text-background font-mono text-[10px] uppercase tracking-wider select-none"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-foreground text-background font-mono text-[10px] uppercase tracking-wider select-none rounded-none"
           >
             <Hash className="w-2.5 h-2.5 text-muted-foreground" />
             <span>{tag.name}</span>
@@ -179,40 +197,88 @@ export function TagPicker({
             type="text"
             value={search}
             onChange={(e) => {
-              setSearch(e.target.value);
-              if (!isOpen) setIsOpen(true);
+              const val = e.target.value;
+              setSearch(val);
+              // Open suggestions when typing, or keep closed when empty
+              if (val.trim().length > 0) {
+                setIsOpen(true);
+              }
             }}
-            onFocus={() => setIsOpen(true)}
+            onFocus={() => {
+              // Open suggestions only if already typing
+              if (search.trim().length > 0) {
+                setIsOpen(true);
+              }
+            }}
             onKeyDown={handleKeyDown}
             placeholder={
               selectedTags.length === 0
                 ? 'Ketik kata kunci lalu tekan Enter (maks. 5)...'
                 : 'Tambah kata kunci...'
             }
-            className="flex-1 min-w-[140px] bg-transparent font-sans text-xs text-foreground placeholder:text-muted/40 focus:outline-none py-1"
+            className="flex-1 min-w-[130px] bg-transparent font-sans text-xs text-foreground placeholder:text-muted/40 focus:outline-none py-1"
           />
         )}
 
-        {/* Quota indicator */}
-        <div className="ml-auto flex items-center gap-2 shrink-0">
+        {/* Dedicated Toggle Button for Browsing All Tags */}
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            if (canAddMore) {
+              setIsOpen((prev) => !prev);
+              if (!isOpen) {
+                setTimeout(() => inputRef.current?.focus(), 50);
+              }
+            }
+          }}
+          disabled={!canAddMore}
+          className={cn(
+            'ml-auto flex items-center gap-1.5 px-2 py-1 border border-border-hairline hover:border-foreground bg-surface text-muted hover:text-foreground transition-colors cursor-pointer select-none rounded-none shrink-0',
+            !canAddMore && 'opacity-60 cursor-not-allowed'
+          )}
+          title={isOpen ? 'Tutup rekomendasi (Esc)' : 'Buka pilihan tag'}
+        >
           <span
-            className={`font-mono text-[10px] uppercase tracking-wider ${
+            className={cn(
+              'font-mono text-[10px] uppercase tracking-wider',
               selectedIds.length >= maxTags ? 'text-foreground font-bold' : 'text-muted'
-            }`}
+            )}
           >
             {selectedIds.length}/{maxTags} Tag
           </span>
           <ChevronDown
-            className={`w-3.5 h-3.5 text-muted transition-transform ${isOpen ? 'rotate-180' : ''}`}
+            className={cn('w-3.5 h-3.5 text-muted transition-transform', isOpen && 'rotate-180 text-foreground')}
           />
-        </div>
+        </button>
       </div>
 
       {/* ── Dropdown Suggestions (Floating seamlessly) ── */}
-      {isOpen && (
-        <div className="absolute left-0 right-0 top-full mt-1 border-2 border-foreground bg-surface rounded-none max-h-60 overflow-hidden flex flex-col z-50">
+      {isOpen && canAddMore && (
+        <div className="absolute left-0 right-0 top-full mt-1 border-2 border-foreground bg-surface rounded-none max-h-56 overflow-hidden flex flex-col z-50 shadow-none">
+          {/* Header with Explicit Close Button */}
+          <div className="px-3 py-1.5 border-b border-border-hairline bg-surface-muted/60 flex items-center justify-between text-[10px] font-mono text-muted uppercase shrink-0 select-none">
+            <span className="font-bold text-foreground flex items-center gap-1.5">
+              <Hash className="w-3 h-3 text-foreground" />
+              <span>Rekomendasi Kata Kunci</span>
+            </span>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsOpen(false);
+                setSearch('');
+              }}
+              className="text-muted hover:text-foreground font-bold tracking-wider inline-flex items-center gap-1 cursor-pointer transition-colors"
+              title="Tutup (Esc)"
+            >
+              <span>TUTUP</span>
+              <X className="w-3 h-3" />
+            </button>
+          </div>
+
           {errorMsg && (
-            <div className="px-3 py-1.5 bg-destructive/10 text-destructive text-[11px] font-sans">
+            <div className="px-3 py-1.5 bg-destructive/10 text-destructive text-[11px] font-sans border-b border-border-hairline">
               {errorMsg}
             </div>
           )}
@@ -255,7 +321,7 @@ export function TagPicker({
                   <Hash className="w-3 h-3 text-muted shrink-0" />
                   <span className="font-mono text-xs text-foreground">{tag.name}</span>
                 </div>
-                <span className="font-mono text-[9px] uppercase text-muted">Pilih</span>
+                <span className="font-mono text-[9px] uppercase text-muted hover:text-foreground">Pilih ↵</span>
               </button>
             ))}
 
@@ -264,14 +330,29 @@ export function TagPicker({
                 Semua tag standar sudah dipilih. Ketik untuk membuat tag baru.
               </p>
             )}
+
+            {filteredTags.length === 0 && search.trim() && exactMatchExists && (
+              <p className="px-3 py-3 text-[11px] font-mono text-muted text-center">
+                Tag ini sudah terdaftar atau sudah Anda pilih.
+              </p>
+            )}
           </div>
         </div>
       )}
 
       {/* ── Guidance Note (Minimalist & Clean) ── */}
-      <p className="font-mono text-[10px] text-muted tracking-tight">
-        Ketik kata kunci bebas lalu tekan Enter untuk menyematkan (maksimal {maxTags} tag).
-      </p>
+      <div className="flex items-center justify-between font-mono text-[10px] text-muted tracking-tight">
+        <span>Ketik kata kunci bebas lalu tekan Enter untuk menyematkan (maksimal {maxTags} tag).</span>
+        {isOpen && (
+          <button
+            type="button"
+            onClick={() => setIsOpen(false)}
+            className="text-muted hover:text-foreground underline cursor-pointer"
+          >
+            Tutup Rekomendasi
+          </button>
+        )}
+      </div>
     </div>
   );
 }

@@ -367,7 +367,7 @@ export default function CaraMeminjamPage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 lg:gap-12 items-end">
             <div className="lg:col-span-8">
-              <RevealOnScroll variant="fade-up" delayMs={100}>
+              <RevealOnScroll variant="cinematic" delayMs={100}>
                 <div className="space-y-3 sm:space-y-4">
                   <div className="inline-flex items-center gap-2 px-2.5 py-1 border border-foreground font-mono text-[9px] sm:text-[10px] tracking-wider uppercase font-bold bg-foreground text-background">
                     <span>MANUAL PEMINJAMAN PERPUSTAKAAN JALANAN</span>
@@ -423,7 +423,7 @@ export default function CaraMeminjamPage() {
         {/* 2. THE EDITORIAL ROUTE: 5 INTERACTIVE / VISUAL STEPS       */}
         {/* ========================================================= */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16">
-          <RevealOnScroll variant="fade-up">
+          <RevealOnScroll variant="cinematic" delayMs={50}>
             <div className="border-b-2 border-foreground pb-4 mb-6 sm:mb-8 flex flex-col md:flex-row md:items-end justify-between gap-3 sm:gap-4">
               <div>
                 <div className="font-mono text-xs uppercase tracking-widest text-muted flex items-center gap-2">
@@ -441,7 +441,7 @@ export default function CaraMeminjamPage() {
           </RevealOnScroll>
 
           {/* Quick Step Switcher Tabs — Fully responsive: horizontal snap strip on mobile, neat grid on sm+ */}
-          <RevealOnScroll variant="fade-up" delayMs={50}>
+          <RevealOnScroll variant="cinematic" delayMs={100}>
             <div className="relative pb-6">
               <div
                 ref={scrollContainerRef}
@@ -851,7 +851,7 @@ export default function CaraMeminjamPage() {
         {/* 4. SIMULATOR TIKET PINJAMAN DIGITAL (INTERAKTIF & KREATIF) */}
         {/* ========================================================= */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-          <RevealOnScroll variant="fade-up">
+          <RevealOnScroll variant="cinematic" delayMs={50}>
             <div className="border-2 border-foreground bg-surface-muted/40 p-4 sm:p-8 lg:p-10 relative">
               <div className="max-w-3xl mx-auto space-y-6">
                 <div className="text-center space-y-2">
@@ -947,7 +947,7 @@ export default function CaraMeminjamPage() {
         {/* 5. TIGA TITIK LAPAK PERTEMUAN RESMI DI TANAH BLORA       */}
         {/* ========================================================= */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16">
-          <RevealOnScroll variant="fade-up">
+          <RevealOnScroll variant="cinematic" delayMs={50}>
             <div className="border-b-2 border-foreground pb-4 mb-6 sm:mb-8 flex flex-col md:flex-row md:items-end justify-between gap-3 sm:gap-4">
               <div>
                 <div className="font-mono text-xs uppercase tracking-widest text-muted flex items-center gap-2">
@@ -966,7 +966,7 @@ export default function CaraMeminjamPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Lokasi 1: Alun-Alun CFD */}
-            <RevealOnScroll variant="fade-up" delayMs={50}>
+            <RevealOnScroll variant="cinematic" delayMs={50}>
               <div className="border-2 border-foreground bg-surface p-5 sm:p-6 flex flex-col justify-between relative group h-full">
                 <div className="absolute top-3 right-3 font-mono text-[9px] bg-foreground text-background px-2 py-0.5 font-bold uppercase">
                   TERPOPULER
@@ -1008,7 +1008,7 @@ export default function CaraMeminjamPage() {
             </RevealOnScroll>
 
             {/* Lokasi 2: Taman Tirtonadi */}
-            <RevealOnScroll variant="fade-up" delayMs={100}>
+            <RevealOnScroll variant="cinematic" delayMs={100}>
               <div className="border-2 border-foreground bg-surface p-5 sm:p-6 flex flex-col justify-between relative group h-full">
                 <div className="space-y-4">
                   <div className="w-10 h-10 border-2 border-foreground bg-surface-muted text-foreground flex items-center justify-center font-mono text-sm font-black">
@@ -1047,7 +1047,7 @@ export default function CaraMeminjamPage() {
             </RevealOnScroll>
 
             {/* Lokasi 3: Basecamp Jl. Pemuda */}
-            <RevealOnScroll variant="fade-up" delayMs={150}>
+            <RevealOnScroll variant="cinematic" delayMs={150}>
               <div className="border-2 border-foreground bg-surface p-5 sm:p-6 flex flex-col justify-between relative group h-full">
                 <div className="space-y-4">
                   <div className="w-10 h-10 border-2 border-foreground bg-surface-muted text-foreground flex items-center justify-center font-mono text-sm font-black">
@@ -1164,7 +1164,7 @@ export default function CaraMeminjamPage() {
         {/* 7. TANYA JAWAB PRAKTIS & AKORDEON (FAQ INTERAKTIF)        */}
         {/* ========================================================= */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-14">
-          <RevealOnScroll variant="fade-up">
+          <RevealOnScroll variant="cinematic" delayMs={50}>
             <div className="border-b-2 border-foreground pb-4 mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-3">
               <div>
                 <div className="font-mono text-xs uppercase tracking-widest text-muted flex items-center gap-2">
@@ -1185,7 +1185,7 @@ export default function CaraMeminjamPage() {
             {FAQ_LIST.map((faq, idx) => {
               const isOpen = openFaq === faq.id;
               return (
-                <RevealOnScroll key={faq.id} variant="fade-up" delayMs={idx * 50}>
+                <RevealOnScroll key={faq.id} variant="cinematic" delayMs={idx * 40}>
                   <div className="border-2 border-foreground bg-surface overflow-hidden transition-all">
                     <button
                       type="button"
@@ -1298,7 +1298,9 @@ export default function CaraMeminjamPage() {
       </main>
 
       <div className="print:hidden">
-        <Footer />
+        <RevealOnScroll variant="fade" delayMs={60}>
+          <Footer />
+        </RevealOnScroll>
       </div>
     </div>
   );

@@ -11,6 +11,7 @@ import { RichTextRenderer } from '@/components/articles/rich-text-renderer';
 import { apiClient } from '@/lib/api';
 import { EventDetail, EventRegistrationItem, EventStatus, EventType } from '@perpusjal/types';
 import { EventCountdown } from '@/components/events/event-countdown';
+import { RevealOnScroll } from '@/components/ui/reveal-on-scroll';
 import QRCode from 'qrcode';
 import {
   Calendar,
@@ -270,154 +271,156 @@ export default function EventDetailPage() {
         </div>
 
         {/* Hero Event Banner Card */}
-        <section className="border-2 border-foreground bg-surface p-6 sm:p-9 space-y-6">
-          {/* Top Status Strip */}
-          <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-border-hairline text-xs font-mono">
-            <div className="flex items-center gap-2.5">
-              <span className="w-2 h-2 rounded-none bg-foreground animate-pulse" />
-              <span className="font-bold text-foreground uppercase tracking-wider text-[11px]">
-                {event.type}
-              </span>
-              <span className="text-muted">&bull;</span>
-              {getStatusBadge(event.status)}
-            </div>
-
-            <div className="flex items-center gap-2">
-              {/* WhatsApp Share Button */}
-              <a
-                href={whatsappShareUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="px-2.5 py-1 border border-foreground bg-foreground text-background hover:bg-background hover:text-foreground font-mono text-[10px] font-bold uppercase tracking-wider inline-flex items-center gap-1.5 transition-colors"
-                title="Bagikan kabar kegiatan ini ke WhatsApp kawan-kawan"
-              >
-                <MessageCircle className="w-3 h-3" />
-                <span>Bagikan ke WhatsApp</span>
-              </a>
-            </div>
-          </div>
-
-          {/* Grid Layout: Visual Cover (Left 5 cols) + Event Synopsis & Actions (Right 7 cols) */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-            {/* Left: Tactile Editorial Photography Cover (5 cols) */}
-            <div className="lg:col-span-5 flex justify-center w-full">
-              <div className="relative w-full max-w-md bg-surface border-2 border-foreground p-3.5 select-none">
-                <div className="flex items-center justify-between pb-2 mb-2 border-b border-border-hairline font-mono text-[9px] uppercase tracking-widest text-muted">
-                  <span>[ DOKUMENTASI TERPAL // PERPUSJAL ]</span>
-                  <span className="font-bold text-foreground">2026</span>
-                </div>
-
-                <div className="relative aspect-[4/3] w-full overflow-hidden border border-foreground/30 bg-zinc-950">
-                  <img
-                    src={
-                      event.coverImage ||
-                      'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=1000&q=80'
-                    }
-                    alt={event.title}
-                    className="w-full h-full object-cover grayscale contrast-110 hover:grayscale-0 transition-all duration-500"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
-
-                  <div className="absolute top-2.5 right-2.5 px-2 py-0.5 bg-foreground text-background font-mono text-[8px] font-extrabold uppercase tracking-widest border border-background">
-                    ✦ TERPAL RAKYAT ✦
-                  </div>
-
-                  <div className="absolute bottom-2.5 left-3 right-3 text-white">
-                    <p className="font-serif italic text-xs leading-snug">
-                      &ldquo;Membaca adalah hak warga; merawat perjumpaan adalah kerja kebudayaan.&rdquo;
-                    </p>
-                  </div>
-                </div>
-
-                <div className="pt-2.5 flex items-center justify-between font-mono text-[9.5px] text-muted">
-                  <span>{event.locationName}</span>
-                  <span className="font-bold text-foreground uppercase">RUANG BACA SWADAYA</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Right: Event Headline & Venue Pillars (7 cols) */}
-            <div className="lg:col-span-7 space-y-5">
-              <div className="space-y-2">
-                <div className="inline-block px-2.5 py-0.5 border border-foreground bg-surface-muted text-foreground font-mono text-[9px] uppercase font-bold tracking-widest">
-                  <span>✦ LEMBAR DOKUMEN AGENDA RESMI ✦</span>
-                </div>
-
-                <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl font-black text-foreground leading-[1.1] tracking-tight">
-                  {event.title}
-                </h1>
-
-                <p className="font-mono text-xs text-muted">
-                  Penyelenggara / Inisiator:{' '}
-                  <strong className="text-foreground font-semibold">{event.organizer.name}</strong>
-                </p>
+        <RevealOnScroll variant="cinematic" delayMs={50}>
+          <section className="border-2 border-foreground bg-surface p-6 sm:p-9 space-y-6">
+            {/* Top Status Strip */}
+            <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-border-hairline text-xs font-mono">
+              <div className="flex items-center gap-2.5">
+                <span className="w-2 h-2 rounded-none bg-foreground animate-pulse" />
+                <span className="font-bold text-foreground uppercase tracking-wider text-[11px]">
+                  {event.type}
+                </span>
+                <span className="text-muted">&bull;</span>
+                {getStatusBadge(event.status)}
               </div>
 
-              {/* 3 Key Venue Pillars Strip */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1 font-mono text-xs text-muted">
-                <div className="flex items-center gap-2 p-2.5 bg-surface-muted/60 border border-border-hairline">
-                  <Clock className="w-3.5 h-3.5 text-foreground shrink-0" />
-                  <div className="truncate">
-                    <span className="text-[10px] text-muted block uppercase">Waktu</span>
-                    <span className="text-foreground font-semibold text-[11px]">
-                      {startTime} – {endTime} WIB
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2 p-2.5 bg-surface-muted/60 border border-border-hairline truncate">
-                  <MapPin className="w-3.5 h-3.5 text-foreground shrink-0" />
-                  <div className="truncate">
-                    <span className="text-[10px] text-muted block uppercase">Lokasi</span>
-                    <span className="text-foreground font-semibold text-[11px] truncate block">
-                      {event.locationName}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2 p-2.5 bg-surface-muted/60 border border-border-hairline">
-                  <Users className="w-3.5 h-3.5 text-foreground shrink-0" />
-                  <div>
-                    <span className="text-[10px] text-muted block uppercase">Partisipasi</span>
-                    <span className="text-foreground font-semibold text-[11px]">
-                      {event.quota ? `${event.registeredCount}/${event.quota}` : 'Terbuka Umum'}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Calendar & Map Quick Action Strip */}
-              <div className="flex flex-wrap items-center gap-2.5 pt-2 font-mono text-xs">
+              <div className="flex items-center gap-2">
+                {/* WhatsApp Share Button */}
                 <a
-                  href={googleCalUrl}
+                  href={whatsappShareUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="px-3 py-1.5 border border-border-hairline hover:border-foreground bg-surface text-foreground transition-colors inline-flex items-center gap-1.5"
+                  className="px-2.5 py-1 border border-foreground bg-foreground text-background hover:bg-background hover:text-foreground font-mono text-[10px] font-bold uppercase tracking-wider inline-flex items-center gap-1.5 transition-colors"
+                  title="Bagikan kabar kegiatan ini ke WhatsApp kawan-kawan"
                 >
-                  <CalendarPlus className="w-3.5 h-3.5 text-foreground" />
-                  <span>Google Calendar</span>
+                  <MessageCircle className="w-3 h-3" />
+                  <span>Bagikan ke WhatsApp</span>
                 </a>
+              </div>
+            </div>
 
-                {event.mapUrl && (
+            {/* Grid Layout: Visual Cover (Left 5 cols) + Event Synopsis & Actions (Right 7 cols) */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              {/* Left: Tactile Editorial Photography Cover (5 cols) */}
+              <div className="lg:col-span-5 flex justify-center w-full">
+                <div className="relative w-full max-w-md bg-surface border-2 border-foreground p-3.5 select-none">
+                  <div className="flex items-center justify-between pb-2 mb-2 border-b border-border-hairline font-mono text-[9px] uppercase tracking-widest text-muted">
+                    <span>[ DOKUMENTASI TERPAL // PERPUSJAL ]</span>
+                    <span className="font-bold text-foreground">2026</span>
+                  </div>
+
+                  <div className="relative aspect-[4/3] w-full overflow-hidden border border-foreground/30 bg-zinc-950">
+                    <img
+                      src={
+                        event.coverImage ||
+                        'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=1000&q=80'
+                      }
+                      alt={event.title}
+                      className="w-full h-full object-cover grayscale contrast-110 hover:grayscale-0 transition-all duration-500"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
+
+                    <div className="absolute top-2.5 right-2.5 px-2 py-0.5 bg-foreground text-background font-mono text-[8px] font-extrabold uppercase tracking-widest border border-background">
+                      ✦ TERPAL RAKYAT ✦
+                    </div>
+
+                    <div className="absolute bottom-2.5 left-3 right-3 text-white">
+                      <p className="font-serif italic text-xs leading-snug">
+                        &ldquo;Membaca adalah hak warga; merawat perjumpaan adalah kerja kebudayaan.&rdquo;
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="pt-2.5 flex items-center justify-between font-mono text-[9.5px] text-muted">
+                    <span>{event.locationName}</span>
+                    <span className="font-bold text-foreground uppercase">RUANG BACA SWADAYA</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right: Event Headline & Venue Pillars (7 cols) */}
+              <div className="lg:col-span-7 space-y-5">
+                <div className="space-y-2">
+                  <div className="inline-block px-2.5 py-0.5 border border-foreground bg-surface-muted text-foreground font-mono text-[9px] uppercase font-bold tracking-widest">
+                    <span>✦ LEMBAR DOKUMEN AGENDA RESMI ✦</span>
+                  </div>
+
+                  <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl font-black text-foreground leading-[1.1] tracking-tight">
+                    {event.title}
+                  </h1>
+
+                  <p className="font-mono text-xs text-muted">
+                    Penyelenggara / Inisiator:{' '}
+                    <strong className="text-foreground font-semibold">{event.organizer.name}</strong>
+                  </p>
+                </div>
+
+                {/* 3 Key Venue Pillars Strip */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1 font-mono text-xs text-muted">
+                  <div className="flex items-center gap-2 p-2.5 bg-surface-muted/60 border border-border-hairline">
+                    <Clock className="w-3.5 h-3.5 text-foreground shrink-0" />
+                    <div className="truncate">
+                      <span className="text-[10px] text-muted block uppercase">Waktu</span>
+                      <span className="text-foreground font-semibold text-[11px]">
+                        {startTime} – {endTime} WIB
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 p-2.5 bg-surface-muted/60 border border-border-hairline truncate">
+                    <MapPin className="w-3.5 h-3.5 text-foreground shrink-0" />
+                    <div className="truncate">
+                      <span className="text-[10px] text-muted block uppercase">Lokasi</span>
+                      <span className="text-foreground font-semibold text-[11px] truncate block">
+                        {event.locationName}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 p-2.5 bg-surface-muted/60 border border-border-hairline">
+                    <Users className="w-3.5 h-3.5 text-foreground shrink-0" />
+                    <div>
+                      <span className="text-[10px] text-muted block uppercase">Partisipasi</span>
+                      <span className="text-foreground font-semibold text-[11px]">
+                        {event.quota ? `${event.registeredCount}/${event.quota}` : 'Terbuka Umum'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Calendar & Map Quick Action Strip */}
+                <div className="flex flex-wrap items-center gap-2.5 pt-2 font-mono text-xs">
                   <a
-                    href={event.mapUrl}
+                    href={googleCalUrl}
                     target="_blank"
                     rel="noreferrer"
                     className="px-3 py-1.5 border border-border-hairline hover:border-foreground bg-surface text-foreground transition-colors inline-flex items-center gap-1.5"
                   >
-                    <ExternalLink className="w-3.5 h-3.5 text-foreground" />
-                    <span>Petunjuk Rute Maps</span>
+                    <CalendarPlus className="w-3.5 h-3.5 text-foreground" />
+                    <span>Google Calendar</span>
                   </a>
-                )}
+
+                  {event.mapUrl && (
+                    <a
+                      href={event.mapUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="px-3 py-1.5 border border-border-hairline hover:border-foreground bg-surface text-foreground transition-colors inline-flex items-center gap-1.5"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5 text-foreground" />
+                      <span>Petunjuk Rute Maps</span>
+                    </a>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        </section>
+          </section>
+        </RevealOnScroll>
 
         {/* 2-Column Content: Left Narrative + Right Registration/Ticket */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
           {/* LEFT: Info & Description & Past Archive (8 cols) */}
-          <div className="lg:col-span-8 space-y-10">
+          <RevealOnScroll variant="cinematic" delayMs={100} className="lg:col-span-8 space-y-10">
             {/* Online Meeting Link (Only if registered) */}
             {event.isOnline && event.meetingUrl && (
               <div className="p-4 bg-surface-muted border-2 border-foreground font-mono text-xs space-y-2">
@@ -522,10 +525,10 @@ export default function EventDetailPage() {
                 </div>
               </div>
             )}
-          </div>
+          </RevealOnScroll>
 
           {/* RIGHT: Countdown Ribbon & Ticket Registration Card (4 cols) */}
-          <div className="lg:col-span-4 space-y-6">
+          <RevealOnScroll variant="stamp" delayMs={80} className="lg:col-span-4 space-y-6">
             {!isPast && (
               <EventCountdown
                 variant="card"
@@ -666,11 +669,13 @@ export default function EventDetailPage() {
                 </div>
               )}
             </div>
-          </div>
+          </RevealOnScroll>
         </div>
       </main>
 
-      <Footer />
+      <RevealOnScroll variant="fade" delayMs={60}>
+        <Footer />
+      </RevealOnScroll>
     </div>
   );
 }

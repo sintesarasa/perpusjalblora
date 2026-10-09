@@ -15,6 +15,7 @@ import { LapakWartaTicker } from '@/components/home/lapak-warta-ticker';
 import { InteractiveLiteraryIndex } from '@/components/home/interactive-literary-index';
 import { BookGridSkeleton } from '@/components/books/book-card-skeleton';
 import { FeaturedEventDossier } from '@/components/home/featured-event-dossier';
+import { ScrollLitQuote } from '@/components/home/scroll-lit-quote';
 import {
   ArrowRight,
   ArrowUpRight,
@@ -332,7 +333,9 @@ export default function HomePage() {
     <div className="flex flex-col min-h-screen bg-background text-foreground selection:bg-foreground selection:text-background editorial-grain">
       <Header />
       {landingConfig?.settings?.ticker?.isActive !== false && (
-        <LapakWartaTicker items={landingConfig?.settings?.ticker?.items} />
+        <RevealOnScroll variant="fade" delayMs={50}>
+          <LapakWartaTicker items={landingConfig?.settings?.ticker?.items} />
+        </RevealOnScroll>
       )}
 
       <main className="flex-1">
@@ -355,50 +358,54 @@ export default function HomePage() {
           </div>
 
           {/* Authentic Gazette Masthead Top Ledger */}
-          <div className="flex flex-wrap items-center justify-between border-b border-border-hairline pb-3.5 mb-8 sm:mb-12 text-[10px] sm:text-[11px] font-mono uppercase tracking-widest text-muted gap-2 relative z-10">
-            <div className="flex items-center gap-2 sm:gap-3">
-              <BrandStamp edition="KRONIK UTAMA" year="2026" />
-              <span className="hidden sm:inline">[ EDISI RESMI // GERAKAN SWADAYA RAKYAT ]</span>
-            </div>
-            {landingConfig?.settings?.cfdSchedule?.isActive !== false && (
-              <div className="flex items-center gap-2">
-                <span
-                  className={cn(
-                    'w-1.5 h-1.5 rounded-none animate-pulse',
-                    landingConfig?.settings?.cfdSchedule?.status === 'LIBUR_CFD'
-                      ? 'bg-red-600'
-                      : landingConfig?.settings?.cfdSchedule?.status === 'PINDAH_LOKASI'
-                      ? 'bg-amber-600'
-                      : 'bg-foreground'
-                  )}
-                />
-                <span className="text-foreground font-semibold">
-                  {landingConfig?.settings?.cfdSchedule?.badgeText || 'LAPAK CFD: SETIAP MINGGU PAGI'}
-                </span>
+          <RevealOnScroll variant="fade" delayMs={60}>
+            <div className="flex flex-wrap items-center justify-between border-b border-border-hairline pb-3.5 mb-8 sm:mb-12 text-[10px] sm:text-[11px] font-mono uppercase tracking-widest text-muted gap-2 relative z-10">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <BrandStamp edition="KRONIK UTAMA" year="2026" />
+                <span className="hidden sm:inline">[ EDISI RESMI // GERAKAN SWADAYA RAKYAT ]</span>
               </div>
-            )}
-            <div className="hidden lg:block">BLORA, JAWA TENGAH &bull; RUANG BACA RAKYAT</div>
-          </div>
+              {landingConfig?.settings?.cfdSchedule?.isActive !== false && (
+                <div className="flex items-center gap-2">
+                  <span
+                    className={cn(
+                      'w-1.5 h-1.5 rounded-none animate-pulse',
+                      landingConfig?.settings?.cfdSchedule?.status === 'LIBUR_CFD'
+                        ? 'bg-red-600'
+                        : landingConfig?.settings?.cfdSchedule?.status === 'PINDAH_LOKASI'
+                        ? 'bg-amber-600'
+                        : 'bg-foreground'
+                    )}
+                  />
+                  <span className="text-foreground font-semibold">
+                    {landingConfig?.settings?.cfdSchedule?.badgeText || 'LAPAK CFD: SETIAP MINGGU PAGI'}
+                  </span>
+                </div>
+              )}
+              <div className="hidden lg:block">BLORA, JAWA TENGAH &bull; RUANG BACA RAKYAT</div>
+            </div>
+          </RevealOnScroll>
 
           {/* Urgent / Special Lapak CFD Notice Banner */}
           {landingConfig?.settings?.cfdSchedule?.alertNotice && (
-            <div className="mb-8 p-3.5 sm:p-4 border-2 border-foreground bg-surface font-mono text-xs flex items-start sm:items-center gap-3 relative z-10 rounded-none">
-              <AlertTriangle className="w-4 h-4 text-foreground shrink-0 mt-0.5 sm:mt-0" />
-              <div className="flex-1">
-                <span className="font-bold uppercase tracking-wider mr-2 text-[11px]">
-                  [ MAKLUMAT LAPAK CFD ]:
-                </span>
-                <span className="font-serif italic text-xs sm:text-sm text-foreground">
-                  {landingConfig.settings.cfdSchedule.alertNotice}
-                </span>
+            <RevealOnScroll variant="cinematic" delayMs={100}>
+              <div className="mb-8 p-3.5 sm:p-4 border-2 border-foreground bg-surface font-mono text-xs flex items-start sm:items-center gap-3 relative z-10 rounded-none">
+                <AlertTriangle className="w-4 h-4 text-foreground shrink-0 mt-0.5 sm:mt-0" />
+                <div className="flex-1">
+                  <span className="font-bold uppercase tracking-wider mr-2 text-[11px]">
+                    [ MAKLUMAT LAPAK CFD ]:
+                  </span>
+                  <span className="font-serif italic text-xs sm:text-sm text-foreground">
+                    {landingConfig.settings.cfdSchedule.alertNotice}
+                  </span>
+                </div>
               </div>
-            </div>
+            </RevealOnScroll>
           )}
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 relative z-10 items-start">
             {/* Left Big Lead (7 cols) */}
             <div className="lg:col-span-7 flex flex-col justify-between space-y-8">
-              <RevealOnScroll variant="fade-up" delayMs={100}>
+              <RevealOnScroll variant="cinematic" delayMs={120}>
                 <div className="space-y-5 sm:space-y-7">
                   <div className="inline-flex items-center gap-2 px-3 py-1 border border-foreground font-mono text-[9px] sm:text-[10px] tracking-widest uppercase font-bold bg-foreground text-background">
                     <span>RUANG PERJUMPAAN MERDEKA</span>
@@ -419,7 +426,7 @@ export default function HomePage() {
               </RevealOnScroll>
 
               {/* Action Buttons Bar (Clean 2-Action Streamline) */}
-              <RevealOnScroll variant="fade-up" delayMs={200}>
+              <RevealOnScroll variant="cinematic" delayMs={240}>
                 <div className="pt-4 border-t border-border-hairline flex flex-wrap gap-3 sm:gap-4 items-center">
                   <Link
                     href="/buku"
@@ -444,7 +451,7 @@ export default function HomePage() {
             {/* Right Side Editorial Callout & Chronicle Dossier (5 cols) */}
             <div className="lg:col-span-5 border-t-2 lg:border-t-0 lg:border-l-2 border-foreground pt-8 lg:pt-0 lg:pl-8 flex flex-col justify-between space-y-6">
               {/* Quote Card (Catatan Pinggir Falsafah) */}
-              <RevealOnScroll variant="slide-right" delayMs={200}>
+              <RevealOnScroll variant="slide-right" delayMs={180}>
                 <div className="space-y-4">
                   <div className="text-[10px] font-mono uppercase tracking-ultra text-muted flex items-center gap-1.5">
                     <Quote className="w-3.5 h-3.5 text-foreground" />
@@ -461,7 +468,7 @@ export default function HomePage() {
               </RevealOnScroll>
 
               {/* Chronicle Movement Manifesto Card */}
-              <RevealOnScroll variant="fade-up" delayMs={300}>
+              <RevealOnScroll variant="cinematic" delayMs={280}>
                 <div className="border-2 border-foreground p-5 sm:p-6 bg-surface font-mono space-y-3.5">
                   <div className="flex items-center justify-between pb-2.5 border-b border-border-hairline text-[10px] uppercase tracking-widest text-muted">
                     <span>KRONIK GERAKAN // BLORA</span>
@@ -491,11 +498,18 @@ export default function HomePage() {
         </section>
 
         {/* ========================================================= */}
+        {/* 1.1. KUTIPAN MENYALA MENGIKUTI SCROLL (FALSAFAH MEJA KURASI) */}
+        {/* ========================================================= */}
+        <RevealOnScroll variant="fade" durationMs={900}>
+          <ScrollLitQuote />
+        </RevealOnScroll>
+
+        {/* ========================================================= */}
         {/* 1.5. SOROTAN EVENT AKBAR (BROADSHEET DOSSIER TIPE B)      */}
         {/* ========================================================= */}
         {landingConfig?.settings?.featuredEvent?.isActive && landingConfig?.featuredEventData && (
           <section className="border-b-2 border-foreground max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16">
-            <RevealOnScroll variant="fade-up">
+            <RevealOnScroll variant="cinematic">
               <FeaturedEventDossier
                 setting={landingConfig.settings.featuredEvent}
                 event={landingConfig.featuredEventData}
@@ -508,7 +522,7 @@ export default function HomePage() {
         {/* 2. INDEKS SASTRA INTERAKTIF & KANON KURASI LAPAK          */}
         {/* ========================================================= */}
         <section className="border-b-2 border-foreground max-w-7xl mx-auto py-14 sm:py-20 px-4 sm:px-6 lg:px-8">
-          <RevealOnScroll variant="fade-up">
+          <RevealOnScroll variant="cinematic">
             <InteractiveLiteraryIndex />
           </RevealOnScroll>
         </section>
@@ -519,40 +533,44 @@ export default function HomePage() {
         <section className="border-b-2 border-foreground max-w-7xl mx-auto py-14 sm:py-20 px-4 sm:px-6 lg:px-8">
           {/* Section Header Broadsheet with Sharp Contrast & Quick Search */}
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 pb-6 border-b-2 border-foreground gap-6">
-            <div className="space-y-2">
-              <div className="text-[10px] sm:text-[11px] font-mono uppercase tracking-ultra text-foreground/70 flex items-center gap-2">
-                <BookOpen className="w-3.5 h-3.5 text-foreground" />
-                <span>[ SEKSI KOLEKSI // RAK &amp; TERPAL ]</span>
+            <RevealOnScroll variant="cinematic" delayMs={50}>
+              <div className="space-y-2">
+                <div className="text-[10px] sm:text-[11px] font-mono uppercase tracking-ultra text-foreground/70 flex items-center gap-2">
+                  <BookOpen className="w-3.5 h-3.5 text-foreground" />
+                  <span>[ SEKSI KOLEKSI // RAK &amp; TERPAL ]</span>
+                </div>
+                <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-black uppercase tracking-tight text-foreground leading-[1.05]">
+                  BUKU DI RAK &amp; HAMPARAN TERPAL
+                </h2>
+                <p className="font-serif text-sm sm:text-base text-foreground/80 max-w-2xl leading-relaxed">
+                  Pustaka terpilih yang dirawat secara swadaya. Siap kamu baca bersila di lapak Minggu pagi
+                  CFD Alun-Alun Blora atau dipesan daring untuk dijemput langsung.
+                </p>
               </div>
-              <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-black uppercase tracking-tight text-foreground leading-[1.05]">
-                BUKU DI RAK &amp; HAMPARAN TERPAL
-              </h2>
-              <p className="font-serif text-sm sm:text-base text-foreground/80 max-w-2xl leading-relaxed">
-                Pustaka terpilih yang dirawat secara swadaya. Siap kamu baca bersila di lapak Minggu pagi
-                CFD Alun-Alun Blora atau dipesan daring untuk dijemput langsung.
-              </p>
-            </div>
+            </RevealOnScroll>
 
             {/* Quick Search Bar & Full Catalog Link */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
-              <form onSubmit={handleQuickSearchSubmit} className="relative flex items-center">
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Cari judul buku... [↵]"
-                  className="w-full sm:w-64 px-3 py-2.5 pl-8 bg-surface border-2 border-foreground font-mono text-xs text-foreground placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-foreground transition-all"
-                />
-                <Search className="w-3.5 h-3.5 text-muted absolute left-2.5 pointer-events-none" />
-              </form>
+            <RevealOnScroll variant="slide-left" delayMs={150}>
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
+                <form onSubmit={handleQuickSearchSubmit} className="relative flex items-center">
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Cari judul buku... [↵]"
+                    className="w-full sm:w-64 px-3 py-2.5 pl-8 bg-surface border-2 border-foreground font-mono text-xs text-foreground placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-foreground transition-all"
+                  />
+                  <Search className="w-3.5 h-3.5 text-muted absolute left-2.5 pointer-events-none" />
+                </form>
 
-              <Link
-                href="/buku"
-                className="px-4 py-2.5 bg-foreground text-background font-mono text-xs font-bold uppercase tracking-wider hover:bg-foreground/90 transition-colors inline-flex items-center justify-center gap-1.5 shrink-0"
-              >
-                <span>SEMUA BUKU &rarr;</span>
-              </Link>
-            </div>
+                <Link
+                  href="/buku"
+                  className="px-4 py-2.5 bg-foreground text-background font-mono text-xs font-bold uppercase tracking-wider hover:bg-foreground/90 transition-colors inline-flex items-center justify-center gap-1.5 shrink-0"
+                >
+                  <span>SEMUA BUKU &rarr;</span>
+                </Link>
+              </div>
+            </RevealOnScroll>
           </div>
 
           {/* Book Cards Grid with Real Book Covers or Editorial Skeleton */}
@@ -575,7 +593,7 @@ export default function HomePage() {
               const coverImg = ('coverImage' in book && book.coverImage) ? book.coverImage : null;
 
               return (
-                <RevealOnScroll key={book.id || idx} variant="fade-up" delayMs={idx * 75}>
+                <RevealOnScroll key={book.id || idx} variant="cinematic" delayMs={(idx % 4) * 90}>
                   <div className="border-2 border-foreground bg-surface p-5 flex flex-col justify-between group transition-all h-full">
                     <div>
                       {/* Top Metadata Strip */}
@@ -665,8 +683,8 @@ export default function HomePage() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-14 items-center">
             {/* Left Column: Narrative & Rank Progression Ledger (7 cols) */}
             <div className="lg:col-span-7">
-              <RevealOnScroll variant="fade-up">
-                <div className="space-y-6 sm:space-y-8">
+              <div className="space-y-6 sm:space-y-8">
+                <RevealOnScroll variant="cinematic" delayMs={60}>
                   <div>
                     <div className="inline-flex items-center gap-2 px-3 py-1 border border-foreground bg-surface-muted font-mono text-[9px] sm:text-[10px] uppercase font-bold tracking-widest text-foreground">
                       <Sparkles className="w-3.5 h-3.5 text-foreground" />
@@ -687,8 +705,10 @@ export default function HomePage() {
                       — tanpa uang jaminan dan tanpa denda rupiah seumur hidup.
                     </p>
                   </div>
+                </RevealOnScroll>
 
-                  {/* Streamlined Citizen Rank Progression (Summary of Unique Titles) */}
+                {/* Streamlined Citizen Rank Progression (Summary of Unique Titles) */}
+                <RevealOnScroll variant="cinematic" delayMs={160}>
                   <div className="space-y-3 pt-2 border-t border-border-hairline font-mono">
                     <div className="text-[10px] uppercase tracking-widest text-muted font-bold">
                       [ SISTEM REPUTASI // JENJANG GELAR KEHORMATAN ]
@@ -775,8 +795,10 @@ export default function HomePage() {
                       })}
                     </div>
                   </div>
+                </RevealOnScroll>
 
-                  {/* CTA Action Buttons */}
+                {/* CTA Action Buttons */}
+                <RevealOnScroll variant="cinematic" delayMs={240}>
                   <div className="pt-2 flex flex-wrap items-center gap-3 sm:gap-4">
                     <Link
                       href="/masuk"
@@ -794,8 +816,8 @@ export default function HomePage() {
                       <span>JELAJAHI DAFTAR WARGA &rarr;</span>
                     </Link>
                   </div>
-                </div>
-              </RevealOnScroll>
+                </RevealOnScroll>
+              </div>
             </div>
 
             {/* Right Column: Tactile Light-Sheen Press Pass (5 cols) */}
@@ -915,7 +937,7 @@ export default function HomePage() {
       {/* 5. GRAND CALL TO ACTION: LESEHAN DI ALUN-ALUN BLORA       */}
       {/* ========================================================= */}
         <section className="py-20 sm:py-28 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto text-center">
-          <RevealOnScroll variant="fade-up">
+          <RevealOnScroll variant="cinematic" delayMs={60}>
             <div className="max-w-3xl mx-auto space-y-6">
               <div className="inline-flex items-center gap-2 px-3 py-1 border border-foreground font-mono text-[9px] uppercase tracking-widest font-bold bg-foreground text-background">
                 <span>PANGGILAN TROTOAR // ALUN-ALUN BLORA</span>
@@ -950,7 +972,9 @@ export default function HomePage() {
         </section>
       </main>
 
-      <Footer />
+      <RevealOnScroll variant="fade" delayMs={60}>
+        <Footer />
+      </RevealOnScroll>
     </div>
   );
 }

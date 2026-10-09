@@ -18,12 +18,14 @@ import {
   AlertTriangle,
   Check,
   X,
+  PenTool,
 } from 'lucide-react';
 
 interface CommentItemProps {
   comment: CommentItem;
   articleId?: string;
   letterId?: string;
+  authorId?: string;
   isReply?: boolean;
   onCommentUpdated: (id: string, newContent: string) => void;
   onCommentDeleted: (id: string) => void;
@@ -34,11 +36,13 @@ export function CommentItemComponent({
   comment,
   articleId,
   letterId,
+  authorId,
   isReply = false,
   onCommentUpdated,
   onCommentDeleted,
   onReplyCreated,
 }: CommentItemProps) {
+  const [showAllReplies, setShowAllReplies] = React.useState(false);
   const [isReplying, setIsReplying] = React.useState(false);
   const [isEditing, setIsEditing] = React.useState(false);
   const [editContent, setEditContent] = React.useState(comment.content);
@@ -50,6 +54,7 @@ export function CommentItemComponent({
   const [actionSuccess, setActionSuccess] = React.useState<string | null>(null);
 
   const isDeletedByUser = comment.status === CommentStatus.DELETED_BY_USER;
+  const isArticleAuthor = Boolean(authorId && comment.author.id === authorId);
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -118,7 +123,7 @@ export function CommentItemComponent({
     }, 2000);
   };
 
-  // Format date
+  // Format date & relative time
   const formattedDate = new Date(comment.createdAt).toLocaleDateString('id-ID', {
     day: 'numeric',
     month: 'short',
@@ -127,11 +132,29 @@ export function CommentItemComponent({
     minute: '2-digit',
   });
 
+  const relativeTime = React.useMemo(() => {
+    const now = new Date();
+    const date = new Date(comment.createdAt);
+    const diffSec = Math.floor((now.getTime() - date.getTime()) / 1000);
+    if (diffSec < 60) return 'Baru saja';
+    const diffMin = Math.floor(diffSec / 60);
+    if (diffMin < 60) return `${diffMin} mnt lalu`;
+    const diffHour = Math.floor(diffMin / 60);
+    if (diffHour < 24) return `${diffHour} jam lalu`;
+    const diffDay = Math.floor(diffHour / 24);
+    if (diffDay < 7) return `${diffDay} hr lalu`;
+    return date.toLocaleDateString('id-ID', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    });
+  }, [comment.createdAt]);
+
   return (
     <article
       className={cn(
         'font-sans transition-colors',
-        isReply ? 'py-2.5' : 'py-5',
+        isReply ? 'py-3' : 'py-6',
         comment.pendingModeration && 'bg-surface-muted/60 p-4 border border-dashed border-foreground/40'
       )}
     >
@@ -162,6 +185,14 @@ export function CommentItemComponent({
               @{comment.author.username}
             </span>
 
+            {/* Penulis Naskah Highlight Badge */}
+            {isArticleAuthor && (
+              <span className="font-mono text-[9px] uppercase tracking-wider px-1.5 py-0.5 bg-foreground text-background font-bold inline-flex items-center gap-1 select-none">
+                <PenTool className="w-2.5 h-2.5" />
+                PENULIS NASKAH
+              </span>
+            )}
+
             {/* User Honor Title & Badges */}
             <UserHonorBadge
               equippedTitle={comment.author.equippedTitle}
@@ -189,8 +220,8 @@ export function CommentItemComponent({
 
             <span className="text-muted/40 text-[10px] hidden sm:inline">&bull;</span>
 
-            <span className="font-mono text-[10px] text-muted">
-              {formattedDate}
+            <span className="font-mono text-[10.5px] text-muted" title={formattedDate}>
+              {relativeTime}
               {comment.editedAt && <span className="ml-1 italic text-[9px]">(disunting)</span>}
             </span>
           </div>
@@ -228,8 +259,8 @@ export function CommentItemComponent({
             ) : (
               <p
                 className={cn(
-                  'text-[13.5px] sm:text-[14.5px] leading-relaxed text-foreground/90',
-                  isDeletedByUser ? 'italic text-muted font-serif' : 'font-sans'
+                  'text-[14.5px] sm:text-[15px] leading-relaxed text-foreground/90 font-sans',
+                  isDeletedByUser && 'italic text-muted font-serif'
                 )}
               >
                 {comment.content}
@@ -360,7 +391,7 @@ export function CommentItemComponent({
 
           {/* Inline Reply Form */}
           {isReplying && (
-            <div className="mt-3 pl-3 sm:pl-4 border-l-2 border-foreground">
+            <div className="mt-3.5 pl-4 sm:pl-6 border-l border-border/60">
               <CommentForm
                 articleId={articleId}
                 letterId={letterId}
@@ -377,21 +408,37 @@ export function CommentItemComponent({
         </div>
       </div>
 
-      {/* Nested Replies (Depth 1) */}
+      {/* Nested Replies (Depth 1) with open airy tree threading */}
       {comment.replies && comment.replies.length > 0 && (
-        <div className="mt-3.5 ml-4 sm:ml-5 pl-3.5 sm:pl-5 border-l-2 border-border-hairline space-y-2">
-          {comment.replies.map((reply) => (
-            <CommentItemComponent
-              key={reply.id}
-              comment={reply}
-              articleId={articleId}
-              letterId={letterId}
-              isReply={true}
-              onCommentUpdated={onCommentUpdated}
-              onCommentDeleted={onCommentDeleted}
-              onReplyCreated={onReplyCreated}
-            />
-          ))}
+        <div className="mt-4 ml-2 sm:ml-6 pl-4 sm:pl-6 border-l border-border/60 space-y-3">
+          <div className="font-mono text-[10px] uppercase tracking-widest text-muted/70 flex items-center justify-between pb-1">
+            <span>↳ UTAS BALASAN ({comment.replies.length})</span>
+            {comment.replies.length > 2 && (
+              <button
+                type="button"
+                onClick={() => setShowAllReplies(!showAllReplies)}
+                className="text-[10px] uppercase tracking-wider text-muted hover:text-foreground underline cursor-pointer"
+              >
+                {showAllReplies ? 'Lipat Balasan' : `Lihat Semua (${comment.replies.length})`}
+              </button>
+            )}
+          </div>
+
+          <div className="space-y-3 divide-y divide-border-hairline/30">
+            {(showAllReplies ? comment.replies : comment.replies.slice(0, 2)).map((reply) => (
+              <CommentItemComponent
+                key={reply.id}
+                comment={reply}
+                articleId={articleId}
+                letterId={letterId}
+                authorId={authorId}
+                isReply={true}
+                onCommentUpdated={onCommentUpdated}
+                onCommentDeleted={onCommentDeleted}
+                onReplyCreated={onReplyCreated}
+              />
+            ))}
+          </div>
         </div>
       )}
     </article>

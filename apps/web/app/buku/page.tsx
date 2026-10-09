@@ -312,7 +312,7 @@ function BookCatalogContent() {
             </div>
           </div>
 
-          <RevealOnScroll variant="fade-up" delayMs={100}>
+          <RevealOnScroll variant="cinematic" delayMs={100}>
             <div className="max-w-4xl space-y-4 sm:space-y-6 relative z-10">
               <div className="inline-flex items-center gap-2 px-2.5 py-1 border border-foreground font-mono text-[9px] sm:text-[10px] tracking-wider uppercase font-bold bg-foreground text-background">
                 <span>GERAKAN SIRKULASI TERBUKA BLORA</span>
@@ -349,7 +349,7 @@ function BookCatalogContent() {
         {/* ========================================================= */}
         {!hasActiveFilters && books.length > 0 && !loading && (
           <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <RevealOnScroll variant="fade-up" delayMs={150}>
+            <RevealOnScroll variant="cinematic" delayMs={150}>
               <BookShowcaseSlider
                 books={books}
                 onPeekBook={(b) => setPeekBook(b)}
@@ -614,11 +614,11 @@ function BookCatalogContent() {
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-                {books.map((book) => (
-                  <article
-                    key={book.id}
-                    className="border-2 border-foreground bg-surface hover:bg-surface-muted/20 transition-colors duration-150 flex flex-col justify-between group h-full relative"
-                  >
+                {books.map((book, idx) => (
+                  <RevealOnScroll key={book.id} variant="cinematic" delayMs={(idx % 4) * 80}>
+                    <article
+                      className="border-2 border-foreground bg-surface hover:bg-surface-muted/20 transition-colors duration-150 flex flex-col justify-between group h-full relative"
+                    >
                     <div>
                       {/* Compact Book Cover Frame with Overlay Badge */}
                       <div className="relative overflow-hidden bg-surface-muted aspect-[4/3] border-b border-border-hairline group/cover">
@@ -716,8 +716,9 @@ function BookCatalogContent() {
                       </Link>
                     </div>
                   </article>
-                ))}
-              </div>
+                </RevealOnScroll>
+              ))}
+            </div>
 
               {/* Pagination Controls */}
               {meta.totalPages > 1 && (
@@ -741,7 +742,8 @@ function BookCatalogContent() {
         {/* 5. COMMUNITY DROP BOX & REQUEST FORM                      */}
         {/* ========================================================= */}
         <section ref={requestBoxRef} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 scroll-mt-16">
-          <div className="border-4 border-foreground p-6 sm:p-10 lg:p-12 bg-surface relative overflow-hidden">
+          <RevealOnScroll variant="stamp" delayMs={80}>
+            <div className="border-4 border-foreground p-6 sm:p-10 lg:p-12 bg-surface relative overflow-hidden">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
               <div className="lg:col-span-5 space-y-4">
                 <div className="flex items-center gap-2 font-mono text-[10px] sm:text-xs uppercase tracking-[0.2em] text-muted">
@@ -903,7 +905,8 @@ function BookCatalogContent() {
               )}
             </div>
           </div>
-        </section>
+        </RevealOnScroll>
+      </section>
       </main>
 
       {/* Quick Peek Drawer Component */}
@@ -913,7 +916,9 @@ function BookCatalogContent() {
         onClose={() => setPeekBook(null)}
       />
 
-      <Footer />
+      <RevealOnScroll variant="fade" delayMs={60}>
+        <Footer />
+      </RevealOnScroll>
     </div>
   );
 }

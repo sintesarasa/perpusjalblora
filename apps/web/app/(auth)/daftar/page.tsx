@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Eye, EyeOff, CheckCircle2, AlertCircle, ArrowRight, Check, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { RevealOnScroll } from '@/components/ui/reveal-on-scroll';
 import { apiClient } from '@/lib/api';
 import { useAuth } from '@/contexts/auth-context';
 
@@ -151,56 +152,59 @@ function RegisterForm() {
   // If registered successfully, show clean verification notice
   if (successData) {
     return (
-      <div className="space-y-6 border-2 border-foreground p-8 bg-surface animate-in fade-in-50 duration-200">
-        <div className="flex items-center gap-3">
-          <CheckCircle2 className="w-8 h-8 text-foreground shrink-0" />
-          <div>
-            <span className="font-mono text-[10px] uppercase tracking-widest text-muted">
-              REGISTRI // BERHASIL
-            </span>
-            <h2 className="font-serif text-2xl font-normal text-foreground">
-              Periksa Kotak Masukmu
-            </h2>
+      <RevealOnScroll variant="stamp" delayMs={50}>
+        <div className="space-y-6 border-2 border-foreground p-8 bg-surface">
+          <div className="flex items-center gap-3">
+            <CheckCircle2 className="w-8 h-8 text-foreground shrink-0" />
+            <div>
+              <span className="font-mono text-[10px] uppercase tracking-widest text-muted">
+                REGISTRI // BERHASIL
+              </span>
+              <h2 className="font-serif text-2xl font-normal text-foreground">
+                Periksa Kotak Masukmu
+              </h2>
+            </div>
           </div>
-        </div>
 
-        <p className="text-sm font-sans text-foreground/85 leading-relaxed">
-          Tautan aktivasi telah dikirimkan ke alamat{' '}
-          <strong className="font-mono font-bold text-foreground">{successData.email}</strong>.
-          Buka tautan tersebut dalam waktu 24 jam untuk mengaktifkan akun pembaca dan hak peminjaman
-          buku.
-        </p>
+          <p className="text-sm font-sans text-foreground/85 leading-relaxed">
+            Tautan aktivasi telah dikirimkan ke alamat{' '}
+            <strong className="font-mono font-bold text-foreground">{successData.email}</strong>.
+            Buka tautan tersebut dalam waktu 24 jam untuk mengaktifkan akun pembaca dan hak peminjaman
+            buku.
+          </p>
 
-        {successData.devVerificationToken && (
-          <div className="p-4 bg-surface-muted border border-border-hairline space-y-2 font-mono text-xs">
-            <span className="text-[10px] uppercase tracking-widest text-muted font-bold block">
-              [PINTASAN PENGUJIAN LOKAL]
-            </span>
+          {successData.devVerificationToken && (
+            <div className="p-4 bg-surface-muted border border-border-hairline space-y-2 font-mono text-xs">
+              <span className="text-[10px] uppercase tracking-widest text-muted font-bold block">
+                [PINTASAN PENGUJIAN LOKAL]
+              </span>
+              <Link
+                href={`/verifikasi?token=${successData.devVerificationToken}`}
+                className="text-foreground underline underline-offset-4 break-all block font-bold hover:opacity-80"
+              >
+                &rarr; Verifikasi Akun Otomatis
+              </Link>
+            </div>
+          )}
+
+          <div className="pt-4 border-t border-border-hairline">
             <Link
-              href={`/verifikasi?token=${successData.devVerificationToken}`}
-              className="text-foreground underline underline-offset-4 break-all block font-bold hover:opacity-80"
+              href={rawRedirect ? `/masuk?redirect=${encodeURIComponent(rawRedirect)}` : '/masuk'}
+              className="w-full block"
             >
-              &rarr; Verifikasi Akun Otomatis
+              <Button variant="solid" size="md" className="w-full font-mono tracking-wider">
+                Lanjut ke Halaman Masuk
+              </Button>
             </Link>
           </div>
-        )}
-
-        <div className="pt-4 border-t border-border-hairline">
-          <Link
-            href={rawRedirect ? `/masuk?redirect=${encodeURIComponent(rawRedirect)}` : '/masuk'}
-            className="w-full block"
-          >
-            <Button variant="solid" size="md" className="w-full font-mono tracking-wider">
-              Lanjut ke Halaman Masuk
-            </Button>
-          </Link>
         </div>
-      </div>
+      </RevealOnScroll>
     );
   }
 
   return (
-    <div className="space-y-8 animate-in fade-in-50 duration-200">
+    <RevealOnScroll variant="cinematic" delayMs={50}>
+      <div className="space-y-8">
       {/* Editorial Heading */}
       <div className="space-y-2">
         <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-muted">
@@ -415,6 +419,7 @@ function RegisterForm() {
         </p>
       </div>
     </div>
+    </RevealOnScroll>
   );
 }
 

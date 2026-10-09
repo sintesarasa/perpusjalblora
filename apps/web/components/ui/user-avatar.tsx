@@ -70,7 +70,7 @@ export function UserAvatar({
           src={src}
           alt={name || username || 'Avatar Anggota'}
           onError={() => setImageError(true)}
-          className="w-full h-full object-cover rounded-none grayscale contrast-125"
+          className="w-full h-full object-cover rounded-none"
         />
       ) : (
         <span

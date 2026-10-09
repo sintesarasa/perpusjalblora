@@ -38,7 +38,7 @@ function sanitizeEditorialHtml(raw: string): string {
 export function RichTextRenderer({
   content,
   className,
-  withDropCap = true,
+  withDropCap = false,
 }: RichTextRendererProps) {
   if (!content) {
     return null;
@@ -50,7 +50,7 @@ export function RichTextRenderer({
     if (content.includes('<') && content.includes('>')) {
       return (
         <div
-          className={cn('editorial-prose font-serif text-lg leading-[1.8] space-y-6', className)}
+          className={cn('editorial-prose max-w-[680px] mx-auto font-serif space-y-5 text-foreground/90', className)}
           dangerouslySetInnerHTML={{ __html: sanitizeEditorialHtml(content) }}
         />
       );
@@ -58,9 +58,17 @@ export function RichTextRenderer({
     // Plain text split by paragraphs
     const paragraphs = content.split('\n\n').filter(Boolean);
     return (
-      <div className={cn('editorial-prose font-serif text-[17px] sm:text-[18px] leading-[1.8] sm:leading-[1.85] text-foreground/90 space-y-6', className)}>
+      <div className={cn('editorial-prose max-w-[680px] mx-auto font-serif space-y-5 text-foreground/90', className)}>
         {paragraphs.map((p, idx) => (
-          <p key={idx} className={idx === 0 && withDropCap ? 'first-letter:float-left first-letter:text-4xl sm:first-letter:text-5xl first-letter:leading-none first-letter:font-serif first-letter:pr-3 first-letter:pt-0.5 first-letter:font-bold first-letter:text-foreground' : ''}>
+          <p
+            key={idx}
+            className={cn(
+              'my-5 first:mt-0 last:mb-0 font-normal',
+              idx === 0 && withDropCap
+                ? 'first-letter:float-left first-letter:text-4xl sm:first-letter:text-5xl first-letter:leading-none first-letter:font-serif first-letter:pr-3 first-letter:pt-0.5 first-letter:font-bold first-letter:text-foreground'
+                : ''
+            )}
+          >
             {p}
           </p>
         ))}
@@ -118,7 +126,7 @@ export function RichTextRenderer({
           <p
             key={index}
             className={cn(
-              'font-serif text-[17px] sm:text-[18px] leading-[1.8] sm:leading-[1.85] text-foreground/90 font-normal',
+              'my-5 first:mt-0 last:mb-0 font-normal',
               isFirst && withDropCap
                 ? 'first-letter:float-left first-letter:text-4xl sm:first-letter:text-5xl first-letter:leading-none first-letter:font-serif first-letter:pr-3 first-letter:pt-0.5 first-letter:font-bold first-letter:text-foreground'
                 : ''
@@ -174,8 +182,8 @@ export function RichTextRenderer({
             className={cn(
               'editorial-rich-blockquote my-8 relative font-serif text-foreground/90',
               quoteStyle === 'pull'
-                ? 'max-w-2xl mx-auto py-8 px-4 sm:px-8 border-y border-border text-center text-xl sm:text-2xl leading-relaxed'
-                : 'border-l-[3px] border-foreground bg-surface-muted/35 pl-5 sm:pl-7 pr-4 sm:pr-6 py-3.5 sm:py-4 text-[17px] sm:text-[18px] leading-[1.8] sm:leading-[1.85] rounded-none'
+                ? 'max-w-2xl mx-auto py-8 px-4 sm:px-8 border-y-2 border-foreground text-center text-[1.18em] leading-relaxed italic'
+                : 'border-l-4 border-foreground bg-surface-muted/40 pl-5 sm:pl-7 pr-4 sm:pr-6 py-4 rounded-none italic'
             )}
           >
             {node.content?.map((child, cIdx) => {
@@ -192,16 +200,16 @@ export function RichTextRenderer({
                 const citeText = (child.content || []).map((c: any) => c.text || '').join('').replace(/^[—\s\-]+/, '').trim();
                 if (!citeText) return null;
                 return (
-                  <cite key={cIdx} className="block mt-3.5 font-serif italic text-sm sm:text-[14.5px] text-foreground/65">
-                    {citeText}
+                  <cite key={cIdx} className="block mt-3.5 font-serif italic text-sm text-foreground/65 not-italic">
+                    — {citeText}
                   </cite>
                 );
               }
               return renderNode(child, cIdx);
             })}
             {citeAttr && citeAttr.trim() && (
-              <cite className="block mt-3.5 font-serif italic text-sm sm:text-[14.5px] text-foreground/65">
-                {citeAttr.replace(/^[—\s\-]+/, '').trim()}
+              <cite className="block mt-3.5 font-serif italic text-sm text-foreground/65 not-italic">
+                — {citeAttr.replace(/^[—\s\-]+/, '').trim()}
               </cite>
             )}
           </blockquote>
@@ -210,7 +218,7 @@ export function RichTextRenderer({
 
       case 'bulletList': {
         return (
-          <ul key={index} className="my-6 pl-6 list-square space-y-2 font-serif text-[17px] sm:text-[18px] leading-relaxed text-foreground/90">
+          <ul key={index} className="my-6 pl-6 list-square space-y-2">
             {node.content?.map((child, cIdx) => renderNode(child, cIdx))}
           </ul>
         );
@@ -218,7 +226,7 @@ export function RichTextRenderer({
 
       case 'orderedList': {
         return (
-          <ol key={index} className="my-6 pl-6 list-decimal space-y-2 font-serif text-[17px] sm:text-[18px] leading-relaxed text-foreground/90 font-mono-numbers">
+          <ol key={index} className="my-6 pl-6 list-decimal space-y-2 font-mono-numbers">
             {node.content?.map((child, cIdx) => renderNode(child, cIdx))}
           </ol>
         );
@@ -284,7 +292,7 @@ export function RichTextRenderer({
   };
 
   return (
-    <div className={cn('editorial-prose max-w-prose space-y-6', className)}>
+    <div className={cn('editorial-prose max-w-[680px] mx-auto space-y-6', className)}>
       {doc.content.map((node, index) => renderNode(node, index))}
     </div>
   );

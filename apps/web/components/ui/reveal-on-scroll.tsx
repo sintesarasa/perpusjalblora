@@ -3,22 +3,37 @@
 import * as React from 'react';
 import { cn } from '@/lib/utils';
 
-interface RevealOnScrollProps {
+export type RevealVariant =
+  | 'cinematic'
+  | 'fade-up'
+  | 'fade-down'
+  | 'stamp'
+  | 'slide-left'
+  | 'slide-right'
+  | 'fade';
+
+export interface RevealOnScrollProps {
   children: React.ReactNode;
   className?: string;
-  variant?: 'fade-up' | 'stamp' | 'slide-left' | 'slide-right' | 'fade';
+  variant?: RevealVariant;
   delayMs?: number;
+  durationMs?: number;
   threshold?: number;
   rootMargin?: string;
+  blur?: boolean;
+  style?: React.CSSProperties;
 }
 
 export function RevealOnScroll({
   children,
   className,
-  variant = 'fade-up',
+  variant = 'cinematic',
   delayMs = 0,
-  threshold = 0.02,
-  rootMargin = '0px 0px 80px 0px',
+  durationMs = 850,
+  threshold = 0.08,
+  rootMargin = '0px 0px -40px 0px',
+  blur = true,
+  style,
 }: RevealOnScrollProps) {
   const [isVisible, setIsVisible] = React.useState(false);
   const elementRef = React.useRef<HTMLDivElement>(null);
@@ -63,26 +78,61 @@ export function RevealOnScroll({
   }, [threshold, rootMargin]);
 
   const getVariantStyles = () => {
+    const blurClass = blur
+      ? isVisible
+        ? 'blur-0'
+        : 'blur-[5px]'
+      : '';
+
     switch (variant) {
+      case 'cinematic':
+        return cn(
+          isVisible
+            ? 'opacity-100 translate-y-0 scale-100'
+            : 'opacity-0 translate-y-12 scale-[0.97]',
+          blurClass
+        );
       case 'stamp':
-        return isVisible
-          ? 'opacity-100 scale-100 translate-y-0'
-          : 'opacity-0 scale-[0.98] translate-y-2';
+        return cn(
+          isVisible
+            ? 'opacity-100 scale-100 translate-y-0'
+            : 'opacity-0 scale-[1.04] -translate-y-2',
+          blur ? (isVisible ? 'blur-0' : 'blur-[2px]') : ''
+        );
       case 'slide-left':
-        return isVisible
-          ? 'opacity-100 translate-x-0'
-          : 'opacity-0 -translate-x-6';
+        return cn(
+          isVisible
+            ? 'opacity-100 translate-x-0'
+            : 'opacity-0 -translate-x-10',
+          blurClass
+        );
       case 'slide-right':
-        return isVisible
-          ? 'opacity-100 translate-x-0'
-          : 'opacity-0 translate-x-6';
+        return cn(
+          isVisible
+            ? 'opacity-100 translate-x-0'
+            : 'opacity-0 translate-x-10',
+          blurClass
+        );
+      case 'fade-down':
+        return cn(
+          isVisible
+            ? 'opacity-100 translate-y-0'
+            : 'opacity-0 -translate-y-8',
+          blurClass
+        );
       case 'fade':
-        return isVisible ? 'opacity-100' : 'opacity-0';
+        return cn(
+          isVisible ? 'opacity-100' : 'opacity-0',
+          blur ? (isVisible ? 'blur-0' : 'blur-[6px]') : ''
+        );
       case 'fade-up':
       default:
-        return isVisible
-          ? 'opacity-100 translate-y-0'
-          : 'opacity-0 translate-y-4';
+        return cn(
+          isVisible
+            ? 'opacity-100 translate-y-0'
+            : 'opacity-0 translate-y-8',
+          blurClass
+        );
     }
   };
 
@@ -90,11 +140,13 @@ export function RevealOnScroll({
     <div
       ref={elementRef}
       style={{
-        transitionDuration: '500ms',
+        transitionDuration: `${durationMs}ms`,
         transitionDelay: delayMs > 0 ? `${delayMs}ms` : undefined,
+        transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)',
+        ...style,
       }}
       className={cn(
-        'transition-[opacity,transform] ease-out transform-gpu',
+        'transition-[opacity,transform,filter] transform-gpu will-change-[opacity,transform]',
         getVariantStyles(),
         className
       )}

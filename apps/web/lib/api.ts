@@ -1,4 +1,12 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
+function getApiUrl(): string {
+  if (typeof window !== 'undefined') {
+    return process.env.NEXT_PUBLIC_API_URL || '/api/v1';
+  }
+  if (process.env.INTERNAL_API_URL) {
+    return `${process.env.INTERNAL_API_URL.replace(/\/$/, '')}/api/v1`;
+  }
+  return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
+}
 
 export interface ApiError {
   code: string;
@@ -16,7 +24,8 @@ export async function apiClient<T>(
   options: RequestInit = {}
 ): Promise<ApiResponse<T>> {
   try {
-    const res = await fetch(`${API_URL}${endpoint}`, {
+    const apiUrl = getApiUrl();
+    const res = await fetch(`${apiUrl}${endpoint}`, {
       cache: 'no-store',
       ...options,
       credentials: 'include',

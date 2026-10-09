@@ -7,6 +7,7 @@ import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { CustomLoader } from '@/components/ui/custom-loader';
 import { Pagination } from '@/components/ui/pagination';
+import { RevealOnScroll } from '@/components/ui/reveal-on-scroll';
 import { apiClient } from '@/lib/api';
 import { LetterItem } from '@perpusjal/types';
 import {
@@ -113,36 +114,38 @@ function ReaderLettersContent() {
 
       <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-8 py-8 sm:py-12 space-y-10">
         {/* Gazette Masthead */}
-        <div className="border-b-2 border-foreground pb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-6">
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 font-mono text-xs text-muted uppercase tracking-widest">
-              <span>FORUM WARGA & KORAN CETAK</span>
-              <span>// DIALEKTIKA KOMUNITAS</span>
+        <RevealOnScroll variant="cinematic" delayMs={50}>
+          <div className="border-b-2 border-foreground pb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-6">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 font-mono text-xs text-muted uppercase tracking-widest">
+                <span>FORUM WARGA & KORAN CETAK</span>
+                <span>// DIALEKTIKA KOMUNITAS</span>
+              </div>
+              <h1 className="font-serif text-3xl sm:text-5xl font-bold tracking-tight text-foreground">
+                Surat Pembaca
+              </h1>
+              <p className="font-sans text-sm text-muted max-w-2xl leading-relaxed">
+                Kanal terbuka bagi warga dan pegiat literasi Blora untuk menyampaikan pandangan, kritik,
+                pengalaman membaca, ataupun gagasan sosial kemasyarakatan.
+              </p>
             </div>
-            <h1 className="font-serif text-3xl sm:text-5xl font-bold tracking-tight text-foreground">
-              Surat Pembaca
-            </h1>
-            <p className="font-sans text-sm text-muted max-w-2xl leading-relaxed">
-              Kanal terbuka bagi warga dan pegiat literasi Blora untuk menyampaikan pandangan, kritik,
-              pengalaman membaca, ataupun gagasan sosial kemasyarakatan.
-            </p>
-          </div>
 
-          <div>
-            <button
-              type="button"
-              onClick={() => {
-                setModalOpen(true);
-                setModalSuccess(null);
-                setModalError(null);
-              }}
-              className="px-6 py-3 bg-foreground text-background font-mono text-xs uppercase tracking-widest font-bold hover:bg-foreground/90 transition-colors inline-flex items-center gap-2"
-            >
-              <PenLine className="w-4 h-4" />
-              <span>Tulis Surat Pembaca</span>
-            </button>
+            <div>
+              <button
+                type="button"
+                onClick={() => {
+                  setModalOpen(true);
+                  setModalSuccess(null);
+                  setModalError(null);
+                }}
+                className="px-6 py-3 bg-foreground text-background font-mono text-xs uppercase tracking-widest font-bold hover:bg-foreground/90 transition-colors inline-flex items-center gap-2"
+              >
+                <PenLine className="w-4 h-4" />
+                <span>Tulis Surat Pembaca</span>
+              </button>
+            </div>
           </div>
-        </div>
+        </RevealOnScroll>
 
         {/* Letters List */}
         {loading ? (
@@ -160,69 +163,72 @@ function ReaderLettersContent() {
             </button>
           </div>
         ) : letters.length === 0 ? (
-          <div className="py-16 text-center border-2 border-foreground bg-surface p-8 space-y-3">
-            <span className="font-mono text-xs text-muted uppercase tracking-widest">
-              [ KOLOM KOSONG ]
-            </span>
-            <h2 className="font-serif text-2xl font-normal text-foreground">
-              Belum Ada Surat Pembaca yang Diterbitkan
-            </h2>
-            <p className="font-sans text-xs text-muted max-w-md mx-auto">
-              Jadilah pembaca pertama yang menuangkan aspirasi atau cerita literasi di ruang koran warga ini.
-            </p>
-          </div>
+          <RevealOnScroll variant="stamp">
+            <div className="py-16 text-center border-2 border-foreground bg-surface p-8 space-y-3">
+              <span className="font-mono text-xs text-muted uppercase tracking-widest">
+                [ KOLOM KOSONG ]
+              </span>
+              <h2 className="font-serif text-2xl font-normal text-foreground">
+                Belum Ada Surat Pembaca yang Diterbitkan
+              </h2>
+              <p className="font-sans text-xs text-muted max-w-md mx-auto">
+                Jadilah pembaca pertama yang menuangkan aspirasi atau cerita literasi di ruang koran warga ini.
+              </p>
+            </div>
+          </RevealOnScroll>
         ) : (
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {letters.map((letter) => (
-                <article
-                  key={letter.id}
-                  className="border border-border-hairline bg-surface hover:border-foreground transition-all duration-150 p-6 flex flex-col justify-between space-y-4 group"
-                >
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between font-mono text-xs text-muted border-b border-border-hairline pb-2">
-                      <span className="font-bold text-foreground inline-flex items-center gap-1.5">
-                        <User className="w-3 h-3 text-muted" />
-                        {letter.displayName}
-                      </span>
-                      <span>
-                        {letter.publishedAt
-                          ? new Date(letter.publishedAt).toLocaleDateString('id-ID', {
-                              day: 'numeric',
-                              month: 'short',
-                              year: 'numeric',
-                            })
-                          : '-'}
-                      </span>
+              {letters.map((letter, idx) => (
+                <RevealOnScroll key={letter.id} variant="cinematic" delayMs={(idx % 2) * 80} className="h-full">
+                  <article
+                    className="border border-border-hairline bg-surface hover:border-foreground transition-all duration-150 p-6 flex flex-col justify-between space-y-4 group h-full"
+                  >
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between font-mono text-xs text-muted border-b border-border-hairline pb-2">
+                        <span className="font-bold text-foreground inline-flex items-center gap-1.5">
+                          <User className="w-3 h-3 text-muted" />
+                          {letter.displayName}
+                        </span>
+                        <span>
+                          {letter.publishedAt
+                            ? new Date(letter.publishedAt).toLocaleDateString('id-ID', {
+                                day: 'numeric',
+                                month: 'short',
+                                year: 'numeric',
+                              })
+                            : '-'}
+                        </span>
+                      </div>
+
+                      <Link href={`/surat-pembaca/${letter.slug}`} className="block">
+                        <h2 className="font-serif text-xl sm:text-2xl font-bold text-foreground leading-snug group-hover:underline underline-offset-2">
+                          {letter.title}
+                        </h2>
+                      </Link>
+
+                      {/* Pull Quote Opening 2 Lines */}
+                      <blockquote className="font-serif italic text-sm text-foreground/80 border-l-2 border-foreground pl-3 py-0.5 line-clamp-2">
+                        &ldquo;{letter.excerpt}&rdquo;
+                      </blockquote>
                     </div>
 
-                    <Link href={`/surat-pembaca/${letter.slug}`} className="block">
-                      <h2 className="font-serif text-xl sm:text-2xl font-bold text-foreground leading-snug group-hover:underline underline-offset-2">
-                        {letter.title}
-                      </h2>
-                    </Link>
+                    <div className="pt-3 border-t border-border-hairline flex items-center justify-between font-mono text-xs text-muted">
+                      <span className="inline-flex items-center gap-1 text-[11px]">
+                        <MessageSquare className="w-3.5 h-3.5" />
+                        {letter.commentCount} Tanggapan Warga
+                      </span>
 
-                    {/* Pull Quote Opening 2 Lines */}
-                    <blockquote className="font-serif italic text-sm text-foreground/80 border-l-2 border-foreground pl-3 py-0.5 line-clamp-2">
-                      &ldquo;{letter.excerpt}&rdquo;
-                    </blockquote>
-                  </div>
-
-                  <div className="pt-3 border-t border-border-hairline flex items-center justify-between font-mono text-xs text-muted">
-                    <span className="inline-flex items-center gap-1 text-[11px]">
-                      <MessageSquare className="w-3.5 h-3.5" />
-                      {letter.commentCount} Tanggapan Warga
-                    </span>
-
-                    <Link
-                      href={`/surat-pembaca/${letter.slug}`}
-                      className="font-bold text-foreground group-hover:translate-x-1 transition-transform inline-flex items-center gap-1 uppercase tracking-wider text-[11px]"
-                    >
-                      <span>Baca Surat</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </Link>
-                  </div>
-                </article>
+                      <Link
+                        href={`/surat-pembaca/${letter.slug}`}
+                        className="font-bold text-foreground group-hover:translate-x-1 transition-transform inline-flex items-center gap-1 uppercase tracking-wider text-[11px]"
+                      >
+                        <span>Baca Surat</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </Link>
+                    </div>
+                  </article>
+                </RevealOnScroll>
               ))}
             </div>
 
@@ -377,7 +383,9 @@ function ReaderLettersContent() {
         </div>
       )}
 
-      <Footer />
+      <RevealOnScroll variant="fade" delayMs={60}>
+        <Footer />
+      </RevealOnScroll>
     </div>
   );
 }

@@ -1,5 +1,8 @@
 import * as React from 'react';
 import { ContributorItem } from '@perpusjal/types';
+import { Header } from '@/components/layout/header';
+import { Footer } from '@/components/layout/footer';
+import { RevealOnScroll } from '@/components/ui/reveal-on-scroll';
 import { ContributorsDirectoryClient } from './contributors-client';
 
 export const dynamic = 'force-dynamic';
@@ -28,8 +31,14 @@ export default async function ContributorsPage() {
   const contributors = await fetchContributors();
 
   return (
-    <main className="min-h-screen bg-background text-foreground pb-20">
-      <ContributorsDirectoryClient initialContributors={contributors} />
-    </main>
+    <div className="min-h-screen bg-background text-foreground flex flex-col">
+      <Header />
+      <main className="flex-1 pb-20">
+        <ContributorsDirectoryClient initialContributors={contributors} />
+      </main>
+      <RevealOnScroll variant="fade" delayMs={60}>
+        <Footer />
+      </RevealOnScroll>
+    </div>
   );
 }

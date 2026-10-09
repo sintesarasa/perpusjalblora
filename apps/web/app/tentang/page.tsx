@@ -296,7 +296,7 @@ export default function AboutPage() {
             </div>
           </div>
 
-          <RevealOnScroll variant="fade-up" delayMs={150}>
+          <RevealOnScroll variant="cinematic" delayMs={150}>
             <div className="max-w-4xl space-y-4 sm:space-y-6 relative z-10">
               <div className="inline-flex items-center gap-2 px-2.5 py-1 border border-foreground font-mono text-[9px] sm:text-[10px] tracking-wider uppercase font-bold bg-foreground text-background">
                 <span>GERAKAN LITERASI AKAR RUMPUT BLORA</span>
@@ -340,7 +340,7 @@ export default function AboutPage() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-start">
             {/* Left Narrative Text with Subtle Fade-up */}
             <div className="lg:col-span-7 space-y-6 font-serif text-base sm:text-lg text-foreground/90 leading-[1.8] sm:leading-[1.85]">
-              <RevealOnScroll variant="fade-up" delayMs={50}>
+              <RevealOnScroll variant="cinematic" delayMs={50}>
                 <div className="border-b border-border-hairline pb-2 mb-2 font-mono text-xs uppercase tracking-widest text-muted flex items-center gap-2">
                   <Feather className="w-3.5 h-3.5 text-foreground shrink-0" />
                   <span>AKAR INSPIRASI KULTURAL</span>
@@ -354,7 +354,7 @@ export default function AboutPage() {
                 </p>
               </RevealOnScroll>
 
-              <RevealOnScroll variant="fade-up" delayMs={150}>
+              <RevealOnScroll variant="cinematic" delayMs={150}>
                 <p>
                   Namun di balik kebanggaan sejarah tersebut, kenyataan sehari-hari warga pinggiran memperlihatkan
                   jurang yang nyata. Masih banyak anak-anak muda, pelajar desa pelosok, dan warga biasa yang kesulitan mendapatkan
@@ -362,7 +362,7 @@ export default function AboutPage() {
                 </p>
               </RevealOnScroll>
 
-              <RevealOnScroll variant="fade-up" delayMs={200}>
+              <RevealOnScroll variant="cinematic" delayMs={200}>
                 <p>
                   Dari keresahan itulah, <strong>Perpustakaan Jalanan Blora</strong> hadir. Kami tidak menunggu warga
                   datang; kamilah yang memanggul buku mendatangi ruang santai warga. Cukup menggelar terpal di trotoar Alun-Alun saat Car Free Day,
@@ -413,7 +413,7 @@ export default function AboutPage() {
         {/* 3. THE CINEMATIC TIMELINE RIVER (SCROLL-DRIVEN VOYAGE)     */}
         {/* ========================================================= */}
         <section ref={timelineRef} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 overflow-x-clip">
-          <RevealOnScroll variant="fade-up">
+          <RevealOnScroll variant="cinematic">
             <div className="border-b-2 border-foreground pb-6 mb-12 sm:mb-20 flex flex-col md:flex-row md:items-end justify-between gap-4">
               <div>
                 <div className="font-mono text-xs uppercase tracking-widest text-muted flex items-center gap-2">
@@ -562,7 +562,7 @@ export default function AboutPage() {
         {/* 4. DUA SAYAP WILAYAH: KOTA VS. DESA HUTAN                */}
         {/* ========================================================= */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-20 border-t-2 border-foreground">
-          <RevealOnScroll variant="fade-up">
+          <RevealOnScroll variant="cinematic">
             <div className="border-b-2 border-foreground pb-4 mb-6 sm:mb-8 flex flex-col md:flex-row md:items-end justify-between gap-3">
               <div>
                 <div className="font-mono text-xs uppercase tracking-widest text-muted flex items-center gap-2">
@@ -711,7 +711,7 @@ export default function AboutPage() {
         {/* 5. TABEL SIMBIOSIS: DPK PERPUSDA VS PERPUSJAL TERPAL     */}
         {/* ========================================================= */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16">
-          <RevealOnScroll variant="fade-up">
+          <RevealOnScroll variant="cinematic">
             <div className="border-b-2 border-foreground pb-4 mb-6 sm:mb-8 flex flex-col md:flex-row md:items-end justify-between gap-3">
               <div>
                 <div className="font-mono text-xs uppercase tracking-widest text-muted flex items-center gap-2">
@@ -728,7 +728,7 @@ export default function AboutPage() {
             </div>
           </RevealOnScroll>
 
-          <RevealOnScroll variant="fade-up" delayMs={100}>
+          <RevealOnScroll variant="cinematic" delayMs={100}>
             <div className="border-2 border-foreground overflow-x-auto bg-surface">
               <table className="w-full text-left font-sans text-xs sm:text-sm">
                 <thead>
@@ -793,7 +793,7 @@ export default function AboutPage() {
         {/* 6. TANYA JAWAB KETERLIBATAN (FAQ RELAWAN & DONASI)        */}
         {/* ========================================================= */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16">
-          <RevealOnScroll variant="fade-up">
+          <RevealOnScroll variant="cinematic">
             <div className="border-b-2 border-foreground pb-4 mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-3">
               <div>
                 <div className="font-mono text-xs uppercase tracking-widest text-muted flex items-center gap-2">
@@ -814,7 +814,7 @@ export default function AboutPage() {
             {GRASSROOTS_FAQS.map((faq, idx) => {
               const isOpen = openFaq === faq.id;
               return (
-                <RevealOnScroll key={faq.id} variant="fade-up" delayMs={idx * 50}>
+                <RevealOnScroll key={faq.id} variant="cinematic" delayMs={idx * 60}>
                   <div className="border-2 border-foreground bg-surface overflow-hidden transition-all">
                     <button
                       type="button"
@@ -957,7 +957,9 @@ export default function AboutPage() {
       </main>
 
       <div className="print:hidden">
-        <Footer />
+        <RevealOnScroll variant="fade" delayMs={60}>
+          <Footer />
+        </RevealOnScroll>
       </div>
     </div>
   );

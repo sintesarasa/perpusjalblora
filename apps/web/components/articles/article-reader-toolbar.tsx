@@ -89,27 +89,18 @@ export function ArticleReaderToolbar({
     <aside
       aria-label="Alat Baca Naskah"
       className={cn(
-        'transition-all duration-300 print:hidden',
+        'transition-all duration-300 print:hidden select-none',
         isZenMode
-          ? 'fixed bottom-6 right-6 z-50 bg-background/95 backdrop-blur border-2 border-foreground p-2 flex items-center gap-2 font-mono text-xs'
-          : 'border-y border-border-hairline py-3 my-6 flex flex-wrap items-center justify-between gap-4 font-mono text-xs bg-surface/50'
+          ? 'fixed bottom-6 right-6 z-50 bg-background/95 backdrop-blur border-2 border-foreground p-2 flex items-center gap-2 font-mono text-xs rounded-none shadow-none'
+          : 'border-y border-border-hairline py-2.5 my-6 max-w-[680px] mx-auto flex flex-wrap items-center justify-between gap-3 font-mono text-xs bg-surface-muted/20'
       )}
     >
-      {/* Left side: Back to archive & Meta */}
+      {/* Left side: Editorial Section Label */}
       {!isZenMode && (
-        <div className="flex items-center gap-3">
-          <Link
-            href="/artikel"
-            className="flex items-center gap-1.5 text-muted hover:text-foreground transition-colors group"
-          >
-            <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" />
-            <span className="font-semibold uppercase tracking-wider text-[11px]">
-              KEMBALI KE ARSIP
-            </span>
-          </Link>
-          <span className="text-border-hairline">|</span>
-          <span className="text-muted text-[11px] hidden sm:inline">
-            Estimasi: {readingTime} Menit Baca
+        <div className="flex items-center gap-2 text-muted px-1">
+          <span className="w-1.5 h-1.5 bg-foreground rounded-none" />
+          <span className="font-mono text-[10px] uppercase tracking-widest text-muted font-bold">
+            LEMBARAN BACAAN
           </span>
         </div>
       )}
@@ -120,11 +111,11 @@ export function ArticleReaderToolbar({
         <button
           type="button"
           onClick={() => onTextScaleChange(nextScale[textScale])}
-          className="px-2.5 py-1.5 border border-border bg-background hover:bg-surface-muted hover:border-foreground text-foreground transition-colors flex items-center gap-1.5 text-[11px] tracking-wider"
+          className="px-2.5 py-1 border border-border-hairline hover:border-foreground bg-surface text-foreground transition-colors flex items-center gap-1.5 text-[10.5px] tracking-wider uppercase rounded-none cursor-pointer"
           title={`Ubah ukuran font (Saat ini: ${scaleLabel[textScale]})`}
         >
           <Type className="w-3.5 h-3.5 text-muted" />
-          <span className="uppercase">{scaleLabel[textScale]}</span>
+          <span>HURUF: {scaleLabel[textScale]}</span>
         </button>
 
         {/* Zen Mode Switch */}
@@ -132,10 +123,10 @@ export function ArticleReaderToolbar({
           type="button"
           onClick={onToggleZenMode}
           className={cn(
-            'px-2.5 py-1.5 border transition-colors flex items-center gap-1.5 text-[11px] tracking-wider uppercase',
+            'px-2.5 py-1 border transition-colors flex items-center gap-1.5 text-[10.5px] tracking-wider uppercase rounded-none cursor-pointer',
             isZenMode
               ? 'bg-foreground text-background border-foreground font-bold'
-              : 'border-border bg-background hover:bg-surface-muted hover:border-foreground text-foreground'
+              : 'border-border-hairline bg-surface hover:border-foreground text-foreground'
           )}
           title={isZenMode ? 'Keluar dari Mode Fokus (ESC)' : 'Mode Fokus Membaca (Zen Mode)'}
         >
@@ -147,7 +138,7 @@ export function ArticleReaderToolbar({
         <button
           type="button"
           onClick={handlePrint}
-          className="hidden md:flex px-2.5 py-1.5 border border-border bg-background hover:bg-surface-muted hover:border-foreground text-foreground transition-colors items-center gap-1.5 text-[11px] tracking-wider uppercase"
+          className="hidden md:flex px-2.5 py-1 border border-border-hairline hover:border-foreground bg-surface text-foreground transition-colors items-center gap-1.5 text-[10.5px] tracking-wider uppercase rounded-none cursor-pointer"
           title="Cetak Kliping Naskah"
         >
           <Printer className="w-3.5 h-3.5 text-muted" />
@@ -159,7 +150,7 @@ export function ArticleReaderToolbar({
           <button
             type="button"
             onClick={onScrollToComments}
-            className="px-2.5 py-1.5 border border-border bg-background hover:bg-surface-muted hover:border-foreground text-foreground transition-colors flex items-center gap-1.5 text-[11px] tracking-wider uppercase"
+            className="px-2.5 py-1 border border-border-hairline hover:border-foreground bg-surface text-foreground transition-colors flex items-center gap-1.5 text-[10.5px] tracking-wider uppercase rounded-none cursor-pointer"
             title="Lihat Komentar & Respon Warga"
           >
             <MessageSquare className="w-3.5 h-3.5 text-muted" />
@@ -167,36 +158,16 @@ export function ArticleReaderToolbar({
           </button>
         )}
 
-        {/* Share buttons */}
-        <div className="flex items-center border border-border bg-background">
-          <button
-            type="button"
-            onClick={handleCopyLink}
-            className="px-2.5 py-1.5 hover:bg-surface-muted text-muted hover:text-foreground transition-colors border-r border-border text-[11px] flex items-center gap-1 uppercase"
-            title="Salin Tautan"
-          >
-            {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Share2 className="w-3.5 h-3.5" />}
-            <span className="hidden sm:inline">{copied ? 'Tersalin' : 'Bagikan'}</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={handleShareWhatsApp}
-            className="px-2 py-1.5 hover:bg-surface-muted text-emerald-600 transition-colors border-r border-border text-[11px] font-bold"
-            title="Kirim ke WhatsApp"
-          >
-            WA
-          </button>
-
-          <button
-            type="button"
-            onClick={handleShareX}
-            className="px-2 py-1.5 hover:bg-surface-muted text-muted hover:text-foreground transition-colors text-[11px] font-bold"
-            title="Bagikan ke X / Twitter"
-          >
-            𝕏
-          </button>
-        </div>
+        {/* Quick Share / Copy Link */}
+        <button
+          type="button"
+          onClick={handleCopyLink}
+          className="px-2.5 py-1 border border-border-hairline hover:border-foreground bg-surface text-foreground transition-colors flex items-center gap-1 text-[10.5px] tracking-wider uppercase rounded-none cursor-pointer"
+          title="Salin Tautan Naskah"
+        >
+          {copied ? <Check className="w-3.5 h-3.5 text-foreground" /> : <Share2 className="w-3.5 h-3.5 text-muted" />}
+          <span>{copied ? 'Tersalin' : 'Bagikan'}</span>
+        </button>
       </div>
     </aside>
   );

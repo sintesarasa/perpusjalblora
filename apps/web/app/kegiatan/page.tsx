@@ -241,39 +241,42 @@ function EventCatalogContent() {
         {/* ========================================================= */}
         {/* 1. EDITORIAL GAZETTE MASTHEAD                             */}
         {/* ========================================================= */}
-        <section className="border-b-2 border-foreground pb-8 relative overflow-hidden">
-          <div className="flex flex-wrap items-center justify-between border-b border-border-hairline pb-3 mb-6 text-[10px] sm:text-[11px] font-mono uppercase tracking-widest text-muted gap-2">
-            <div className="flex items-center gap-2 sm:gap-3">
-              <BrandStamp edition="KRONIK AGENDA" year="2026" />
-              <span className="hidden sm:inline">[ WARTA KEGIATAN &bull; RUANG PERJUMPAAN ]</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-none bg-foreground animate-pulse" />
-              <span className="text-foreground font-semibold">LAPAK RUTIN: SETIAP MINGGU PAGI</span>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <div className="inline-flex items-center gap-2 px-2.5 py-0.5 border border-foreground font-mono text-[9px] uppercase font-bold tracking-widest bg-foreground text-background">
-              <span>GERAKAN LITERASI SWADAYA</span>
+        <RevealOnScroll variant="cinematic" delayMs={50}>
+          <section className="border-b-2 border-foreground pb-8 relative overflow-hidden">
+            <div className="flex flex-wrap items-center justify-between border-b border-border-hairline pb-3 mb-6 text-[10px] sm:text-[11px] font-mono uppercase tracking-widest text-muted gap-2">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <BrandStamp edition="KRONIK AGENDA" year="2026" />
+                <span className="hidden sm:inline">[ WARTA KEGIATAN &bull; RUANG PERJUMPAAN ]</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-none bg-foreground animate-pulse" />
+                <span className="text-foreground font-semibold">LAPAK RUTIN: SETIAP MINGGU PAGI</span>
+              </div>
             </div>
 
-            <h1 className="font-serif text-3xl sm:text-5xl md:text-6xl font-black uppercase tracking-tight text-foreground leading-[1.05]">
-              Ruang Perjumpaan di Balik Terpal.
-            </h1>
+            <div className="space-y-4">
+              <div className="inline-flex items-center gap-2 px-2.5 py-0.5 border border-foreground font-mono text-[9px] uppercase font-bold tracking-widest bg-foreground text-background">
+                <span>GERAKAN LITERASI SWADAYA</span>
+              </div>
 
-            <p className="font-serif text-base sm:text-lg text-foreground/85 max-w-3xl leading-relaxed">
-              Kami menghamparkan ratusan buku di ruang terbuka Blora, menyelenggarakan forum diskusi buku
-              alternatif, lokakarya kriya mandiri, dan kemah literasi di tepian hutan jati. Seluruh kegiatan
-              terbuka bagi siapa saja tanpa syarat kartu tanda penduduk, tanpa uang pendaftaran, dan tanpa sekat kelas sosial.
-            </p>
-          </div>
-        </section>
+              <h1 className="font-serif text-3xl sm:text-5xl md:text-6xl font-black uppercase tracking-tight text-foreground leading-[1.05]">
+                Ruang Perjumpaan di Balik Terpal.
+              </h1>
+
+              <p className="font-serif text-base sm:text-lg text-foreground/85 max-w-3xl leading-relaxed">
+                Kami menghamparkan ratusan buku di ruang terbuka Blora, menyelenggarakan forum diskusi buku
+                alternatif, lokakarya kriya mandiri, dan kemah literasi di tepian hutan jati. Seluruh kegiatan
+                terbuka bagi siapa saja tanpa syarat kartu tanda penduduk, tanpa uang pendaftaran, dan tanpa sekat kelas sosial.
+              </p>
+            </div>
+          </section>
+        </RevealOnScroll>
 
         {/* ========================================================= */}
         {/* 2. UNIFIED HERO EVENT STAGE & EMBEDDED COUNTDOWN           */}
         {/* ========================================================= */}
-        <section className="space-y-4">
+        <RevealOnScroll variant="cinematic" delayMs={100}>
+          <section className="space-y-4">
           <div className="flex items-center justify-between text-xs font-mono uppercase tracking-widest text-muted pb-2 border-b border-border-hairline">
             <span className="flex items-center gap-1.5 font-bold text-foreground">
               <Sparkles className="w-3.5 h-3.5 text-foreground" />
@@ -469,13 +472,15 @@ function EventCatalogContent() {
             </div>
           </div>
         </section>
+      </RevealOnScroll>
 
         {/* ========================================================= */}
         {/* 4. KATALOG AGENDA LENGKAP & DOKUMENTASI ARSIP             */}
         {/* ========================================================= */}
         <section id="daftar-kegiatan" className="border-t-2 border-foreground pt-10 sm:pt-14 space-y-8 scroll-mt-20">
           {/* Header & Tabs */}
-          <div className="space-y-4">
+          <RevealOnScroll variant="cinematic" delayMs={50}>
+            <div className="space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-end justify-between pb-3 border-b-2 border-foreground gap-4">
               <div>
                 <div className="text-[10px] font-mono uppercase tracking-ultra text-foreground font-bold flex items-center gap-1.5 mb-1">
@@ -573,8 +578,9 @@ function EventCatalogContent() {
               ))}
             </div>
           </div>
+        </RevealOnScroll>
 
-          {/* Events Grid / State Renderers */}
+        {/* Events Grid / State Renderers */}
           {loading ? (
             <div className="py-20 flex justify-center border-2 border-foreground bg-surface">
               <CustomLoader size="lg" label="MEMUAT AGENDA KEGIATAN..." />
@@ -619,7 +625,7 @@ function EventCatalogContent() {
             <>
               {/* Event Cards Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {events.map((event) => {
+                {events.map((event, idx) => {
                   const startDate = new Date(event.startAt);
                   const endDate = new Date(event.endAt);
                   const day = startDate.getDate();
@@ -638,108 +644,114 @@ function EventCatalogContent() {
                   const theme = getTypeTheme(event.type);
 
                   return (
-                    <article
+                    <RevealOnScroll
                       key={event.id}
-                      className={cn(
-                        'border-2 border-foreground bg-surface transition-all flex flex-col justify-between group overflow-hidden',
-                        theme.border
-                      )}
+                      variant="cinematic"
+                      delayMs={(idx % 3) * 80}
+                      className="h-full"
                     >
-                      <div>
-                        {/* Optional Card Cover Image Thumbnail */}
-                        {event.coverImage && (
-                          <Link href={`/kegiatan/${event.slug}`} className="block relative aspect-[16/9] w-full overflow-hidden border-b-2 border-foreground bg-zinc-950">
-                            <img
-                              src={event.coverImage}
-                              alt={event.title}
-                              className="w-full h-full object-cover grayscale contrast-105 group-hover:grayscale-0 group-hover:scale-105 transition-all duration-500"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-transparent pointer-events-none" />
-                            <div className="absolute top-2.5 left-2.5 px-2 py-0.5 bg-black/80 text-white font-mono text-[8.5px] font-bold uppercase tracking-widest border border-white/30 backdrop-blur-xs">
-                              {statusTab === 'selesai' ? '✦ DOKUMENTASI TERPAL ✦' : '✦ POSTER AGENDA ✦'}
-                            </div>
-                          </Link>
+                      <article
+                        className={cn(
+                          'border-2 border-foreground bg-surface transition-all flex flex-col justify-between group overflow-hidden h-full',
+                          theme.border
                         )}
+                      >
+                        <div>
+                          {/* Optional Card Cover Image Thumbnail */}
+                          {event.coverImage && (
+                            <Link href={`/kegiatan/${event.slug}`} className="block relative aspect-[16/9] w-full overflow-hidden border-b-2 border-foreground bg-zinc-950">
+                              <img
+                                src={event.coverImage}
+                                alt={event.title}
+                                className="w-full h-full object-cover grayscale contrast-105 group-hover:grayscale-0 group-hover:scale-105 transition-all duration-500"
+                              />
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-transparent pointer-events-none" />
+                              <div className="absolute top-2.5 left-2.5 px-2 py-0.5 bg-black/80 text-white font-mono text-[8.5px] font-bold uppercase tracking-widest border border-white/30 backdrop-blur-xs">
+                                {statusTab === 'selesai' ? '✦ DOKUMENTASI TERPAL ✦' : '✦ POSTER AGENDA ✦'}
+                              </div>
+                            </Link>
+                          )}
 
-                        {/* Top Header Card: Calendar Stamp Date & Status Badge */}
-                        <div className="p-5 border-b border-border-hairline bg-surface-muted/30 flex items-start justify-between gap-4">
-                          <div className="flex items-center gap-3">
-                            {/* Calendar Stamp */}
-                            <div className="border-2 border-foreground bg-surface w-14 h-14 flex flex-col items-center justify-center font-mono shrink-0">
-                              <span className="text-[9px] uppercase font-bold text-muted leading-tight">
-                                {dayName}
-                              </span>
-                              <span className="text-xl font-black leading-none text-foreground">
-                                {day}
-                              </span>
-                              <span className="text-[9px] uppercase font-bold text-foreground leading-tight">
-                                {month}
-                              </span>
+                          {/* Top Header Card: Calendar Stamp Date & Status Badge */}
+                          <div className="p-5 border-b border-border-hairline bg-surface-muted/30 flex items-start justify-between gap-4">
+                            <div className="flex items-center gap-3">
+                              {/* Calendar Stamp */}
+                              <div className="border-2 border-foreground bg-surface w-14 h-14 flex flex-col items-center justify-center font-mono shrink-0">
+                                <span className="text-[9px] uppercase font-bold text-muted leading-tight">
+                                  {dayName}
+                                </span>
+                                <span className="text-xl font-black leading-none text-foreground">
+                                  {day}
+                                </span>
+                                <span className="text-[9px] uppercase font-bold text-foreground leading-tight">
+                                  {month}
+                                </span>
+                              </div>
+
+                              <div className="space-y-0.5">
+                                <span
+                                  className={cn(
+                                    'font-mono text-[9px] uppercase font-bold px-2 py-0.5 border rounded-none inline-block',
+                                    theme.badge
+                                  )}
+                                >
+                                  {theme.label}
+                                </span>
+                                <span className="font-mono text-xs text-muted block">
+                                  {year} &bull; {startTime} WIB
+                                </span>
+                              </div>
                             </div>
 
-                            <div className="space-y-0.5">
-                              <span
-                                className={cn(
-                                  'font-mono text-[9px] uppercase font-bold px-2 py-0.5 border rounded-none inline-block',
-                                  theme.badge
-                                )}
-                              >
-                                {theme.label}
-                              </span>
-                              <span className="font-mono text-xs text-muted block">
-                                {year} &bull; {startTime} WIB
-                              </span>
-                            </div>
+                            {getStatusBadge(event.status, event.quota, event.registeredCount)}
                           </div>
 
-                          {getStatusBadge(event.status, event.quota, event.registeredCount)}
+                          {/* Body Details */}
+                          <div className="p-5 space-y-3">
+                            <Link href={`/kegiatan/${event.slug}`} className="block">
+                              <h3 className="font-serif text-xl font-bold text-foreground leading-snug group-hover:underline transition-colors line-clamp-2">
+                                {event.title}
+                              </h3>
+                            </Link>
+
+                            <div className="space-y-2 font-mono text-xs text-muted pt-2 border-t border-border-hairline">
+                              <div className="flex items-center gap-2">
+                                <MapPin className="w-3.5 h-3.5 shrink-0 text-foreground" />
+                                <span className="line-clamp-1">{event.locationName}</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Clock className="w-3.5 h-3.5 shrink-0 text-muted" />
+                                <span>
+                                  {startTime} – {endTime} WIB
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Users className="w-3.5 h-3.5 shrink-0 text-muted" />
+                                <span>
+                                  {event.quota
+                                    ? `${event.registeredCount}/${event.quota} Kursi Terisi`
+                                    : 'Terbuka Umum (Bebas Hadir)'}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
                         </div>
 
-                        {/* Body Details */}
-                        <div className="p-5 space-y-3">
-                          <Link href={`/kegiatan/${event.slug}`} className="block">
-                            <h3 className="font-serif text-xl font-bold text-foreground leading-snug group-hover:underline transition-colors line-clamp-2">
-                              {event.title}
-                            </h3>
+                        {/* Footer Actions */}
+                        <div className="p-5 pt-3 border-t border-border-hairline flex items-center justify-between font-mono text-xs bg-surface-muted/20">
+                          <span className="text-muted text-[10.5px] truncate max-w-[150px]">
+                            Oleh {event.organizer.name}
+                          </span>
+                          <Link
+                            href={`/kegiatan/${event.slug}`}
+                            className="font-bold text-foreground hover:underline inline-flex items-center gap-1 uppercase tracking-wider transition-colors"
+                          >
+                            <span>{statusTab === 'selesai' ? 'REKAM JEJAK' : 'RINCIAN'}</span>
+                            <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
                           </Link>
-
-                          <div className="space-y-2 font-mono text-xs text-muted pt-2 border-t border-border-hairline">
-                            <div className="flex items-center gap-2">
-                              <MapPin className="w-3.5 h-3.5 shrink-0 text-foreground" />
-                              <span className="line-clamp-1">{event.locationName}</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Clock className="w-3.5 h-3.5 shrink-0 text-muted" />
-                              <span>
-                                {startTime} – {endTime} WIB
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Users className="w-3.5 h-3.5 shrink-0 text-muted" />
-                              <span>
-                                {event.quota
-                                  ? `${event.registeredCount}/${event.quota} Kursi Terisi`
-                                  : 'Terbuka Umum (Bebas Hadir)'}
-                              </span>
-                            </div>
-                          </div>
                         </div>
-                      </div>
-
-                      {/* Footer Actions */}
-                      <div className="p-5 pt-3 border-t border-border-hairline flex items-center justify-between font-mono text-xs bg-surface-muted/20">
-                        <span className="text-muted text-[10.5px] truncate max-w-[150px]">
-                          Oleh {event.organizer.name}
-                        </span>
-                        <Link
-                          href={`/kegiatan/${event.slug}`}
-                          className="font-bold text-foreground hover:underline inline-flex items-center gap-1 uppercase tracking-wider transition-colors"
-                        >
-                          <span>{statusTab === 'selesai' ? 'REKAM JEJAK' : 'RINCIAN'}</span>
-                          <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-                        </Link>
-                      </div>
-                    </article>
+                      </article>
+                    </RevealOnScroll>
                   );
                 })}
               </div>
@@ -766,46 +778,50 @@ function EventCatalogContent() {
         {/* ========================================================= */}
         {/* 5. AJAKAN KOLABORASI // GELAR LAPAK BERSAMA KAMI          */}
         {/* ========================================================= */}
-        <section className="border-2 border-foreground bg-foreground text-background p-6 sm:p-10 relative overflow-hidden">
-          <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-8">
-            <div className="space-y-3 max-w-2xl">
-              <div className="inline-flex items-center gap-2 px-3 py-1 bg-background/15 border border-background/30 text-background font-mono text-[9px] uppercase font-bold tracking-widest">
-                <Sparkles className="w-3 h-3 text-background" />
-                <span>KOLABORASI RUANG BUKA // GERAKAN SWADAYA</span>
+        <RevealOnScroll variant="stamp" delayMs={80}>
+          <section className="border-2 border-foreground bg-foreground text-background p-6 sm:p-10 relative overflow-hidden">
+            <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+              <div className="space-y-3 max-w-2xl">
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-background/15 border border-background/30 text-background font-mono text-[9px] uppercase font-bold tracking-widest">
+                  <Sparkles className="w-3 h-3 text-background" />
+                  <span>KOLABORASI RUANG BUKA // GERAKAN SWADAYA</span>
+                </div>
+                <h3 className="font-serif text-3xl sm:text-4xl font-black text-background leading-tight">
+                  Punya Gagasan Diskusi, Workshop, atau Pentas Akustik di Lapak?
+                </h3>
+                <p className="font-serif text-sm sm:text-base text-background/80 leading-relaxed">
+                  Kami selalu membuka pintu terpal bagi komunitas literasi lain, guru desa, musisi akustik,
+                  seniman cukil, maupun pegiat lingkungan yang ingin berkolaborasi menyemarakkan ruang baca rakyat.
+                </p>
               </div>
-              <h3 className="font-serif text-3xl sm:text-4xl font-black text-background leading-tight">
-                Punya Gagasan Diskusi, Workshop, atau Pentas Akustik di Lapak?
-              </h3>
-              <p className="font-serif text-sm sm:text-base text-background/80 leading-relaxed">
-                Kami selalu membuka pintu terpal bagi komunitas literasi lain, guru desa, musisi akustik,
-                seniman cukil, maupun pegiat lingkungan yang ingin berkolaborasi menyemarakkan ruang baca rakyat.
-              </p>
-            </div>
 
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
-              <a
-                href="https://wa.me/6281234567890?text=Halo%20Perpusjal%20Blora,%20kami%20ingin%20berkolaborasi%20kegiatan%20bersama"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-6 py-3.5 bg-background text-foreground hover:bg-background/90 font-mono text-xs font-bold uppercase tracking-wider text-center transition-colors inline-flex items-center justify-center gap-2 border border-foreground"
-              >
-                <MessageCircle className="w-4 h-4 text-foreground" />
-                <span>KOLABORASI VIA WHATSAPP</span>
-              </a>
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
+                <a
+                  href="https://wa.me/6281234567890?text=Halo%20Perpusjal%20Blora,%20kami%20ingin%20berkolaborasi%20kegiatan%20bersama"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-6 py-3.5 bg-background text-foreground hover:bg-background/90 font-mono text-xs font-bold uppercase tracking-wider text-center transition-colors inline-flex items-center justify-center gap-2 border border-foreground"
+                >
+                  <MessageCircle className="w-4 h-4 text-foreground" />
+                  <span>KOLABORASI VIA WHATSAPP</span>
+                </a>
 
-              <Link
-                href="/tentang"
-                className="px-5 py-3.5 border border-background/40 bg-transparent hover:bg-background/10 text-background font-mono text-xs font-bold uppercase tracking-wider text-center transition-colors inline-flex items-center justify-center gap-1.5"
-              >
-                <Compass className="w-4 h-4" />
-                <span>KRONIK GERAKAN</span>
-              </Link>
+                <Link
+                  href="/tentang"
+                  className="px-5 py-3.5 border border-background/40 bg-transparent hover:bg-background/10 text-background font-mono text-xs font-bold uppercase tracking-wider text-center transition-colors inline-flex items-center justify-center gap-1.5"
+                >
+                  <Compass className="w-4 h-4" />
+                  <span>KRONIK GERAKAN</span>
+                </Link>
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        </RevealOnScroll>
       </main>
 
-      <Footer />
+      <RevealOnScroll variant="fade" delayMs={60}>
+        <Footer />
+      </RevealOnScroll>
     </div>
   );
 }

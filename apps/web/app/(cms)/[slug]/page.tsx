@@ -8,6 +8,7 @@ import { Footer } from '@/components/layout/footer';
 import { RichTextRenderer } from '@/components/articles/rich-text-renderer';
 import { CustomLoader } from '@/components/ui/custom-loader';
 import { BrandStamp } from '@/components/ui/brand-stamp';
+import { RevealOnScroll } from '@/components/ui/reveal-on-scroll';
 import { apiClient } from '@/lib/api';
 
 interface PageData {
@@ -100,27 +101,33 @@ export default function CMSPage() {
       <Header />
 
       <main className="flex-1 max-w-3xl mx-auto w-full px-4 sm:px-8 py-10 sm:py-16 space-y-8">
-        <div className="border-b border-foreground pb-6 space-y-4">
-          <div className="flex items-center justify-between font-mono text-[10px] sm:text-xs uppercase tracking-widest text-muted">
-            <span>DOKUMENTASI KOLEKTIF PERPUSJAL</span>
-            <BrandStamp edition="RESMI" year="2026" className="py-0 px-2 text-[8px]" />
+        <RevealOnScroll variant="cinematic" delayMs={50}>
+          <div className="border-b border-foreground pb-6 space-y-4">
+            <div className="flex items-center justify-between font-mono text-[10px] sm:text-xs uppercase tracking-widest text-muted">
+              <span>DOKUMENTASI KOLEKTIF PERPUSJAL</span>
+              <BrandStamp edition="RESMI" year="2026" className="py-0 px-2 text-[8px]" />
+            </div>
+
+            <h1 className="font-serif text-3xl sm:text-5xl font-normal tracking-tight">
+              {page.title}
+            </h1>
+
+            <div className="font-mono text-[10px] uppercase tracking-wider text-muted pt-2 border-t border-border-hairline">
+              Terakhir diperbarui: {formattedDate}
+            </div>
           </div>
+        </RevealOnScroll>
 
-          <h1 className="font-serif text-3xl sm:text-5xl font-normal tracking-tight">
-            {page.title}
-          </h1>
-
-          <div className="font-mono text-[10px] uppercase tracking-wider text-muted pt-2 border-t border-border-hairline">
-            Terakhir diperbarui: {formattedDate}
-          </div>
-        </div>
-
-        <article className="max-w-prose py-4">
-          <RichTextRenderer content={page.content} withDropCap={false} />
-        </article>
+        <RevealOnScroll variant="cinematic" delayMs={80}>
+          <article className="max-w-prose py-4">
+            <RichTextRenderer content={page.content} withDropCap={false} />
+          </article>
+        </RevealOnScroll>
       </main>
 
-      <Footer />
+      <RevealOnScroll variant="fade" delayMs={60}>
+        <Footer />
+      </RevealOnScroll>
     </div>
   );
 }

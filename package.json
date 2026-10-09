@@ -5,6 +5,10 @@
   "scripts": {
     "dev": "turbo run dev",
     "build": "turbo run build",
+    "build:api": "pnpm db:generate && turbo run build --filter=@perpusjal/api",
+    "build:web": "turbo run build --filter=@perpusjal/web",
+    "start:api": "pnpm --filter @perpusjal/api start",
+    "start:web": "pnpm --filter @perpusjal/web start",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "db:generate": "prisma generate --schema=prisma/schema.prisma",

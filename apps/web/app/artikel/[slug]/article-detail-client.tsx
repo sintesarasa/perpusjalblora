@@ -7,7 +7,7 @@ import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { RichTextRenderer } from '@/components/articles/rich-text-renderer';
 import { AuthorCard } from '@/components/articles/author-card';
-import { ArticleCard } from '@/components/articles/article-card';
+import { RelatedArticles } from '@/components/articles/related-articles';
 import { ArticleReaderToolbar, TextScale } from '@/components/articles/article-reader-toolbar';
 import { CommentsSection } from '@/components/comments/comments-section';
 import { UserHonorBadge } from '@/components/gamification/user-honor-badge';
@@ -15,6 +15,7 @@ import { UserAvatar } from '@/components/ui/user-avatar';
 import { CustomLoader } from '@/components/ui/custom-loader';
 import { BrandStamp } from '@/components/ui/brand-stamp';
 import { ScrollProgress } from '@/components/ui/scroll-progress';
+import { RevealOnScroll } from '@/components/ui/reveal-on-scroll';
 import { apiClient } from '@/lib/api';
 import { ArticleDetail, ArticleSummary, ArticleStatus } from '@perpusjal/types';
 import {
@@ -24,6 +25,7 @@ import {
   Eye,
   Clock,
   Calendar,
+  Link2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -122,6 +124,13 @@ export function ArticleDetailClient({
     }
   };
 
+  const handleShareFacebook = () => {
+    if (typeof window !== 'undefined' && article) {
+      const url = encodeURIComponent(window.location.href);
+      window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank');
+    }
+  };
+
   const handleShareX = () => {
     if (typeof window !== 'undefined' && article) {
       const text = encodeURIComponent(`"${article.title}" via @perpusjalblora`);
@@ -184,10 +193,10 @@ export function ArticleDetailClient({
 
   // Text scaling class mapping for the article body
   const textScaleClasses: Record<TextScale, string> = {
-    sm: 'text-base leading-relaxed',
-    base: 'text-[17px] sm:text-[18px] leading-[1.8] sm:leading-[1.85]',
-    lg: 'text-[19px] sm:text-[20px] leading-[1.85] sm:leading-[1.9]',
-    xl: 'text-[21px] sm:text-[23px] leading-[1.9] sm:leading-[2.0]',
+    sm: 'text-[16px] leading-[1.8]',
+    base: 'text-[18px] sm:text-[19px] leading-[1.85] sm:leading-[1.9]',
+    lg: 'text-[20px] sm:text-[21px] leading-[1.9] sm:leading-[1.95]',
+    xl: 'text-[22px] sm:text-[24px] leading-[1.95] sm:leading-[2.05]',
   };
 
   return (
@@ -234,105 +243,127 @@ export function ArticleDetailClient({
           )}
 
           {/* Article Masthead */}
-          <header className="space-y-6 pt-2">
-            {(article.preview || article.status !== ArticleStatus.PUBLISHED) && (
-              <div className="p-3.5 border-2 border-foreground bg-surface font-mono text-xs uppercase tracking-wider font-semibold flex flex-wrap items-center justify-between gap-2">
-                <span className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-none bg-foreground animate-pulse" />
-                  Mode Pratinjau Naskah &bull; Status: {article.status || article.preview?.status}
-                </span>
-                <span className="text-[10px] text-muted font-normal lowercase">
-                  (Draf sedang dalam antrean kurasi)
-                </span>
-              </div>
-            )}
+          <RevealOnScroll variant="cinematic" delayMs={50}>
+            <header className="space-y-6 pt-2">
+              {(article.preview || article.status !== ArticleStatus.PUBLISHED) && (
+                <div className="p-3.5 border-2 border-foreground bg-surface font-mono text-xs uppercase tracking-wider font-semibold flex flex-wrap items-center justify-between gap-2">
+                  <span className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-none bg-foreground animate-pulse" />
+                    Mode Pratinjau Naskah &bull; Status: {article.status || article.preview?.status}
+                  </span>
+                  <span className="text-[10px] text-muted font-normal lowercase">
+                    (Draf sedang dalam antrean kurasi)
+                  </span>
+                </div>
+              )}
 
-            <div className="space-y-3">
-              <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-muted">
-                <span>{article.category?.name || 'WARTA'}</span>
-                <span>•</span>
-                <span>{formattedDate}</span>
-                {article.isFeatured && (
-                  <>
-                    <span>•</span>
-                    <span className="text-foreground font-bold">★ PILIHAN REDAKSI</span>
-                  </>
+              <div className="space-y-3">
+                <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-muted">
+                  <span>{article.category?.name || 'WARTA'}</span>
+                  <span>•</span>
+                  <span>{formattedDate}</span>
+                  {article.isFeatured && (
+                    <>
+                      <span>•</span>
+                      <span className="text-foreground font-bold">★ PILIHAN REDAKSI</span>
+                    </>
+                  )}
+                </div>
+
+                <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-normal leading-[1.18] sm:leading-[1.2] tracking-tight text-foreground">
+                  {article.title}
+                </h1>
+
+                {article.subtitle && (
+                  <p className="font-serif italic text-lg sm:text-xl text-muted font-normal leading-relaxed pt-1">
+                    {article.subtitle}
+                  </p>
                 )}
               </div>
 
-              <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-normal leading-[1.18] sm:leading-[1.2] tracking-tight text-foreground">
-                {article.title}
-              </h1>
+              {/* Byline & Read Metrics (Editorial 2-Tier Layout) */}
+              <div className="py-4 border-y border-border-hairline flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3.5">
+                  <UserAvatar
+                    src={article.author?.avatarUrl}
+                    name={article.author?.name}
+                    username={article.author?.username}
+                    size="md"
+                    linkToProfile
+                  />
 
-              {article.subtitle && (
-                <p className="font-serif italic text-lg sm:text-xl text-muted font-normal leading-relaxed pt-1">
-                  {article.subtitle}
-                </p>
-              )}
-            </div>
+                  <div className="space-y-1 min-w-0">
+                    {/* Baris 1: Nama Penulis & Gelar Kehormatan */}
+                    <div className="flex flex-wrap items-center gap-2">
+                      {article.author?.username ? (
+                        <Link
+                          href={`/u/${article.author.username}`}
+                          className="font-serif font-bold text-base sm:text-lg text-foreground hover:underline tracking-tight"
+                        >
+                          {article.author.name}
+                        </Link>
+                      ) : (
+                        <span className="font-serif font-bold text-base sm:text-lg text-foreground">
+                          {article.author?.name || 'Redaksi Perpusjal'}
+                        </span>
+                      )}
 
-            {/* Byline & Read Metrics (Editorial 2-Tier Layout) */}
-            <div className="py-4 border-y border-border-hairline flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div className="flex items-center gap-3.5">
-                <UserAvatar
-                  src={article.author?.avatarUrl}
-                  name={article.author?.name}
-                  username={article.author?.username}
-                  size="md"
-                  linkToProfile
-                />
+                      {article.author && (
+                        <UserHonorBadge
+                          equippedTitle={article.author.equippedTitle}
+                          equippedBadge={article.author.equippedBadge}
+                          earnedBadgesCount={article.author.earnedBadgesCount}
+                          badges={article.author.badges}
+                          username={article.author.username}
+                          size="sm"
+                        />
+                      )}
+                    </div>
 
-                <div className="space-y-1 min-w-0">
-                  {/* Baris 1: Nama Penulis & Gelar Kehormatan */}
-                  <div className="flex flex-wrap items-center gap-2">
-                    {article.author?.username ? (
-                      <Link
-                        href={`/u/${article.author.username}`}
-                        className="font-serif font-bold text-base sm:text-lg text-foreground hover:underline tracking-tight"
-                      >
-                        {article.author.name}
-                      </Link>
-                    ) : (
-                      <span className="font-serif font-bold text-base sm:text-lg text-foreground">
-                        {article.author?.name || 'Redaksi Perpusjal'}
+                    {/* Baris 2: Waktu Terbit & Metrik Baca */}
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 font-mono text-[11px] text-muted uppercase tracking-wider">
+                      <span className="flex items-center gap-1.5">
+                        <Calendar className="w-3 h-3 text-muted" />
+                        {formattedDate}
                       </span>
-                    )}
-
-                    {article.author && (
-                      <UserHonorBadge
-                        equippedTitle={article.author.equippedTitle}
-                        equippedBadge={article.author.equippedBadge}
-                        earnedBadgesCount={article.author.earnedBadgesCount}
-                        badges={article.author.badges}
-                        username={article.author.username}
-                        size="sm"
-                      />
-                    )}
-                  </div>
-
-                  {/* Baris 2: Waktu Terbit & Metrik Baca */}
-                  <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 font-mono text-[11px] text-muted uppercase tracking-wider">
-                    <span className="flex items-center gap-1.5">
-                      <Calendar className="w-3 h-3 text-muted" />
-                      {formattedDate}
-                    </span>
-                    <span className="text-muted/40">•</span>
-                    <span className="flex items-center gap-1.5">
-                      <Clock className="w-3 h-3 text-muted" />
-                      {article.readingTime} Menit Baca
-                    </span>
-                    <span className="text-muted/40">•</span>
-                    <span className="flex items-center gap-1.5">
-                      <Eye className="w-3 h-3 text-muted" />
-                      {article.viewCount} Dibaca
-                    </span>
+                      <span className="text-muted/40">•</span>
+                      <span className="flex items-center gap-1.5">
+                        <Clock className="w-3 h-3 text-muted" />
+                        {article.readingTime} Menit Baca
+                      </span>
+                      <span className="text-muted/40">•</span>
+                      <span className="flex items-center gap-1.5">
+                        <Eye className="w-3 h-3 text-muted" />
+                        {article.viewCount} Dibaca
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </header>
+            </header>
+          </RevealOnScroll>
 
-          {/* Reader Interactive Toolbar */}
+          {/* Cover Image Frame */}
+          {article.coverImage && (
+            <RevealOnScroll variant="cinematic" delayMs={80}>
+              <figure className="space-y-2 border border-border-hairline bg-surface p-1.5 sm:p-2">
+                <div className="aspect-[16/9] sm:aspect-[21/10] overflow-hidden bg-surface-muted relative">
+                  <img
+                    src={article.coverImage}
+                    alt={article.title}
+                    className="w-full h-full object-cover transition-all duration-500"
+                  />
+                </div>
+                {article.coverCredit && (
+                  <figcaption className="font-mono text-[10px] uppercase tracking-wider text-muted text-right pr-1 pt-1">
+                    Kredit Foto: {article.coverCredit}
+                  </figcaption>
+                )}
+              </figure>
+            </RevealOnScroll>
+          )}
+
+          {/* Reader Interactive Toolbar (Positioned gracefully below cover image) */}
           <ArticleReaderToolbar
             title={article.title}
             slug={article.slug}
@@ -345,41 +376,11 @@ export function ArticleDetailClient({
             onScrollToComments={scrollToComments}
           />
 
-          {/* Cover Image Frame */}
-          {article.coverImage && (
-            <figure className="space-y-2 border border-border-hairline bg-surface p-1.5 sm:p-2">
-              <div className="aspect-[16/9] sm:aspect-[21/10] overflow-hidden bg-surface-muted relative">
-                <img
-                  src={article.coverImage}
-                  alt={article.title}
-                  className="w-full h-full object-cover transition-all duration-500"
-                />
-              </div>
-              {article.coverCredit && (
-                <figcaption className="font-mono text-[10px] uppercase tracking-wider text-muted text-right pr-1 pt-1">
-                  Kredit Foto: {article.coverCredit}
-                </figcaption>
-              )}
-            </figure>
-          )}
-
-          {/* Excerpt Pull-Card */}
-          {article.excerpt && (
-            <aside aria-label="Intisari Redaksi" className="p-5 border-l-4 border-foreground bg-surface/70 space-y-1 my-6">
-              <span className="font-mono text-[9px] uppercase tracking-widest text-muted block">
-                INTISARI REDAKSI
-              </span>
-              <p className="font-serif italic text-base sm:text-lg text-foreground/90 leading-relaxed">
-                “{article.excerpt}”
-              </p>
-            </aside>
-          )}
-
-          {/* Article Body Content with dynamic text scale */}
-          <article className={cn('pt-2 font-serif text-foreground/90', textScaleClasses[textScale])}>
+          {/* Article Body Content with dynamic text scale & centered reading column */}
+          <article className={cn('pt-4 font-serif text-foreground/90 antialiased', textScaleClasses[textScale])}>
             <RichTextRenderer
               content={article.content || article.plainText}
-              withDropCap={true}
+              withDropCap={false}
             />
           </article>
 
@@ -400,73 +401,121 @@ export function ArticleDetailClient({
                 </div>
               )}
 
-              {/* Share Toolbar */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-4 px-5 bg-surface border border-border-hairline font-mono text-xs uppercase tracking-wider">
-                <div className="flex items-center gap-2 text-foreground font-bold">
-                  <Share2 className="w-3.5 h-3.5 text-muted" />
-                  <span>Bagikan Naskah Ini</span>
-                  <span className="text-[10px] text-muted font-normal lowercase tracking-normal hidden sm:inline">
-                    &mdash; sebarkan gagasan merdeka warga
-                  </span>
-                </div>
+              {/* Opsi A: Kolofon Sirkulasi Gagasan (The Broadside Dispatch Slip) */}
+              <RevealOnScroll variant="stamp" delayMs={80}>
+                <div className="border-2 border-foreground bg-surface p-5 sm:p-7 space-y-4 font-mono select-none rounded-none">
+                  <div className="flex flex-wrap items-center justify-between pb-3 border-b border-border-hairline gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 bg-foreground rounded-none" />
+                      <span className="text-[11px] font-bold uppercase tracking-widest text-foreground">
+                        SIRKULASI GAGASAN // EDARAN WARGA
+                      </span>
+                    </div>
+                    <span className="text-[9.5px] uppercase tracking-wider text-muted">
+                      [ LEMBAR DISPATCH RESMI ]
+                    </span>
+                  </div>
 
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={handleShareWhatsApp}
-                    className="h-8 px-3 border border-border hover:border-foreground hover:bg-foreground hover:text-background transition-colors text-[11px]"
-                  >
-                    WhatsApp
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleShareX}
-                    className="h-8 px-3 border border-border hover:border-foreground hover:bg-foreground hover:text-background transition-colors text-[11px]"
-                  >
-                    X (Twitter)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleCopyLink}
-                    className="h-8 px-3 border border-border hover:border-foreground hover:bg-foreground hover:text-background transition-colors inline-flex items-center gap-1.5 text-[11px]"
-                  >
-                    {copied ? <Check className="w-3 h-3 text-foreground" /> : null}
-                    <span>{copied ? 'Tersalin' : 'Salin Tautan'}</span>
-                  </button>
+                  <p className="font-serif italic text-sm sm:text-base text-foreground/85 leading-relaxed">
+                    &ldquo;Jika catatan ini memantik nalar, menyentuh batin, atau membuka sudut pandang baru, siarkan ke lingkaran kawan dan lingkar baca terdekat.&rdquo;
+                  </p>
+
+                  <div className="pt-2 flex flex-wrap items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={handleShareWhatsApp}
+                      className="h-10 px-4 border border-foreground bg-background hover:bg-foreground hover:text-background transition-colors flex items-center justify-center gap-2 font-mono text-xs uppercase font-bold tracking-wider rounded-none cursor-pointer flex-1 sm:flex-initial"
+                    >
+                      <svg className="w-4 h-4 fill-current shrink-0" viewBox="0 0 24 24">
+                        <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2m.01 1.67c2.2 0 4.26.86 5.82 2.42a8.23 8.23 0 0 1 2.41 5.83c0 4.54-3.7 8.24-8.24 8.24-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.19 8.19 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.24-8.24m4.52 11.66c-.25-.13-1.47-.72-1.7-.81-.23-.08-.39-.13-.56.13-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.13-1.06-.39-2.01-1.24-.74-.66-1.25-1.48-1.39-1.73-.14-.25-.02-.39.11-.51.11-.11.25-.29.37-.44.13-.14.17-.25.25-.42.08-.17.04-.31-.02-.44-.06-.13-.56-1.35-.77-1.85-.2-.49-.41-.42-.56-.43h-.48c-.17 0-.44.06-.67.31-.23.25-.87.85-.87 2.08s.89 2.41 1.01 2.58c.13.17 1.75 2.67 4.24 3.75.59.26 1.05.41 1.41.53.59.19 1.13.16 1.56.1.47-.07 1.47-.6 1.68-1.18.21-.59.21-1.09.15-1.19-.07-.1-.23-.17-.48-.29" />
+                      </svg>
+                      <span>WhatsApp</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={handleShareFacebook}
+                      className="h-10 px-4 border border-foreground bg-background hover:bg-foreground hover:text-background transition-colors flex items-center justify-center gap-2 font-mono text-xs uppercase font-bold tracking-wider rounded-none cursor-pointer flex-1 sm:flex-initial"
+                    >
+                      <svg className="w-3.5 h-3.5 fill-current shrink-0" viewBox="0 0 24 24">
+                        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                      </svg>
+                      <span>Facebook</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={handleShareX}
+                      className="h-10 px-4 border border-foreground bg-background hover:bg-foreground hover:text-background transition-colors flex items-center justify-center gap-2 font-mono text-xs uppercase font-bold tracking-wider rounded-none cursor-pointer flex-1 sm:flex-initial"
+                    >
+                      <svg className="w-3.5 h-3.5 fill-current shrink-0" viewBox="0 0 24 24">
+                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                      </svg>
+                      <span>Bagikan di 𝕏</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={handleCopyLink}
+                      className={cn(
+                        'h-10 px-4 border transition-colors flex items-center justify-center gap-2 font-mono text-xs uppercase font-bold tracking-wider rounded-none cursor-pointer flex-1 sm:flex-initial',
+                        copied
+                          ? 'bg-foreground text-background border-foreground font-bold'
+                          : 'border-foreground bg-background hover:bg-foreground hover:text-background'
+                      )}
+                    >
+                      {copied ? (
+                        <>
+                          <Check className="w-3.5 h-3.5 stroke-[2.5]" />
+                          <span>Tautan Berhasil Disalin!</span>
+                        </>
+                      ) : (
+                        <>
+                          <Link2 className="w-3.5 h-3.5" />
+                          <span>Salin Tautan</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
                 </div>
-              </div>
+              </RevealOnScroll>
             </div>
           )}
 
           {/* Author Colophon (hidden in Zen mode) */}
-          {!isZenMode && <AuthorCard author={article.author} />}
+          {!isZenMode && (
+            <RevealOnScroll variant="cinematic" delayMs={100}>
+              <AuthorCard author={article.author} />
+            </RevealOnScroll>
+          )}
 
           {/* Community Discussion / Comments (hidden in Zen mode) */}
           {!isZenMode && (
             <div ref={commentsRef} className="pt-6">
-              <CommentsSection articleId={article.id} initialCount={article.commentCount} />
+              <RevealOnScroll variant="cinematic" delayMs={120}>
+                <CommentsSection
+                  articleId={article.id}
+                  authorId={article.author.id}
+                  initialCount={article.commentCount}
+                />
+              </RevealOnScroll>
             </div>
           )}
         </div>
 
         {/* Related Articles Section (hidden in Zen mode) */}
-        {!isZenMode && related.length > 0 && (
-          <aside aria-label="Bacaan Terkait" className="max-w-5xl mx-auto px-4 sm:px-6 md:px-8 mt-16 pt-12 border-t-2 border-foreground space-y-6">
-            <div className="flex items-center justify-between font-mono text-xs uppercase tracking-widest text-muted border-b border-border-hairline pb-2">
-              <span className="font-bold text-foreground">BACAAN TERKAIT DALAM KATEGORI INI</span>
-              <span>// {related.length.toString().padStart(2, '0')} PILIHAN</span>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {related.map((rel) => (
-                <ArticleCard key={rel.id} article={rel} showImage={false} />
-              ))}
-            </div>
-          </aside>
+        {!isZenMode && (
+          <RevealOnScroll variant="cinematic" delayMs={100}>
+            <RelatedArticles articles={related} category={article.category} />
+          </RevealOnScroll>
         )}
       </main>
 
-      {!isZenMode && <Footer />}
+      {!isZenMode && (
+        <RevealOnScroll variant="fade" delayMs={60}>
+          <Footer />
+        </RevealOnScroll>
+      )}
     </div>
   );
 }
