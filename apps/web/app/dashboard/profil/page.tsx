@@ -333,11 +333,13 @@ export default function DashboardProfileSettingsPage() {
 
     setSavingPassword(true);
     try {
-      const res = await apiClient('/users/me/change-password', {
+      const res = await apiClient('/auth/change-password', {
         method: 'POST',
         body: JSON.stringify({
+          oldPassword: passwordState.currentPassword,
           currentPassword: passwordState.currentPassword,
           newPassword: passwordState.newPassword,
+          confirmPassword: passwordState.confirmPassword,
         }),
       });
 
@@ -345,9 +347,10 @@ export default function DashboardProfileSettingsPage() {
         throw new Error(res.error.message || 'Gagal mengubah kata sandi.');
       }
 
-      setMessage({ text: 'Kata sandi akun Anda berhasil diperbarui.', type: 'success' });
+      const successMsg = 'Kata sandi berhasil diperbarui. Seluruh sesi di perangkat lain telah dicabut demi keamanan.';
+      setMessage({ text: successMsg, type: 'success' });
       setPasswordState({ currentPassword: '', newPassword: '', confirmPassword: '' });
-      showToast('Kata Sandi Diperbarui', 'Kata sandi akun Anda telah berhasil diperbarui.', 'success');
+      showToast('Kata Sandi Diperbarui', successMsg, 'success');
     } catch (err: any) {
       const errMsg = err.message || 'Gagal mengubah kata sandi.';
       setMessage({ text: errMsg, type: 'error' });
@@ -847,12 +850,16 @@ export default function DashboardProfileSettingsPage() {
 
             {/* SECTION: GANTI KATA SANDI */}
             <section className="border border-border-hairline bg-surface p-6 sm:p-7">
-              <div className="flex items-center gap-2 border-b border-border-hairline pb-3 mb-6">
+              <div className="flex items-center gap-2 border-b border-border-hairline pb-3 mb-4">
                 <KeyRound className="w-4 h-4 text-foreground" />
                 <h2 className="font-serif text-xl font-bold text-foreground">
                   Keamanan Kata Sandi
                 </h2>
               </div>
+
+              <p className="font-sans text-xs text-muted leading-relaxed mb-6">
+                Untuk mencegah pembajakan akun, penggantian kata sandi akan otomatis mencabut seluruh sesi login di perangkat lain (*Session Revocation*). Anda akan tetap masuk pada peramban ini.
+              </p>
 
               <form onSubmit={handlePasswordSubmit} className="space-y-4 max-w-md">
                 <div>

@@ -80,6 +80,44 @@ export const resetPasswordSchema = z
 
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
 
+export const resendVerificationSchema = z.object({
+  email: z.string().trim().toLowerCase().email('Format email tidak valid.').optional(),
+});
+
+export type ResendVerificationInput = z.infer<typeof resendVerificationSchema>;
+
+export const changePasswordSchema = z
+  .object({
+    oldPassword: z.string().min(1, 'Kata sandi lama wajib diisi.').optional(),
+    currentPassword: z.string().min(1, 'Kata sandi saat ini wajib diisi.').optional(),
+    newPassword: z
+      .string()
+      .min(8, 'Kata sandi baru minimal 8 karakter.')
+      .regex(/[A-Za-z]/, 'Kata sandi baru harus mengandung setidaknya satu huruf.')
+      .regex(/[0-9]/, 'Kata sandi baru harus mengandung setidaknya satu angka.'),
+    confirmPassword: z.string().optional(),
+    newPasswordConfirm: z.string().optional(),
+  })
+  .refine((data) => Boolean(data.oldPassword || data.currentPassword), {
+    message: 'Kata sandi lama wajib diisi.',
+    path: ['oldPassword'],
+  })
+  .refine(
+    (data) => {
+      const confirm = data.confirmPassword || data.newPasswordConfirm;
+      if (confirm) {
+        return data.newPassword === confirm;
+      }
+      return true;
+    },
+    {
+      message: 'Konfirmasi kata sandi baru tidak cocok.',
+      path: ['confirmPassword'],
+    }
+  );
+
+export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;
+
 export interface UserSessionPayload {
   userId: string;
   id?: string;
@@ -91,3 +129,4 @@ export interface UserSessionPayload {
   status: UserStatus;
   trustLevel: TrustLevel;
 }
+

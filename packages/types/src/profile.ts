@@ -52,11 +52,6 @@ export interface UpdateProfileInput {
   showBadges?: boolean;
 }
 
-export interface ChangePasswordInput {
-  currentPassword: string;
-  newPassword: string;
-}
-
 export interface ContributorItem {
   id: string;
   name: string;

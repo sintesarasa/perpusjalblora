@@ -15,6 +15,7 @@ import {
 } from '@perpusjal/types';
 import { badgesService } from '../badges/badges.service.js';
 import { notificationsService } from '../notifications/notifications.service.js';
+import { authService } from '../auth/auth.service.js';
 
 export class UsersService {
   async getPublicProfile(username: string): Promise<PublicUserProfile> {
@@ -216,31 +217,11 @@ export class UsersService {
     };
   }
 
-  async changePassword(userId: string, input: ChangePasswordInput) {
+  async changePassword(userId: string, input: ChangePasswordInput, currentSessionId?: string) {
     if (!userId) {
       throw HttpError.unauthorized('Sesi login telah kedaluwarsa atau tidak valid.');
     }
-    const user = await prisma.user.findUnique({ where: { id: userId } });
-    if (!user || !user.passwordHash) {
-      throw HttpError.badRequest('Akun tidak valid untuk penggantian kata sandi');
-    }
-
-    const isMatch = await bcrypt.compare(input.currentPassword, user.passwordHash);
-    if (!isMatch) {
-      throw HttpError.badRequest('Kata sandi lama tidak sesuai');
-    }
-
-    if (input.newPassword.length < 8) {
-      throw HttpError.badRequest('Kata sandi baru minimal 8 karakter');
-    }
-
-    const newHash = await bcrypt.hash(input.newPassword, 12);
-    await prisma.user.update({
-      where: { id: userId },
-      data: { passwordHash: newHash },
-    });
-
-    return { success: true, message: 'Kata sandi berhasil diperbarui' };
+    return authService.changePassword(userId, input, currentSessionId);
   }
 
   async exportMyData(userId: string): Promise<UserDataExport> {

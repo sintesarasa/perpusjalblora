@@ -46,7 +46,7 @@ export class UsersController {
       if (!userId) {
         throw HttpError.unauthorized('Sesi login telah kedaluwarsa atau tidak valid.');
       }
-      const result = await usersService.changePassword(userId, req.body);
+      const result = await usersService.changePassword(userId, req.body, req.user?.sessionId);
       res.json({ success: true, data: result });
     } catch (err) {
       next(err);

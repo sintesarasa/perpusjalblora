@@ -2,13 +2,14 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Eye, EyeOff, CheckCircle2, AlertCircle, ArrowRight, Check, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { apiClient } from '@/lib/api';
 
 function ResetPasswordForm() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const tokenFromUrl = searchParams.get('token') || '';
 
@@ -20,6 +21,7 @@ function ResetPasswordForm() {
   const [isLoading, setIsLoading] = React.useState(false);
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
   const [isSuccess, setIsSuccess] = React.useState(false);
+  const [redirectCountdown, setRedirectCountdown] = React.useState<number | null>(null);
 
   React.useEffect(() => {
     if (tokenFromUrl) {
@@ -32,6 +34,38 @@ function ResetPasswordForm() {
   const hasLetter = /[A-Za-z]/.test(password);
   const hasNumber = /[0-9]/.test(password);
   const isConfirmMatch = passwordConfirm.length > 0 && password === passwordConfirm;
+
+  // Password strength meter calculation (0 to 4)
+  const strengthScore = React.useMemo(() => {
+    if (!password) return 0;
+    let score = 0;
+    if (password.length >= 8) score += 1;
+    if (password.length >= 12) score += 1;
+    if (/[a-z]/.test(password) && /[A-Z]/.test(password)) score += 1;
+    if (/[0-9]/.test(password)) score += 1;
+    if (/[^a-zA-Z0-9]/.test(password)) score += 1;
+    return Math.min(score, 4);
+  }, [password]);
+
+  const strengthLabels = ['Sangat Lemah', 'Cukup', 'Baik', 'Kuat', 'Sangat Kokoh'];
+
+  // Handle auto-redirect countdown on success
+  React.useEffect(() => {
+    if (!isSuccess) return;
+    setRedirectCountdown(3);
+  }, [isSuccess]);
+
+  React.useEffect(() => {
+    if (redirectCountdown === null) return;
+    if (redirectCountdown <= 0) {
+      router.push('/masuk');
+      return;
+    }
+    const timer = setTimeout(() => {
+      setRedirectCountdown((prev) => (prev !== null ? prev - 1 : null));
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [redirectCountdown, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -102,10 +136,17 @@ function ResetPasswordForm() {
           keamanan. Silakan masuk kembali dengan kata sandi barumu.
         </p>
 
+        {redirectCountdown !== null && (
+          <p className="font-mono text-xs text-muted">
+            Mengalihkan ke halaman masuk dalam{' '}
+            <strong className="text-foreground">{redirectCountdown} detik</strong>...
+          </p>
+        )}
+
         <div className="pt-4 border-t border-border-hairline">
           <Link href="/masuk">
             <Button variant="solid" size="md" className="w-full font-mono tracking-wider">
-              Masuk dengan Sandi Baru
+              Masuk Sekarang dengan Sandi Baru
             </Button>
           </Link>
         </div>
@@ -159,7 +200,7 @@ function ResetPasswordForm() {
           />
         )}
 
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           <Input
             label="Kata Sandi Baru"
             type={showPassword ? 'text' : 'password'}
@@ -183,6 +224,30 @@ function ResetPasswordForm() {
               </button>
             }
           />
+
+          {/* Password Strength Meter */}
+          {password.length > 0 && (
+            <div className="space-y-1.5 pt-1">
+              <div className="flex items-center justify-between font-mono text-[10px]">
+                <span className="uppercase text-muted">Kekuatan Sandi:</span>
+                <span className="font-bold text-foreground">
+                  {strengthLabels[strengthScore]}
+                </span>
+              </div>
+              <div className="grid grid-cols-4 gap-1">
+                {[1, 2, 3, 4].map((step) => (
+                  <div
+                    key={step}
+                    className={`h-1.5 transition-colors ${
+                      strengthScore >= step
+                        ? 'bg-foreground'
+                        : 'bg-surface-muted border border-border-hairline'
+                    }`}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
 
           {password.length > 0 && (
             <div className="p-2.5 bg-surface-muted/50 border border-border-hairline font-mono text-[11px] grid grid-cols-2 gap-1.5 mt-1.5">

@@ -2,23 +2,36 @@
 
 import * as React from 'react';
 import Link from 'next/link';
+import { z } from 'zod';
 import { CheckCircle2, AlertCircle, ArrowLeft, ArrowRight } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { apiClient } from '@/lib/api';
 
+const forgotPasswordClientSchema = z.object({
+  email: z
+    .string()
+    .trim()
+    .min(1, 'Alamat email wajib diisi.')
+    .email('Format alamat email tidak valid.')
+    .max(120, 'Alamat email terlalu panjang.'),
+});
+
 export default function ForgotPasswordPage() {
   const [email, setEmail] = React.useState('');
   const [isLoading, setIsLoading] = React.useState(false);
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
+  const [fieldError, setFieldError] = React.useState<string | null>(null);
   const [isSuccess, setIsSuccess] = React.useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
+    setFieldError(null);
 
-    if (!email.trim()) {
-      setErrorMessage('Alamat email wajib diisi.');
+    const validation = forgotPasswordClientSchema.safeParse({ email });
+    if (!validation.success) {
+      setFieldError(validation.error.errors[0]?.message || 'Periksa kembali alamat email.');
       return;
     }
 
@@ -28,7 +41,7 @@ export default function ForgotPasswordPage() {
       const res = await apiClient<{ message: string }>('/auth/forgot-password', {
         method: 'POST',
         body: JSON.stringify({
-          email: email.trim().toLowerCase(),
+          email: validation.data.email.toLowerCase(),
         }),
       });
 
@@ -90,7 +103,7 @@ export default function ForgotPasswordPage() {
           </div>
 
           <p className="text-sm font-sans text-foreground/85 leading-relaxed">
-            Jika alamat <strong className="font-mono font-bold text-foreground">{email}</strong> terdaftar di sistem kami, tautan pengaturan ulang kata sandi telah dikirimkan. Tautan hanya berlaku selama 1 jam demi alasan keamanan.
+            Jika alamat <strong className="font-mono font-bold text-foreground">{email}</strong> terdaftar di sistem kami, tautan pengaturan ulang kata sandi telah dikirimkan ke kotak masukmu. Tautan hanya berlaku selama 1 jam demi alasan keamanan.
           </p>
 
           <div className="pt-4 border-t border-border-hairline">
@@ -111,7 +124,11 @@ export default function ForgotPasswordPage() {
             autoFocus
             placeholder="nama@domain.com"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              if (fieldError) setFieldError(null);
+            }}
+            error={fieldError || undefined}
             required
             disabled={isLoading}
           />

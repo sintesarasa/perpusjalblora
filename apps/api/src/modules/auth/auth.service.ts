@@ -4,10 +4,12 @@ import jwt from 'jsonwebtoken';
 import { prisma } from '../../lib/prisma.js';
 import { HttpError } from '../../utils/errors.js';
 import { normalizePhoneNumber } from '../../utils/phone.js';
+import { emailService } from '../../services/email.service.js';
 import {
   RegisterInput,
   LoginInput,
   ResetPasswordInput,
+  ChangePasswordInput,
   Role,
   UserStatus,
   TrustLevel,
@@ -73,11 +75,8 @@ export class AuthService {
       },
     });
 
-    // Log token in development for testing
-    if (process.env.NODE_ENV !== 'production') {
-      console.log(`[AUTH-DEV] Verification token for ${user.email}: ${rawToken}`);
-      console.log(`[AUTH-DEV] Verification URL: http://localhost:3000/verifikasi?token=${rawToken}`);
-    }
+    // Dispatch transactional verification email via Resend (with graceful local fallback)
+    await emailService.sendVerificationEmail(user.email, user.name, rawToken);
 
     return {
       id: user.id,
@@ -346,19 +345,60 @@ export class AuthService {
   }
 
   /**
-   * Resend verification email (BR-AUTH-02: max 3/hour)
+   * Resend verification email with 60s cooldown & 3/hour rate limit (BR-AUTH-02)
    */
-  async resendVerification(userId: string) {
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-    });
+  async resendVerification(identifier: { userId?: string; email?: string }) {
+    let user = null;
 
-    if (!user) {
-      throw HttpError.notFound('Pengguna tidak ditemukan.');
+    if (identifier.userId) {
+      user = await prisma.user.findUnique({
+        where: { id: identifier.userId },
+      });
+      if (!user) {
+        throw HttpError.notFound('Pengguna tidak ditemukan.');
+      }
+    } else if (identifier.email) {
+      const normalizedEmail = identifier.email.trim().toLowerCase();
+      user = await prisma.user.findUnique({
+        where: { email: normalizedEmail },
+      });
+      if (!user) {
+        // User enumeration prevention: Return success message even if email is not in DB
+        return {
+          message: 'Jika email terdaftar dan belum aktif, tautan aktivasi baru telah dikirimkan.',
+        };
+      }
+    } else {
+      throw HttpError.badRequest('ID pengguna atau email wajib disertakan.');
     }
 
-    if (user.emailVerifiedAt) {
-      throw HttpError.badRequest('Email akun ini sudah terverifikasi.', 'ALREADY_VERIFIED');
+    if (user.emailVerifiedAt || user.status === UserStatus.ACTIVE) {
+      if (identifier.userId) {
+        throw HttpError.badRequest('Email akun ini sudah terverifikasi.', 'ALREADY_VERIFIED');
+      }
+      return {
+        message: 'Akun ini sudah terverifikasi. Silakan masuk langsung ke akunmu.',
+      };
+    }
+
+    // Anti-Spam: Check cooldown (minimal 60 detik antar permintaan)
+    const latestToken = await prisma.verificationToken.findFirst({
+      where: {
+        userId: user.id,
+        type: TokenType.EMAIL_VERIFY,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    if (latestToken) {
+      const elapsedMs = Date.now() - latestToken.createdAt.getTime();
+      if (elapsedMs < 60 * 1000) {
+        const remainingSeconds = Math.ceil((60 * 1000 - elapsedMs) / 1000);
+        throw HttpError.tooManyRequests(
+          `Mohon tunggu ${remainingSeconds} detik sebelum meminta pengiriman ulang email aktivasi.`,
+          'COOLDOWN_ACTIVE'
+        );
+      }
     }
 
     // Check rate limit: max 3 created in last 1 hour
@@ -378,7 +418,7 @@ export class AuthService {
       );
     }
 
-    // Invalidate old tokens
+    // Invalidate old pending tokens
     await prisma.verificationToken.updateMany({
       where: {
         userId: user.id,
@@ -390,6 +430,7 @@ export class AuthService {
       },
     });
 
+    // 24 hours expiry per BR-AUTH-02
     const rawToken = crypto.randomBytes(32).toString('hex');
     const tokenHash = hashToken(rawToken);
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
@@ -403,10 +444,8 @@ export class AuthService {
       },
     });
 
-    if (process.env.NODE_ENV !== 'production') {
-      console.log(`[AUTH-DEV] Resent verification token for ${user.email}: ${rawToken}`);
-      console.log(`[AUTH-DEV] URL: http://localhost:3000/verifikasi?token=${rawToken}`);
-    }
+    // Dispatch real email via Resend
+    await emailService.sendVerificationEmail(user.email, user.name, rawToken);
 
     return {
       message: 'Email verifikasi telah dikirim ulang. Silakan periksa kotak masukmu.',
@@ -415,15 +454,29 @@ export class AuthService {
   }
 
   /**
-   * Request forgot password link (BR-AUTH-04: always returns 200)
+   * Request forgot password link (BR-AUTH-04 & Security Protocols)
+   * Prevents user enumeration by always returning generic 200 response
    */
   async forgotPassword(email: string) {
+    const normalizedEmail = email.trim().toLowerCase();
     const user = await prisma.user.findUnique({
-      where: { email },
+      where: { email: normalizedEmail },
     });
 
     if (user) {
-      // Check rate limit: max 3/hour
+      // Cooldown check: minimal 60 seconds
+      const latestResetToken = await prisma.verificationToken.findFirst({
+        where: {
+          userId: user.id,
+          type: TokenType.PASSWORD_RESET,
+        },
+        orderBy: { createdAt: 'desc' },
+      });
+
+      const isCooldownActive =
+        latestResetToken && Date.now() - latestResetToken.createdAt.getTime() < 60 * 1000;
+
+      // Rate limit check: max 3/hour
       const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
       const recentTokensCount = await prisma.verificationToken.count({
         where: {
@@ -433,7 +486,7 @@ export class AuthService {
         },
       });
 
-      if (recentTokensCount < 3) {
+      if (!isCooldownActive && recentTokensCount < 3) {
         // Invalidate old reset tokens
         await prisma.verificationToken.updateMany({
           where: {
@@ -460,21 +513,19 @@ export class AuthService {
           },
         });
 
-        if (process.env.NODE_ENV !== 'production') {
-          console.log(`[AUTH-DEV] Password reset token for ${user.email}: ${rawToken}`);
-          console.log(`[AUTH-DEV] Reset URL: http://localhost:3000/reset-password?token=${rawToken}`);
-        }
+        // Send transactional reset email via Resend / fallback
+        await emailService.sendPasswordResetEmail(user.email, user.name, rawToken);
       }
     }
 
     // Always return generic success message per API-SPEC & BR-AUTH-04
     return {
-      message: 'Jika email terdaftar, tautan pengaturan ulang kata sandi telah dikirimkan.',
+      message: 'Jika email terdaftar, tautan pemulihan kata sandi telah dikirimkan ke kotak masukmu.',
     };
   }
 
   /**
-   * Reset password with token (BR-AUTH-04: revoke all other sessions)
+   * Reset password with token (BR-AUTH-04: revoke all existing sessions & send notification)
    */
   async resetPassword(input: ResetPasswordInput) {
     const tokenHash = hashToken(input.token);
@@ -486,9 +537,12 @@ export class AuthService {
         usedAt: null,
         expiresAt: { gt: new Date() },
       },
+      include: {
+        user: true,
+      },
     });
 
-    if (!tokenRecord) {
+    if (!tokenRecord || !tokenRecord.user) {
       throw HttpError.badRequest('Tautan reset password tidak valid atau sudah kedaluwarsa.', 'INVALID_TOKEN');
     }
 
@@ -513,8 +567,75 @@ export class AuthService {
       }),
     ]);
 
+    // Dispatch security notification to inform user that their password changed
+    await emailService.sendPasswordChangedNotification(
+      tokenRecord.user.email,
+      tokenRecord.user.name
+    );
+
     return {
       message: 'Password berhasil diperbarui. Silakan masuk kembali dengan password barumu.',
+    };
+  }
+
+  /**
+   * Change password for logged-in user (Session revocation of other devices + notification)
+   */
+  async changePassword(
+    userId: string,
+    input: ChangePasswordInput,
+    currentSessionId?: string
+  ) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user || !user.passwordHash) {
+      throw HttpError.notFound('Pengguna tidak ditemukan atau belum memiliki kata sandi.');
+    }
+
+    const oldPassword = input.oldPassword || input.currentPassword;
+    if (!oldPassword) {
+      throw HttpError.badRequest('Kata sandi lama wajib diisi.', 'MISSING_OLD_PASSWORD');
+    }
+
+    const isMatch = await bcrypt.compare(oldPassword, user.passwordHash);
+    if (!isMatch) {
+      throw HttpError.badRequest('Kata sandi lama tidak sesuai.', 'INVALID_OLD_PASSWORD');
+    }
+
+    if (oldPassword === input.newPassword) {
+      throw HttpError.badRequest(
+        'Kata sandi baru tidak boleh sama dengan kata sandi saat ini.',
+        'SAME_PASSWORD'
+      );
+    }
+
+    const newPasswordHash = await bcrypt.hash(input.newPassword, BCRYPT_SALT_ROUNDS);
+
+    await prisma.$transaction([
+      prisma.user.update({
+        where: { id: user.id },
+        data: {
+          passwordHash: newPasswordHash,
+          failedLoginCount: 0,
+          lockedUntil: null,
+        },
+      }),
+      // Revoke all other active sessions EXCEPT the current one
+      prisma.session.deleteMany({
+        where: {
+          userId: user.id,
+          ...(currentSessionId ? { id: { not: currentSessionId } } : {}),
+        },
+      }),
+    ]);
+
+    // Dispatch security notification email
+    await emailService.sendPasswordChangedNotification(user.email, user.name);
+
+    return {
+      message: 'Kata sandi berhasil diperbarui dan sesi perangkat lain telah dicabut demi keamanan.',
     };
   }
 

@@ -5,8 +5,10 @@ import {
   forgotPasswordSchema,
   resetPasswordSchema,
   verifyEmailSchema,
+  changePasswordSchema,
 } from '@perpusjal/types';
 import { authService } from './auth.service.js';
+import { HttpError } from '../../utils/errors.js';
 
 const COOKIE_NAME = 'perpusjal_session';
 
@@ -71,8 +73,23 @@ export class AuthController {
 
   async resendVerification(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = req.user!.userId;
-      const result = await authService.resendVerification(userId);
+      const userId = req.user?.userId || req.user?.id;
+      const email = typeof req.body?.email === 'string' ? req.body.email : undefined;
+      const result = await authService.resendVerification({ userId, email });
+      res.status(200).json({ data: result });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async changePassword(req: Request, res: Response, next: NextFunction) {
+    try {
+      const userId = req.user?.userId || req.user?.id;
+      if (!userId) {
+        throw HttpError.unauthorized('Sesi login telah kedaluwarsa atau tidak valid.');
+      }
+      const validated = changePasswordSchema.parse(req.body);
+      const result = await authService.changePassword(userId, validated, req.user?.sessionId);
       res.status(200).json({ data: result });
     } catch (error) {
       next(error);

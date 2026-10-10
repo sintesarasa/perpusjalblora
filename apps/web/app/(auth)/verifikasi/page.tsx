@@ -2,8 +2,8 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
-import { CheckCircle2, AlertCircle, ArrowRight, RefreshCw } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { CheckCircle2, AlertCircle, ArrowRight, RefreshCw, Mail } from 'lucide-react';
 import { CustomLoader } from '@/components/ui/custom-loader';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -11,20 +11,26 @@ import { apiClient } from '@/lib/api';
 import { useAuth } from '@/contexts/auth-context';
 
 function VerifyEmailContent() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const tokenFromUrl = searchParams.get('token');
-  const { user, isAuthenticated, refreshUser } = useAuth();
+  const { isAuthenticated, refreshUser } = useAuth();
 
   const [tokenInput, setTokenInput] = React.useState(tokenFromUrl || '');
   const [status, setStatus] = React.useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [message, setMessage] = React.useState<string | null>(null);
 
+  // Auto-redirect timer state
+  const [redirectCountdown, setRedirectCountdown] = React.useState<number | null>(null);
+
   // Resend state
+  const [resendEmail, setResendEmail] = React.useState('');
+  const [showEmailPrompt, setShowEmailPrompt] = React.useState(false);
   const [isResending, setIsResending] = React.useState(false);
   const [resendCooldown, setResendCooldown] = React.useState(0);
-  const [resendNotice, setResendNotice] = React.useState<string | null>(null);
+  const [resendNotice, setResendNotice] = React.useState<{ text: string; type: 'success' | 'error' } | null>(null);
 
-  // Cooldown countdown
+  // Cooldown countdown timer
   React.useEffect(() => {
     if (resendCooldown <= 0) return;
     const timer = setTimeout(() => {
@@ -32,6 +38,24 @@ function VerifyEmailContent() {
     }, 1000);
     return () => clearTimeout(timer);
   }, [resendCooldown]);
+
+  // Success auto-redirect countdown
+  React.useEffect(() => {
+    if (status !== 'success') return;
+    setRedirectCountdown(3);
+  }, [status]);
+
+  React.useEffect(() => {
+    if (redirectCountdown === null) return;
+    if (redirectCountdown <= 0) {
+      router.push('/dashboard');
+      return;
+    }
+    const timer = setTimeout(() => {
+      setRedirectCountdown((prev) => (prev !== null ? prev - 1 : null));
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [redirectCountdown, router]);
 
   const performVerification = React.useCallback(
     async (tokenToVerify: string) => {
@@ -46,7 +70,7 @@ function VerifyEmailContent() {
           message: string;
         }>('/auth/verify-email', {
           method: 'POST',
-          body: JSON.stringify({ token: tokenToVerify }),
+          body: JSON.stringify({ token: tokenToVerify.trim() }),
         });
 
         if (res.error) {
@@ -56,9 +80,9 @@ function VerifyEmailContent() {
         }
 
         setStatus('success');
-        setMessage(res.data?.message || 'Email berhasil diverifikasi! Akunmu kini aktif.');
+        setMessage(res.data?.message || 'Email berhasil diverifikasi! Akun pembacamu kini aktif.');
         // Refresh session context seamlessly
-        await refreshUser();
+        await refreshUser().catch(() => {});
       } catch {
         setStatus('error');
         setMessage('Gagal menghubungi server perpusjal. Periksa koneksi internetmu.');
@@ -69,6 +93,7 @@ function VerifyEmailContent() {
 
   const hasCalledRef = React.useRef(false);
 
+  // Auto-submit when token exists in URL
   React.useEffect(() => {
     if (tokenFromUrl && !hasCalledRef.current) {
       hasCalledRef.current = true;
@@ -83,24 +108,37 @@ function VerifyEmailContent() {
     }
   };
 
-  const handleResend = async () => {
+  const handleResend = async (emailOverride?: string) => {
     if (resendCooldown > 0 || isResending) return;
     setIsResending(true);
     setResendNotice(null);
 
+    const emailToSend = emailOverride || resendEmail.trim();
+
     try {
       const res = await apiClient<{ message: string }>('/auth/resend-verification', {
         method: 'POST',
+        body: JSON.stringify(emailToSend ? { email: emailToSend } : {}),
       });
 
       if (res.error) {
-        setResendNotice(res.error.message || 'Gagal mengirim ulang email verifikasi.');
+        setResendNotice({
+          text: res.error.message || 'Gagal mengirim ulang email aktivasi.',
+          type: 'error',
+        });
       } else {
-        setResendNotice('Tautan aktivasi baru telah dikirimkan ke kotak masuk emailmu.');
+        setResendNotice({
+          text: res.data?.message || 'Tautan aktivasi baru telah dikirimkan ke kotak masukmu.',
+          type: 'success',
+        });
         setResendCooldown(60);
+        setShowEmailPrompt(false);
       }
     } catch {
-      setResendNotice('Tidak dapat terhubung ke server.');
+      setResendNotice({
+        text: 'Tidak dapat terhubung ke server perpusjal.',
+        type: 'error',
+      });
     } finally {
       setIsResending(false);
     }
@@ -123,7 +161,7 @@ function VerifyEmailContent() {
         </p>
       </div>
 
-      {/* Loading state */}
+      {/* Loading state with CustomLoader */}
       {status === 'loading' && (
         <div className="border border-border p-10 flex flex-col items-center justify-center text-center space-y-6 bg-surface">
           <CustomLoader size="lg" label="MEMVALIDASI TOKEN..." />
@@ -152,16 +190,22 @@ function VerifyEmailContent() {
             {message || 'Email berhasil diverifikasi! Akunmu kini aktif dengan kuota peminjaman 2 buku.'}
           </p>
 
+          {redirectCountdown !== null && (
+            <p className="font-mono text-xs text-muted">
+              Mengalihkan ke dasbor dalam{' '}
+              <strong className="text-foreground">{redirectCountdown} detik</strong>...
+            </p>
+          )}
+
           <div className="pt-4 border-t border-border-hairline flex flex-col sm:flex-row gap-3">
-            <Link href="/buku" className="flex-1">
-              <Button variant="solid" size="lg" className="w-full inline-flex items-center justify-center gap-2 font-mono tracking-wider">
-                <span>Jelajahi Katalog Buku</span>
-                <ArrowRight className="w-4 h-4" />
+            <Link href="/dashboard" className="flex-1">
+              <Button variant="solid" size="lg" className="w-full font-mono tracking-wider">
+                Buka Dasbor
               </Button>
             </Link>
-            <Link href="/dashboard" className="flex-1">
+            <Link href="/" className="flex-1">
               <Button variant="outline" size="lg" className="w-full font-mono tracking-wider">
-                Buka Dasbor
+                Lanjut ke Beranda
               </Button>
             </Link>
           </div>
@@ -189,7 +233,7 @@ function VerifyEmailContent() {
               label="Kode / Token Aktivasi"
               name="token"
               type="text"
-              autoFocus
+              autoFocus={!tokenFromUrl}
               placeholder="Tempel token yang kamu terima dari email"
               value={tokenInput}
               onChange={(e) => setTokenInput(e.target.value)}
@@ -207,12 +251,18 @@ function VerifyEmailContent() {
             </Button>
           </form>
 
-          {/* Resend Verification Action */}
+          {/* Resend Verification Action Box */}
           <div className="pt-4 border-t border-border-hairline text-center space-y-3 font-mono text-xs">
             {resendNotice && (
-              <p className="font-sans text-xs text-foreground bg-surface-muted p-2 border border-border-hairline">
-                {resendNotice}
-              </p>
+              <div
+                className={`p-3 border text-xs font-sans text-left ${
+                  resendNotice.type === 'success'
+                    ? 'border-foreground bg-surface text-foreground font-semibold'
+                    : 'border-red-600 bg-red-50 dark:bg-red-950/30 text-red-900 dark:text-red-200'
+                }`}
+              >
+                {resendNotice.text}
+              </div>
             )}
 
             {isAuthenticated ? (
@@ -220,7 +270,7 @@ function VerifyEmailContent() {
                 <p className="text-muted font-sans text-xs mb-2">Belum menerima email aktivasi?</p>
                 <button
                   type="button"
-                  onClick={handleResend}
+                  onClick={() => handleResend()}
                   disabled={resendCooldown > 0 || isResending}
                   className="font-bold uppercase tracking-wider text-foreground hover:underline inline-flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
                 >
@@ -233,14 +283,73 @@ function VerifyEmailContent() {
                 </button>
               </div>
             ) : (
-              <div className="space-y-1.5 font-sans">
+              <div className="space-y-3 font-sans">
                 <p className="text-xs text-muted">Belum menerima email aktivasi?</p>
-                <Link
-                  href="/masuk"
-                  className="font-mono text-xs uppercase tracking-wider font-semibold text-foreground underline underline-offset-4 hover:opacity-75 transition-opacity inline-block"
-                >
-                  Masuk untuk Meminta Kirim Ulang
-                </Link>
+
+                {showEmailPrompt ? (
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      if (resendEmail.trim()) handleResend(resendEmail.trim());
+                    }}
+                    className="space-y-3 text-left p-4 border border-border-hairline bg-surface"
+                  >
+                    <Input
+                      label="Masukkan Alamat Email Pendaftaran"
+                      type="email"
+                      value={resendEmail}
+                      onChange={(e) => setResendEmail(e.target.value)}
+                      placeholder="nama@domain.com"
+                      required
+                      autoFocus
+                    />
+                    <div className="flex gap-2">
+                      <Button
+                        type="submit"
+                        variant="solid"
+                        size="md"
+                        className="flex-1 font-mono tracking-wider"
+                        disabled={resendCooldown > 0 || isResending || !resendEmail.trim()}
+                        isLoading={isResending}
+                      >
+                        {resendCooldown > 0
+                          ? `Tunggu (${resendCooldown}s)`
+                          : 'Kirim Tautan Baru'}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="md"
+                        onClick={() => setShowEmailPrompt(false)}
+                      >
+                        Batal
+                      </Button>
+                    </div>
+                  </form>
+                ) : (
+                  <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                    <button
+                      type="button"
+                      onClick={() => setShowEmailPrompt(true)}
+                      disabled={resendCooldown > 0 || isResending}
+                      className="font-mono text-xs uppercase tracking-wider font-bold text-foreground hover:underline inline-flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                    >
+                      <Mail className="w-3.5 h-3.5" />
+                      <span>
+                        {resendCooldown > 0
+                          ? `Kirim Ulang (${resendCooldown}s)`
+                          : 'Kirim Ulang Email Aktivasi'}
+                      </span>
+                    </button>
+                    <span className="text-muted hidden sm:inline">&bull;</span>
+                    <Link
+                      href="/masuk"
+                      className="font-mono text-xs uppercase tracking-wider font-semibold text-muted hover:text-foreground underline underline-offset-4 transition-colors"
+                    >
+                      Masuk ke Akun
+                    </Link>
+                  </div>
+                )}
               </div>
             )}
           </div>
