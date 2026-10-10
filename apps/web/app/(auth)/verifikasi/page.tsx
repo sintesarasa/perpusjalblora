@@ -3,7 +3,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { CheckCircle2, AlertCircle, ArrowRight, RefreshCw, Mail } from 'lucide-react';
+import { CheckCircle2, AlertCircle, ArrowRight, RefreshCw, Mail, Info } from 'lucide-react';
 import { CustomLoader } from '@/components/ui/custom-loader';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -253,6 +253,17 @@ function VerifyEmailContent() {
 
           {/* Resend Verification Action Box */}
           <div className="pt-4 border-t border-border-hairline text-center space-y-3 font-mono text-xs">
+            {/* Panduan Folder Spam */}
+            <div className="p-3 border border-border-hairline bg-surface-muted/50 text-left space-y-1 font-sans text-xs">
+              <div className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-widest font-bold text-foreground">
+                <Info className="w-3 h-3 text-foreground shrink-0" />
+                <span>TIDAK MENEMUKAN EMAIL DI INBOX?</span>
+              </div>
+              <p className="text-foreground/80 leading-relaxed">
+                Mohon periksa folder <strong>Spam</strong> atau tab <strong>Promosi</strong> pada akun emailmu. Tandai sebagai <em>“Bukan Spam”</em> agar tautan dapat diklik dengan aman.
+              </p>
+            </div>
+
             {resendNotice && (
               <div
                 className={`p-3 border text-xs font-sans text-left ${

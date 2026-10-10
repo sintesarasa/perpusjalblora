@@ -3,7 +3,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { z } from 'zod';
-import { CheckCircle2, AlertCircle, ArrowLeft, ArrowRight } from 'lucide-react';
+import { CheckCircle2, AlertCircle, ArrowLeft, ArrowRight, Info } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { apiClient } from '@/lib/api';
@@ -105,6 +105,19 @@ export default function ForgotPasswordPage() {
           <p className="text-sm font-sans text-foreground/85 leading-relaxed">
             Jika alamat <strong className="font-mono font-bold text-foreground">{email}</strong> terdaftar di sistem kami, tautan pengaturan ulang kata sandi telah dikirimkan ke kotak masukmu. Tautan hanya berlaku selama 1 jam demi alasan keamanan.
           </p>
+
+          {/* Panduan Folder Spam */}
+          <div className="p-4 border border-border-hairline bg-surface-muted/60 space-y-1.5 text-xs text-left">
+            <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest font-bold text-foreground">
+              <Info className="w-3.5 h-3.5 text-foreground shrink-0" />
+              <span>TIDAK MENEMUKAN DI KOTAK MASUK?</span>
+            </div>
+            <p className="font-sans text-foreground/80 leading-relaxed">
+              Jika surat pemulihan belum muncul di <strong>Kotak Masuk (Inbox)</strong>, periksa folder{' '}
+              <strong className="text-foreground underline underline-offset-2">Spam</strong> atau tab{' '}
+              <strong className="text-foreground">Promosi</strong> emailmu.
+            </p>
+          </div>
 
           <div className="pt-4 border-t border-border-hairline">
             <Link href="/masuk">

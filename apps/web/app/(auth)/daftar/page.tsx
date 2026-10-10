@@ -3,7 +3,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Eye, EyeOff, CheckCircle2, AlertCircle, ArrowRight, Check, X } from 'lucide-react';
+import { Eye, EyeOff, CheckCircle2, AlertCircle, ArrowRight, Check, X, Info } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { RevealOnScroll } from '@/components/ui/reveal-on-scroll';
@@ -206,6 +206,20 @@ function RegisterForm() {
             Buka tautan tersebut dalam waktu 24 jam untuk mengaktifkan akun pembaca dan hak peminjaman
             buku.
           </p>
+
+          {/* Catatan Periksa Spam / Promosi */}
+          <div className="p-4 border border-border-hairline bg-surface-muted/60 space-y-1.5 text-xs">
+            <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest font-bold text-foreground">
+              <Info className="w-3.5 h-3.5 text-foreground shrink-0" />
+              <span>PANDUAN KOTAK MASUK & SPAM</span>
+            </div>
+            <p className="font-sans text-foreground/80 leading-relaxed">
+              Jika warta aktivasi belum tampak di <strong>Kotak Masuk (Inbox)</strong>, mohon periksa folder{' '}
+              <strong className="text-foreground underline underline-offset-2">Spam</strong> atau tab{' '}
+              <strong className="text-foreground">Promosi</strong> emailmu. Tandai sebagai{' '}
+              <em>“Bukan Spam” (Not Spam)</em> agar surat peminjaman buku berikutnya masuk lancar ke kotak utama.
+            </p>
+          </div>
 
           {successData.devVerificationToken && (
             <div className="p-4 bg-surface-muted border border-border-hairline space-y-2 font-mono text-xs">
