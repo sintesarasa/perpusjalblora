@@ -34,7 +34,7 @@ export function getApiUrl(): string {
   }
 
   // Server-side
-  const internal = sanitizeUrl(process.env.INTERNAL_API_URL);
+  const internal = sanitizeUrl(process.env.INTERNAL_API_URL) || sanitizeUrl(process.env.API_URL);
   if (internal) {
     let url = internal.replace(/\/+$/, '');
     if (!url.includes('/api/v1')) {

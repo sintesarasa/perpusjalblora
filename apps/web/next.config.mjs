@@ -21,6 +21,7 @@ const nextConfig = {
     };
     const rawTarget =
       sanitize(process.env.INTERNAL_API_URL) ||
+      sanitize(process.env.API_URL) ||
       sanitize(process.env.NEXT_PUBLIC_API_URL) ||
       'http://localhost:4000';
     const apiTarget = rawTarget.replace(/\/api\/v1\/?$/, '').replace(/\/+$/, '');
