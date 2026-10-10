@@ -23,6 +23,7 @@ import { getTierInfo, inferTierFromTitle } from '@/lib/badge-tier-styles';
 import { UserAvatar } from '@/components/ui/user-avatar';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
+import { getApiUrl } from '@/lib/api';
 import { RevealOnScroll } from '@/components/ui/reveal-on-scroll';
 
 export const dynamic = 'force-dynamic';
@@ -49,9 +50,9 @@ export async function generateMetadata({
 }
 
 async function fetchUserProfile(username: string): Promise<PublicUserProfile | null> {
-  const apiUrl = process.env.INTERNAL_API_URL || 'http://localhost:4000';
+  const apiUrl = getApiUrl();
   try {
-    const res = await fetch(`${apiUrl}/api/v1/users/profile/${username}`, {
+    const res = await fetch(`${apiUrl}/users/profile/${username}`, {
       cache: 'no-store',
     });
     if (!res.ok) {

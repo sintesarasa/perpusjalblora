@@ -14,9 +14,14 @@ const nextConfig = {
     ],
   },
   async rewrites() {
+    const sanitize = (val) => {
+      if (!val || typeof val !== 'string') return '';
+      const t = val.trim();
+      return t === 'undefined' || t === 'null' ? '' : t;
+    };
     const rawTarget =
-      process.env.INTERNAL_API_URL ||
-      process.env.NEXT_PUBLIC_API_URL ||
+      sanitize(process.env.INTERNAL_API_URL) ||
+      sanitize(process.env.NEXT_PUBLIC_API_URL) ||
       'http://localhost:4000';
     const apiTarget = rawTarget.replace(/\/api\/v1\/?$/, '').replace(/\/+$/, '');
     return [

@@ -29,7 +29,7 @@ import { compressProfileImage, formatBytes, CompressionResult } from '@/lib/imag
 import { CircleCropModal } from '@/components/ui/circle-crop-modal';
 import { getTierInfo, inferTierFromTitle } from '@/lib/badge-tier-styles';
 import { cn } from '@/lib/utils';
-import { apiClient } from '@/lib/api';
+import { apiClient, getApiUrl } from '@/lib/api';
 import { useAuth } from '@/contexts/auth-context';
 
 export default function DashboardProfileSettingsPage() {
@@ -361,7 +361,7 @@ export default function DashboardProfileSettingsPage() {
   };
 
   const handleExportData = () => {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
+    const apiUrl = getApiUrl();
     window.location.href = `${apiUrl}/users/me/export`;
   };
 

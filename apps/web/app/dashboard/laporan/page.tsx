@@ -3,7 +3,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { CustomLoader } from '@/components/ui/custom-loader';
-import { apiClient } from '@/lib/api';
+import { apiClient, getApiUrl } from '@/lib/api';
 import { Role } from '@perpusjal/types';
 import {
   BarChart3,
@@ -101,7 +101,7 @@ export default function DashboardReportsPage() {
     setDownloading(true);
     try {
       const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
+      const apiUrl = getApiUrl();
       const res = await fetch(`${apiUrl}/loans/reports/export`, {
         headers: {
           ...(token ? { Authorization: `Bearer ${token}` } : {}),

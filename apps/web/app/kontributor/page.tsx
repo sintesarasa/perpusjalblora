@@ -4,13 +4,14 @@ import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { RevealOnScroll } from '@/components/ui/reveal-on-scroll';
 import { ContributorsDirectoryClient } from './contributors-client';
+import { getApiUrl } from '@/lib/api';
 
 export const dynamic = 'force-dynamic';
 
 async function fetchContributors(): Promise<ContributorItem[]> {
-  const apiUrl = process.env.INTERNAL_API_URL || 'http://localhost:4000';
+  const apiUrl = getApiUrl();
   try {
-    const res = await fetch(`${apiUrl}/api/v1/users/contributors?limit=50`, {
+    const res = await fetch(`${apiUrl}/users/contributors?limit=50`, {
       cache: 'no-store',
     });
     if (!res.ok) return [];

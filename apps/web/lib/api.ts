@@ -1,31 +1,58 @@
-function getApiUrl(): string {
+function sanitizeUrl(val: unknown): string | null {
+  if (typeof val !== 'string') return null;
+  const trimmed = val.trim();
+  if (
+    !trimmed ||
+    trimmed === 'undefined' ||
+    trimmed === 'null' ||
+    trimmed === 'false' ||
+    trimmed === 'true'
+  ) {
+    return null;
+  }
+  return trimmed;
+}
+
+export function getApiUrl(): string {
   if (typeof window !== 'undefined') {
-    let url = process.env.NEXT_PUBLIC_API_URL || '/api/v1';
-    // If running on HTTPS in production browser and url points to insecure http://localhost,
+    const raw = sanitizeUrl(process.env.NEXT_PUBLIC_API_URL);
+    // If not configured, or if running in browser on HTTPS while env points to insecure http://localhost,
     // fallback to relative '/api/v1' to prevent Mixed Content block.
-    if (window.location.protocol === 'https:' && url.startsWith('http://localhost')) {
+    if (!raw || (window.location.protocol === 'https:' && raw.startsWith('http://localhost'))) {
       return '/api/v1';
     }
-    url = url.replace(/\/+$/, '');
+    let url = raw.replace(/\/+$/, '');
     // If backend URL was supplied without /api/v1, ensure path is included
     if (url.startsWith('http') && !url.includes('/api/v1')) {
       url = `${url}/api/v1`;
     }
+    // If it's a relative path without leading slash, ensure leading slash
+    if (!url.startsWith('http') && !url.startsWith('/')) {
+      url = `/${url}`;
+    }
     return url;
   }
-  if (process.env.INTERNAL_API_URL) {
-    let url = process.env.INTERNAL_API_URL.replace(/\/+$/, '');
+
+  // Server-side
+  const internal = sanitizeUrl(process.env.INTERNAL_API_URL);
+  if (internal) {
+    let url = internal.replace(/\/+$/, '');
     if (!url.includes('/api/v1')) {
       url = `${url}/api/v1`;
     }
     return url;
   }
-  let url = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
-  url = url.replace(/\/+$/, '');
-  if (url.startsWith('http') && !url.includes('/api/v1')) {
-    url = `${url}/api/v1`;
+
+  const raw = sanitizeUrl(process.env.NEXT_PUBLIC_API_URL);
+  if (raw && raw.startsWith('http')) {
+    let url = raw.replace(/\/+$/, '');
+    if (!url.includes('/api/v1')) {
+      url = `${url}/api/v1`;
+    }
+    return url;
   }
-  return url;
+
+  return 'http://localhost:4000/api/v1';
 }
 
 export interface ApiError {
@@ -44,9 +71,17 @@ export async function apiClient<T>(
   options: RequestInit = {}
 ): Promise<ApiResponse<T>> {
   try {
-    const apiUrl = getApiUrl();
+    let apiUrl = getApiUrl();
+    if (!apiUrl || apiUrl === 'undefined' || apiUrl === 'null') {
+      apiUrl = '/api/v1';
+    }
     const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
-    const targetUrl = `${apiUrl}${cleanEndpoint}`;
+    // Avoid double /api/v1 if both apiUrl ends with /api/v1 and cleanEndpoint starts with /api/v1
+    const targetUrl =
+      apiUrl.endsWith('/api/v1') && cleanEndpoint.startsWith('/api/v1')
+        ? `${apiUrl.slice(0, -7)}${cleanEndpoint}`
+        : `${apiUrl}${cleanEndpoint}`;
+
     const res = await fetch(targetUrl, {
       cache: 'no-store',
       ...options,

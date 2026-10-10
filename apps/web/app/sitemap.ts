@@ -1,8 +1,9 @@
 import { MetadataRoute } from 'next';
+import { getApiUrl } from '@/lib/api';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://perpusjalblora.org';
-  const apiUrl = process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
+  const apiUrl = getApiUrl();
 
   let bookRoutes: MetadataRoute.Sitemap = [];
   let articleRoutes: MetadataRoute.Sitemap = [];
