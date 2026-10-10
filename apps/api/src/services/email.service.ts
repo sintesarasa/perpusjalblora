@@ -254,6 +254,12 @@ export class EmailService {
       `
       : '';
 
+    const publicAppUrl =
+      this.appUrl && this.appUrl.startsWith('https://')
+        ? this.appUrl.replace(/\/+$/, '')
+        : 'https://perpusjalblora.vercel.app';
+    const logoUrl = `${publicAppUrl}/logo-perpus.png`;
+
     return `<!DOCTYPE html>
 <html lang="id">
 <head>
@@ -279,19 +285,27 @@ export class EmailService {
         <!-- Main Gazette Dossier Container -->
         <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 580px; background-color: #FFFFFF; border: 1px solid #1A1A1A;">
           
-          <!-- Gazette Masthead Header -->
+          <!-- Gazette Masthead Header with Official Logo -->
           <tr>
-            <td style="padding: 28px 32px 20px 32px; border-bottom: 2px solid #0A0A0A; background-color: #FFFFFF;">
+            <td style="padding: 32px 32px 24px 32px; border-bottom: 2px solid #0A0A0A; background-color: #FFFFFF;">
               <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
                 <tr>
-                  <td>
-                    <div style="font-family: 'Courier New', Courier, monospace; font-size: 9px; text-transform: uppercase; letter-spacing: 2.5px; color: #555555; margin-bottom: 6px;">
-                      Kolektif Literasi Independen Blora &bull; Warta Resmi
+                  <td align="left">
+                    <div style="font-family: 'Courier New', Courier, monospace; font-size: 9px; text-transform: uppercase; letter-spacing: 2px; color: #555555; margin-bottom: 12px;">
+                      KOLEKTIF LITERASI INDEPENDEN BLORA &bull; WARTA RESMI
                     </div>
-                    <div style="font-family: Georgia, 'Times New Roman', serif; font-size: 20px; font-weight: bold; letter-spacing: 1px; color: #0A0A0A; text-transform: uppercase; margin: 0 0 4px 0;">
-                      PERPUSTAKAAN JALANAN BLORA
-                    </div>
-                    <div style="font-family: Georgia, 'Times New Roman', serif; font-size: 12px; font-style: italic; color: #333333; letter-spacing: 0.5px;">
+                    
+                    <!-- Official Perpusjal Logo (240px crisp Retina display) -->
+                    <a href="${publicAppUrl}" target="_blank" style="text-decoration: none; display: inline-block;">
+                      <img 
+                        src="${logoUrl}" 
+                        alt="PERPUSTAKAAN JALANAN BLORA" 
+                        width="240" 
+                        style="display: block; width: 240px; max-width: 100%; height: auto; border: 0; outline: none; text-decoration: none; color: #0A0A0A; font-family: Georgia, 'Times New Roman', serif; font-size: 20px; font-weight: bold; letter-spacing: 1px;" 
+                      />
+                    </a>
+
+                    <div style="margin-top: 10px; font-family: Georgia, 'Times New Roman', serif; font-size: 12px; font-style: italic; color: #333333; letter-spacing: 0.5px;">
                       — Membaca dan Berbahagia —
                     </div>
                   </td>
@@ -351,8 +365,14 @@ export class EmailService {
                 KOLOFON &bull; PERPUSTAKAAN JALANAN BLORA
               </div>
               <div>
-                Lapak terbuka di Alun-Alun Blora setiap akhir pekan. Sistem peminjaman buku jalanan tanpa denda, tanpa jaminan uang, berasaskan gotong royong dan saling percaya.
+                Lapak terbuka di Alun-Alun Blora setiap Minggu pagi (06.00–10.00 WIB). Sistem peminjaman buku jalanan tanpa denda, tanpa jaminan uang, berasaskan gotong royong dan saling percaya.
               </div>
+
+              <!-- Panduan Kotak Masuk / Folder Spam di Email -->
+              <div style="margin-top: 12px; padding: 10px 12px; background-color: #FFFFFF; border: 1px solid #E2E2DC; font-size: 9.5px; line-height: 1.5; color: #555555;">
+                <strong style="color: #0A0A0A;">PANDUAN KOTAK MASUK:</strong> Jika warta ini mendarat di folder <em>Spam</em> atau tab <em>Promosi</em>, mohon tandai sebagai <strong>“Bukan Spam” (Not Spam)</strong> atau pindahkan ke Kotak Masuk Utama agar pengingat jadwal dan sirkulasi buku berikutnya terhantar dengan lancar.
+              </div>
+
               <div style="margin-top: 10px; color: #888888; font-size: 9px;">
                 Surat ini dikirim secara otomatis oleh sistem registri Perpusjal. Jangan membalas email ini secara langsung.
               </div>
