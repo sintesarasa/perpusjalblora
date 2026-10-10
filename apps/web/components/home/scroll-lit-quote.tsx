@@ -4,7 +4,7 @@ import * as React from 'react';
 import { cn } from '@/lib/utils';
 
 const DEFAULT_QUOTE =
-  'Kata yang lahir dari kejujuran batin tak butuh singgasana; gemetar suaramu lebih abadi daripada deretan gelar yang membisu. Tuliskanlah apa yang kau rasa dan kau saksikan, sebab sejarah tak pernah dirawat oleh mereka yang bungkam, melainkan oleh jiwa-jiwa merdeka yang berani bersuara.';
+  'Buku-buku ini tidak diam. Mereka bergerak, melawan, dan menemukan pembacanya.';
 
 interface ScrollLitQuoteProps {
   text?: string;

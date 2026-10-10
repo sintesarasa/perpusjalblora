@@ -308,9 +308,10 @@ export default function HomePage() {
                   </h1>
 
                   <p className="drop-cap font-serif text-base sm:text-lg md:text-xl text-foreground/90 leading-relaxed max-w-2xl">
-                    Kami mengembalikan buku ke tempat ia seharusnya bermula: di ruang-ruang terbuka
-                    tempat percakapan merdeka dirawat, di bawah naungan pohon trembesi alun-alun kota,
-                    hingga tepian hutan jati. Tanpa uang jaminan, tanpa denda rupiah, dan tanpa sekat kelas sosial.
+                    Buku tidak diciptakan untuk membusuk di lemari kaca atau dikurung di balik etalase berbayar.
+                    Kami merampasnya kembali ke jalanan—menghamparkannya di atas selembar terpal Alun-Alun Blora
+                    agar siapa pun bisa menyalakan api di kepalanya. Tanpa syarat, tanpa jaminan, dan tanpa denda.
+                    Sebab merawat nalar sehat adalah perlawanan paling sunyi terhadap pembodohan.
                   </p>
                 </div>
               </RevealOnScroll>

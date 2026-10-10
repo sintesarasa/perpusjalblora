@@ -12,6 +12,7 @@ import { apiClient } from '@/lib/api';
 import { EventDetail, EventRegistrationItem, EventStatus, EventType } from '@perpusjal/types';
 import { EventCountdown } from '@/components/events/event-countdown';
 import { RevealOnScroll } from '@/components/ui/reveal-on-scroll';
+import { JsonLd } from '@/components/seo/json-ld';
 import QRCode from 'qrcode';
 import {
   Calendar,
@@ -246,8 +247,95 @@ export default function EventDetailPage() {
     );
   };
 
+  const eventJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Event',
+    name: event.title,
+    description:
+      typeof event.description === 'string'
+        ? event.description.slice(0, 250)
+        : `Kegiatan literasi merdeka ${event.title} di Perpustakaan Jalanan Blora.`,
+    startDate: event.startAt,
+    endDate: event.endAt,
+    eventStatus: isPast
+      ? 'https://schema.org/EventCompleted'
+      : 'https://schema.org/EventScheduled',
+    eventAttendanceMode: event.isOnline
+      ? 'https://schema.org/OnlineEventAttendanceMode'
+      : 'https://schema.org/OfflineEventAttendanceMode',
+    location: event.isOnline
+      ? {
+          '@type': 'VirtualLocation',
+          url: event.meetingUrl || `https://perpusjalblora.org/kegiatan/${event.slug}`,
+        }
+      : {
+          '@type': 'Place',
+          name: event.locationName || 'Alun-Alun Blora',
+          address: {
+            '@type': 'PostalAddress',
+            streetAddress: 'Alun-Alun Blora (Depan Masjid Agung)',
+            addressLocality: 'Blora',
+            addressRegion: 'Jawa Tengah',
+            postalCode: '58214',
+            addressCountry: 'ID',
+          },
+          geo: {
+            '@type': 'GeoCoordinates',
+            latitude: -6.9697,
+            longitude: 111.4178,
+          },
+        },
+    image: [
+      event.coverImage ||
+        'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=1200&q=80',
+    ],
+    organizer: {
+      '@type': 'Organization',
+      name: event.organizer?.name || 'Perpustakaan Jalanan Blora',
+      url: 'https://perpusjalblora.org',
+    },
+    offers: {
+      '@type': 'Offer',
+      price: '0',
+      priceCurrency: 'IDR',
+      availability: isFull
+        ? 'https://schema.org/SoldOut'
+        : 'https://schema.org/InStock',
+      url: `https://perpusjalblora.org/kegiatan/${event.slug}`,
+      validFrom: event.startAt,
+    },
+    isAccessibleForFree: true,
+  };
+
+  const breadcrumbJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Beranda',
+        item: 'https://perpusjalblora.org',
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'Kalender Kegiatan',
+        item: 'https://perpusjalblora.org/kegiatan',
+      },
+      {
+        '@type': 'ListItem',
+        position: 3,
+        name: event.title,
+        item: `https://perpusjalblora.org/kegiatan/${event.slug}`,
+      },
+    ],
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground font-sans editorial-grain selection:bg-foreground selection:text-background">
+      <JsonLd data={eventJsonLd} />
+      <JsonLd data={breadcrumbJsonLd} />
       <Header />
 
       <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-10">
