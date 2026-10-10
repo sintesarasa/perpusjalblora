@@ -14,7 +14,11 @@ const nextConfig = {
     ],
   },
   async rewrites() {
-    const apiTarget = process.env.INTERNAL_API_URL || 'http://localhost:4000';
+    const rawTarget =
+      process.env.INTERNAL_API_URL ||
+      process.env.NEXT_PUBLIC_API_URL ||
+      'http://localhost:4000';
+    const apiTarget = rawTarget.replace(/\/api\/v1\/?$/, '').replace(/\/+$/, '');
     return [
       {
         source: '/api/v1/:path*',

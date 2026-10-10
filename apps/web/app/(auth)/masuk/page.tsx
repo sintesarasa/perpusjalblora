@@ -55,6 +55,7 @@ function LoginForm() {
 
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
+      setErrorMessage(Object.values(errors)[0] || 'Mohon lengkapi alamat email dan kata sandi.');
       return;
     }
 

@@ -37,10 +37,33 @@ const PORT = process.env.PORT || 4000;
 app.set('etag', false);
 
 // Security & Utility Middleware
-app.use(helmet());
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
+  })
+);
+
+const allowedOrigins = [
+  process.env.NEXT_PUBLIC_APP_URL,
+  process.env.APP_URL,
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
+].filter(Boolean) as string[];
+
 app.use(
   cors({
-    origin: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps, curl, or server-side calls)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      // Allow any Vercel deployment (production or preview branches)
+      if (/^https:\/\/.*\.vercel\.app$/.test(origin)) return callback(null, true);
+      // Allow localhost with any port
+      if (/^http:\/\/localhost(:\d+)?$/.test(origin) || /^http:\/\/127\.0\.0\.1(:\d+)?$/.test(origin)) {
+        return callback(null, true);
+      }
+      return callback(null, false);
+    },
     credentials: true,
   })
 );

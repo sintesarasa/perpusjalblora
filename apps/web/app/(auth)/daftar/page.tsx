@@ -57,10 +57,18 @@ function RegisterForm() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
+    let finalValue: any = type === 'checkbox' ? checked : value;
+
+    // Auto-sanitize username: force lowercase and replace spaces with underscore
+    if (name === 'username' && typeof finalValue === 'string') {
+      finalValue = finalValue.toLowerCase().replace(/\s+/g, '_');
+    }
+
     setFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value,
+      [name]: finalValue,
     }));
+
     // Clear field error as user types
     if (fieldErrors[name]) {
       setFieldErrors((prev) => {
@@ -69,6 +77,11 @@ function RegisterForm() {
         return next;
       });
     }
+
+    // Clear top error message once user interacts
+    if (errorMessage) {
+      setErrorMessage(null);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -76,13 +89,19 @@ function RegisterForm() {
     setErrorMessage(null);
     setFieldErrors({});
 
+    const cleanName = formData.name.trim();
+    const cleanUsername = formData.username.trim().toLowerCase();
+    const cleanEmail = formData.email.trim().toLowerCase();
+
     // Client-side pre-validation
     const errors: Record<string, string> = {};
-    if (formData.name.trim().length < 2) errors.name = 'Nama minimal 2 karakter.';
-    if (!/^[a-z0-9_]{3,20}$/.test(formData.username.trim())) {
+    if (cleanName.length < 2) {
+      errors.name = 'Nama minimal 2 karakter.';
+    }
+    if (!/^[a-z0-9_]{3,20}$/.test(cleanUsername)) {
       errors.username = 'Username 3-20 karakter, huruf kecil, angka, dan underscore.';
     }
-    if (!formData.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
+    if (!cleanEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
       errors.email = 'Format alamat email tidak valid.';
     }
     if (!hasMinLength) {
@@ -94,11 +113,16 @@ function RegisterForm() {
       errors.passwordConfirm = 'Konfirmasi kata sandi tidak cocok.';
     }
     if (!formData.agreeTerms) {
-      errors.agreeTerms = 'Kamu perlu menyetujui ketentuan komunitas.';
+      errors.agreeTerms = 'Kamu perlu mencentang persetujuan Ketentuan Komunitas.';
     }
 
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
+      const firstError = Object.values(errors)[0];
+      setErrorMessage(firstError || 'Mohon lengkapi seluruh isian formulir.');
+      if (typeof window !== 'undefined') {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
       return;
     }
 
@@ -113,9 +137,9 @@ function RegisterForm() {
       }>('/auth/register', {
         method: 'POST',
         body: JSON.stringify({
-          name: formData.name.trim(),
-          username: formData.username.trim().toLowerCase(),
-          email: formData.email.trim().toLowerCase(),
+          name: cleanName,
+          username: cleanUsername,
+          email: cleanEmail,
           phoneNumber: formData.phoneNumber.trim() || undefined,
           password: formData.password,
           passwordConfirm: formData.passwordConfirm,
@@ -132,6 +156,9 @@ function RegisterForm() {
           setFieldErrors(detailErrors);
         }
         setErrorMessage(res.error.message || 'Pendaftaran gagal. Periksa isian formulir.');
+        if (typeof window !== 'undefined') {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
         return;
       }
 
@@ -141,9 +168,16 @@ function RegisterForm() {
           message: res.data.message,
           devVerificationToken: res.data.devVerificationToken,
         });
+        if (typeof window !== 'undefined') {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
       }
-    } catch {
+    } catch (err) {
+      console.error('[RegisterForm] Request error:', err);
       setErrorMessage('Tidak dapat terhubung ke server perpusjal. Periksa koneksi internetmu.');
+      if (typeof window !== 'undefined') {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -367,7 +401,13 @@ function RegisterForm() {
         />
 
         {/* Persetujuan Komunitas */}
-        <div className="pt-2">
+        <div
+          className={`p-3 border transition-colors ${
+            fieldErrors.agreeTerms
+              ? 'border-foreground bg-surface-muted/60'
+              : 'border-transparent'
+          }`}
+        >
           <label className="flex items-start gap-2.5 cursor-pointer select-none">
             <input
               type="checkbox"
@@ -385,14 +425,29 @@ function RegisterForm() {
             </span>
           </label>
           {fieldErrors.agreeTerms && (
-            <p className="font-mono text-[11px] text-foreground font-semibold pt-1">
-              &bull; {fieldErrors.agreeTerms}
+            <p className="font-mono text-[11px] text-foreground font-semibold pt-1.5 flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 bg-foreground inline-block shrink-0" />
+              <span>{fieldErrors.agreeTerms}</span>
             </p>
           )}
         </div>
 
+        {/* Inline Bottom Alert on Submit Error */}
+        {errorMessage && (
+          <div
+            role="alert"
+            className="p-3 border-2 border-foreground bg-surface text-foreground space-y-1 animate-in fade-in-50 duration-150"
+          >
+            <div className="flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-wider">
+              <AlertCircle className="w-4 h-4 text-foreground shrink-0" />
+              <span>Pendaftaran Belum Lengkap</span>
+            </div>
+            <p className="text-xs font-sans text-foreground/85 pl-6">{errorMessage}</p>
+          </div>
+        )}
+
         {/* Tombol Submit */}
-        <div className="pt-4">
+        <div className="pt-2">
           <Button
             type="submit"
             variant="solid"

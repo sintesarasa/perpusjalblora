@@ -1,11 +1,31 @@
 function getApiUrl(): string {
   if (typeof window !== 'undefined') {
-    return process.env.NEXT_PUBLIC_API_URL || '/api/v1';
+    let url = process.env.NEXT_PUBLIC_API_URL || '/api/v1';
+    // If running on HTTPS in production browser and url points to insecure http://localhost,
+    // fallback to relative '/api/v1' to prevent Mixed Content block.
+    if (window.location.protocol === 'https:' && url.startsWith('http://localhost')) {
+      return '/api/v1';
+    }
+    url = url.replace(/\/+$/, '');
+    // If backend URL was supplied without /api/v1, ensure path is included
+    if (url.startsWith('http') && !url.includes('/api/v1')) {
+      url = `${url}/api/v1`;
+    }
+    return url;
   }
   if (process.env.INTERNAL_API_URL) {
-    return `${process.env.INTERNAL_API_URL.replace(/\/$/, '')}/api/v1`;
+    let url = process.env.INTERNAL_API_URL.replace(/\/+$/, '');
+    if (!url.includes('/api/v1')) {
+      url = `${url}/api/v1`;
+    }
+    return url;
   }
-  return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
+  let url = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
+  url = url.replace(/\/+$/, '');
+  if (url.startsWith('http') && !url.includes('/api/v1')) {
+    url = `${url}/api/v1`;
+  }
+  return url;
 }
 
 export interface ApiError {
@@ -25,7 +45,9 @@ export async function apiClient<T>(
 ): Promise<ApiResponse<T>> {
   try {
     const apiUrl = getApiUrl();
-    const res = await fetch(`${apiUrl}${endpoint}`, {
+    const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+    const targetUrl = `${apiUrl}${cleanEndpoint}`;
+    const res = await fetch(targetUrl, {
       cache: 'no-store',
       ...options,
       credentials: 'include',
