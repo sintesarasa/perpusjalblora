@@ -229,25 +229,74 @@ export default function DashboardProfileSettingsPage() {
         throw new Error(json.error || 'Gagal mengunggah foto profil.');
       }
 
+      // Immediately persist the new avatar URL to the user's profile in the database
+      const saveRes = await apiClient('/users/me/profile', {
+        method: 'PATCH',
+        body: JSON.stringify({ avatarUrl: json.url }),
+      });
+
+      if (saveRes.error) {
+        throw new Error(saveRes.error.message || 'Gagal menyimpan foto profil ke akun.');
+      }
+
       setProfile((prev) => ({ ...prev, avatarUrl: json.url }));
+
+      try {
+        await refreshUser();
+      } catch {
+        // Non-blocking
+      }
+
+      const successText = `Foto profil berhasil dioptimasi (${formatBytes(compressed.compressedSize)}) dan diperbarui.`;
       setMessage({
-        text: `Foto profil lingkaran berhasil dipotong, dioptimasi (${formatBytes(compressed.compressedSize)}), dan diunggah. Klik "Simpan Perubahan" untuk menyimpan ke profil.`,
+        text: successText,
         type: 'success',
       });
+      showToast('Foto Profil Diperbarui', successText, 'success');
     } catch (err: any) {
-      setMessage({ text: err.message || 'Gagal mengunggah foto profil.', type: 'error' });
+      const errMsg = err.message || 'Gagal mengunggah foto profil.';
+      setMessage({ text: errMsg, type: 'error' });
+      showToast('Gagal Memperbarui Foto', errMsg, 'error');
     } finally {
       setUploadingAvatar(false);
     }
   };
 
-  const handleRemoveAvatar = () => {
-    setProfile((prev) => ({ ...prev, avatarUrl: null }));
-    setCompressionInfo(null);
-    setMessage({
-      text: 'Foto profil dicopot. Klik "Simpan Perubahan" untuk mengonfirmasi inisial monogram.',
-      type: 'success',
-    });
+  const handleRemoveAvatar = async () => {
+    setUploadingAvatar(true);
+    setMessage(null);
+    try {
+      const saveRes = await apiClient('/users/me/profile', {
+        method: 'PATCH',
+        body: JSON.stringify({ avatarUrl: null }),
+      });
+
+      if (saveRes.error) {
+        throw new Error(saveRes.error.message || 'Gagal mencopot foto profil.');
+      }
+
+      setProfile((prev) => ({ ...prev, avatarUrl: null }));
+      setCompressionInfo(null);
+
+      try {
+        await refreshUser();
+      } catch {
+        // Non-blocking
+      }
+
+      const removeText = 'Foto profil berhasil dicopot dan dikembalikan ke inisial monogram.';
+      setMessage({
+        text: removeText,
+        type: 'success',
+      });
+      showToast('Foto Profil Dicopot', removeText, 'success');
+    } catch (err: any) {
+      const errMsg = err.message || 'Gagal mencopot foto profil.';
+      setMessage({ text: errMsg, type: 'error' });
+      showToast('Gagal Mencopot Foto', errMsg, 'error');
+    } finally {
+      setUploadingAvatar(false);
+    }
   };
 
   // Submit Profile Changes
