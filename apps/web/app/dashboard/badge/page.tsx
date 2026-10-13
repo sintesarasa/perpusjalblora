@@ -230,9 +230,10 @@ export default function DashboardBadgesPage() {
       {/* ── 1. Masthead ── */}
       <div className="border-b-2 border-foreground pb-5 flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div className="space-y-1.5">
-          <div className="flex items-center gap-2 font-mono text-xs text-muted uppercase tracking-widest">
-            <span>KOLEKSI LENCANA & JULUKAN ANGGOTA</span>
-            <span>// POHON PENCAPAIAN PERPUSJAL</span>
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 font-mono text-[10px] sm:text-xs text-muted uppercase tracking-wider">
+            <span>KOLEKSI LENCANA &amp; JULUKAN ANGGOTA</span>
+            <span className="text-border-hairline select-none font-sans" aria-hidden="true">/</span>
+            <span>POHON PENCAPAIAN PERPUSJAL</span>
           </div>
           <h1 className="font-serif text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
             Lencana & Julukan Kehormatan

@@ -369,10 +369,11 @@ export default function DashboardCuratorPage() {
     <div className="p-4 sm:p-8 space-y-8 max-w-7xl mx-auto font-sans">
       {/* Masthead Header */}
       <div className="border-b-2 border-foreground pb-4 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2 font-mono text-xs text-muted uppercase tracking-widest">
+        <div className="space-y-1.5">
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 font-mono text-[10px] sm:text-xs text-muted uppercase tracking-wider">
             <span>Meja Redaksi</span>
-            <span>// KURASI LITERASI &amp; MODERASI WARGA</span>
+            <span className="text-border-hairline select-none font-sans" aria-hidden="true">/</span>
+            <span>KURASI LITERASI &amp; MODERASI WARGA</span>
           </div>
           <h1 className="font-serif text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
             Meja Kurasi &amp; Moderasi

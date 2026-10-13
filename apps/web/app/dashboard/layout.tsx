@@ -51,6 +51,24 @@ export default function DashboardLayout({
     checkAuth();
   }, [router]);
 
+  // Lock body scroll when mobile drawer is open & support Escape key
+  React.useEffect(() => {
+    if (mobileSidebarOpen) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') setMobileSidebarOpen(false);
+      };
+      window.addEventListener('keydown', handleKeyDown);
+
+      return () => {
+        document.body.style.overflow = originalOverflow;
+        window.removeEventListener('keydown', handleKeyDown);
+      };
+    }
+  }, [mobileSidebarOpen]);
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -62,13 +80,13 @@ export default function DashboardLayout({
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       {/* 1. TOP DASHBOARD BANNER BAR */}
-      <header className="sticky top-0 z-40 bg-surface/95 backdrop-blur-sm border-b border-border-hairline h-14 flex items-center justify-between px-4 sm:px-6">
-        <div className="flex items-center space-x-3">
-          {/* Mobile Sidebar Hamburger Toggle */}
+      <header className="sticky top-0 z-40 bg-surface/95 backdrop-blur-sm border-b border-border-hairline h-14 flex items-center justify-between px-3 sm:px-6">
+        <div className="flex items-center space-x-2.5 sm:space-x-3">
+          {/* Mobile Sidebar Hamburger Toggle with accessible 40px touch target */}
           <button
             onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
-            className="lg:hidden p-1.5 border border-border-hairline hover:bg-surface-muted text-foreground"
-            aria-label="Toggle Sidebar"
+            className="lg:hidden min-w-[40px] min-h-[40px] p-2 border border-border-hairline hover:bg-surface-muted text-foreground flex items-center justify-center transition-colors"
+            aria-label={mobileSidebarOpen ? 'Tutup Navigasi' : 'Buka Navigasi Anggota'}
           >
             {mobileSidebarOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
           </button>
@@ -82,7 +100,7 @@ export default function DashboardLayout({
           </span>
         </div>
 
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-2 sm:space-x-3">
           <Link
             href="/"
             className="hidden sm:inline-flex items-center gap-1.5 font-mono text-xs text-muted hover:text-foreground hover:underline mr-2"
@@ -99,19 +117,24 @@ export default function DashboardLayout({
       {/* 2. MAIN 2-COLUMN LAYOUT (SIDEBAR + CONTENT) */}
       <div className="flex-1 flex flex-row min-h-[calc(100vh-3.5rem)]">
         {/* Desktop Sidebar (Left) */}
-        <div className="hidden lg:block w-64 shrink-0 h-[calc(100vh-3.5rem)] sticky top-14 overflow-y-auto">
+        <div className="hidden lg:block w-64 shrink-0 h-[calc(100vh-3.5rem)] sticky top-14 overflow-hidden border-r border-border-hairline">
           <DashboardSidebar user={user} />
         </div>
 
         {/* Mobile Slide-Over Drawer */}
         {mobileSidebarOpen && (
-          <div className="lg:hidden fixed inset-0 z-50 flex">
+          <div className="lg:hidden fixed inset-0 z-50 flex h-[100dvh] w-full overflow-hidden">
             <div
-              className="fixed inset-0 bg-black/60 backdrop-blur-xs"
+              className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
               onClick={() => setMobileSidebarOpen(false)}
+              aria-hidden="true"
             />
-            <div className="relative w-72 max-w-[80vw] h-full bg-surface z-10 border-r-2 border-foreground animate-in slide-in-from-left duration-200">
-              <DashboardSidebar user={user} onNavigate={() => setMobileSidebarOpen(false)} />
+            <div className="relative w-80 max-w-[85vw] h-full bg-surface z-10 border-r-2 border-foreground animate-in slide-in-from-left duration-200 flex flex-col shadow-2xl overflow-hidden">
+              <DashboardSidebar
+                user={user}
+                onNavigate={() => setMobileSidebarOpen(false)}
+                onClose={() => setMobileSidebarOpen(false)}
+              />
             </div>
           </div>
         )}

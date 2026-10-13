@@ -100,21 +100,22 @@ export default function DashboardNotificationsPage() {
     <div className="p-4 sm:p-8 space-y-6 sm:space-y-8 max-w-6xl">
       {/* ── 1. Masthead ── */}
       <div className="border-b-2 border-foreground pb-4 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2 font-mono text-xs text-muted uppercase tracking-widest">
+        <div className="space-y-1.5">
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 font-mono text-[10px] sm:text-xs text-muted uppercase tracking-wider">
             <span>KOTAK MASUK ANGGOTA</span>
-            <span>// WARTA & PEMBERITAHUAN</span>
+            <span className="text-border-hairline select-none font-sans" aria-hidden="true">/</span>
+            <span>WARTA &amp; PEMBERITAHUAN</span>
             {isConnected && (
-              <span className="inline-flex items-center gap-1 font-mono text-[10px] text-emerald-600 dark:text-emerald-400 font-bold ml-2">
-                <Radio className="w-3 h-3 animate-pulse" />
-                LIVE STREAM
+              <span className="inline-flex items-center gap-1 font-mono text-[9px] sm:text-[10px] text-emerald-600 dark:text-emerald-400 font-bold border border-emerald-500/30 px-1.5 py-0.2 ml-1">
+                <Radio className="w-2.5 h-2.5 animate-pulse" />
+                LIVE
               </span>
             )}
           </div>
-          <h1 className="font-serif text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
+          <h1 className="font-serif text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-foreground">
             Kotak Warta Anggota
           </h1>
-          <p className="font-sans text-xs sm:text-sm text-muted max-w-2xl">
+          <p className="font-sans text-xs sm:text-sm text-muted max-w-2xl leading-relaxed">
             Catatan sirkulasi peminjaman buku, hasil kurasi tulisan warga, diskusi komentar, dan agenda komunitas.
           </p>
         </div>
@@ -122,7 +123,7 @@ export default function DashboardNotificationsPage() {
         {unreadCount > 0 && (
           <button
             onClick={handleMarkAllRead}
-            className="px-4 py-2 bg-foreground text-background font-mono text-xs uppercase tracking-wider font-semibold hover:bg-foreground/90 transition-colors inline-flex items-center gap-1.5 self-start sm:self-auto shrink-0"
+            className="w-full sm:w-auto px-4 py-2.5 bg-foreground text-background font-mono text-xs uppercase tracking-wider font-semibold hover:bg-foreground/90 transition-colors inline-flex items-center justify-center gap-1.5 shrink-0 min-h-[40px]"
           >
             <Check className="w-3.5 h-3.5" />
             <span>Tandai Semua Dibaca ({unreadCount})</span>
@@ -131,8 +132,8 @@ export default function DashboardNotificationsPage() {
       </div>
 
       {/* ── 2. Tab Switchers ── */}
-      <div className="flex items-center justify-between border-b border-border-hairline pb-px font-mono text-xs uppercase tracking-wider">
-        <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between border-b border-border-hairline pb-px font-mono text-xs uppercase tracking-wider overflow-x-auto no-scrollbar">
+        <div className="flex items-center gap-1 sm:gap-2 shrink-0">
           <button
             type="button"
             onClick={() => {
@@ -140,7 +141,7 @@ export default function DashboardNotificationsPage() {
               setPage(1);
             }}
             className={cn(
-              'px-4 py-2 border-b-2 transition-colors',
+              'px-3 sm:px-4 py-2.5 border-b-2 transition-colors min-h-[38px]',
               activeTab === 'semua'
                 ? 'border-foreground text-foreground font-bold'
                 : 'border-transparent text-muted hover:text-foreground'
@@ -156,7 +157,7 @@ export default function DashboardNotificationsPage() {
               setPage(1);
             }}
             className={cn(
-              'px-4 py-2 border-b-2 transition-colors inline-flex items-center gap-1.5',
+              'px-3 sm:px-4 py-2.5 border-b-2 transition-colors inline-flex items-center gap-1.5 min-h-[38px]',
               activeTab === 'unread'
                 ? 'border-foreground text-foreground font-bold'
                 : 'border-transparent text-muted hover:text-foreground'
@@ -171,7 +172,7 @@ export default function DashboardNotificationsPage() {
           </button>
         </div>
 
-        <span className="hidden sm:inline font-mono text-xs text-muted">
+        <span className="hidden sm:inline font-mono text-xs text-muted shrink-0 pl-2">
           Halaman {page} dari {totalPages || 1}
         </span>
       </div>

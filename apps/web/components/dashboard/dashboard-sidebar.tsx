@@ -21,6 +21,7 @@ import {
   BarChart3,
   Bell,
   Megaphone,
+  X,
 } from 'lucide-react';
 import { Role } from '@perpusjal/types';
 import { cn } from '@/lib/utils';
@@ -38,9 +39,10 @@ interface DashboardSidebarProps {
     avatarUrl?: string | null;
   } | null;
   onNavigate?: () => void;
+  onClose?: () => void;
 }
 
-export function DashboardSidebar({ user, onNavigate }: DashboardSidebarProps) {
+export function DashboardSidebar({ user, onNavigate, onClose }: DashboardSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const { unreadCount } = useNotifications();
@@ -108,9 +110,29 @@ export function DashboardSidebar({ user, onNavigate }: DashboardSidebarProps) {
   ];
 
   return (
-    <aside className="w-full h-full flex flex-col justify-between bg-surface border-r border-border-hairline font-mono text-xs select-none">
-      {/* Top Section */}
-      <div className="p-4 space-y-6">
+    <aside className="w-full h-full flex flex-col bg-surface font-mono text-xs select-none">
+      {/* 1. Mobile Drawer Header Bar with Close Button */}
+      {onClose && (
+        <div className="shrink-0 flex items-center justify-between px-4 py-3 border-b border-border-hairline bg-surface-muted/40 lg:hidden">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 bg-foreground" />
+            <span className="text-[10px] font-bold uppercase tracking-widest text-foreground">
+              NAVIGASI ANGGOTA
+            </span>
+          </div>
+          <button
+            onClick={onClose}
+            className="px-2.5 py-1.5 border border-border-hairline hover:bg-surface-muted hover:border-foreground text-foreground flex items-center gap-1.5 text-[10px] uppercase font-bold transition-colors"
+            aria-label="Tutup Navigasi"
+          >
+            <span>TUTUP</span>
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
+
+      {/* 2. Scrollable Middle Body */}
+      <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-4 space-y-6">
         {/* User Mini Card */}
         {user && (
           <div className="p-3 border border-border-hairline bg-surface-muted/40 flex items-center gap-3">
@@ -137,8 +159,8 @@ export function DashboardSidebar({ user, onNavigate }: DashboardSidebarProps) {
         {/* Member Navigation Section */}
         <div>
           <div className="px-2 pb-2 text-[10px] uppercase tracking-widest text-muted font-bold flex items-center justify-between">
-            <span>Menu Anggota</span>
-            <span className="text-[9px]">WARGA</span>
+            <span>Menu Warga</span>
+            <span className="text-[9px] text-muted font-normal">WARGA</span>
           </div>
           <nav className="space-y-1">
             {navItems.map((item) => {
@@ -153,7 +175,7 @@ export function DashboardSidebar({ user, onNavigate }: DashboardSidebarProps) {
                   href={item.href}
                   onClick={onNavigate}
                   className={cn(
-                    'flex items-center justify-between px-3 py-2 transition-colors border-l-2',
+                    'flex items-center justify-between px-3 py-2.5 min-h-[40px] transition-colors border-l-2',
                     isActive
                       ? 'border-foreground bg-foreground text-background font-bold'
                       : 'border-transparent text-foreground/80 hover:bg-surface-muted hover:text-foreground'
@@ -198,7 +220,7 @@ export function DashboardSidebar({ user, onNavigate }: DashboardSidebarProps) {
                 href="/dashboard/sirkulasi"
                 onClick={onNavigate}
                 className={cn(
-                  'flex items-center justify-between px-3 py-2 transition-colors border-l-2',
+                  'flex items-center justify-between px-3 py-2.5 min-h-[40px] transition-colors border-l-2',
                   pathname.startsWith('/dashboard/sirkulasi') || pathname.startsWith('/admin/sirkulasi')
                     ? 'border-foreground bg-foreground text-background font-bold'
                     : 'border-transparent text-foreground/80 hover:bg-surface-muted hover:text-foreground'
@@ -214,7 +236,7 @@ export function DashboardSidebar({ user, onNavigate }: DashboardSidebarProps) {
                 href="/dashboard/buku"
                 onClick={onNavigate}
                 className={cn(
-                  'flex items-center justify-between px-3 py-2 transition-colors border-l-2',
+                  'flex items-center justify-between px-3 py-2.5 min-h-[40px] transition-colors border-l-2',
                   pathname.startsWith('/dashboard/buku') || pathname.startsWith('/admin/buku')
                     ? 'border-foreground bg-foreground text-background font-bold'
                     : 'border-transparent text-foreground/80 hover:bg-surface-muted hover:text-foreground'
@@ -230,7 +252,7 @@ export function DashboardSidebar({ user, onNavigate }: DashboardSidebarProps) {
                 href="/dashboard/kurasi"
                 onClick={onNavigate}
                 className={cn(
-                  'flex items-center justify-between px-3 py-2 transition-colors border-l-2',
+                  'flex items-center justify-between px-3 py-2.5 min-h-[40px] transition-colors border-l-2',
                   pathname.startsWith('/dashboard/kurasi') || pathname.startsWith('/admin/kurasi')
                     ? 'border-foreground bg-foreground text-background font-bold'
                     : 'border-transparent text-foreground/80 hover:bg-surface-muted hover:text-foreground'
@@ -246,7 +268,7 @@ export function DashboardSidebar({ user, onNavigate }: DashboardSidebarProps) {
                 href="/dashboard/kegiatan"
                 onClick={onNavigate}
                 className={cn(
-                  'flex items-center justify-between px-3 py-2 transition-colors border-l-2',
+                  'flex items-center justify-between px-3 py-2.5 min-h-[40px] transition-colors border-l-2',
                   pathname.startsWith('/dashboard/kegiatan')
                     ? 'border-foreground bg-foreground text-background font-bold'
                     : 'border-transparent text-foreground/80 hover:bg-surface-muted hover:text-foreground'
@@ -262,7 +284,7 @@ export function DashboardSidebar({ user, onNavigate }: DashboardSidebarProps) {
                 href="/dashboard/laporan"
                 onClick={onNavigate}
                 className={cn(
-                  'flex items-center justify-between px-3 py-2 transition-colors border-l-2',
+                  'flex items-center justify-between px-3 py-2.5 min-h-[40px] transition-colors border-l-2',
                   pathname.startsWith('/dashboard/laporan')
                     ? 'border-foreground bg-foreground text-background font-bold'
                     : 'border-transparent text-foreground/80 hover:bg-surface-muted hover:text-foreground'
@@ -278,7 +300,7 @@ export function DashboardSidebar({ user, onNavigate }: DashboardSidebarProps) {
                 href="/admin/beranda"
                 onClick={onNavigate}
                 className={cn(
-                  'flex items-center justify-between px-3 py-2 transition-colors border-l-2',
+                  'flex items-center justify-between px-3 py-2.5 min-h-[40px] transition-colors border-l-2',
                   pathname.startsWith('/admin/beranda')
                     ? 'border-foreground bg-foreground text-background font-bold'
                     : 'border-transparent text-foreground/80 hover:bg-surface-muted hover:text-foreground'
@@ -307,7 +329,7 @@ export function DashboardSidebar({ user, onNavigate }: DashboardSidebarProps) {
                 href="/admin"
                 onClick={onNavigate}
                 className={cn(
-                  'flex items-center justify-between px-3 py-2 transition-colors border-l-2',
+                  'flex items-center justify-between px-3 py-2.5 min-h-[40px] transition-colors border-l-2',
                   pathname === '/admin'
                     ? 'border-foreground bg-foreground text-background font-bold'
                     : 'border-transparent text-foreground/80 hover:bg-surface-muted hover:text-foreground'
@@ -323,7 +345,7 @@ export function DashboardSidebar({ user, onNavigate }: DashboardSidebarProps) {
                 href="/admin/pengguna"
                 onClick={onNavigate}
                 className={cn(
-                  'flex items-center justify-between px-3 py-2 transition-colors border-l-2',
+                  'flex items-center justify-between px-3 py-2.5 min-h-[40px] transition-colors border-l-2',
                   pathname.startsWith('/admin/pengguna')
                     ? 'border-foreground bg-foreground text-background font-bold'
                     : 'border-transparent text-foreground/80 hover:bg-surface-muted hover:text-foreground'
@@ -339,22 +361,23 @@ export function DashboardSidebar({ user, onNavigate }: DashboardSidebarProps) {
         )}
       </div>
 
-      {/* Bottom Footer Actions */}
-      <div className="p-4 border-t border-border-hairline bg-surface-muted/20 space-y-2">
+      {/* 3. Pinned Bottom Footer Actions */}
+      <div className="shrink-0 p-4 border-t border-border-hairline bg-surface space-y-2">
         {user && (
           <Link
             href={`/warga/${user.username}`}
             target="_blank"
-            className="flex items-center justify-between px-3 py-1.5 text-muted hover:text-foreground hover:bg-surface-muted transition-colors text-[11px]"
+            onClick={onNavigate}
+            className="flex items-center justify-between px-3 py-2 text-muted hover:text-foreground hover:bg-surface-muted transition-colors text-[11px] border border-transparent hover:border-border-hairline"
           >
             <span>Lihat Profil Publik</span>
-            <ExternalLink className="w-3 h-3" />
+            <ExternalLink className="w-3.5 h-3.5" />
           </Link>
         )}
 
         <button
           onClick={handleLogout}
-          className="w-full flex items-center gap-2 px-3 py-2 border border-red-200 text-red-700 hover:bg-red-50 hover:text-red-900 transition-colors text-left font-bold"
+          className="w-full min-h-[42px] flex items-center justify-center gap-2 px-3 py-2.5 border border-red-300 dark:border-red-900/60 bg-red-500/5 text-red-700 dark:text-red-400 hover:bg-red-500 hover:text-white transition-colors text-center font-bold uppercase tracking-wider text-[11px]"
         >
           <LogOut className="w-3.5 h-3.5" />
           <span>Keluar dari Akun</span>

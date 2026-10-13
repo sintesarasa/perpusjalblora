@@ -170,10 +170,11 @@ export default function MemberLoansDashboardPage() {
     <div className="p-3 sm:p-6 md:p-8 space-y-6 sm:space-y-8 max-w-6xl">
       {/* Masthead */}
         <div className="border-b-2 border-foreground pb-4 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2 font-mono text-xs text-muted uppercase tracking-widest">
+          <div className="space-y-1.5">
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 font-mono text-[10px] sm:text-xs text-muted uppercase tracking-wider">
               <span>Sirkulasi Anggota</span>
-              <span>// STATUS PINJAMAN BUKU</span>
+              <span className="text-border-hairline select-none font-sans" aria-hidden="true">/</span>
+              <span>STATUS PINJAMAN BUKU</span>
             </div>
             <h1 className="font-serif text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-foreground">
               Dasbor Peminjaman

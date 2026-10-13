@@ -165,10 +165,11 @@ export default function DashboardReportsPage() {
     <div className="p-4 sm:p-8 space-y-8 max-w-6xl">
       {/* Header / Masthead */}
       <div className="border-b-2 border-foreground pb-4 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2 font-mono text-xs text-muted uppercase tracking-widest">
-            <span>Kurator & Relawan</span>
-            <span>// STATISTIK & AKUNTABILITAS SIRKULASI</span>
+        <div className="space-y-1.5">
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 font-mono text-[10px] sm:text-xs text-muted uppercase tracking-wider">
+            <span>Kurator &amp; Relawan</span>
+            <span className="text-border-hairline select-none font-sans" aria-hidden="true">/</span>
+            <span>STATISTIK &amp; AKUNTABILITAS SIRKULASI</span>
           </div>
           <h1 className="font-serif text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
             Laporan & Analitik Sirkulasi

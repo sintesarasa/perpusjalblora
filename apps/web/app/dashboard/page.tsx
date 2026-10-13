@@ -77,27 +77,27 @@ export default function DashboardOverviewPage() {
   const nextBadge = badgeProgress?.badges?.find((b: any) => !b.earned);
 
   return (
-    <div className="p-6 sm:p-10 space-y-10 max-w-6xl">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-8 sm:space-y-10 max-w-6xl">
       {/* 1. WELCOME HERO & DIGITAL ID BAR */}
-      <section className="border border-border-hairline bg-surface p-6 sm:p-8 relative">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-border-hairline">
+      <section className="border border-border-hairline bg-surface p-4 sm:p-6 md:p-8 relative">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-5 pb-6 border-b border-border-hairline">
           <div>
-            <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-muted mb-1.5">
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 font-mono text-[10px] sm:text-xs uppercase tracking-wider text-muted mb-1.5">
               <span>PORTAL ANGGOTA</span>
-              <span>//</span>
+              <span className="text-border-hairline select-none font-sans" aria-hidden="true">/</span>
               <span className="text-foreground font-bold">IKHTISAR PERSONAL</span>
             </div>
-            <h1 className="font-serif text-2xl sm:text-4xl font-bold tracking-tight text-foreground">
+            <h1 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-foreground">
               Selamat Datang, {user?.name || 'Warga Blora'}
             </h1>
-            <p className="font-serif text-sm text-muted mt-1">
+            <p className="font-serif text-xs sm:text-sm text-muted mt-1 leading-relaxed">
               @{user?.username} • Terdaftar sebagai <span className="text-foreground font-bold uppercase">{user?.role}</span> (Level {user?.trustLevel || 'TL1'})
             </p>
           </div>
 
           <Link
             href="/dashboard/kartu-anggota"
-            className="self-start md:self-auto px-4 py-2.5 border-2 border-foreground bg-foreground text-background font-mono text-xs uppercase tracking-wider font-bold hover:opacity-90 transition-opacity flex items-center gap-2 shrink-0"
+            className="w-full sm:w-auto px-4 py-2.5 border-2 border-foreground bg-foreground text-background font-mono text-xs uppercase tracking-wider font-bold hover:opacity-90 transition-opacity flex items-center justify-center gap-2 shrink-0 min-h-[40px]"
           >
             <CreditCard className="w-4 h-4" />
             <span>Kartu Anggota Digital</span>
@@ -105,33 +105,33 @@ export default function DashboardOverviewPage() {
         </div>
 
         {/* STATS 4-GRID */}
-        <div className="pt-6 grid grid-cols-2 lg:grid-cols-4 gap-4 divide-y sm:divide-y-0 sm:divide-x divide-border-hairline font-mono">
-          <div className="pr-4">
+        <div className="pt-6 grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 font-mono">
+          <div className="p-3 sm:p-4 border border-border-hairline bg-surface-muted/20">
             <span className="text-[10px] text-muted uppercase tracking-wider block">Buku Sedang Dipinjam</span>
             <div className="font-serif text-2xl sm:text-3xl font-bold text-foreground mt-0.5">
               {activeLoans.length} <span className="text-xs text-muted font-normal">/ {user?.borrowing?.maxActive || 2} Kuota</span>
             </div>
           </div>
 
-          <div className="pt-4 sm:pt-0 sm:pl-4 pr-4">
+          <div className="p-3 sm:p-4 border border-border-hairline bg-surface-muted/20">
             <span className="text-[10px] text-muted uppercase tracking-wider block">Karya Tulisan</span>
             <div className="font-serif text-2xl sm:text-3xl font-bold text-foreground mt-0.5">
               {articles.length} <span className="text-xs text-muted font-normal">Naskah</span>
             </div>
           </div>
 
-          <div className="pt-4 sm:pt-0 sm:pl-4 pr-4">
+          <div className="p-3 sm:p-4 border border-border-hairline bg-surface-muted/20">
             <span className="text-[10px] text-muted uppercase tracking-wider block">Lencana Terbuka</span>
             <div className="font-serif text-2xl sm:text-3xl font-bold text-foreground mt-0.5">
               {badgeProgress?.earnedCount || 0} <span className="text-xs text-muted font-normal">/ 12 Badge</span>
             </div>
           </div>
 
-          <div className="pt-4 sm:pt-0 sm:pl-4">
+          <div className="p-3 sm:p-4 border border-border-hairline bg-surface-muted/20">
             <span className="text-[10px] text-muted uppercase tracking-wider block">Status Hak Pinjam</span>
             <div className="text-xs font-bold text-foreground mt-1.5 flex items-center gap-1.5">
-              <CheckCircle2 className="w-4 h-4 text-foreground" />
-              <span>Memenuhi Syarat</span>
+              <CheckCircle2 className="w-4 h-4 text-foreground shrink-0" />
+              <span className="truncate">Memenuhi Syarat</span>
             </div>
           </div>
         </div>
