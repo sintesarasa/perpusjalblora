@@ -3,12 +3,11 @@
 import * as React from 'react';
 import Link from 'next/link';
 import QRCode from 'qrcode';
-import { toPng } from 'html-to-image';
 import { CustomLoader } from '@/components/ui/custom-loader';
 import { Logo } from '@/components/logo';
 import { UserAvatar } from '@/components/ui/user-avatar';
 import { apiClient } from '@/lib/api';
-import { Printer, Copy, Check, QrCode as QrCodeIcon, ShieldCheck, Download } from 'lucide-react';
+import { Printer, Copy, Check, QrCode as QrCodeIcon, Radio } from 'lucide-react';
 import { PetaNavigasi } from '@/components/layout/peta-navigasi';
 
 interface UserProfile {
@@ -27,8 +26,6 @@ export default function MemberCardPage() {
   const [loading, setLoading] = React.useState(true);
   const [qrSvg, setQrSvg] = React.useState<string>('');
   const [copied, setCopied] = React.useState(false);
-  const [downloading, setDownloading] = React.useState(false);
-  const cardRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
     async function loadUser() {
@@ -49,7 +46,7 @@ export default function MemberCardPage() {
     if (!user?.createdAt) return null;
     try {
       const d = new Date(user.createdAt);
-      return d.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+      return d.toLocaleDateString('id-ID', { month: 'short', year: 'numeric' });
     } catch {
       return null;
     }
@@ -64,7 +61,7 @@ export default function MemberCardPage() {
       margin: 1,
       errorCorrectionLevel: 'M',
       color: {
-        dark: '#000000',
+        dark: '#09090b',
         light: '#ffffff',
       },
     })
@@ -84,27 +81,6 @@ export default function MemberCardPage() {
   const handlePrint = () => {
     if (typeof window !== 'undefined') {
       window.print();
-    }
-  };
-
-  const handleDownloadPng = async () => {
-    if (!cardRef.current || !user || downloading) return;
-    try {
-      setDownloading(true);
-      const dataUrl = await toPng(cardRef.current, {
-        quality: 0.95,
-        pixelRatio: 3,
-        cacheBust: true,
-        backgroundColor: '#ffffff',
-      });
-      const link = document.createElement('a');
-      link.download = `kartu-anggota-${user.username || 'perpusjal'}.png`;
-      link.href = dataUrl;
-      link.click();
-    } catch (err) {
-      console.error('Gagal mengunduh kartu anggota sebagai gambar:', err);
-    } finally {
-      setDownloading(false);
     }
   };
 
@@ -142,7 +118,7 @@ export default function MemberCardPage() {
           ]}
         />
 
-        <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+        <div className="flex items-center gap-2 self-start sm:self-auto">
           <button
             type="button"
             onClick={handleCopyCode}
@@ -155,168 +131,153 @@ export default function MemberCardPage() {
 
           <button
             type="button"
-            onClick={handleDownloadPng}
-            disabled={downloading}
-            className="px-3.5 py-2 border border-foreground bg-surface font-mono text-xs uppercase tracking-wider font-semibold hover:bg-surface-muted transition-colors inline-flex items-center gap-2 disabled:opacity-50"
-            title="Simpan kartu sebagai gambar untuk digunakan saat offline"
-          >
-            <Download className="w-3.5 h-3.5" />
-            <span>{downloading ? 'Mengunduh...' : 'Unduh Gambar (PNG)'}</span>
-          </button>
-
-          <button
-            type="button"
             onClick={handlePrint}
-            className="px-4 py-2 bg-foreground text-background border border-foreground font-mono text-xs uppercase tracking-wider font-semibold hover:bg-foreground/90 transition-colors inline-flex items-center gap-2"
+            className="px-4 py-2 bg-foreground text-background border border-foreground font-mono text-xs uppercase tracking-wider font-semibold hover:bg-foreground/90 transition-colors inline-flex items-center gap-2 shadow-sm"
+            title="Cetak kartu dengan ukuran standar kartu ATM (85.6 × 54 mm)"
           >
             <Printer className="w-3.5 h-3.5" />
-            <span>Cetak Kartu</span>
+            <span>Cetak Kartu (Ukuran ATM)</span>
           </button>
         </div>
       </div>
 
       {/* Helper Banner for circulation desk */}
-      <div className="p-4 border border-foreground bg-surface font-mono text-xs space-y-1.5 no-print">
+      <div className="p-4 border border-foreground/30 bg-surface font-mono text-xs space-y-1.5 no-print">
         <div className="flex items-center gap-2 font-bold text-foreground uppercase tracking-wider">
           <QrCodeIcon className="w-4 h-4 shrink-0" />
-          <span>Kartu Sirkulasi Peminjaman (KTA Lapak Baca) &bull; Dokumen Privat</span>
+          <span>Kartu Sirkulasi Peminjaman (KTA Lapak Baca) &bull; Format Standar ATM</span>
         </div>
         <p className="font-sans text-xs text-muted leading-relaxed">
-          Tunjukkan QR Code pada kartu ini secara langsung kepada relawan/kurator di lapak baca fisik saat melakukan serah-terima atau pengembalian buku. <strong>Jaga kerahasiaan kartu ini dan jangan dibagikan secara publik untuk melindungi kuota peminjaman akunmu.</strong> Anda juga dapat mengunduh gambar kartu untuk disimpan di galeri ponsel saat sinyal minim di ruang publik terbuka.
+          Kartu digital ini berdimensi rasio standar kartu fisik ATM (ISO/IEC 7810 ID-1: 85.6 &times; 54 mm). Tunjukkan QR Code pada kartu ini kepada relawan/kurator di lapak baca fisik saat serah-terima buku, atau cetak langsung ke kertas tebal/kartu PVC untuk kartu fisik pribadimu.
         </p>
       </div>
 
-      {/* Digital Member Card Showcase */}
-      <div className="flex justify-center py-4">
+      {/* Digital Member Card Showcase: Always Black (Light & Dark Mode) with standard ATM proportions */}
+      <div className="flex justify-center py-6">
         <div
-          ref={cardRef}
           id="digital-member-card"
-          className="relative w-full max-w-md bg-surface text-foreground p-6 sm:p-7 border-2 border-foreground select-none space-y-5 box-border rounded-none"
+          className="relative w-full max-w-[480px] aspect-[85.6/54] rounded-2xl bg-gradient-to-br from-zinc-900 via-[#0a0a0c] to-black text-white p-5 sm:p-6 border border-zinc-800 shadow-2xl overflow-hidden select-none flex flex-col justify-between box-border"
         >
-          {/* Background decorative wrapper (clean hairline corner brackets, no obstructing watermark) */}
-          <div className="absolute inset-0 overflow-hidden pointer-events-none rounded-none no-print">
-            <div className="absolute top-2 left-2 w-3 h-3 border-t-2 border-l-2 border-foreground/30" />
-            <div className="absolute top-2 right-2 w-3 h-3 border-t-2 border-r-2 border-foreground/30" />
-            <div className="absolute bottom-2 left-2 w-3 h-3 border-b-2 border-l-2 border-foreground/30" />
-            <div className="absolute bottom-2 right-2 w-3 h-3 border-b-2 border-r-2 border-foreground/30" />
+          {/* Subtle metallic hairline sheen overlays */}
+          <div className="absolute inset-0 pointer-events-none rounded-2xl overflow-hidden no-print">
+            {/* Top-right metallic glow */}
+            <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-white/[0.03] blur-2xl" />
+            {/* Bottom-left subtle glow */}
+            <div className="absolute -bottom-16 -left-16 w-48 h-48 rounded-full bg-white/[0.02] blur-2xl" />
+            {/* Inner micro-hairline border */}
+            <div className="absolute inset-1.5 rounded-[12px] border border-white/[0.06] pointer-events-none" />
           </div>
 
-          {/* 1. Top Ribbon / Masthead */}
-          <div className="relative z-10 border-b border-border pb-2.5 space-y-2">
-            <div className="flex items-center justify-between gap-4">
-              <Logo className="h-7 sm:h-8 w-auto text-foreground shrink-0" />
-
-              <div className="text-right shrink-0">
-                <span className="font-mono text-[7.5px] uppercase font-bold tracking-widest text-muted block mb-0.5">
-                  NO. SIRKULASI
-                </span>
-                <span className="font-mono text-[11px] font-bold text-foreground tracking-wider px-2.5 py-0.5 bg-surface-muted border border-border inline-block rounded-none">
-                  {memberCode}
-                </span>
-              </div>
+          {/* 1. Header (Compact, balanced, no empty gaps) */}
+          <div className="relative z-10 flex items-center justify-between gap-3 border-b border-white/10 pb-3">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <Logo className="h-5 sm:h-6 w-auto text-white shrink-0" />
+              <div className="hidden min-[380px]:block w-px h-4 bg-white/20 shrink-0" />
+              <span className="hidden min-[380px]:block font-mono text-[8.5px] uppercase font-bold tracking-[0.2em] text-zinc-300 truncate">
+                PERPUSJAL BLORA
+              </span>
             </div>
 
-            <div className="flex items-center justify-between gap-2 pt-1.5 border-t border-border-hairline">
-              <span className="font-mono text-[8.5px] uppercase font-bold tracking-[0.2em] text-foreground">
-                KARTU SIRKULASI LAPAK BACA
-              </span>
-              <span className="font-serif italic text-xs text-foreground/80">
-                Membaca dan Berbahagia.
+            <div className="flex items-center gap-2 shrink-0">
+              <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-zinc-800/90 border border-zinc-700/80">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="font-mono text-[8px] sm:text-[8.5px] font-bold text-zinc-200 tracking-wider uppercase">
+                  ANGGOTA AKTIF
+                </span>
+              </div>
+              <span title="Contactless / RFID ready" className="inline-flex items-center">
+                <Radio className="w-3.5 h-3.5 text-zinc-400 rotate-90 shrink-0" />
               </span>
             </div>
           </div>
 
-          {/* 2. Member Persona Details with Profile Avatar */}
-          <div className="relative z-10 flex items-start sm:items-center justify-between gap-4 py-1">
-            <div className="flex items-center gap-3.5 min-w-0">
-              <div className="shrink-0">
-                <UserAvatar
-                  src={user.avatarUrl}
-                  name={user.name}
-                  username={user.username}
-                  size="lg"
-                  linkToProfile={false}
-                  className="border-2 border-foreground"
-                />
-              </div>
-              <div className="space-y-0.5 min-w-0">
-                <span className="font-mono text-[8.5px] uppercase tracking-widest text-muted block font-semibold">
-                  PEMEGANG KARTU
-                </span>
-                <h2 className="font-serif font-black text-xl sm:text-2xl text-foreground tracking-tight leading-tight truncate">
-                  {user.name}
-                </h2>
-                <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 font-mono text-[11px] text-muted">
-                  <span className="text-foreground font-semibold">@{user.username}</span>
-                  {memberSince && (
-                    <>
-                      <span>&bull;</span>
-                      <span className="text-[10px]">Warga sejak {memberSince}</span>
-                    </>
-                  )}
+          {/* 2. Middle Body: Chip + Member Persona + Large Crisp QR Code */}
+          <div className="relative z-10 grid grid-cols-[1fr_auto] items-center gap-4 py-1">
+            {/* Left Column: Smart Chip & Member Identity (Full Name fully readable without truncation) */}
+            <div className="space-y-3 min-w-0 pr-1">
+              {/* Metallic Smart-Card Chip motif */}
+              <div className="flex items-center gap-3">
+                <div
+                  className="w-8 h-6 sm:w-9 sm:h-7 rounded-[4px] border border-amber-400/50 bg-gradient-to-br from-amber-300/30 via-amber-400/40 to-amber-700/40 p-1 relative shadow-inner shrink-0"
+                  aria-hidden="true"
+                >
+                  <div className="w-full h-full border border-amber-300/40 rounded-[2px] grid grid-cols-2 grid-rows-2 gap-0.5">
+                    <div className="border-r border-b border-amber-300/40" />
+                    <div className="border-b border-amber-300/40" />
+                    <div className="border-r border-amber-300/40" />
+                    <div />
+                  </div>
                 </div>
+                <span className="font-mono text-[8px] uppercase tracking-widest text-zinc-400 font-semibold">
+                  KTA LAPAK BACA
+                </span>
               </div>
-            </div>
 
-            <div className="text-right shrink-0 space-y-1">
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 border border-foreground bg-foreground text-background text-[9.5px] font-mono font-bold uppercase tracking-wider rounded-none">
-                <ShieldCheck className="w-3.5 h-3.5" />
-                <span>AKTIF</span>
-              </span>
-              <span className="block font-mono text-[8.5px] text-muted uppercase tracking-wider">
-                AMANAH &bull; LVL {user.trustLevel}
-              </span>
-            </div>
-          </div>
-
-          {/* 3. Authentic Large Vector QR Code (Scanner-Ready for Lapak Baca) */}
-          <div className="relative z-10 p-5 bg-surface-muted border-2 border-foreground rounded-none text-center space-y-3.5">
-            <div className="flex justify-center items-center">
-              {qrSvg ? (
-                <div className="relative p-2 bg-surface">
-                  {/* Viewfinder corner brackets */}
-                  <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-foreground" />
-                  <div className="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 border-foreground" />
-                  <div className="absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2 border-foreground" />
-                  <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-foreground" />
-
-                  <div
-                    className="w-48 h-48 sm:w-56 sm:h-56 bg-white p-3 border border-border inline-flex items-center justify-center [&>svg]:w-full [&>svg]:h-full [&>svg]:object-contain"
-                    dangerouslySetInnerHTML={{ __html: qrSvg }}
+              {/* Member Details */}
+              <div className="flex items-center gap-2.5 sm:gap-3">
+                <div className="shrink-0">
+                  <UserAvatar
+                    src={user.avatarUrl}
+                    name={user.name}
+                    username={user.username}
+                    size="sm"
+                    linkToProfile={false}
+                    className="border border-zinc-700 rounded-lg shadow-sm"
                   />
                 </div>
-              ) : (
-                <div className="w-48 h-48 sm:w-56 sm:h-56 bg-surface-muted flex items-center justify-center text-muted font-mono text-xs border border-dashed border-border rounded-none">
-                  Membuat QR...
+                <div className="min-w-0 space-y-0.5">
+                  {/* Full Name: break-words, never cut off with truncate */}
+                  <h2 className="font-serif font-black text-sm sm:text-base text-white tracking-tight leading-snug break-words">
+                    {user.name}
+                  </h2>
+                  <div className="flex flex-wrap items-center gap-x-1.5 font-mono text-[9.5px] sm:text-[10px] text-zinc-400">
+                    <span className="text-zinc-300 font-medium">@{user.username}</span>
+                    <span>&bull;</span>
+                    <span className="text-zinc-400 uppercase text-[9px]">LVL {user.trustLevel}</span>
+                  </div>
                 </div>
-              )}
+              </div>
             </div>
 
-            <div className="space-y-1">
-              <span className="font-mono text-sm sm:text-base font-bold text-foreground tracking-widest uppercase block">
-                [ {memberCode} ]
-              </span>
-              <span className="font-mono text-[10px] text-foreground uppercase tracking-widest block font-bold">
-                PINDAI UNTUK PINJAM & KEMBALIKAN BUKU
+            {/* Right Column: High-Contrast Laser QR Code for outdoor night scanning */}
+            <div className="flex flex-col items-center shrink-0">
+              <div className="p-1.5 sm:p-2 bg-white rounded-lg border border-zinc-700 shadow-lg">
+                {qrSvg ? (
+                  <div
+                    className="w-16 h-16 sm:w-20 sm:h-20 [&>svg]:w-full [&>svg]:h-full [&>svg]:object-contain"
+                    dangerouslySetInnerHTML={{ __html: qrSvg }}
+                  />
+                ) : (
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 bg-zinc-100 flex items-center justify-center text-zinc-400 font-mono text-[9px]">
+                    ...
+                  </div>
+                )}
+              </div>
+              <span className="font-mono text-[9px] sm:text-[10px] font-bold text-zinc-300 tracking-wider mt-1.5 block">
+                {memberCode}
               </span>
             </div>
           </div>
 
-          {/* 4. Footer Slogan & Circulation Mark */}
-          <div className="relative z-10 text-center space-y-1.5 pt-2 border-t border-border-hairline">
-            <p className="font-serif italic text-xs text-foreground/80 leading-relaxed">
-              &ldquo;Membaca adalah melawan kebodohan, meminjam adalah merawat amanah.&rdquo;
-            </p>
-            <span className="font-mono text-[8px] text-muted uppercase tracking-[0.18em] block">
-              DOKUMEN SIRKULASI OTENTIK &bull; PERPUSTAKAAN JALANAN BLORA
+          {/* 3. Footer Bar: Circulation Number & Authentic Mark */}
+          <div className="relative z-10 flex items-center justify-between gap-2 border-t border-white/10 pt-2 text-[8px] sm:text-[8.5px] font-mono text-zinc-400 uppercase tracking-wider">
+            <span className="font-semibold text-zinc-300">
+              SIRKULASI LAPAK BACA
+            </span>
+            <span className="text-zinc-500">
+              {memberSince ? `WARGA SEJAK ${memberSince.toUpperCase()}` : 'PERPUSTAKAAN JALANAN'}
             </span>
           </div>
         </div>
       </div>
 
-      {/* Print CSS Injection: Ink-Saving Crisp Stark Monochrome Paper Card */}
+      {/* Print CSS: Standard ATM Card Physical Dimensions (ISO/IEC 7810 ID-1: 85.60 × 53.98 mm) */}
       <style jsx global>{`
         @media print {
+          @page {
+            size: auto;
+            margin: 15mm;
+          }
           body * {
             visibility: hidden;
           }
@@ -328,18 +289,21 @@ export default function MemberCardPage() {
             visibility: visible;
           }
           #digital-member-card {
-            position: fixed;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-            margin: 0 !important;
-            page-break-inside: avoid;
-            background: #ffffff !important;
-            color: #000000 !important;
-            border: 2px solid #000000 !important;
+            position: fixed !important;
+            left: 50% !important;
+            top: 50% !important;
+            transform: translate(-50%, -50%) !important;
+            width: 85.6mm !important;
+            height: 53.98mm !important;
+            border-radius: 3.18mm !important;
+            box-sizing: border-box !important;
+            background: #09090b !important;
+            color: #ffffff !important;
+            border: 1px solid #27272a !important;
             box-shadow: none !important;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
+            padding: 4mm 5mm !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
           }
         }
       `}</style>
