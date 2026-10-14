@@ -58,7 +58,7 @@ export default function MemberCardPage() {
     // Generate crisp vector SVG QR Code
     QRCode.toString(memberCode, {
       type: 'svg',
-      margin: 1,
+      margin: 0,
       errorCorrectionLevel: 'M',
       color: {
         dark: '#09090b',
@@ -241,19 +241,19 @@ export default function MemberCardPage() {
 
             {/* Right Column: High-Contrast Laser QR Code for outdoor night scanning */}
             <div className="flex flex-col items-center shrink-0">
-              <div className="p-1.5 sm:p-2 bg-white rounded-lg border border-zinc-700 shadow-lg">
+              <div className="qr-code-box p-1.5 sm:p-2 bg-white rounded-xl border border-zinc-700 shadow-xl">
                 {qrSvg ? (
                   <div
-                    className="w-16 h-16 sm:w-20 sm:h-20 [&>svg]:w-full [&>svg]:h-full [&>svg]:object-contain"
+                    className="w-24 h-24 sm:w-28 sm:h-28 min-[440px]:w-32 min-[440px]:h-32 [&>svg]:w-full [&>svg]:h-full [&>svg]:object-contain"
                     dangerouslySetInnerHTML={{ __html: qrSvg }}
                   />
                 ) : (
-                  <div className="w-16 h-16 sm:w-20 sm:h-20 bg-zinc-100 flex items-center justify-center text-zinc-400 font-mono text-[9px]">
+                  <div className="w-24 h-24 sm:w-28 sm:h-28 min-[440px]:w-32 min-[440px]:h-32 bg-zinc-100 flex items-center justify-center text-zinc-400 font-mono text-[9px]">
                     ...
                   </div>
                 )}
               </div>
-              <span className="font-mono text-[9px] sm:text-[10px] font-bold text-zinc-300 tracking-wider mt-1.5 block">
+              <span className="font-mono text-[9.5px] sm:text-[10.5px] font-bold text-zinc-300 tracking-wider mt-1.5 block">
                 {memberCode}
               </span>
             </div>
@@ -304,6 +304,16 @@ export default function MemberCardPage() {
             padding: 4mm 5mm !important;
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
+          }
+          #digital-member-card .qr-code-box {
+            width: 25mm !important;
+            height: 25mm !important;
+            padding: 1.2mm !important;
+            border-radius: 2mm !important;
+          }
+          #digital-member-card .qr-code-box > div {
+            width: 100% !important;
+            height: 100% !important;
           }
         }
       `}</style>
