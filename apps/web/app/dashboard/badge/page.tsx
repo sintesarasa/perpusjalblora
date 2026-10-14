@@ -821,7 +821,7 @@ export default function DashboardBadgesPage() {
                   </div>
                 </div>
 
-                {/* Compact Linear Tier Grid (Tier I to VI) */}
+                {/* Ultra-Minimalist Linear Tier Grid (Tier I to VI) */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
                   {badgesInPillar.map((item) => {
                     const isEquipped = data?.equippedTitle === item.badge.titleReward;
@@ -829,38 +829,17 @@ export default function DashboardBadgesPage() {
                     return (
                       <div
                         key={item.badge.id}
+                        title={item.badge.description}
                         className={cn(
-                          'p-3 flex flex-col justify-between transition-all duration-150 relative rounded-none bg-surface min-h-[300px] sm:min-h-[315px]',
+                          'p-3 flex flex-col justify-between transition-all duration-150 relative rounded-none bg-surface min-h-[165px] sm:min-h-[175px]',
                           item.earned
                             ? tierInfo.cardEarnedBg
                             : cn('border border-dashed', tierInfo.cardLockedBorder)
                         )}
                       >
-                        <div>
-                          {/* Tier & Status Bar */}
-                          <div className="flex items-center justify-between gap-1 pb-1.5 border-b border-border-hairline mb-2">
-                            <span className={cn('px-1.5 py-0.5 text-[8.5px] font-mono font-bold uppercase tracking-wider rounded-none border whitespace-nowrap', tierInfo.headerTagClass)}>
-                              T{item.badge.tier} &bull; {tierInfo.name}
-                            </span>
-                            {item.earned ? (
-                              <span
-                                className="text-foreground inline-flex items-center p-0.5 shrink-0"
-                                title="Diraih"
-                              >
-                                <CheckCircle2 className="w-3 h-3" />
-                              </span>
-                            ) : (
-                              <span
-                                className="text-muted/70 inline-flex items-center p-0.5 shrink-0"
-                                title="Terkunci (Belum diraih)"
-                              >
-                                <Lock className="w-3 h-3" />
-                              </span>
-                            )}
-                          </div>
-
-                          {/* Compact Insignia */}
-                          <div className="flex justify-center py-1.5 mb-1">
+                        {/* 1. ICON & STATUS */}
+                        <div className="flex flex-col items-center text-center space-y-1.5">
+                          <div className="relative inline-flex items-center justify-center">
                             <BadgeInsignia
                               code={item.badge.code}
                               tier={item.badge.tier}
@@ -868,78 +847,72 @@ export default function DashboardBadgesPage() {
                               earned={item.earned}
                               size="sm"
                             />
-                          </div>
-
-                          {/* Badge Name & Title */}
-                          <div className="text-center space-y-1 mb-1.5 px-0.5">
-                            <h4 className="font-serif font-bold text-xs sm:text-sm text-foreground leading-snug line-clamp-2 h-8 flex items-center justify-center">
-                              {item.badge.name}
-                            </h4>
-                            {item.badge.titleReward ? (
-                              <div className="flex justify-center">
-                                <span
-                                  className={cn(
-                                    'font-mono text-[8.5px] px-2 py-0.5 rounded-none border font-semibold inline-flex items-center gap-1 max-w-full',
-                                    tierInfo.honorBadgeClass
-                                  )}
-                                  title={`Gelar Kehormatan: "${item.badge.titleReward}"`}
-                                >
-                                  <span className="font-bold truncate max-w-[110px]">"{item.badge.titleReward}"</span>
-                                </span>
-                              </div>
-                            ) : (
-                              <div className="h-[18px]" />
+                            {item.earned && (
+                              <span className="absolute -top-1 -right-1.5 text-foreground" title="Lencana Diraih">
+                                <CheckCircle2 className="w-3.5 h-3.5 fill-foreground text-background" />
+                              </span>
                             )}
                           </div>
 
-                          {/* Requirement / Description */}
-                          <p className="font-sans text-[10.5px] text-muted text-center leading-relaxed line-clamp-2 h-7 mb-1.5 px-0.5">
-                            {item.badge.description}
-                          </p>
+                          {/* 2. JUDUL */}
+                          <h4 className="font-serif font-bold text-xs sm:text-[13px] text-foreground leading-tight line-clamp-1 w-full" title={item.badge.name}>
+                            {item.badge.name}
+                          </h4>
+
+                          {/* 3. TIER & GELAR */}
+                          <div className="space-y-0.5 w-full">
+                            <div className="flex items-center justify-center gap-1 font-mono text-[8.5px] uppercase font-bold text-muted">
+                              <span>T{item.badge.tier}</span>
+                              <span>&bull;</span>
+                              <span className={item.earned ? 'text-foreground' : 'text-muted'}>{tierInfo.name}</span>
+                            </div>
+                            {item.badge.titleReward && (
+                              <span className="font-mono text-[8.5px] text-muted italic block truncate max-w-full" title={`Gelar: "${item.badge.titleReward}"`}>
+                                &ldquo;{item.badge.titleReward}&rdquo;
+                              </span>
+                            )}
+                          </div>
                         </div>
 
-                        {/* Progress Bar & Actions */}
-                        <div className="pt-1.5 border-t border-border-hairline space-y-1.5 mt-auto">
-                          <div>
-                            <div className="flex items-center justify-between font-mono text-[8.5px] text-muted mb-0.5">
-                              <span className="uppercase tracking-wider">Progres</span>
-                              <span className="font-bold text-foreground">
-                                {item.currentValue}/{item.targetValue}
-                              </span>
-                            </div>
-                            <div className="w-full h-1.5 rounded-none overflow-hidden bg-surface-muted border border-border-hairline p-0">
-                              <div
-                                className={cn(
-                                  'h-full rounded-none transition-all duration-300',
-                                  item.earned ? tierInfo.progressBarClass : cn(tierInfo.progressBarClass, 'opacity-70')
-                                )}
-                                style={{ width: `${Math.min(100, item.percent)}%` }}
-                              />
-                            </div>
+                        {/* 4. PROGRESS BAR & STATUS */}
+                        <div className="pt-2 space-y-1 mt-auto">
+                          <div className="w-full h-1 bg-surface-muted overflow-hidden">
+                            <div
+                              className={cn(
+                                'h-full transition-all duration-300',
+                                item.earned ? tierInfo.progressBarClass : cn(tierInfo.progressBarClass, 'opacity-70')
+                              )}
+                              style={{ width: `${Math.min(100, item.percent)}%` }}
+                            />
                           </div>
 
-                          {/* Bottom Action Button */}
-                          <div className="text-center font-mono pt-0.5">
+                          <div className="flex items-center justify-between font-mono text-[8.5px]">
                             {item.earned ? (
                               isEquipped ? (
-                                <span className={cn('w-full py-1 rounded-none border font-bold text-[8.5px] uppercase tracking-wider block', tierInfo.badgeTagClass)}>
-                                  ✓ Gelar Aktif
+                                <span className="font-bold text-foreground text-[8px] uppercase tracking-wider">
+                                  ✓ Aktif
                                 </span>
                               ) : item.badge.titleReward ? (
                                 <button
                                   type="button"
                                   disabled={equipping}
                                   onClick={() => handleEquipTitle(item.badge.titleReward || null)}
-                                  className="w-full py-1 rounded-none border border-foreground bg-foreground text-background hover:bg-foreground/90 font-bold text-[8.5px] uppercase tracking-wider transition-colors block cursor-pointer"
+                                  className="text-foreground hover:underline font-bold text-[8.5px] uppercase tracking-wider cursor-pointer"
                                 >
-                                  Pasang Gelar
+                                  Pasang
                                 </button>
-                              ) : null
+                              ) : (
+                                <span className="text-muted text-[8px]">Terbuka</span>
+                              )
                             ) : (
-                              <span className="text-[9px] text-muted font-mono block py-0.5">
-                                Kurang <span className="font-bold text-foreground">{Math.max(0, item.targetValue - item.currentValue)}</span> lagi
+                              <span className="text-muted text-[8px]">
+                                {item.currentValue}/{item.targetValue}
                               </span>
                             )}
+
+                            <span className="text-muted text-[8px] font-bold">
+                              {item.percent}%
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -984,7 +957,7 @@ export default function DashboardBadgesPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {secretBadges.map((item) => {
                   const isEquipped = data?.equippedTitle === item.badge.titleReward;
                   const tierInfo = getTierInfo(item.badge.tier);
@@ -998,36 +971,17 @@ export default function DashboardBadgesPage() {
                   return (
                     <div
                       key={item.badge.id}
+                      title={item.earned ? item.badge.description : (secretHints[item.badge.code] || 'Ada aksi tersembunyi yang menantimu...')}
                       className={cn(
-                        'p-3.5 flex flex-col justify-between transition-all duration-150 relative min-h-[200px] rounded-none',
+                        'p-3 flex flex-col justify-between transition-all duration-150 relative min-h-[165px] sm:min-h-[175px] rounded-none',
                         item.earned
                           ? cn('border-2', tierInfo.cardEarnedBg)
                           : 'border border-dashed border-border-hairline bg-surface/40 hover:border-foreground/40'
                       )}
                     >
-                      <div>
-                        <div className="flex items-center justify-between font-mono text-[9px] pb-1.5 border-b border-border-hairline mb-2">
-                          <span className={cn('px-2 py-0.5 rounded-none font-bold uppercase tracking-wider', item.earned ? tierInfo.headerTagClass : 'bg-surface-muted text-muted')}>
-                            {item.earned ? `TIER ${item.badge.tier} • ${tierInfo.name}` : 'TERSELUBUNG'}
-                          </span>
-                          {item.earned ? (
-                            <span
-                              className="text-foreground inline-flex items-center p-0.5 shrink-0"
-                              title="Diraih"
-                            >
-                              <CheckCircle2 className="w-3.5 h-3.5" />
-                            </span>
-                          ) : (
-                            <span
-                              className="text-muted/70 inline-flex items-center p-0.5 shrink-0"
-                              title="Pencapaian Rahasia (Terselubung)"
-                            >
-                              <Lock className="w-3.5 h-3.5" />
-                            </span>
-                          )}
-                        </div>
-
-                        <div className="flex justify-center py-1 mb-1.5">
+                      {/* 1. ICON */}
+                      <div className="flex flex-col items-center text-center space-y-1.5">
+                        <div className="relative inline-flex items-center justify-center">
                           <BadgeInsignia
                             code={item.badge.code}
                             tier={item.badge.tier}
@@ -1035,46 +989,53 @@ export default function DashboardBadgesPage() {
                             earned={item.earned}
                             size="sm"
                           />
-                        </div>
-
-                        <div className="text-center space-y-1 mb-1.5">
-                          <h4 className="font-serif font-bold text-xs sm:text-sm text-foreground leading-snug">
-                            {item.earned ? item.badge.name : '??? (Pencapaian Rahasia)'}
-                          </h4>
-                          {item.earned && item.badge.titleReward && (
-                            <div className="flex justify-center">
-                              <span className={cn('font-mono text-[8.5px] px-2 py-0.5 rounded-none border font-semibold inline-flex items-center gap-1', tierInfo.honorBadgeClass)}>
-                                <span className="opacity-70">Gelar:</span>
-                                <span className="font-bold">"{item.badge.titleReward}"</span>
-                              </span>
-                            </div>
+                          {item.earned && (
+                            <span className="absolute -top-1 -right-1.5 text-foreground" title="Lencana Diraih">
+                              <CheckCircle2 className="w-3.5 h-3.5 fill-foreground text-background" />
+                            </span>
                           )}
                         </div>
 
-                        <p className="font-sans text-[10.5px] text-muted text-center leading-relaxed mb-2">
-                          {item.earned ? item.badge.description : (secretHints[item.badge.code] || 'Ada aksi tersembunyi yang menantimu...')}
-                        </p>
+                        {/* 2. JUDUL */}
+                        <h4 className="font-serif font-bold text-xs sm:text-[13px] text-foreground leading-tight line-clamp-1 w-full">
+                          {item.earned ? item.badge.name : '??? (Rahasia)'}
+                        </h4>
+
+                        {/* 3. TIER & GELAR */}
+                        <div className="space-y-0.5 w-full">
+                          <div className="flex items-center justify-center gap-1 font-mono text-[8.5px] uppercase font-bold text-muted">
+                            <span>T{item.badge.tier}</span>
+                            <span>&bull;</span>
+                            <span className={item.earned ? 'text-foreground' : 'text-muted'}>{item.earned ? tierInfo.name : 'Terselubung'}</span>
+                          </div>
+                          {item.earned && item.badge.titleReward && (
+                            <span className="font-mono text-[8.5px] text-muted italic block truncate max-w-full">
+                              &ldquo;{item.badge.titleReward}&rdquo;
+                            </span>
+                          )}
+                        </div>
                       </div>
 
-                      <div className="pt-1.5 border-t border-border-hairline text-center font-mono">
+                      {/* 4. PROGRESS BAR & ACTION */}
+                      <div className="pt-2 border-t border-border-hairline text-center font-mono text-[8.5px]">
                         {item.earned ? (
                           isEquipped ? (
-                            <span className={cn('w-full py-1 rounded-none border font-bold text-[8.5px] uppercase tracking-wider block', tierInfo.badgeTagClass)}>
-                              ✓ Gelar Aktif
+                            <span className="font-bold text-foreground text-[8px] uppercase tracking-wider block">
+                              ✓ Aktif
                             </span>
                           ) : item.badge.titleReward ? (
                             <button
                               type="button"
                               disabled={equipping}
                               onClick={() => handleEquipTitle(item.badge.titleReward || null)}
-                              className="w-full py-1 rounded-none border border-foreground hover:bg-foreground hover:text-background font-bold text-[8.5px] uppercase tracking-wider transition-colors block"
+                              className="text-foreground hover:underline font-bold text-[8.5px] uppercase tracking-wider cursor-pointer"
                             >
-                              Pasang Gelar
+                              Pasang
                             </button>
                           ) : null
                         ) : (
-                          <span className="text-[9px] text-muted italic block">
-                            Belum terungkap
+                          <span className="text-[8.5px] text-muted italic block">
+                            Terselubung
                           </span>
                         )}
                       </div>
