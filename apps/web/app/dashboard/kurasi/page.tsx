@@ -7,6 +7,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { CustomLoader } from '@/components/ui/custom-loader';
 import { apiClient } from '@/lib/api';
 import { ArticleStatus, RejectionReason, Role, ArticleDetail } from '@perpusjal/types';
+import { PetaNavigasi } from '@/components/layout/peta-navigasi';
 import {
   Check,
   X,
@@ -370,11 +371,15 @@ export default function DashboardCuratorPage() {
       {/* Masthead Header */}
       <div className="border-b-2 border-foreground pb-4 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div className="space-y-1.5">
-          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 font-mono text-[10px] sm:text-xs text-muted uppercase tracking-wider">
-            <span>Meja Redaksi</span>
-            <span className="text-border-hairline select-none font-sans" aria-hidden="true">/</span>
-            <span>KURASI LITERASI &amp; MODERASI WARGA</span>
-          </div>
+          <PetaNavigasi
+            items={[
+              { label: 'PERPUSJAL', href: '/' },
+              { label: 'DASBOR', href: '/dashboard' },
+              { label: 'MEJA REDAKSI', href: '/dashboard/kurasi' },
+              { label: 'KURASI & MODERASI' },
+            ]}
+            className="mb-2"
+          />
           <h1 className="font-serif text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
             Meja Kurasi &amp; Moderasi
           </h1>

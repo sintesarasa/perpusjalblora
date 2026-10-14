@@ -46,6 +46,7 @@ const CameraQrScannerModal = dynamic(
   () => import('@/components/circulation/camera-qr-scanner-modal').then((mod) => mod.CameraQrScannerModal),
   { ssr: false }
 );
+import { PetaNavigasi } from '@/components/layout/peta-navigasi';
 
 interface LookupResponse {
   loan: LoanItem;
@@ -802,11 +803,16 @@ export default function DashboardCirculationPage() {
     <div className="p-3 sm:p-6 lg:p-8 space-y-6 sm:space-y-8 max-w-7xl mx-auto font-sans">
       {/* Masthead Header */}
       <div className="border-b-2 border-foreground pb-4 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-        <div className="space-y-1">
-          <div className="flex flex-wrap items-center gap-2 font-mono text-[11px] sm:text-xs text-muted uppercase tracking-widest">
-            <span>Operasional Relawan Lapak</span>
-            <span>// MODE SIRKULASI REALTIME</span>
-          </div>
+        <div className="space-y-1.5">
+          <PetaNavigasi
+            items={[
+              { label: 'PERPUSJAL', href: '/' },
+              { label: 'DASBOR', href: '/dashboard' },
+              { label: 'OPERASIONAL LAPAK', href: '/dashboard/sirkulasi' },
+              { label: 'MEJA SIRKULASI' },
+            ]}
+            className="mb-2"
+          />
           <div className="flex items-center gap-2.5">
             <h1 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-foreground">
               Meja Sirkulasi Lapak

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { CustomLoader } from '@/components/ui/custom-loader';
 import { apiClient } from '@/lib/api';
 import { LoanItem, LoanStatus, WaitlistItem } from '@perpusjal/types';
+import { PetaNavigasi } from '@/components/layout/peta-navigasi';
 import {
   BookOpen,
   Calendar,
@@ -171,11 +172,15 @@ export default function MemberLoansDashboardPage() {
       {/* Masthead */}
         <div className="border-b-2 border-foreground pb-4 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div className="space-y-1.5">
-            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 font-mono text-[10px] sm:text-xs text-muted uppercase tracking-wider">
-              <span>Sirkulasi Anggota</span>
-              <span className="text-border-hairline select-none font-sans" aria-hidden="true">/</span>
-              <span>STATUS PINJAMAN BUKU</span>
-            </div>
+            <PetaNavigasi
+              items={[
+                { label: 'PERPUSJAL', href: '/' },
+                { label: 'DASBOR', href: '/dashboard' },
+                { label: 'SIRKULASI', href: '/dashboard/pinjaman' },
+                { label: 'STATUS PINJAMAN BUKU' },
+              ]}
+              className="mb-2"
+            />
             <h1 className="font-serif text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-foreground">
               Dasbor Peminjaman
             </h1>

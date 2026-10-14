@@ -7,6 +7,7 @@ import { CustomLoader } from '@/components/ui/custom-loader';
 import { Logo } from '@/components/logo';
 import { apiClient } from '@/lib/api';
 import { ArrowLeft, Printer, Copy, Check, QrCode as QrCodeIcon, ShieldCheck } from 'lucide-react';
+import { PetaNavigasi } from '@/components/layout/peta-navigasi';
 
 interface UserProfile {
   id: string;
@@ -96,16 +97,16 @@ export default function MemberCardPage() {
   return (
     <div className="p-4 sm:p-8 space-y-8 max-w-4xl mx-auto">
       {/* Top Action Bar (Hidden when printing) */}
-      <div className="flex items-center justify-between no-print">
-        <Link
-          href="/dashboard"
-          className="inline-flex items-center gap-1.5 font-mono text-xs uppercase tracking-wider text-muted hover:text-foreground transition-colors"
-        >
-          <ArrowLeft className="w-3.5 h-3.5" />
-          <span>Kembali ke Dasbor Utama</span>
-        </Link>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 no-print border-b border-border-hairline pb-4">
+        <PetaNavigasi
+          items={[
+            { label: 'PERPUSJAL', href: '/' },
+            { label: 'DASBOR', href: '/dashboard' },
+            { label: 'KARTU ANGGOTA DIGITAL' },
+          ]}
+        />
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 self-start sm:self-auto">
           <button
             type="button"
             onClick={handleCopyCode}

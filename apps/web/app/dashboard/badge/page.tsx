@@ -32,6 +32,7 @@ import { cn } from '@/lib/utils';
 import { BadgeInsignia } from '@/components/gamification/badge-insignia';
 import { BadgeShowcasePicker } from '@/components/gamification/badge-showcase-picker';
 import { getTierInfo } from '@/lib/badge-tier-styles';
+import { PetaNavigasi } from '@/components/layout/peta-navigasi';
 
 const PILLAR_CONFIG: Record<
   BadgeCategory,
@@ -230,11 +231,15 @@ export default function DashboardBadgesPage() {
       {/* ── 1. Masthead ── */}
       <div className="border-b-2 border-foreground pb-5 flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div className="space-y-1.5">
-          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 font-mono text-[10px] sm:text-xs text-muted uppercase tracking-wider">
-            <span>KOLEKSI LENCANA &amp; JULUKAN ANGGOTA</span>
-            <span className="text-border-hairline select-none font-sans" aria-hidden="true">/</span>
-            <span>POHON PENCAPAIAN PERPUSJAL</span>
-          </div>
+          <PetaNavigasi
+            items={[
+              { label: 'PERPUSJAL', href: '/' },
+              { label: 'DASBOR', href: '/dashboard' },
+              { label: 'POHON PENCAPAIAN', href: '/dashboard/badge' },
+              { label: 'LENCANA & PRESTASI' },
+            ]}
+            className="mb-2"
+          />
           <h1 className="font-serif text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
             Lencana & Julukan Kehormatan
           </h1>

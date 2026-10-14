@@ -34,6 +34,7 @@ import { Input } from '@/components/ui/input';
 import { CustomLoader } from '@/components/ui/custom-loader';
 import { cn } from '@/lib/utils';
 import { DigitalStampEffect } from '@/components/circulation/digital-stamp-effect';
+import { PetaNavigasi } from '@/components/layout/peta-navigasi';
 
 type TabType = 'sorotan' | 'ticker' | 'cfd';
 
@@ -225,10 +226,14 @@ export default function AdminBerandaPage() {
       <section className="border-b border-border-hairline bg-surface-muted/30 py-8 px-4 sm:px-8">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-end justify-between gap-6">
           <div>
-            <div className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-widest text-muted mb-2">
-              <Megaphone className="w-3.5 h-3.5 text-foreground" />
-              <span>MEJA PENGURUS PUSAT // ETALASE BERANDA</span>
-            </div>
+            <PetaNavigasi
+              items={[
+                { label: 'PERPUSJAL', href: '/' },
+                { label: 'PENGURUS PUSAT', href: '/admin' },
+                { label: 'ETALASE BERANDA' },
+              ]}
+              className="mb-2"
+            />
             <h1 className="font-serif text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
               Warta &amp; Etalase Beranda
             </h1>

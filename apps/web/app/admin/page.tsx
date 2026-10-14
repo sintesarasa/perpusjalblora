@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { AdminDashboardStats, AdminAuditLogItem } from '@perpusjal/types';
 import { apiClient } from '@/lib/api';
+import { PetaNavigasi } from '@/components/layout/peta-navigasi';
 
 export default function AdminDashboardPage() {
   const [stats, setStats] = React.useState<AdminDashboardStats | null>(null);
@@ -51,10 +52,14 @@ export default function AdminDashboardPage() {
       <section className="border-b border-border-hairline bg-surface-muted/40 py-10 px-4 sm:px-8">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-muted mb-2">
-              <ShieldAlert className="w-3.5 h-3.5" />
-              <span>MEJA PENGURUS PUSAT (ADMIN DESK)</span>
-            </div>
+            <PetaNavigasi
+              items={[
+                { label: 'PERPUSJAL', href: '/' },
+                { label: 'PENGURUS PUSAT', href: '/admin' },
+                { label: 'DASBOR OPERASIONAL' },
+              ]}
+              className="mb-2"
+            />
             <h1 className="font-serif text-3xl sm:text-5xl font-bold tracking-tight text-foreground">
               Dasbor Operasional
             </h1>

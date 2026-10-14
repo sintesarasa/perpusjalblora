@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { CustomLoader } from '@/components/ui/custom-loader';
 import { apiClient } from '@/lib/api';
+import { PetaNavigasi } from '@/components/layout/peta-navigasi';
 import { EventItem, EventType, EventStatus, Role } from '@perpusjal/types';
 import { EventFormModal } from '@/components/dashboard/event-form-modal';
 import { EventCompleteModal } from '@/components/dashboard/event-complete-modal';
@@ -178,11 +179,14 @@ export default function DashboardKegiatanPage() {
       {/* 1. Header Masthead with Dual Actions */}
       <div className="border-b-2 border-foreground pb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-muted mb-1">
-            <span>OPERASIONAL LAPAK</span>
-            <span>//</span>
-            <span className="text-foreground font-bold">MEJA AGENDA &amp; ARSIP KEGIATAN</span>
-          </div>
+          <PetaNavigasi
+            items={[
+              { label: 'PERPUSJAL', href: '/' },
+              { label: 'DASBOR', href: '/dashboard' },
+              { label: 'AGENDA & PRESENSI LAPAK' },
+            ]}
+            className="mb-2"
+          />
           <h1 className="font-serif text-2xl sm:text-4xl font-bold tracking-tight text-foreground">
             Agenda Kegiatan &amp; Presensi Lapak
           </h1>

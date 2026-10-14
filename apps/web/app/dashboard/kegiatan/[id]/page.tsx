@@ -22,6 +22,7 @@ import { CustomLoader } from '@/components/ui/custom-loader';
 import { apiClient } from '@/lib/api';
 import dynamic from 'next/dynamic';
 import { EventDetail, EventRegistrationItem, RegistrationStatus } from '@perpusjal/types';
+import { PetaNavigasi } from '@/components/layout/peta-navigasi';
 
 const CameraQrScannerModal = dynamic(
   () => import('@/components/circulation/camera-qr-scanner-modal').then((mod) => mod.CameraQrScannerModal),
@@ -207,16 +208,17 @@ export default function EventPresensiPage() {
   return (
     <div className="p-6 sm:p-10 space-y-8 max-w-7xl font-sans text-foreground">
       {/* 1. Top Navigation & Action Buttons */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <Link
-          href="/dashboard/kegiatan"
-          className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-muted hover:text-foreground transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Kembali ke Meja Agenda</span>
-        </Link>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border-hairline pb-4">
+        <PetaNavigasi
+          items={[
+            { label: 'PERPUSJAL', href: '/' },
+            { label: 'DASBOR', href: '/dashboard' },
+            { label: 'AGENDA & PRESENSI', href: '/dashboard/kegiatan' },
+            { label: 'PRESENSI PESERTA' },
+          ]}
+        />
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 self-start sm:self-auto">
           <button
             type="button"
             onClick={() => window.print()}

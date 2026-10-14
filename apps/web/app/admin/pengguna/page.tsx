@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Users, Search, Shield, UserX, UserCheck, AlertTriangle } from 'lucide-react';
 import { AdminUserListItem, Role, UserStatus } from '@perpusjal/types';
 import { apiClient } from '@/lib/api';
+import { PetaNavigasi } from '@/components/layout/peta-navigasi';
 
 export default function AdminUsersPage() {
   const [users, setUsers] = React.useState<AdminUserListItem[]>([]);
@@ -106,10 +107,14 @@ export default function AdminUsersPage() {
       <section className="border-b border-border-hairline bg-surface-muted/40 py-10 px-4 sm:px-8">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-muted mb-2">
-              <Users className="w-3.5 h-3.5" />
-              <span>ADMINISTRASI KEANGGOTAAN</span>
-            </div>
+            <PetaNavigasi
+              items={[
+                { label: 'PERPUSJAL', href: '/' },
+                { label: 'PENGURUS PUSAT', href: '/admin' },
+                { label: 'MANAJEMEN PENGGUNA' },
+              ]}
+              className="mb-2"
+            />
             <h1 className="font-serif text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-foreground">
               Manajemen Pengguna
             </h1>

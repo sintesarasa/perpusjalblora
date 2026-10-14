@@ -10,6 +10,7 @@ import { AdminAddBookModal } from '@/components/admin/admin-add-book-modal';
 import { AdminEditBookModal } from '@/components/admin/admin-edit-book-modal';
 import { DeleteBookConfirmModal } from '@/components/admin/delete-book-confirm-modal';
 import { CustomLoader } from '@/components/ui/custom-loader';
+import { PetaNavigasi } from '@/components/layout/peta-navigasi';
 import {
   BookOpen,
   Plus,
@@ -455,10 +456,15 @@ export default function DashboardBookManagementPage() {
       {/* 1. EDITORIAL MASTHEAD */}
       <div className="border-b border-border-hairline pb-6 flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div className="space-y-1.5">
-          <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-muted">
-            <BookOpen className="w-3.5 h-3.5" />
-            <span>MEJA KURASI // MANAJEMEN KOLEKSI PUSTAKA</span>
-          </div>
+          <PetaNavigasi
+            items={[
+              { label: 'PERPUSJAL', href: '/' },
+              { label: 'DASBOR', href: '/dashboard' },
+              { label: 'KOLEKSI PUSTAKA', href: '/dashboard/buku' },
+              { label: 'KELOLA BUKU' },
+            ]}
+            className="mb-2"
+          />
           <h1 className="font-serif text-2xl sm:text-4xl font-bold tracking-tight text-foreground">
             Kelola Koleksi Buku
           </h1>

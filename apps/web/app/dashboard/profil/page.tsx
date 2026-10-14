@@ -31,6 +31,7 @@ import { getTierInfo, inferTierFromTitle } from '@/lib/badge-tier-styles';
 import { cn } from '@/lib/utils';
 import { apiClient, getApiUrl } from '@/lib/api';
 import { useAuth } from '@/contexts/auth-context';
+import { PetaNavigasi } from '@/components/layout/peta-navigasi';
 
 export default function DashboardProfileSettingsPage() {
   const { refreshUser } = useAuth();
@@ -430,13 +431,16 @@ export default function DashboardProfileSettingsPage() {
       {/* ── 1. EDITORIAL HEADER ── */}
       <section className="border-b border-border-hairline bg-surface-muted/30 py-8 px-4 sm:px-8">
         <div className="max-w-5xl mx-auto flex flex-col md:flex-row md:items-end justify-between gap-4">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-muted">
-              <User className="w-3.5 h-3.5" />
-              <span>PENGATURAN IDENTITAS</span>
-              <span>//</span>
-              <span>KONTRIBUTOR WARGA</span>
-            </div>
+          <div className="space-y-1.5">
+            <PetaNavigasi
+              items={[
+                { label: 'PERPUSJAL', href: '/' },
+                { label: 'DASBOR', href: '/dashboard' },
+                { label: 'PENGATURAN IDENTITAS', href: '/dashboard/profil' },
+                { label: 'PROFIL & PRIVASI' },
+              ]}
+              className="mb-2"
+            />
             <h1 className="font-serif text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
               Profil & Identitas Publik
             </h1>

@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { apiClient } from '@/lib/api';
 import { Language } from '@perpusjal/types';
 import { BookCoverUploader } from '@/components/admin/book-cover-uploader';
+import { PetaNavigasi } from '@/components/layout/peta-navigasi';
 import {
   ArrowLeft,
   BookOpen,
@@ -130,20 +131,16 @@ export default function AdminAddBookPage() {
     <div className="min-h-screen bg-background text-foreground font-sans pb-20">
       {/* 1. TOP EDITORIAL BANNER */}
       <section className="border-b border-border-hairline bg-surface-muted/30 py-8 px-4 sm:px-8">
-        <div className="max-w-5xl mx-auto space-y-3">
-          <Link
-            href="/dashboard/buku"
-            className="inline-flex items-center gap-1.5 font-mono text-xs uppercase tracking-wider text-muted hover:text-foreground transition-colors"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Kembali ke Kelola Pustaka</span>
-          </Link>
-
-          <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-muted">
-            <BookOpen className="w-4 h-4 text-foreground" />
-            <span>KATALOGISASI & INVENTARIS BUKU LAPAK</span>
-          </div>
-
+        <div className="max-w-5xl mx-auto space-y-2">
+          <PetaNavigasi
+            items={[
+              { label: 'PERPUSJAL', href: '/' },
+              { label: 'PENGURUS PUSAT', href: '/admin' },
+              { label: 'KELOLA BUKU', href: '/dashboard/buku' },
+              { label: 'TAMBAH BUKU BARU' },
+            ]}
+            className="mb-2"
+          />
           <h1 className="font-serif text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
             Tambah Koleksi Buku Baru
           </h1>

@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { UserAvatar } from '@/components/ui/user-avatar';
+import { PetaNavigasi } from '@/components/layout/peta-navigasi';
 
 interface MyArticleItem {
   id: string;
@@ -149,10 +150,16 @@ export default function MyArticlesDashboardPage() {
     <div className="p-4 sm:p-8 space-y-6 sm:space-y-8 max-w-6xl">
       {/* ── Top Header ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b-2 border-foreground pb-6">
-        <div className="space-y-1">
-          <div className="font-mono text-[10px] uppercase tracking-widest text-muted">
-            RUANG PENULIS // PERPUSJAL BLORA
-          </div>
+        <div className="space-y-1.5">
+          <PetaNavigasi
+            items={[
+              { label: 'PERPUSJAL', href: '/' },
+              { label: 'DASBOR', href: '/dashboard' },
+              { label: 'RUANG PENULIS', href: '/dashboard/tulisan' },
+              { label: 'KARYA TULISAN' },
+            ]}
+            className="mb-2"
+          />
           <h1 className="font-serif text-2xl sm:text-4xl font-normal tracking-tight">
             Manajemen Naskah Tulisan
           </h1>

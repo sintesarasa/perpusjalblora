@@ -21,6 +21,7 @@ import { apiClient } from '@/lib/api';
 import { CustomLoader } from '@/components/ui/custom-loader';
 import { EmptyState } from '@/components/ui/empty-state';
 import { cn } from '@/lib/utils';
+import { PetaNavigasi } from '@/components/layout/peta-navigasi';
 
 function getNotificationCategoryIcon(type: string) {
   if (type.startsWith('LOAN_') || type.startsWith('WAITLIST_')) {
@@ -101,17 +102,23 @@ export default function DashboardNotificationsPage() {
       {/* ── 1. Masthead ── */}
       <div className="border-b-2 border-foreground pb-4 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div className="space-y-1.5">
-          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 font-mono text-[10px] sm:text-xs text-muted uppercase tracking-wider">
-            <span>KOTAK MASUK ANGGOTA</span>
-            <span className="text-border-hairline select-none font-sans" aria-hidden="true">/</span>
-            <span>WARTA &amp; PEMBERITAHUAN</span>
-            {isConnected && (
-              <span className="inline-flex items-center gap-1 font-mono text-[9px] sm:text-[10px] text-emerald-600 dark:text-emerald-400 font-bold border border-emerald-500/30 px-1.5 py-0.2 ml-1">
-                <Radio className="w-2.5 h-2.5 animate-pulse" />
-                LIVE
-              </span>
-            )}
-          </div>
+          <PetaNavigasi
+            items={[
+              { label: 'PERPUSJAL', href: '/' },
+              { label: 'DASBOR', href: '/dashboard' },
+              { label: 'KOTAK MASUK', href: '/dashboard/notifikasi' },
+              { label: 'WARTA & PEMBERITAHUAN' },
+            ]}
+            badge={
+              isConnected ? (
+                <span className="inline-flex items-center gap-1 font-mono text-[9px] sm:text-[10px] text-emerald-600 dark:text-emerald-400 font-bold border border-emerald-500/30 px-1.5 py-0.2">
+                  <Radio className="w-2.5 h-2.5 animate-pulse" />
+                  LIVE
+                </span>
+              ) : undefined
+            }
+            className="mb-2"
+          />
           <h1 className="font-serif text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-foreground">
             Kotak Warta Anggota
           </h1>

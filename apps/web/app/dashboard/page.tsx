@@ -20,6 +20,7 @@ import {
 import { CustomLoader } from '@/components/ui/custom-loader';
 import { apiClient } from '@/lib/api';
 import { Role } from '@perpusjal/types';
+import { PetaNavigasi } from '@/components/layout/peta-navigasi';
 
 export default function DashboardOverviewPage() {
   const [data, setData] = React.useState<any>(null);
@@ -82,11 +83,14 @@ export default function DashboardOverviewPage() {
       <section className="border border-border-hairline bg-surface p-4 sm:p-6 md:p-8 relative">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-5 pb-6 border-b border-border-hairline">
           <div>
-            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 font-mono text-[10px] sm:text-xs uppercase tracking-wider text-muted mb-1.5">
-              <span>PORTAL ANGGOTA</span>
-              <span className="text-border-hairline select-none font-sans" aria-hidden="true">/</span>
-              <span className="text-foreground font-bold">IKHTISAR PERSONAL</span>
-            </div>
+            <PetaNavigasi
+              items={[
+                { label: 'PERPUSJAL', href: '/' },
+                { label: 'RUANG KENDALI WARGA', href: '/dashboard' },
+                { label: 'IKHTISAR PERSONAL' },
+              ]}
+              className="mb-2"
+            />
             <h1 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-foreground">
               Selamat Datang, {user?.name || 'Warga Blora'}
             </h1>
