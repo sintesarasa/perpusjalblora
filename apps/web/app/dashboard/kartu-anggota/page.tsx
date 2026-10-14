@@ -3,10 +3,12 @@
 import * as React from 'react';
 import Link from 'next/link';
 import QRCode from 'qrcode';
+import { toPng } from 'html-to-image';
 import { CustomLoader } from '@/components/ui/custom-loader';
 import { Logo } from '@/components/logo';
+import { UserAvatar } from '@/components/ui/user-avatar';
 import { apiClient } from '@/lib/api';
-import { ArrowLeft, Printer, Copy, Check, QrCode as QrCodeIcon, ShieldCheck } from 'lucide-react';
+import { Printer, Copy, Check, QrCode as QrCodeIcon, ShieldCheck, Download } from 'lucide-react';
 import { PetaNavigasi } from '@/components/layout/peta-navigasi';
 
 interface UserProfile {
@@ -16,6 +18,7 @@ interface UserProfile {
   email: string;
   role: string;
   trustLevel: string;
+  avatarUrl?: string | null;
   createdAt?: string;
 }
 
@@ -24,6 +27,8 @@ export default function MemberCardPage() {
   const [loading, setLoading] = React.useState(true);
   const [qrSvg, setQrSvg] = React.useState<string>('');
   const [copied, setCopied] = React.useState(false);
+  const [downloading, setDownloading] = React.useState(false);
+  const cardRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
     async function loadUser() {
@@ -39,6 +44,16 @@ export default function MemberCardPage() {
   }, []);
 
   const memberCode = user ? `PJL-${user.id.slice(-6).toUpperCase()}` : '';
+
+  const memberSince = React.useMemo(() => {
+    if (!user?.createdAt) return null;
+    try {
+      const d = new Date(user.createdAt);
+      return d.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+    } catch {
+      return null;
+    }
+  }, [user?.createdAt]);
 
   React.useEffect(() => {
     if (!memberCode) return;
@@ -69,6 +84,27 @@ export default function MemberCardPage() {
   const handlePrint = () => {
     if (typeof window !== 'undefined') {
       window.print();
+    }
+  };
+
+  const handleDownloadPng = async () => {
+    if (!cardRef.current || !user || downloading) return;
+    try {
+      setDownloading(true);
+      const dataUrl = await toPng(cardRef.current, {
+        quality: 0.95,
+        pixelRatio: 3,
+        cacheBust: true,
+        backgroundColor: '#ffffff',
+      });
+      const link = document.createElement('a');
+      link.download = `kartu-anggota-${user.username || 'perpusjal'}.png`;
+      link.href = dataUrl;
+      link.click();
+    } catch (err) {
+      console.error('Gagal mengunduh kartu anggota sebagai gambar:', err);
+    } finally {
+      setDownloading(false);
     }
   };
 
@@ -106,7 +142,7 @@ export default function MemberCardPage() {
           ]}
         />
 
-        <div className="flex items-center gap-2 self-start sm:self-auto">
+        <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
           <button
             type="button"
             onClick={handleCopyCode}
@@ -115,6 +151,17 @@ export default function MemberCardPage() {
           >
             {copied ? <Check className="w-3.5 h-3.5 text-foreground" /> : <Copy className="w-3.5 h-3.5 text-muted" />}
             <span>{copied ? 'Tersalin' : 'Salin Kode'}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleDownloadPng}
+            disabled={downloading}
+            className="px-3.5 py-2 border border-foreground bg-surface font-mono text-xs uppercase tracking-wider font-semibold hover:bg-surface-muted transition-colors inline-flex items-center gap-2 disabled:opacity-50"
+            title="Simpan kartu sebagai gambar untuk digunakan saat offline"
+          >
+            <Download className="w-3.5 h-3.5" />
+            <span>{downloading ? 'Mengunduh...' : 'Unduh Gambar (PNG)'}</span>
           </button>
 
           <button
@@ -135,28 +182,23 @@ export default function MemberCardPage() {
           <span>Kartu Sirkulasi Peminjaman (KTA Lapak Baca) &bull; Dokumen Privat</span>
         </div>
         <p className="font-sans text-xs text-muted leading-relaxed">
-          Tunjukkan QR Code pada kartu ini secara langsung kepada relawan/kurator di lapak baca fisik saat melakukan serah-terima atau pengembalian buku. <strong>Jaga kerahasiaan kartu ini dan jangan dibagikan secara publik untuk melindungi kuota peminjaman akunmu.</strong>
+          Tunjukkan QR Code pada kartu ini secara langsung kepada relawan/kurator di lapak baca fisik saat melakukan serah-terima atau pengembalian buku. <strong>Jaga kerahasiaan kartu ini dan jangan dibagikan secara publik untuk melindungi kuota peminjaman akunmu.</strong> Anda juga dapat mengunduh gambar kartu untuk disimpan di galeri ponsel saat sinyal minim di ruang publik terbuka.
         </p>
       </div>
 
       {/* Digital Member Card Showcase */}
       <div className="flex justify-center py-4">
         <div
+          ref={cardRef}
           id="digital-member-card"
           className="relative w-full max-w-md bg-surface text-foreground p-6 sm:p-7 border-2 border-foreground select-none space-y-5 box-border rounded-none"
         >
-          {/* Background decorative wrapper (strictly clipped to inner container) */}
+          {/* Background decorative wrapper (clean hairline corner brackets, no obstructing watermark) */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none rounded-none no-print">
-            {/* Corner Ornamental Accents */}
-            <div className="absolute top-2 left-2 w-3 h-3 border-t-2 border-l-2 border-foreground/40" />
-            <div className="absolute top-2 right-2 w-3 h-3 border-t-2 border-r-2 border-foreground/40" />
-            <div className="absolute bottom-2 left-2 w-3 h-3 border-b-2 border-l-2 border-foreground/40" />
-            <div className="absolute bottom-2 right-2 w-3 h-3 border-b-2 border-r-2 border-foreground/40" />
-
-            {/* Background Watermark */}
-            <div className="absolute right-2 -bottom-2 font-mono font-black text-7xl text-foreground/[0.03] select-none tracking-tighter">
-              PERPUSJAL
-            </div>
+            <div className="absolute top-2 left-2 w-3 h-3 border-t-2 border-l-2 border-foreground/30" />
+            <div className="absolute top-2 right-2 w-3 h-3 border-t-2 border-r-2 border-foreground/30" />
+            <div className="absolute bottom-2 left-2 w-3 h-3 border-b-2 border-l-2 border-foreground/30" />
+            <div className="absolute bottom-2 right-2 w-3 h-3 border-b-2 border-r-2 border-foreground/30" />
           </div>
 
           {/* 1. Top Ribbon / Masthead */}
@@ -184,19 +226,35 @@ export default function MemberCardPage() {
             </div>
           </div>
 
-          {/* 2. Member Persona Details */}
-          <div className="relative z-10 flex items-center justify-between gap-4 py-1">
-            <div className="space-y-0.5 min-w-0">
-              <span className="font-mono text-[8.5px] uppercase tracking-widest text-muted block font-semibold">
-                PEMEGANG KARTU
-              </span>
-              <h2 className="font-serif font-black text-xl sm:text-2xl text-foreground tracking-tight leading-tight truncate">
-                {user.name}
-              </h2>
-              <div className="flex items-center gap-2 font-mono text-[11px] text-muted">
-                <span className="text-foreground font-semibold">@{user.username}</span>
-                <span>&bull;</span>
-                <span className="uppercase text-muted">{user.role}</span>
+          {/* 2. Member Persona Details with Profile Avatar */}
+          <div className="relative z-10 flex items-start sm:items-center justify-between gap-4 py-1">
+            <div className="flex items-center gap-3.5 min-w-0">
+              <div className="shrink-0">
+                <UserAvatar
+                  src={user.avatarUrl}
+                  name={user.name}
+                  username={user.username}
+                  size="lg"
+                  linkToProfile={false}
+                  className="border-2 border-foreground"
+                />
+              </div>
+              <div className="space-y-0.5 min-w-0">
+                <span className="font-mono text-[8.5px] uppercase tracking-widest text-muted block font-semibold">
+                  PEMEGANG KARTU
+                </span>
+                <h2 className="font-serif font-black text-xl sm:text-2xl text-foreground tracking-tight leading-tight truncate">
+                  {user.name}
+                </h2>
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 font-mono text-[11px] text-muted">
+                  <span className="text-foreground font-semibold">@{user.username}</span>
+                  {memberSince && (
+                    <>
+                      <span>&bull;</span>
+                      <span className="text-[10px]">Warga sejak {memberSince}</span>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -215,10 +273,18 @@ export default function MemberCardPage() {
           <div className="relative z-10 p-5 bg-surface-muted border-2 border-foreground rounded-none text-center space-y-3.5">
             <div className="flex justify-center items-center">
               {qrSvg ? (
-                <div
-                  className="w-48 h-48 sm:w-56 sm:h-56 bg-background p-3.5 border-2 border-foreground rounded-none inline-flex items-center justify-center [&>svg]:w-full [&>svg]:h-full [&>svg]:object-contain"
-                  dangerouslySetInnerHTML={{ __html: qrSvg }}
-                />
+                <div className="relative p-2 bg-surface">
+                  {/* Viewfinder corner brackets */}
+                  <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-foreground" />
+                  <div className="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 border-foreground" />
+                  <div className="absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2 border-foreground" />
+                  <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-foreground" />
+
+                  <div
+                    className="w-48 h-48 sm:w-56 sm:h-56 bg-white p-3 border border-border inline-flex items-center justify-center [&>svg]:w-full [&>svg]:h-full [&>svg]:object-contain"
+                    dangerouslySetInnerHTML={{ __html: qrSvg }}
+                  />
+                </div>
               ) : (
                 <div className="w-48 h-48 sm:w-56 sm:h-56 bg-surface-muted flex items-center justify-center text-muted font-mono text-xs border border-dashed border-border rounded-none">
                   Membuat QR...
@@ -228,24 +294,21 @@ export default function MemberCardPage() {
 
             <div className="space-y-1">
               <span className="font-mono text-sm sm:text-base font-bold text-foreground tracking-widest uppercase block">
-                * {memberCode} *
+                [ {memberCode} ]
               </span>
-              <span className="font-mono text-[10px] text-muted uppercase tracking-widest block font-bold">
+              <span className="font-mono text-[10px] text-foreground uppercase tracking-widest block font-bold">
                 PINDAI UNTUK PINJAM & KEMBALIKAN BUKU
-              </span>
-              <span className="font-mono text-[8px] text-muted uppercase tracking-wider block">
-                VALIDASI SIRKULASI LAPAK BACA TROTOAR PERPUSJAL BLORA
               </span>
             </div>
           </div>
 
-          {/* 4. Footer Slogan & Privacy Notice */}
-          <div className="relative z-10 text-center space-y-1 pt-1 border-t border-border-hairline">
+          {/* 4. Footer Slogan & Circulation Mark */}
+          <div className="relative z-10 text-center space-y-1.5 pt-2 border-t border-border-hairline">
             <p className="font-serif italic text-xs text-foreground/80 leading-relaxed">
               &ldquo;Membaca adalah melawan kebodohan, meminjam adalah merawat amanah.&rdquo;
             </p>
-            <span className="font-mono text-[7.5px] text-muted uppercase tracking-widest block font-bold">
-              DOKUMEN SIRKULASI PRIVAT &bull; PERPUSTAKAAN JALANAN BLORA
+            <span className="font-mono text-[8px] text-muted uppercase tracking-[0.18em] block">
+              DOKUMEN SIRKULASI OTENTIK &bull; PERPUSTAKAAN JALANAN BLORA
             </span>
           </div>
         </div>
