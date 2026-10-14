@@ -3,11 +3,12 @@
 import * as React from 'react';
 import Link from 'next/link';
 import QRCode from 'qrcode';
+import { toPng } from 'html-to-image';
 import { CustomLoader } from '@/components/ui/custom-loader';
 import { Logo } from '@/components/logo';
 import { UserAvatar } from '@/components/ui/user-avatar';
 import { apiClient } from '@/lib/api';
-import { Printer, Copy, Check, QrCode as QrCodeIcon, Radio } from 'lucide-react';
+import { Printer, Copy, Check, QrCode as QrCodeIcon, Radio, Download } from 'lucide-react';
 import { PetaNavigasi } from '@/components/layout/peta-navigasi';
 
 interface UserProfile {
@@ -26,6 +27,8 @@ export default function MemberCardPage() {
   const [loading, setLoading] = React.useState(true);
   const [qrSvg, setQrSvg] = React.useState<string>('');
   const [copied, setCopied] = React.useState(false);
+  const [downloading, setDownloading] = React.useState(false);
+  const cardRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
     async function loadUser() {
@@ -84,6 +87,27 @@ export default function MemberCardPage() {
     }
   };
 
+  const handleDownloadPng = async () => {
+    if (!cardRef.current || !user || downloading) return;
+    try {
+      setDownloading(true);
+      const dataUrl = await toPng(cardRef.current, {
+        quality: 0.98,
+        pixelRatio: 3,
+        cacheBust: true,
+        backgroundColor: '#09090b',
+      });
+      const link = document.createElement('a');
+      link.download = `kartu-anggota-${user.username || 'perpusjal'}.png`;
+      link.href = dataUrl;
+      link.click();
+    } catch (err) {
+      console.error('Gagal mengunduh kartu anggota:', err);
+    } finally {
+      setDownloading(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="p-12 flex items-center justify-center">
@@ -118,7 +142,7 @@ export default function MemberCardPage() {
           ]}
         />
 
-        <div className="flex items-center gap-2 self-start sm:self-auto">
+        <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
           <button
             type="button"
             onClick={handleCopyCode}
@@ -131,12 +155,23 @@ export default function MemberCardPage() {
 
           <button
             type="button"
+            onClick={handleDownloadPng}
+            disabled={downloading}
+            className="px-3.5 py-2 border border-foreground bg-surface font-mono text-xs uppercase tracking-wider font-semibold hover:bg-surface-muted transition-colors inline-flex items-center gap-2 disabled:opacity-50"
+            title="Simpan kartu resolusi tinggi (PNG) ke galeri foto HP untuk offline & cetak"
+          >
+            <Download className="w-3.5 h-3.5" />
+            <span>{downloading ? 'Mengunduh...' : 'Simpan Gambar (PNG)'}</span>
+          </button>
+
+          <button
+            type="button"
             onClick={handlePrint}
             className="px-4 py-2 bg-foreground text-background border border-foreground font-mono text-xs uppercase tracking-wider font-semibold hover:bg-foreground/90 transition-colors inline-flex items-center gap-2 shadow-sm"
             title="Cetak kartu dengan ukuran standar kartu ATM (85.6 × 54 mm)"
           >
             <Printer className="w-3.5 h-3.5" />
-            <span>Cetak Kartu (Ukuran ATM)</span>
+            <span>Cetak Kartu</span>
           </button>
         </div>
       </div>
@@ -148,15 +183,16 @@ export default function MemberCardPage() {
           <span>Kartu Sirkulasi Peminjaman (KTA Lapak Baca) &bull; Format Standar ATM</span>
         </div>
         <p className="font-sans text-xs text-muted leading-relaxed">
-          Kartu digital ini berdimensi rasio standar kartu fisik ATM (ISO/IEC 7810 ID-1: 85.6 &times; 54 mm). Tunjukkan QR Code pada kartu ini kepada relawan/kurator di lapak baca fisik saat serah-terima buku, atau cetak langsung ke kertas tebal/kartu PVC untuk kartu fisik pribadimu.
+          Kartu digital ini berdimensi rasio standar kartu fisik ATM (ISO/IEC 7810 ID-1: 85.6 &times; 54 mm). Anda dapat menyimpannya sebagai gambar PNG di galeri ponsel untuk kemudahan tanpa internet, atau langsung mencetaknya ke kertas tebal/kartu PVC.
         </p>
       </div>
 
       {/* Digital Member Card Showcase: Always Black (Light & Dark Mode) with standard ATM proportions */}
       <div className="flex justify-center py-6">
         <div
+          ref={cardRef}
           id="digital-member-card"
-          className="relative w-full max-w-[480px] aspect-[85.6/54] rounded-2xl bg-gradient-to-br from-zinc-900 via-[#0a0a0c] to-black text-white p-5 sm:p-6 border border-zinc-800 shadow-2xl overflow-hidden select-none flex flex-col justify-between box-border"
+          className="relative w-full max-w-[480px] aspect-[85.6/54] rounded-2xl bg-gradient-to-br from-zinc-900 via-[#0a0a0c] to-black text-white p-5 sm:p-6 pb-4 sm:pb-5 border border-zinc-800 shadow-2xl overflow-hidden select-none flex flex-col justify-between box-border"
         >
           {/* Subtle metallic hairline sheen overlays */}
           <div className="absolute inset-0 pointer-events-none rounded-2xl overflow-hidden no-print">
@@ -168,14 +204,10 @@ export default function MemberCardPage() {
             <div className="absolute inset-1.5 rounded-[12px] border border-white/[0.06] pointer-events-none" />
           </div>
 
-          {/* 1. Header (Compact, balanced, no empty gaps) */}
-          <div className="relative z-10 flex items-center justify-between gap-3 border-b border-white/10 pb-3">
-            <div className="flex items-center gap-2.5 min-w-0">
-              <Logo className="h-5 sm:h-6 w-auto text-white shrink-0" />
-              <div className="hidden min-[380px]:block w-px h-4 bg-white/20 shrink-0" />
-              <span className="hidden min-[380px]:block font-mono text-[8.5px] uppercase font-bold tracking-[0.2em] text-zinc-300 truncate">
-                PERPUSJAL BLORA
-              </span>
+          {/* 1. Header (Compact, balanced, no redundant truncated logo text) */}
+          <div className="relative z-10 flex items-center justify-between gap-3 border-b border-white/10 pb-2.5">
+            <div className="flex items-center gap-2 min-w-0">
+              <Logo className="h-4 sm:h-5 w-auto text-white shrink-0" />
             </div>
 
             <div className="flex items-center gap-2 shrink-0">
@@ -191,14 +223,14 @@ export default function MemberCardPage() {
             </div>
           </div>
 
-          {/* 2. Middle Body: Chip + Member Persona + Large Crisp QR Code */}
-          <div className="relative z-10 grid grid-cols-[1fr_auto] items-center gap-4 py-1">
+          {/* 2. Middle Body: Chip + Member Persona + Crisp QR Code with balanced padding */}
+          <div className="relative z-10 grid grid-cols-[1fr_auto] items-center gap-3 sm:gap-4 my-auto py-1">
             {/* Left Column: Smart Chip & Member Identity (Full Name fully readable without truncation) */}
-            <div className="space-y-3 min-w-0 pr-1">
+            <div className="space-y-2 sm:space-y-2.5 min-w-0 pr-1">
               {/* Metallic Smart-Card Chip motif */}
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2.5">
                 <div
-                  className="w-8 h-6 sm:w-9 sm:h-7 rounded-[4px] border border-amber-400/50 bg-gradient-to-br from-amber-300/30 via-amber-400/40 to-amber-700/40 p-1 relative shadow-inner shrink-0"
+                  className="w-7 h-5 sm:w-8 sm:h-6 rounded-[4px] border border-amber-400/50 bg-gradient-to-br from-amber-300/30 via-amber-400/40 to-amber-700/40 p-0.5 relative shadow-inner shrink-0"
                   aria-hidden="true"
                 >
                   <div className="w-full h-full border border-amber-300/40 rounded-[2px] grid grid-cols-2 grid-rows-2 gap-0.5">
@@ -208,7 +240,7 @@ export default function MemberCardPage() {
                     <div />
                   </div>
                 </div>
-                <span className="font-mono text-[8px] uppercase tracking-widest text-zinc-400 font-semibold">
+                <span className="font-mono text-[7.5px] sm:text-[8px] uppercase tracking-widest text-zinc-400 font-semibold">
                   KTA LAPAK BACA
                 </span>
               </div>
@@ -227,13 +259,13 @@ export default function MemberCardPage() {
                 </div>
                 <div className="min-w-0 space-y-0.5">
                   {/* Full Name: break-words, never cut off with truncate */}
-                  <h2 className="font-serif font-black text-sm sm:text-base text-white tracking-tight leading-snug break-words">
+                  <h2 className="font-serif font-black text-xs sm:text-sm md:text-base text-white tracking-tight leading-snug break-words">
                     {user.name}
                   </h2>
-                  <div className="flex flex-wrap items-center gap-x-1.5 font-mono text-[9.5px] sm:text-[10px] text-zinc-400">
+                  <div className="flex flex-wrap items-center gap-x-1.5 font-mono text-[9px] sm:text-[9.5px] text-zinc-400">
                     <span className="text-zinc-300 font-medium">@{user.username}</span>
                     <span>&bull;</span>
-                    <span className="text-zinc-400 uppercase text-[9px]">LVL {user.trustLevel}</span>
+                    <span className="text-zinc-400 uppercase text-[8.5px]">LVL {user.trustLevel}</span>
                   </div>
                 </div>
               </div>
@@ -241,26 +273,26 @@ export default function MemberCardPage() {
 
             {/* Right Column: High-Contrast Laser QR Code for outdoor night scanning */}
             <div className="flex flex-col items-center shrink-0">
-              <div className="qr-code-box p-1.5 sm:p-2 bg-white rounded-xl border border-zinc-700 shadow-xl">
+              <div className="qr-code-box p-1 sm:p-1.5 bg-white rounded-lg border border-zinc-700 shadow-xl">
                 {qrSvg ? (
                   <div
-                    className="w-24 h-24 sm:w-28 sm:h-28 min-[440px]:w-32 min-[440px]:h-32 [&>svg]:w-full [&>svg]:h-full [&>svg]:object-contain"
+                    className="w-20 h-20 sm:w-24 sm:h-24 [&>svg]:w-full [&>svg]:h-full [&>svg]:object-contain"
                     dangerouslySetInnerHTML={{ __html: qrSvg }}
                   />
                 ) : (
-                  <div className="w-24 h-24 sm:w-28 sm:h-28 min-[440px]:w-32 min-[440px]:h-32 bg-zinc-100 flex items-center justify-center text-zinc-400 font-mono text-[9px]">
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 bg-zinc-100 flex items-center justify-center text-zinc-400 font-mono text-[9px]">
                     ...
                   </div>
                 )}
               </div>
-              <span className="font-mono text-[9.5px] sm:text-[10.5px] font-bold text-zinc-300 tracking-wider mt-1.5 block">
+              <span className="font-mono text-[9px] sm:text-[10px] font-bold text-zinc-300 tracking-wider mt-1 block">
                 {memberCode}
               </span>
             </div>
           </div>
 
-          {/* 3. Footer Bar: Circulation Number & Authentic Mark */}
-          <div className="relative z-10 flex items-center justify-between gap-2 border-t border-white/10 pt-2 text-[8px] sm:text-[8.5px] font-mono text-zinc-400 uppercase tracking-wider">
+          {/* 3. Footer Bar: Circulation Number & Authentic Mark with comfortable margin */}
+          <div className="relative z-10 flex items-center justify-between gap-2 border-t border-white/10 pt-2 pb-0.5 text-[8px] sm:text-[8.5px] font-mono text-zinc-400 uppercase tracking-wider">
             <span className="font-semibold text-zinc-300">
               SIRKULASI LAPAK BACA
             </span>
@@ -301,15 +333,18 @@ export default function MemberCardPage() {
             color: #ffffff !important;
             border: 1px solid #27272a !important;
             box-shadow: none !important;
-            padding: 4mm 5mm !important;
+            padding: 4.5mm 5.5mm !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: space-between !important;
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
           }
           #digital-member-card .qr-code-box {
-            width: 25mm !important;
-            height: 25mm !important;
-            padding: 1.2mm !important;
-            border-radius: 2mm !important;
+            width: 20mm !important;
+            height: 20mm !important;
+            padding: 1mm !important;
+            border-radius: 1.5mm !important;
           }
           #digital-member-card .qr-code-box > div {
             width: 100% !important;
