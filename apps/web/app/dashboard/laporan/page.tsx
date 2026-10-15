@@ -113,6 +113,20 @@ export default function DashboardReportsPage() {
   const [currentTab, setCurrentTab] = React.useState<ReportTab>('SIRKULASI');
   const [period, setPeriod] = React.useState<PeriodFilter>('30d');
   const [exportMenuOpen, setExportMenuOpen] = React.useState(false);
+  const exportMenuRef = React.useRef<HTMLDivElement>(null);
+
+  // Close export menu on click outside
+  React.useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (exportMenuRef.current && !exportMenuRef.current.contains(event.target as Node)) {
+        setExportMenuOpen(false);
+      }
+    }
+    if (exportMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [exportMenuOpen]);
 
   // Check role
   React.useEffect(() => {
@@ -287,7 +301,7 @@ export default function DashboardReportsPage() {
           SCREEN HEADER / MASTHEAD
           ────────────────────────────────────────────────────────── */}
       <div className="print:hidden border-b-2 border-foreground pb-4 flex flex-col md:flex-row md:items-end justify-between gap-4">
-        <div className="space-y-1.5 min-w-0">
+        <div className="space-y-1 min-w-0">
           <PetaNavigasi
             items={[
               { label: 'PERPUSJAL', href: '/' },
@@ -306,12 +320,12 @@ export default function DashboardReportsPage() {
         </div>
 
         {/* Global Toolbar: Refresh, Period & Export */}
-        <div className="flex flex-wrap items-center gap-2 font-mono text-xs shrink-0">
+        <div className="flex items-center gap-2 font-mono text-xs shrink-0 self-start md:self-auto">
           <button
             type="button"
             onClick={() => loadReport(period)}
             disabled={loading}
-            className="px-2.5 sm:px-3 py-2 border border-foreground bg-surface hover:bg-surface-muted transition-colors inline-flex items-center gap-1.5 cursor-pointer text-muted hover:text-foreground"
+            className="px-3 py-2 border border-foreground bg-surface hover:bg-surface-muted transition-colors inline-flex items-center gap-1.5 cursor-pointer text-muted hover:text-foreground font-semibold"
             title="Segarkan data laporan"
           >
             <RefreshCw className={cn('w-3.5 h-3.5', loading && 'animate-spin')} />
@@ -321,20 +335,20 @@ export default function DashboardReportsPage() {
           <button
             type="button"
             onClick={handlePrint}
-            className="px-2.5 sm:px-3 py-2 border border-foreground bg-surface hover:bg-surface-muted transition-colors inline-flex items-center gap-1.5 cursor-pointer text-muted hover:text-foreground"
+            className="px-3 py-2 border border-foreground bg-surface hover:bg-surface-muted transition-colors inline-flex items-center gap-1.5 cursor-pointer text-muted hover:text-foreground font-semibold"
             title="Cetak Lembar Laporan Akuntabilitas"
           >
             <Printer className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Cetak PDF</span>
           </button>
 
-          {/* Export Menu Dropdown */}
-          <div className="relative">
+          {/* Export Menu Dropdown with Ref */}
+          <div className="relative" ref={exportMenuRef}>
             <button
               type="button"
               onClick={() => setExportMenuOpen(!exportMenuOpen)}
               disabled={downloading}
-              className="px-3.5 py-2 bg-foreground text-background font-mono text-xs uppercase tracking-wider font-bold hover:bg-foreground/90 disabled:opacity-50 transition-colors inline-flex items-center gap-1.5 cursor-pointer"
+              className="px-3.5 py-2 bg-foreground text-background font-mono text-xs uppercase tracking-wider font-bold hover:bg-foreground/90 disabled:opacity-50 transition-colors inline-flex items-center gap-1.5 cursor-pointer shadow-xs"
             >
               <Download className="w-3.5 h-3.5" />
               <span>{downloading ? 'Mengunduh...' : 'Ekspor CSV'}</span>
@@ -366,62 +380,75 @@ export default function DashboardReportsPage() {
       </div>
 
       {/* ──────────────────────────────────────────────────────────
-          CONTROLS: MULTI-PILLAR TABS & TIMEFRAME SELECTOR
+          CONTROLS: DEDICATED MAIN TABS & TIMEFRAME SELECTOR STRIP
           ────────────────────────────────────────────────────────── */}
-      <div className="print:hidden space-y-4">
-        {/* Navigation Tabs Bar */}
-        <div className="flex items-center justify-between border-b-2 border-foreground overflow-x-auto scrollbar-none font-mono text-xs uppercase tracking-wider select-none">
-          <div className="flex items-center gap-1 sm:gap-2">
-            {[
-              { key: 'SIRKULASI' as ReportTab, label: 'Sirkulasi & Buku', icon: BookOpen, short: 'Sirkulasi' },
-              { key: 'LITERASI' as ReportTab, label: 'Literasi & Naskah', icon: Feather, short: 'Literasi' },
-              { key: 'KOMUNITAS' as ReportTab, label: 'Komunitas & Warga', icon: Users, short: 'Komunitas' },
-            ].map((tab) => {
-              const Icon = tab.icon;
-              const isActive = currentTab === tab.key;
-              return (
-                <button
-                  key={tab.key}
-                  type="button"
-                  onClick={() => setCurrentTab(tab.key)}
-                  className={cn(
-                    'px-3 sm:px-4 py-2.5 transition-colors flex items-center gap-1.5 sm:gap-2 border-t-2 border-x-2 -mb-[2px] whitespace-nowrap shrink-0 rounded-none cursor-pointer',
-                    isActive
-                      ? 'border-foreground bg-surface text-foreground font-bold shadow-xs'
-                      : 'border-transparent text-muted hover:text-foreground hover:bg-surface-muted/50'
-                  )}
-                >
-                  <Icon className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">{tab.label}</span>
-                  <span className="sm:hidden inline">{tab.short}</span>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Timeframe Filter Pills */}
-          <div className="flex items-center gap-1 pb-1 font-mono text-[11px] shrink-0">
-            <span className="text-muted mr-1 hidden md:inline text-[10px] tracking-wider">RENTANG:</span>
-            {[
-              { key: '30d' as PeriodFilter, label: '30 Hari' },
-              { key: 'month' as PeriodFilter, label: 'Bulan Ini' },
-              { key: 'year' as PeriodFilter, label: 'Tahun Ini' },
-              { key: 'all' as PeriodFilter, label: 'Semua' },
-            ].map((p) => (
+      <div className="print:hidden space-y-3">
+        {/* Main Pillar Tabs: Symmetrical 3-Column Grid on Mobile (<sm), Inline on Desktop (>=sm) */}
+        <div className="grid grid-cols-3 sm:flex sm:items-center sm:gap-2 border-b-2 border-foreground font-mono text-xs uppercase tracking-wider select-none">
+          {[
+            { key: 'SIRKULASI' as ReportTab, label: 'Sirkulasi & Koleksi Buku', icon: BookOpen, short: 'Sirkulasi' },
+            { key: 'LITERASI' as ReportTab, label: 'Literasi & Warta Warga', icon: Feather, short: 'Literasi' },
+            { key: 'KOMUNITAS' as ReportTab, label: 'Komunitas & Warga', icon: Users, short: 'Komunitas' },
+          ].map((tab) => {
+            const Icon = tab.icon;
+            const isActive = currentTab === tab.key;
+            return (
               <button
-                key={p.key}
+                key={tab.key}
                 type="button"
-                onClick={() => setPeriod(p.key)}
+                onClick={() => setCurrentTab(tab.key)}
                 className={cn(
-                  'px-2 sm:px-2.5 py-1 border transition-colors cursor-pointer text-[10px] sm:text-[11px] font-semibold',
-                  period === p.key
-                    ? 'border-foreground bg-foreground text-background font-bold'
-                    : 'border-border bg-surface text-muted hover:text-foreground hover:border-foreground/50'
+                  'py-2.5 px-2 sm:px-4 transition-colors flex items-center justify-center gap-1.5 sm:gap-2 border-t-2 border-x-2 -mb-[2px] rounded-none cursor-pointer text-center',
+                  isActive
+                    ? 'border-foreground bg-surface text-foreground font-bold shadow-xs'
+                    : 'border-transparent text-muted hover:text-foreground hover:bg-surface-muted/50'
                 )}
               >
-                {p.label}
+                <Icon className="w-3.5 h-3.5 shrink-0" />
+                <span className="hidden sm:inline">{tab.label}</span>
+                <span className="sm:hidden inline truncate">{tab.short}</span>
               </button>
-            ))}
+            );
+          })}
+        </div>
+
+        {/* Dedicated Timeframe Segmented Control Strip */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 py-2 px-3 bg-surface-muted/40 border border-border-hairline font-mono text-xs">
+          <div className="flex items-center gap-2 overflow-x-auto scrollbar-none">
+            <span className="text-muted text-[10px] tracking-wider uppercase font-bold shrink-0">
+              Rentang Data:
+            </span>
+            <div className="inline-flex items-center p-0.5 bg-surface border border-border-hairline gap-0.5 shrink-0">
+              {[
+                { key: '30d' as PeriodFilter, label: '30 Hari', full: '30 Hari Terakhir' },
+                { key: 'month' as PeriodFilter, label: 'Bulan Ini', full: 'Bulan Berjalan' },
+                { key: 'year' as PeriodFilter, label: 'Tahun Ini', full: 'Tahun 2026' },
+                { key: 'all' as PeriodFilter, label: 'Semua', full: 'Sepanjang Waktu' },
+              ].map((p) => (
+                <button
+                  key={p.key}
+                  type="button"
+                  onClick={() => setPeriod(p.key)}
+                  className={cn(
+                    'px-2.5 py-1 text-[11px] transition-colors cursor-pointer font-semibold rounded-none whitespace-nowrap',
+                    period === p.key
+                      ? 'bg-foreground text-background font-bold shadow-xs'
+                      : 'text-muted hover:text-foreground hover:bg-surface-muted/60'
+                  )}
+                  title={p.full}
+                >
+                  <span className="sm:hidden">{p.label}</span>
+                  <span className="hidden sm:inline">{p.full}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between sm:justify-end gap-2 text-[10px] sm:text-[11px] text-muted">
+            <span className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse" />
+              <span>Agregasi data langsung dari basis data</span>
+            </span>
           </div>
         </div>
       </div>
