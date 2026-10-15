@@ -1772,7 +1772,7 @@ export class LoansService {
       prisma.event.count(),
       prisma.eventRegistration.count({ where: { status: { not: 'CANCELLED' as any } } }),
       prisma.readerLetter.count(),
-      prisma.readerLetter.count({ where: { status: { in: ['PUBLISHED', 'ANSWERED'] as any[] } } }),
+      prisma.readerLetter.count({ where: { status: 'PUBLISHED' as any } }),
       prisma.book.count({ where: { donatedBy: { not: null }, deletedAt: null } }),
     ]);
 
