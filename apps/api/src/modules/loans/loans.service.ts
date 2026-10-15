@@ -1635,15 +1635,40 @@ export class LoansService {
   }
 
   /**
-   * Reports & Analytics: Circulation Overview
+   * Reports & Analytics: Comprehensive Multi-Pillar Overview (Circulation, Literacy, Community)
    */
-  async getCirculationReport() {
+  async getCirculationReport(period?: string) {
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    // Determine period date filter
+    let periodStartDate: Date | null = null;
+    if (period === '30d') {
+      periodStartDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    } else if (period === 'month') {
+      periodStartDate = startOfMonth;
+    } else if (period === 'year') {
+      periodStartDate = new Date(now.getFullYear(), 0, 1);
+    }
+
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Ags', 'Sep', 'Okt', 'Nov', 'Des'];
+
+    // 6 Months Circulation Trend
+    const trendPromises = Array.from({ length: 6 }).map((_, idx) => {
+      const offset = 5 - idx;
+      const mStart = new Date(now.getFullYear(), now.getMonth() - offset, 1);
+      const mEnd = new Date(now.getFullYear(), now.getMonth() - offset + 1, 1);
+      const label = `${monthNames[mStart.getMonth()]} ${mStart.getFullYear().toString().slice(2)}`;
+      return Promise.all([
+        prisma.loan.count({ where: { createdAt: { gte: mStart, lt: mEnd } } }),
+        prisma.loan.count({ where: { returnedAt: { gte: mStart, lt: mEnd } } }),
+      ]).then(([borrowed, returned]) => ({ month: label, borrowed, returned }));
+    });
 
     const [
       totalLoans,
       monthLoans,
+      periodLoans,
       activeLoans,
       returnedLoans,
       overdueLoans,
@@ -1651,9 +1676,30 @@ export class LoansService {
       bookStats,
       topBooks,
       conditionStats,
+      monthlyTrend,
+      lateReturnedLoansCount,
+      // Literacy metrics
+      totalArticles,
+      publishedArticles,
+      pendingArticles,
+      revisionArticles,
+      rejectedArticles,
+      periodArticles,
+      topCategoriesData,
+      topAuthorsData,
+      // Community metrics
+      totalMembers,
+      newMembersThisMonth,
+      periodMembers,
+      totalEvents,
+      totalRegistrations,
+      totalLetters,
+      resolvedLetters,
+      donatedBooksCount,
     ] = await Promise.all([
       prisma.loan.count(),
       prisma.loan.count({ where: { createdAt: { gte: startOfMonth } } }),
+      periodStartDate ? prisma.loan.count({ where: { createdAt: { gte: periodStartDate } } }) : prisma.loan.count(),
       prisma.loan.count({
         where: {
           status: {
@@ -1686,17 +1732,63 @@ export class LoansService {
         by: ['condition'],
         _count: { id: true },
       }),
+      Promise.all(trendPromises),
+      prisma.$queryRaw<Array<{ count: bigint }>>`
+        SELECT COUNT(*) as count FROM "Loan"
+        WHERE status = 'RETURNED' AND "returnedAt" IS NOT NULL AND "dueDate" IS NOT NULL AND "returnedAt" > "dueDate"
+      `.then((res) => Number(res[0]?.count || 0)).catch(() => 0),
+      // Literacy
+      prisma.article.count({ where: { deletedAt: null } }),
+      prisma.article.count({ where: { status: 'PUBLISHED' as any, deletedAt: null } }),
+      prisma.article.count({ where: { status: 'PENDING_REVIEW' as any, deletedAt: null } }),
+      prisma.article.count({ where: { status: 'REVISION' as any, deletedAt: null } }),
+      prisma.article.count({ where: { status: 'REJECTED' as any, deletedAt: null } }),
+      periodStartDate ? prisma.article.count({ where: { createdAt: { gte: periodStartDate }, deletedAt: null } }) : prisma.article.count({ where: { deletedAt: null } }),
+      prisma.category.findMany({
+        take: 5,
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          _count: { select: { articles: true, books: true } },
+        },
+        orderBy: { articles: { _count: 'desc' } },
+      }),
+      prisma.user.findMany({
+        where: { articles: { some: { status: 'PUBLISHED' as any } }, deletedAt: null },
+        take: 5,
+        select: {
+          id: true,
+          name: true,
+          username: true,
+          _count: { select: { articles: { where: { status: 'PUBLISHED' as any } } } },
+        },
+        orderBy: { articles: { _count: 'desc' } },
+      }),
+      // Community
+      prisma.user.count({ where: { deletedAt: null } }),
+      prisma.user.count({ where: { createdAt: { gte: startOfMonth }, deletedAt: null } }),
+      periodStartDate ? prisma.user.count({ where: { createdAt: { gte: periodStartDate }, deletedAt: null } }) : prisma.user.count({ where: { deletedAt: null } }),
+      prisma.event.count(),
+      prisma.eventRegistration.count({ where: { status: { not: 'CANCELLED' as any } } }),
+      prisma.readerLetter.count(),
+      prisma.readerLetter.count({ where: { status: { in: ['PUBLISHED', 'ANSWERED'] as any[] } } }),
+      prisma.book.count({ where: { donatedBy: { not: null }, deletedAt: null } }),
     ]);
 
+    // Accurate calculation: returned loans on-time = total returned minus those returned after due date
+    const onTimeCount = Math.max(0, returnedLoans - lateReturnedLoansCount);
     const onTimeRate =
       returnedLoans > 0
-        ? Math.round(((returnedLoans - overdueLoans) / returnedLoans) * 100)
+        ? Math.round((onTimeCount / returnedLoans) * 100)
         : 100;
 
     return {
+      period: period || 'all',
       metrics: {
         totalLoans,
         monthLoans,
+        periodLoans,
         activeLoans,
         returnedLoans,
         overdueLoans,
@@ -1711,6 +1803,38 @@ export class LoansService {
         condition: c.condition,
         count: c._count.id,
       })),
+      monthlyTrend,
+      literacy: {
+        totalArticles,
+        publishedArticles,
+        pendingArticles,
+        revisionArticles,
+        rejectedArticles,
+        periodArticles,
+        topCategories: topCategoriesData.map((c) => ({
+          id: c.id,
+          name: c.name,
+          slug: c.slug,
+          articleCount: c._count.articles,
+          bookCount: c._count.books,
+        })),
+        topAuthors: topAuthorsData.map((u) => ({
+          id: u.id,
+          name: u.name,
+          username: u.username,
+          publishedCount: u._count.articles,
+        })),
+      },
+      community: {
+        totalMembers,
+        newMembersThisMonth,
+        periodMembers,
+        totalEvents,
+        totalRegistrations,
+        totalLetters,
+        resolvedLetters,
+        donatedBooksCount,
+      },
     };
   }
 
@@ -1720,7 +1844,7 @@ export class LoansService {
   async exportCirculationReportCsv() {
     const loans = await prisma.loan.findMany({
       orderBy: { createdAt: 'desc' },
-      take: 500,
+      take: 1000,
       include: {
         book: { select: { title: true } },
         bookCopy: { select: { inventoryCode: true } },
@@ -1754,6 +1878,48 @@ export class LoansService {
       `"${l.dueDate ? l.dueDate.toISOString().slice(0, 10) : ''}"`,
       `"${l.returnedAt ? l.returnedAt.toISOString().slice(0, 10) : ''}"`,
       `"${l.returnCondition || '-'}"`,
+    ]);
+
+    return [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+  }
+
+  /**
+   * Reports & Analytics: Export CSV of book inventory
+   */
+  async exportBooksInventoryCsv() {
+    const books = await prisma.book.findMany({
+      where: { deletedAt: null },
+      orderBy: { title: 'asc' },
+      take: 2000,
+      include: {
+        category: { select: { name: true } },
+      },
+    });
+
+    const headers = [
+      'Judul Buku',
+      'Pengarang',
+      'Penerbit',
+      'Tahun',
+      'Kategori',
+      'Total Eksemplar',
+      'Tersedia di Rak',
+      'Frekuensi Pinjam',
+      'Donatur',
+      'Lokasi Rak',
+    ];
+
+    const rows = books.map((b) => [
+      `"${(b.title || '').replace(/"/g, '""')}"`,
+      `"${(b.author || '').replace(/"/g, '""')}"`,
+      `"${(b.publisher || '').replace(/"/g, '""')}"`,
+      `"${b.publicationYear || '-'}"`,
+      `"${b.category?.name || '-'}"`,
+      `"${b.totalCopies}"`,
+      `"${b.availableCopies}"`,
+      `"${b.borrowCount}"`,
+      `"${(b.donatedBy || '-').replace(/"/g, '""')}"`,
+      `"${b.shelfLocation || '-'}"`,
     ]);
 
     return [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');

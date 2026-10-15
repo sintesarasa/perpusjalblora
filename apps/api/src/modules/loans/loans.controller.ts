@@ -162,7 +162,8 @@ export class LoansController {
 
   async getCirculationReport(req: Request, res: Response, next: NextFunction) {
     try {
-      const result = await loansService.getCirculationReport();
+      const period = typeof req.query.period === 'string' ? req.query.period : undefined;
+      const result = await loansService.getCirculationReport(period);
       res.status(200).json({ data: result });
     } catch (error) {
       next(error);
@@ -176,6 +177,20 @@ export class LoansController {
       res.setHeader(
         'Content-Disposition',
         `attachment; filename="laporan-sirkulasi-perpusjal-${new Date().toISOString().slice(0, 10)}.csv"`
+      );
+      res.status(200).send(csv);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async exportBooksInventoryCsv(req: Request, res: Response, next: NextFunction) {
+    try {
+      const csv = await loansService.exportBooksInventoryCsv();
+      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+      res.setHeader(
+        'Content-Disposition',
+        `attachment; filename="inventaris-buku-perpusjal-${new Date().toISOString().slice(0, 10)}.csv"`
       );
       res.status(200).send(csv);
     } catch (error) {

@@ -43,6 +43,9 @@ router.get('/reports/overview', requireRole(Role.KURATOR), (req, res, next) =>
 router.get('/reports/export', requireRole(Role.KURATOR), (req, res, next) =>
   loansController.exportCirculationReportCsv(req, res, next)
 );
+router.get('/reports/export-inventory', requireRole(Role.KURATOR), (req, res, next) =>
+  loansController.exportBooksInventoryCsv(req, res, next)
+);
 
 // Admin & Curator listing & review
 router.get('/', requireRole(Role.KURATOR), (req, res, next) =>
