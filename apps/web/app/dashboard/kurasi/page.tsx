@@ -471,9 +471,9 @@ export default function DashboardCuratorPage() {
               : 'border-transparent text-muted hover:text-foreground hover:bg-surface-muted/50'
           )}
         >
-          <BookOpen className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">Kanon Sastra &amp; Buku Lapak</span>
-          <span className="sm:hidden inline">Kanon Sastra</span>
+          <Sparkles className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">Sorotan Warta &amp; Tulisan</span>
+          <span className="sm:hidden inline">Sorotan Warta</span>
         </button>
       </div>
 

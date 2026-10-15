@@ -326,16 +326,18 @@
 }
 
 
-/* Editorial Drop Cap */
-.drop-cap::first-letter {
-  font-family: var(--font-playfair), Georgia, serif;
-  float: left;
-  font-size: 3.75rem;
-  line-height: 0.8;
-  padding-top: 4px;
-  padding-right: 8px;
-  padding-bottom: 2px;
-  font-weight: 900;
+/* Editorial Drop Cap (Active on sm+ screens, clean readable prose on mobile) */
+@media (min-width: 640px) {
+  .drop-cap::first-letter {
+    font-family: var(--font-playfair), Georgia, serif;
+    float: left;
+    font-size: 3.75rem;
+    line-height: 0.8;
+    padding-top: 4px;
+    padding-right: 8px;
+    padding-bottom: 2px;
+    font-weight: 900;
+  }
 }
 
 /* Dramatic Display Headline clamp */

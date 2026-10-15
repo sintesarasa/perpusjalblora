@@ -103,6 +103,10 @@ export function LapakWartaTicker({
           onMouseLeave={() => setIsPaused(false)}
           className="flex-1 overflow-hidden relative flex items-center py-2"
         >
+          {/* Subtle edge fade masks to prevent clipped text glitch against sticky badge */}
+          <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-4 sm:w-8 bg-gradient-to-r from-background to-transparent z-10" />
+          <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-4 sm:w-8 bg-gradient-to-l from-background to-transparent z-10" />
+
           <div
             style={{
               animationPlayState: isPaused ? 'paused' : 'running',

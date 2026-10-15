@@ -81,20 +81,19 @@ export function FeaturedEventDossier({
 
       <div className="space-y-6 relative z-10">
         {/* Top Broadsheet Masthead */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b-2 border-foreground pb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b-2 border-foreground pb-4 sm:pb-5">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="px-2.5 py-1 bg-foreground text-background font-mono text-[9px] sm:text-[10px] font-bold uppercase tracking-widest inline-flex items-center gap-1.5 rounded-none">
-              <Flame className="w-3.5 h-3.5 text-background" />
-              <span>{setting.customBadge || 'MAKLUMAT RESMI REDAKSI // EDISI KHUSUS'}</span>
+            <span className="font-mono text-xs font-bold uppercase tracking-widest text-muted">
+              [ {setting.customBadge || 'MAKLUMAT RESMI // AGENDA TERPAL'} ]
             </span>
 
-            <span className="px-2 py-0.5 border border-border-hairline bg-surface-muted font-mono text-[9px] uppercase font-bold tracking-wider text-muted rounded-none">
+            <span className="px-2 py-0.5 border border-border-hairline bg-surface-muted font-mono text-xs uppercase font-bold tracking-wider text-muted rounded-none">
               [{event.type || 'KEGIATAN AKBAR'}]
             </span>
           </div>
 
           {setting.showCountdown && countdownText && (
-            <div className="font-mono text-[10px] uppercase font-bold tracking-widest text-foreground px-2 py-1 border border-foreground bg-surface-muted/60 self-start sm:self-auto rounded-none">
+            <div className="font-mono text-xs uppercase font-bold tracking-wider text-foreground px-2.5 py-1 border border-foreground bg-surface-muted/60 self-start sm:self-auto rounded-none">
               ⏳ {countdownText}
             </div>
           )}
@@ -103,7 +102,7 @@ export function FeaturedEventDossier({
         {/* Main Event Headline & Narrative */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           <div className="lg:col-span-8 space-y-4">
-            <h3 className="font-serif text-2xl sm:text-4xl md:text-5xl font-black uppercase tracking-tight text-foreground leading-[1.05]">
+            <h3 className="font-serif text-[28px] sm:text-4xl md:text-5xl font-black uppercase tracking-tight text-foreground leading-tight">
               {event.title}
             </h3>
 

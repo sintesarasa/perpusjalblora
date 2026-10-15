@@ -19,6 +19,7 @@ import {
   Calendar,
   Compass,
   Sparkles,
+  Bell,
 } from 'lucide-react';
 
 export function Header() {
@@ -196,20 +197,24 @@ export function Header() {
               </kbd>
             </button>
 
-            {/* Notifications (only shown when authenticated) */}
-            <NotificationBell />
+            {/* Notifications (only shown when authenticated, desktop/tablet) */}
+            <div className="hidden sm:block">
+              <NotificationBell />
+            </div>
 
-            {/* Dark / Light Theme Toggle */}
-            <ThemeToggle />
+            {/* Dark / Light Theme Toggle (desktop/tablet, mobile is inside drawer) */}
+            <div className="hidden sm:block">
+              <ThemeToggle />
+            </div>
 
             {/* User Session Dropdown / Login */}
             <UserMenu />
 
-            {/* Mobile Hamburger Toggle (44px min touch target & aria-expanded) */}
+            {/* Mobile Hamburger Toggle (Touch target & aria-expanded) */}
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden min-w-[44px] min-h-[44px] flex items-center justify-center text-foreground hover:bg-surface-muted transition-colors border border-border-hairline cursor-pointer"
+              className="lg:hidden min-w-[38px] min-h-[38px] sm:min-w-[44px] sm:min-h-[44px] flex items-center justify-center text-foreground hover:bg-surface-muted transition-colors border border-border-hairline cursor-pointer"
               aria-label={mobileMenuOpen ? 'Tutup navigasi' : 'Buka navigasi'}
               aria-expanded={mobileMenuOpen}
             >
@@ -319,8 +324,15 @@ export function Header() {
                 </Link>
               </nav>
 
-              {/* User Shortcuts in Mobile Drawer */}
-              <div className="pt-3 border-t border-border-hairline flex flex-col gap-2">
+              {/* User Shortcuts & Mobile Preferences in Drawer */}
+              <div className="pt-3 border-t border-border-hairline flex flex-col gap-2.5">
+                <div className="flex items-center justify-between py-1 px-1 border-b border-border-hairline">
+                  <span className="text-[10px] uppercase font-bold tracking-wider text-muted font-mono">
+                    Mode Tampilan
+                  </span>
+                  <ThemeToggle />
+                </div>
+
                 <Link
                   href="/dashboard"
                   onClick={() => setMobileMenuOpen(false)}
@@ -337,11 +349,12 @@ export function Header() {
                     + Tulis Naskah
                   </Link>
                   <Link
-                    href="/masuk"
+                    href="/notifikasi"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="flex-1 text-center py-2 border border-border-hairline text-muted hover:text-foreground text-xs uppercase hover:bg-surface-muted transition-colors"
+                    className="flex-1 text-center py-2 border border-border-hairline text-foreground text-xs font-bold uppercase hover:bg-surface-muted transition-colors flex items-center justify-center gap-1.5"
                   >
-                    Masuk
+                    <Bell className="w-3.5 h-3.5" />
+                    <span>Warta</span>
                   </Link>
                 </div>
               </div>
