@@ -386,6 +386,7 @@ model Article {
   @@index([isFeatured, publishedAt(sort: Desc)])
   @@index([scheduledAt])
   @@index([deletedAt])
+  @@index([title])
 }
 
 model ArticleRevision {
@@ -500,6 +501,9 @@ model Book {
   @@index([availableCopies])
   @@index([borrowCount(sort: Desc)])
   @@index([deletedAt])
+  @@index([title])
+  @@index([author])
+  @@index([title, author])
 }
 
 model BookCopy {

@@ -64,3 +64,36 @@ export const passwordResetLimiter = rateLimit({
     },
   },
 });
+
+/**
+ * Catalog & Article search rate limiter (Anti Scraping / DB Flooding: 60 requests per minute per IP)
+ */
+export const searchRateLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  limit: 60,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  message: {
+    error: {
+      code: 'SEARCH_RATE_LIMIT_EXCEEDED',
+      message: 'Pencarian terlalu cepat. Mohon tunggu beberapa detik sebelum mencari kembali.',
+    },
+  },
+});
+
+/**
+ * Loan submission rate limiter (Anti Bot / Fast Hold: 10 requests per 10 minutes per IP)
+ */
+export const loanRequestLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000, // 10 minutes
+  limit: 10,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  message: {
+    error: {
+      code: 'LOAN_RATE_LIMIT_EXCEEDED',
+      message: 'Pengajuan peminjaman terlalu sering dari perangkat ini. Silakan tunggu beberapa menit.',
+    },
+  },
+});
+

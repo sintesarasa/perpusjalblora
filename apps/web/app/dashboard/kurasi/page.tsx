@@ -472,8 +472,8 @@ export default function DashboardCuratorPage() {
           )}
         >
           <Sparkles className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">Sorotan Warta &amp; Tulisan</span>
-          <span className="sm:hidden inline">Sorotan Warta</span>
+          <span className="hidden sm:inline">Mimbar Warta Beranda (Slot 1-4)</span>
+          <span className="sm:hidden inline">Mimbar Beranda</span>
         </button>
       </div>
 

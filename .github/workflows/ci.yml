@@ -1,0 +1,54 @@
+name: CI Quality Gate & Automated Testing
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate-and-test:
+    name: Lint, Typecheck & Security Tests
+    runs-on: ubuntu-latest
+
+    env:
+      NODE_ENV: test
+      JWT_SECRET: super-secret-jwt-key-replace-in-production-min-32-chars
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/perpusjal_test?schema=public
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: ⚡ Setup PNPM
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.10.0
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: 📦 Install Dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: 🗄️ Generate Prisma Client
+        run: pnpm db:generate
+
+      - name: 🔍 Typecheck (TypeScript)
+        run: pnpm typecheck
+
+      - name: 🧹 Lint (ESLint & Static Analysis)
+        run: pnpm lint
+
+      - name: 🧪 Run Automated Business Logic & Security Tests
+        run: |
+          pnpm --filter @perpusjal/api exec tsx src/__tests__/run-sprint-tests.ts
+          pnpm --filter @perpusjal/api exec tsx src/__tests__/run-sprint4-10-tests.ts
+          pnpm --filter @perpusjal/api exec tsx src/__tests__/run-sprint7-8-tests.ts

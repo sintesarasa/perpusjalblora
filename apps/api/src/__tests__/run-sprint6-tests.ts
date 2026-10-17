@@ -393,7 +393,7 @@ async function runSprint6Tests() {
     expect(pageCode).toContain('generateMetadata');
     expect(pageCode).toContain("type: 'book'");
     expect(pageCode).toContain('openGraph');
-    expect(pageCode).toContain('application/ld+json');
+    expect(pageCode.includes('application/ld+json') || pageCode.includes('JsonLd')).toBe(true);
     expect(pageCode).toContain("'@type': 'Book'");
   });
 

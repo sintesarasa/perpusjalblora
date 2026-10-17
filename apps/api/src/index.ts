@@ -46,6 +46,8 @@ app.use(
 const allowedOrigins = [
   process.env.NEXT_PUBLIC_APP_URL,
   process.env.APP_URL,
+  'https://perpusjalblora.org',
+  'https://www.perpusjalblora.org',
   'http://localhost:3000',
   'http://127.0.0.1:3000',
 ].filter(Boolean) as string[];
@@ -56,10 +58,15 @@ app.use(
       // Allow requests with no origin (like mobile apps, curl, or server-side calls)
       if (!origin) return callback(null, true);
       if (allowedOrigins.includes(origin)) return callback(null, true);
-      // Allow any Vercel deployment (production or preview branches)
-      if (/^https:\/\/.*\.vercel\.app$/.test(origin)) return callback(null, true);
-      // Allow localhost with any port
-      if (/^http:\/\/localhost(:\d+)?$/.test(origin) || /^http:\/\/127\.0\.0\.1(:\d+)?$/.test(origin)) {
+      // Allow only official Perpusjal Vercel deployment branches (prevent arbitrary vercel app takeover)
+      if (/^https:\/\/(perpusjal|perpusjalblora)(-[a-z0-9-]+)?\.vercel\.app$/.test(origin)) {
+        return callback(null, true);
+      }
+      // Allow localhost with any port in development
+      if (
+        process.env.NODE_ENV !== 'production' &&
+        (/^http:\/\/localhost(:\d+)?$/.test(origin) || /^http:\/\/127\.0\.0\.1(:\d+)?$/.test(origin))
+      ) {
         return callback(null, true);
       }
       return callback(null, false);
@@ -72,11 +79,17 @@ app.use(express.json({ limit: '5mb' }));
 app.use(morgan('dev'));
 app.use(authMiddleware);
 
-// Disable 304 caching on API routes for live session freshness
+// Intelligent Cache Control: No-store for authenticated / mutative routes, but enable edge/browser caching for public GET catalog
 app.use('/api', (req, res, next) => {
-  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-  res.set('Pragma', 'no-cache');
-  res.set('Expires', '0');
+  const hasAuth = req.cookies?.perpusjal_session || req.headers.authorization;
+  if (hasAuth || req.method !== 'GET') {
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
+  } else {
+    // Public GET endpoints (landing, public book catalog, public articles) get lightweight cache
+    res.set('Cache-Control', 'public, max-age=60, s-maxage=120, stale-while-revalidate=300');
+  }
   next();
 });
 
@@ -95,6 +108,36 @@ app.use('/api/v1/notifications', notificationsRouter);
 app.use('/api/v1/badges', badgesRouter);
 app.use('/api/v1/users', usersRouter);
 app.use('/api/v1/admin', adminRouter);
+
+// Protected Cron Endpoints (Compatible with GitHub Actions, Vercel Cron, or External Uptime/Cron runners)
+const verifyCronSecret = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+  const cronSecret = process.env.CRON_SECRET;
+  const authHeader = req.headers.authorization;
+  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+    return res.status(401).json({
+      error: { code: 'UNAUTHORIZED', message: 'Cron authentication required or invalid token.' },
+    });
+  }
+  next();
+};
+
+app.post('/api/v1/cron/circulation', verifyCronSecret, async (req, res) => {
+  try {
+    const stats = await circulationSchedulerService.runMaintenance();
+    res.json({ success: true, timestamp: new Date().toISOString(), stats });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err?.message || 'Circulation maintenance failed' });
+  }
+});
+
+app.post('/api/v1/cron/articles', verifyCronSecret, async (req, res) => {
+  try {
+    const publishedCount = await articleSchedulerService.processScheduledArticles();
+    res.json({ success: true, timestamp: new Date().toISOString(), publishedCount });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err?.message || 'Article publish processing failed' });
+  }
+});
 
 // Convenience aliases per API-SPEC §6, §11, §14
 app.get('/api/v1/me/articles', requireAuth, (req, res, next) =>
@@ -118,8 +161,8 @@ app.get('/api/v1/landing/config', (req, res, next) =>
   adminController.getPublicLandingConfig(req, res, next)
 );
 
-// Health check endpoint (PRD §23.2, §31.2)
-app.get('/health', async (req, res) => {
+// Health check handler (PRD §23.2, §31.2) - Available at /health, /api/health, and /api/v1/health
+const healthHandler = async (req: express.Request, res: express.Response) => {
   try {
     // Quick DB ping
     await prisma.$queryRaw`SELECT 1`;
@@ -137,7 +180,11 @@ app.get('/health', async (req, res) => {
       database: 'disconnected',
     });
   }
-});
+};
+
+app.get('/health', healthHandler);
+app.get('/api/health', healthHandler);
+app.get('/api/v1/health', healthHandler);
 
 // API Root Information
 app.get('/api/v1', (req, res) => {

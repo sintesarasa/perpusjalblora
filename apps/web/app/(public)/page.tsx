@@ -7,25 +7,21 @@ import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { BrandStamp } from '@/components/ui/brand-stamp';
 import { RevealOnScroll } from '@/components/ui/reveal-on-scroll';
-import { StatusPill } from '@/components/ui/status-pill';
 import { Logo } from '@/components/logo';
 import { apiClient } from '@/lib/api';
 import { BookItem, LandingPublicConfigResponse, DEFAULT_LANDING_SETTINGS } from '@perpusjal/types';
 import { LapakWartaTicker } from '@/components/home/lapak-warta-ticker';
 import { InteractiveLiteraryIndex } from '@/components/home/interactive-literary-index';
-import { BookGridSkeleton } from '@/components/books/book-card-skeleton';
-import { EmptyState } from '@/components/ui/empty-state';
+import { OpenBookstandShowcase } from '@/components/home/open-bookstand-showcase';
 import { FeaturedEventDossier } from '@/components/home/featured-event-dossier';
 import { ScrollLitQuote } from '@/components/home/scroll-lit-quote';
 import {
   ArrowRight,
-  ArrowUpRight,
   BookOpen,
   Feather,
   Sparkles,
   ShieldCheck,
   Quote,
-  Search,
   MapPin,
   Flame,
   Award,
@@ -128,7 +124,6 @@ export default function HomePage() {
   // Books from API
   const [books, setBooks] = React.useState<BookItem[]>([]);
   const [loadingBooks, setLoadingBooks] = React.useState(true);
-  const [searchQuery, setSearchQuery] = React.useState('');
 
   // Dynamic Landing Config (Featured Event, Ticker, CFD Schedule)
   const [landingConfig, setLandingConfig] = React.useState<LandingPublicConfigResponse>({
@@ -185,7 +180,7 @@ export default function HomePage() {
     async function loadInitialData() {
       try {
         const [booksRes, landingRes] = await Promise.all([
-          apiClient<BooksApiResponse>('/books?perPage=8&sort=terbaru'),
+          apiClient<BooksApiResponse>('/books?perPage=12&sort=terbaru'),
           apiClient<LandingPublicConfigResponse>('/landing/config'),
         ]);
 
@@ -209,15 +204,6 @@ export default function HomePage() {
       isMounted = false;
     };
   }, []);
-
-  const handleQuickSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      router.push(`/buku?q=${encodeURIComponent(searchQuery.trim())}`);
-    } else {
-      router.push('/buku');
-    }
-  };
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground selection:bg-foreground selection:text-background editorial-grain">
@@ -444,154 +430,14 @@ export default function HomePage() {
         )}
 
         {/* ========================================================= */}
-        {/* 2. ETALASE KOLEKSI BUKU: RAK TERPAL DINAMIS (LIVE API)     */}
+        {/* ========================================================= */}
+        {/* 2. ETALASE KOLEKSI BUKU: THE OPEN BOOKSTAND (RAK & TERPAL) */}
         {/* ========================================================= */}
         <section className="border-b-2 border-foreground max-w-7xl mx-auto py-10 sm:py-16 md:py-20 px-4 sm:px-6 lg:px-8">
-          {/* Section Header Broadsheet with Sharp Contrast & Quick Search */}
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 sm:mb-12 pb-6 sm:pb-8 border-b-2 border-foreground gap-6 sm:gap-8">
-            <RevealOnScroll variant="cinematic" delayMs={50}>
-              <div className="space-y-3 sm:space-y-4">
-                <div className="font-mono text-xs font-bold uppercase tracking-widest text-muted">
-                  [ SEKSI KOLEKSI // RAK &amp; TERPAL ]
-                </div>
-                <h2 className="font-serif text-[28px] sm:text-4xl md:text-5xl font-black uppercase tracking-tight text-foreground leading-[1.1]">
-                  BUKU DI RAK &amp; HAMPARAN TERPAL
-                </h2>
-                <p className="font-serif text-sm sm:text-base md:text-lg text-foreground/85 max-w-2xl leading-relaxed">
-                  Pustaka terpilih yang dirawat secara swadaya. Siap kamu baca bersila di lapak Minggu pagi
-                  CFD Alun-Alun Blora atau dipesan daring untuk dijemput langsung.
-                </p>
-              </div>
-            </RevealOnScroll>
-
-            {/* Quick Search Bar & Full Catalog Link */}
-            <RevealOnScroll variant="slide-left" delayMs={150} className="w-full md:w-auto shrink-0">
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 w-full sm:w-auto">
-                <form onSubmit={handleQuickSearchSubmit} className="relative flex-1 sm:w-72">
-                  <Search className="w-4 h-4 text-muted absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Cari judul buku... [↵]"
-                    className="w-full h-11 sm:h-12 pl-10 pr-4 bg-surface border-2 border-foreground font-mono text-xs sm:text-sm text-foreground placeholder:text-muted focus:outline-none focus:bg-background transition-colors rounded-none"
-                  />
-                </form>
-
-                <Link
-                  href="/buku"
-                  className="h-11 sm:h-12 px-5 bg-foreground text-background font-mono text-xs sm:text-sm font-bold uppercase tracking-wider hover:bg-foreground/90 transition-colors inline-flex items-center justify-center gap-2 shrink-0 rounded-none border-2 border-foreground active:scale-[0.99]"
-                >
-                  <span>SEMUA BUKU</span>
-                  <ArrowRight className="w-4 h-4 shrink-0" />
-                </Link>
-              </div>
-            </RevealOnScroll>
-          </div>
-
-          {/* Book Cards Grid with Real Book Covers, Skeleton, or EmptyState */}
-          {loadingBooks ? (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest text-muted border-b border-border-hairline pb-2">
-                <span>Memindai Rak Koleksi Terpal...</span>
-                <span className="animate-pulse">Menghubungkan ke Inventaris...</span>
-              </div>
-              <BookGridSkeleton count={8} />
-            </div>
-          ) : books.length === 0 ? (
-            <EmptyState
-              title="Belum ada buku yang dikurasi di rak ini"
-              description="Belum ada buku yang dikurasi di rak ini // Hubungi pengurus lapak atau kunjungi lapak baca Minggu pagi CFD Alun-Alun Blora."
-              actionLabel="JELAJAHI SEMUA PUSTAKA"
-              onAction={() => router.push('/buku')}
-            />
-          ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5 md:gap-6">
-            {books.slice(0, 8).map((book, idx) => {
-              const shelf = book.shelfLocation || 'RAK-CFD';
-              const availability = book.availability || 'AVAILABLE';
-              const bookYear = book.publicationYear || 2024;
-              const categoryName = book.category?.name || 'Pustaka Terpal';
-              const bookSlug = book.slug || book.id;
-              const coverImg = book.coverImage || null;
-
-              return (
-                <RevealOnScroll key={book.id || idx} variant="cinematic" delayMs={(idx % 4) * 90}>
-                  <div className="border-2 border-foreground bg-surface p-3 sm:p-4 md:p-5 flex flex-col justify-between group transition-all h-full">
-                    <div>
-                      {/* Top Metadata Strip */}
-                      <div className="flex items-center justify-between text-[9px] sm:text-[10px] font-mono pb-1.5 sm:pb-2 mb-2 sm:mb-3 border-b border-border-hairline">
-                        <span className="text-muted font-bold tracking-wider truncate max-w-[80px] sm:max-w-none">{shelf}</span>
-                        <StatusPill status={availability === 'AVAILABLE' ? 'available' : 'borrowed'} />
-                      </div>
-
-                      {/* Real Book Cover Showcase Container (Aspect 2/3 Book Proportion) */}
-                      <Link href={`/buku/${bookSlug}`} className="block relative aspect-[2/3] w-full mb-2.5 sm:mb-4 overflow-hidden border-2 border-foreground bg-surface-muted rounded-none group/cover">
-                        {coverImg ? (
-                          <>
-                            {/* Realistic Left Spine Fold Shadow */}
-                            <div className="absolute left-0 top-0 bottom-0 w-2.5 sm:w-3.5 bg-gradient-to-r from-black/40 via-black/15 to-transparent z-10 pointer-events-none" />
-                            {/* Paper Gloss Line Highlight */}
-                            <div className="absolute left-2.5 sm:left-3.5 top-0 bottom-0 w-px bg-white/25 z-10 pointer-events-none" />
-
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img
-                              src={coverImg}
-                              alt={book.title}
-                              className="w-full h-full object-cover group-hover/cover:scale-105 transition-transform duration-500"
-                            />
-                          </>
-                        ) : (
-                          /* Authentic Broadsheet Fallback Jacket */
-                          <div className="w-full h-full p-2.5 sm:p-4 flex flex-col justify-between border-2 border-foreground/30 bg-[#f4f4ee] dark:bg-[#141414] text-foreground select-none relative">
-                            <div className="absolute left-0 top-0 bottom-0 w-2 sm:w-3 bg-foreground border-r border-white/20" />
-                            <div className="pl-1.5 sm:pl-2 font-mono text-[7.5px] sm:text-[8.5px] uppercase tracking-widest text-muted truncate">
-                              PERPUSJAL &bull; {categoryName}
-                            </div>
-                            <div className="pl-1.5 sm:pl-2 space-y-0.5 sm:space-y-1 my-auto">
-                              <BookOpen className="w-4 h-4 sm:w-6 sm:h-6 text-foreground/30 mb-1 sm:mb-2" />
-                              <h4 className="font-serif font-black text-xs sm:text-sm uppercase leading-tight line-clamp-3 text-foreground">
-                                {book.title}
-                              </h4>
-                              <p className="font-mono text-[9px] sm:text-[10.5px] text-muted line-clamp-1 italic">
-                                {book.author}
-                              </p>
-                            </div>
-                            <div className="pl-1.5 sm:pl-2 font-mono text-[7.5px] sm:text-[8px] text-muted uppercase tracking-widest border-t border-border-hairline pt-1">
-                              {shelf} &bull; {bookYear}
-                            </div>
-                          </div>
-                        )}
-                      </Link>
-
-                      <h3 className="font-serif text-sm sm:text-base md:text-lg font-bold text-foreground mb-0.5 sm:mb-1 leading-snug group-hover:underline line-clamp-1 transition-colors">
-                        <Link href={`/buku/${bookSlug}`}>{book.title}</Link>
-                      </h3>
-                      <p className="font-mono text-[10.5px] sm:text-xs text-muted mb-1 sm:mb-2 line-clamp-1">{book.author}</p>
-                      <p className="font-serif text-[11px] sm:text-xs text-foreground/80 leading-relaxed line-clamp-2 hidden sm:block">
-                        {book.description || 'Pustaka pilihan yang siap kamu baca dan diskusikan di lapak Minggu pagi CFD Blora.'}
-                      </p>
-                    </div>
-
-                    <div className="pt-2 sm:pt-4 mt-2 sm:mt-5 border-t border-border-hairline flex items-center justify-between text-[10px] sm:text-xs font-mono">
-                      <span className="text-muted uppercase text-[8.5px] sm:text-[9.5px] font-semibold truncate max-w-[70px] sm:max-w-[130px]">
-                        {categoryName}
-                      </span>
-                      <Link
-                        href={`/buku/${bookSlug}`}
-                        className="font-bold uppercase tracking-wider group-hover:underline flex items-center gap-1 text-foreground transition-colors shrink-0 text-[10px] sm:text-xs"
-                      >
-                        <span>PINJAM</span>
-                        <ArrowUpRight className="w-3 h-3 sm:w-3.5 sm:h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-                      </Link>
-                    </div>
-                  </div>
-                </RevealOnScroll>
-              );
-            })}
-          </div>
-        )}
-      </section>
+          <RevealOnScroll variant="cinematic">
+            <OpenBookstandShowcase books={books} loading={loadingBooks} />
+          </RevealOnScroll>
+        </section>
 
       {/* ========================================================= */}
       {/* 3. KUTIPAN MENYALA MENGIKUTI SCROLL (FALSAFAH MEJA KURASI) */}
@@ -863,11 +709,11 @@ export default function HomePage() {
       </section>
 
       {/* ========================================================= */}
-      {/* 5. WARTA LITERASI & SUARA WARGA (7 RUBRIK TULISAN)        */}
+      {/* 5. MIMBAR WARGA: SUARA DARI TROTOAR (TAJUK & DISPATCH)    */}
       {/* ========================================================= */}
       <section className="border-b-2 border-foreground max-w-7xl mx-auto py-10 sm:py-16 md:py-20 px-4 sm:px-6 lg:px-8">
         <RevealOnScroll variant="cinematic">
-          <InteractiveLiteraryIndex />
+          <InteractiveLiteraryIndex featuredData={landingConfig?.featuredArticlesData} />
         </RevealOnScroll>
       </section>
 

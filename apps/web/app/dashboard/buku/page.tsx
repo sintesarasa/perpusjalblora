@@ -40,11 +40,6 @@ import {
 import { usePrintQueue } from '@/lib/print-queue-context';
 import { StickerPrintQueueDrawer } from '@/components/admin/sticker-print-queue-drawer';
 import { cn } from '@/lib/utils';
-import {
-  CANON_TAGS,
-  parseCuratorCanonNote,
-  formatCuratorCanonNote,
-} from '@/components/dashboard/curator-canons-tab';
 
 interface CategoryItem {
   id: string;
@@ -94,7 +89,6 @@ export default function DashboardBookManagementPage() {
 
   // Spotlight Modal State
   const [spotlightModalBook, setSpotlightModalBook] = React.useState<BookItem | null>(null);
-  const [spotlightCanonTag, setSpotlightCanonTag] = React.useState<string>('PRAMOEDYA');
   const [spotlightNoteInput, setSpotlightNoteInput] = React.useState('');
   const [isSubmittingSpotlight, setIsSubmittingSpotlight] = React.useState(false);
 
@@ -342,9 +336,7 @@ export default function DashboardBookManagementPage() {
   // 4b. Toggle Featured / Curator's Spotlight
   const handleOpenSpotlightModal = (book: BookItem) => {
     setSpotlightModalBook(book);
-    const parsed = parseCuratorCanonNote(book.curatorNote);
-    setSpotlightCanonTag(parsed.tag || 'PRAMOEDYA');
-    setSpotlightNoteInput(parsed.quote || '');
+    setSpotlightNoteInput(book.curatorNote || '');
   };
 
   const handleSaveSpotlight = async (isFeatured: boolean) => {
@@ -354,9 +346,7 @@ export default function DashboardBookManagementPage() {
     setActionMessage(null);
 
     try {
-      const payloadNote = isFeatured
-        ? formatCuratorCanonNote(spotlightCanonTag, spotlightNoteInput)
-        : null;
+      const payloadNote = isFeatured ? spotlightNoteInput.trim() || null : null;
 
       const res = await apiClient<{ message: string }>(
         `/books/${spotlightModalBook.id}/featured`,
@@ -1153,30 +1143,19 @@ export default function DashboardBookManagementPage() {
                 <p className="font-mono text-xs text-muted">Karya {spotlightModalBook.author}</p>
               </div>
 
-              {/* Kategori Kanon Tematik */}
-              <div className="space-y-1.5 font-mono text-xs">
-                <label className="block font-mono text-[10px] uppercase tracking-wider font-bold text-foreground">
-                  KATEGORI KANON TEMATIK:
-                </label>
-                <div className="grid grid-cols-2 gap-2">
-                  {CANON_TAGS.map((t) => (
-                    <button
-                      key={t.key}
-                      type="button"
-                      onClick={() => setSpotlightCanonTag(t.key)}
-                      className={cn(
-                        'p-2 border text-left transition-colors rounded-none',
-                        spotlightCanonTag === t.key
-                          ? 'bg-foreground text-background border-foreground font-bold'
-                          : 'bg-surface text-foreground border-border-hairline hover:border-foreground'
-                      )}
-                    >
-                      <div className="text-[10px] font-bold">{t.label}</div>
-                      <div className={cn('text-[8.5px] truncate', spotlightCanonTag === t.key ? 'text-background/80' : 'text-muted')}>
-                        {t.desc}
-                      </div>
-                    </button>
-                  ))}
+              {/* Info Kategori & Rak */}
+              <div className="flex flex-wrap items-center justify-between gap-2 p-2.5 bg-surface-muted border border-border-hairline font-mono text-xs">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] uppercase text-muted tracking-wider">Kategori:</span>
+                  <span className="font-bold text-foreground">
+                    {spotlightModalBook.category?.name || 'Pustaka Lapak'}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] uppercase text-muted tracking-wider">Lokasi:</span>
+                  <span className="font-bold text-foreground">
+                    {spotlightModalBook.shelfLocation || 'RAK-CFD'}
+                  </span>
                 </div>
               </div>
 

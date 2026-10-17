@@ -51,10 +51,6 @@ export function UserHonorBadge({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isOpen]);
 
-  if (!equippedTitle && earnedBadgesCount === 0) {
-    return null;
-  }
-
   // Normalize badges array because Prisma returns { badge: BadgeSummaryItem } while client DTO might pass BadgeSummaryItem directly
   const normalizedBadges: BadgeSummaryItem[] = React.useMemo(() => {
     if (!badges || !Array.isArray(badges)) return [];
@@ -62,6 +58,10 @@ export function UserHonorBadge({
       .map((item: any) => (item?.badge ? item.badge : item))
       .filter((b): b is BadgeSummaryItem => Boolean(b && b.code));
   }, [badges]);
+
+  if (!equippedTitle && earnedBadgesCount === 0) {
+    return null;
+  }
 
   // Resolve active badge to find its tier and icon
   const activeBadge: BadgeSummaryItem | undefined =

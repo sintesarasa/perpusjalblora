@@ -1,25 +1,29 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { jwtVerify } from 'jose';
 
-function decodeJwtPayload(token: string): { role?: string; exp?: number; userId?: string } | null {
+const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-jwt-key-replace-in-production-min-32-chars';
+const secretKey = new TextEncoder().encode(JWT_SECRET);
+
+interface DecodedSession {
+  role?: string;
+  exp?: number;
+  userId?: string;
+  sessionId?: string;
+}
+
+async function verifyJwtToken(token: string): Promise<DecodedSession | null> {
   try {
-    const parts = token.split('.');
-    if (parts.length !== 3) return null;
-    const base64Url = parts[1];
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const jsonPayload = decodeURIComponent(
-      atob(base64)
-        .split('')
-        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-        .join('')
-    );
-    return JSON.parse(jsonPayload);
+    const { payload } = await jwtVerify(token, secretKey, {
+      algorithms: ['HS256'],
+    });
+    return payload as DecodedSession;
   } catch {
     return null;
   }
 }
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const sessionToken = request.cookies.get('perpusjal_session')?.value;
 
@@ -35,9 +39,9 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  // 2. Validate token structure & expiration if token exists
+  // 2. Validate token structure, signature & expiration if token exists
   if (sessionToken && isProtectedRoute) {
-    const payload = decodeJwtPayload(sessionToken);
+    const payload = await verifyJwtToken(sessionToken);
 
     if (!payload || (payload.exp && payload.exp * 1000 < Date.now())) {
       const loginUrl = new URL('/masuk', request.url);

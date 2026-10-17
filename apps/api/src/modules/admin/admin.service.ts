@@ -6,6 +6,7 @@ import {
   DEFAULT_LANDING_SETTINGS,
   LandingPublicConfigResponse,
   LandingFeaturedEventData,
+  LandingFeaturedArticleItem,
 } from '@perpusjal/types';
 
 export class AdminService {
@@ -207,9 +208,55 @@ export class AdminService {
       }
     }
 
+    let featuredArticlesData: LandingPublicConfigResponse['featuredArticlesData'] = null;
+    const headlineId = settings.featuredArticles?.headlineArticleId;
+    const sideIds = settings.featuredArticles?.sideArticleIds || [];
+    const idsToFetch = [headlineId, ...sideIds].filter(Boolean) as string[];
+
+    if (idsToFetch.length > 0) {
+      try {
+        const fetchedArticles = await prisma.article.findMany({
+          where: {
+            id: { in: idsToFetch },
+            status: 'PUBLISHED' as any,
+            deletedAt: null,
+          },
+          include: {
+            author: { select: { name: true, username: true } },
+            category: { select: { name: true, slug: true } },
+          },
+        });
+
+        const mapArticle = (art: any): LandingFeaturedArticleItem => ({
+          id: art.id,
+          slug: art.slug,
+          title: art.title,
+          excerpt: art.excerpt,
+          readingTime: art.readingTime || 3,
+          authorName: art.author?.name || 'Warga Blora',
+          authorUsername: art.author?.username || 'warga',
+          categoryName: art.category?.name || 'Suara Lapak',
+          categorySlug: art.category?.slug || 'suara-lapak',
+          publishedAt: art.publishedAt?.toISOString() || new Date().toISOString(),
+          isFeatured: art.isFeatured || false,
+        });
+
+        const headlineRaw = headlineId ? fetchedArticles.find((a) => a.id === headlineId) : null;
+        const sideRaw = sideIds.map((id) => fetchedArticles.find((a) => a.id === id)).filter(Boolean);
+
+        featuredArticlesData = {
+          headlineArticle: headlineRaw ? mapArticle(headlineRaw) : null,
+          sideArticles: sideRaw.map(mapArticle),
+        };
+      } catch (err) {
+        console.error('Error fetching featured articles for landing:', err);
+      }
+    }
+
     return {
       settings,
       featuredEventData,
+      featuredArticlesData,
     };
   }
 }

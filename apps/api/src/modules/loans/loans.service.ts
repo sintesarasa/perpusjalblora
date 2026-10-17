@@ -47,13 +47,13 @@ function formatLoanItem(l: any, isBorrowerOrAdmin = false): LoanItem {
       break;
     case LoanStatus.APPROVED:
       nextAction = l.pickupDeadline
-        ? `Ambil buku di lapak sebelum ${new Date(l.pickupDeadline).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}.`
+        ? `Ambil buku di lapak sebelum ${new Date(l.pickupDeadline).toLocaleDateString('id-ID', { timeZone: 'Asia/Jakarta', day: 'numeric', month: 'short' })}.`
         : 'Buku siap diambil di lapak.';
       canCancel = true;
       break;
     case LoanStatus.BORROWED:
       nextAction = l.dueDate
-        ? `Jatuh tempo pengembalian: ${new Date(l.dueDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}.`
+        ? `Jatuh tempo pengembalian: ${new Date(l.dueDate).toLocaleDateString('id-ID', { timeZone: 'Asia/Jakarta', day: 'numeric', month: 'short' })}.`
         : 'Sedang dibaca.';
       canExtend = l.extensionCount === 0;
       break;
@@ -157,6 +157,7 @@ export class LoansService {
 
       if (userDb.borrowSuspendedUntil && userDb.borrowSuspendedUntil > new Date()) {
         const untilStr = userDb.borrowSuspendedUntil.toLocaleDateString('id-ID', {
+          timeZone: 'Asia/Jakarta',
           day: 'numeric',
           month: 'long',
           year: 'numeric',
@@ -256,8 +257,9 @@ export class LoansService {
         );
       }
 
-      // Bind available BookCopy & hold as RESERVED
-      const availableCopy = await tx.bookCopy.findFirst({
+      // Bind available BookCopy & hold as RESERVED with atomic concurrency protection
+      let reservedCopyId: string | null = null;
+      const candidateCopies = await tx.bookCopy.findMany({
         where: {
           bookId,
           status: BookCopyStatus.AVAILABLE as unknown as any,
@@ -265,13 +267,18 @@ export class LoansService {
         orderBy: {
           inventoryCode: 'asc',
         },
+        take: 3,
       });
 
-      if (availableCopy) {
-        await tx.bookCopy.update({
-          where: { id: availableCopy.id },
+      for (const copy of candidateCopies) {
+        const holdResult = await tx.bookCopy.updateMany({
+          where: { id: copy.id, status: BookCopyStatus.AVAILABLE as unknown as any },
           data: { status: BookCopyStatus.RESERVED as unknown as any },
         });
+        if (holdResult.count > 0) {
+          reservedCopyId = copy.id;
+          break;
+        }
       }
 
       // 7. Create Loan
@@ -286,7 +293,7 @@ export class LoansService {
           loanCode,
           userId: user.userId,
           bookId,
-          bookCopyId: availableCopy ? availableCopy.id : null,
+          bookCopyId: reservedCopyId,
           status: LoanStatus.PENDING as unknown as any,
           pickupPoint: pickupPoint.trim(),
           pickupDatePlan: pickupDatePlan ? new Date(pickupDatePlan) : null,
@@ -426,89 +433,113 @@ export class LoansService {
    * Mode Lapak: Extend loan duration (+7 days) oleh pengurus/relawan lapak
    */
   async extendLoan(loanId: string, user: UserSessionPayload) {
-    const loan = await prisma.loan.findUnique({
-      where: { id: loanId },
-      include: {
-        book: { select: { id: true, title: true } },
-        user: { select: { id: true, name: true } },
-      },
-    });
+    const { updated, newDue, bookTitle, borrowerId } = await prisma.$transaction(async (tx) => {
+      const loan = await tx.loan.findUnique({
+        where: { id: loanId },
+        include: {
+          book: { select: { id: true, title: true } },
+          user: { select: { id: true, name: true } },
+        },
+      });
 
-    if (!loan) {
-      throw HttpError.notFound('Pinjaman tidak ditemukan.');
-    }
+      if (!loan) {
+        throw HttpError.notFound('Pinjaman tidak ditemukan.');
+      }
 
-    if (loan.status !== (LoanStatus.BORROWED as unknown as any)) {
-      throw HttpError.badRequest('Hanya pinjaman yang sedang berjalan yang dapat diperpanjang.');
-    }
+      if (loan.status !== (LoanStatus.BORROWED as unknown as any)) {
+        throw HttpError.badRequest('Hanya pinjaman yang sedang berjalan yang dapat diperpanjang.');
+      }
 
-    if (loan.extensionCount >= 1) {
-      throw HttpError.unprocessable('Perpanjangan hanya dapat dilakukan satu kali.', 'EXTENSION_NOT_ALLOWED');
-    }
+      if (loan.extensionCount >= 1) {
+        throw HttpError.unprocessable('Perpanjangan hanya dapat dilakukan satu kali.', 'EXTENSION_NOT_ALLOWED');
+      }
 
-    // Check waitlist
-    const waitlistCount = await prisma.waitlist.count({
-      where: {
-        bookId: loan.bookId,
-        status: 'WAITING' as unknown as any,
-      },
-    });
+      // Check waitlist
+      const waitlistCount = await tx.waitlist.count({
+        where: {
+          bookId: loan.bookId,
+          status: 'WAITING' as unknown as any,
+        },
+      });
 
-    if (waitlistCount > 0) {
-      throw HttpError.badRequest(
-        `Buku "${loan.book.title}" memiliki ${waitlistCount} pembaca di antrean daftar tunggu (Waitlist). Perpanjangan tidak diperkenankan demi keadilan sirkulasi.`
-      );
-    }
+      if (waitlistCount > 0) {
+        throw HttpError.badRequest(
+          `Buku "${loan.book.title}" memiliki ${waitlistCount} pembaca di antrean daftar tunggu (Waitlist). Perpanjangan tidak diperkenankan demi keadilan sirkulasi.`
+        );
+      }
 
-    const currentDue = loan.dueDate || new Date();
-    const newDue = new Date(currentDue.getTime() + 7 * 24 * 60 * 60 * 1000);
+      const currentDue = loan.dueDate || new Date();
+      const newDue = new Date(currentDue.getTime() + 7 * 24 * 60 * 60 * 1000);
 
-    const updated = await prisma.loan.update({
-      where: { id: loanId },
-      data: {
-        dueDate: newDue,
-        extensionCount: { increment: 1 },
-        lastExtendedAt: new Date(),
-      },
-      include: {
-        book: {
-          select: {
-            id: true,
-            title: true,
-            slug: true,
-            author: true,
-            coverImage: true,
+      // Optimistic concurrency check: ensure status is still BORROWED and extensionCount is still 0
+      const updateResult = await tx.loan.updateMany({
+        where: {
+          id: loanId,
+          status: LoanStatus.BORROWED as unknown as any,
+          extensionCount: 0,
+        },
+        data: {
+          dueDate: newDue,
+          extensionCount: 1,
+          lastExtendedAt: new Date(),
+        },
+      });
+
+      if (updateResult.count === 0) {
+        throw HttpError.conflict('Gagal memperpanjang pinjaman: status atau kuota perpanjangan telah berubah.');
+      }
+
+      const updatedRecord = await tx.loan.findUniqueOrThrow({
+        where: { id: loanId },
+        include: {
+          book: {
+            select: {
+              id: true,
+              title: true,
+              slug: true,
+              author: true,
+              coverImage: true,
+            },
+          },
+          bookCopy: {
+            select: {
+              id: true,
+              inventoryCode: true,
+            },
           },
         },
-        bookCopy: {
-          select: {
-            id: true,
-            inventoryCode: true,
-          },
-        },
-      },
+      });
+
+      return {
+        updated: updatedRecord,
+        newDue,
+        bookTitle: loan.book.title,
+        borrowerId: loan.userId,
+      };
     });
 
     // Notify borrower
     try {
       const newDueStr = newDue.toLocaleDateString('id-ID', {
+        timeZone: 'Asia/Jakarta',
         day: 'numeric',
         month: 'short',
         year: 'numeric',
       });
-      await notificationsService.createNotification(loan.userId, {
+      await notificationsService.createNotification(borrowerId, {
         type: 'LOAN_EXTENDED',
         title: 'Masa Pinjam Berhasil Diperpanjang',
-        body: `Relawan lapak telah memperpanjang masa pinjam buku "${loan.book.title}" selama 7 hari. Batas pengembalian baru: ${newDueStr}.`,
+        body: `Relawan lapak telah memperpanjang masa pinjam buku "${bookTitle}" selama 7 hari. Batas pengembalian baru: ${newDueStr}.`,
         actionUrl: '/dashboard/pinjaman',
         entityType: 'LOAN',
-        entityId: loan.id,
+        entityId: updated.id,
       });
     } catch {
       // Ignored
     }
 
     const newDueFormatted = newDue.toLocaleDateString('id-ID', {
+      timeZone: 'Asia/Jakarta',
       day: 'numeric',
       month: 'short',
       year: 'numeric',
@@ -584,6 +615,7 @@ export class LoansService {
 
       if (member.borrowSuspendedUntil && member.borrowSuspendedUntil > new Date()) {
         const untilStr = member.borrowSuspendedUntil.toLocaleDateString('id-ID', {
+          timeZone: 'Asia/Jakarta',
           day: 'numeric',
           month: 'long',
           year: 'numeric',
@@ -802,6 +834,7 @@ export class LoansService {
       // Send in-app notification to member
       try {
         const dueStr = dueDate.toLocaleDateString('id-ID', {
+          timeZone: 'Asia/Jakarta',
           day: 'numeric',
           month: 'short',
           year: 'numeric',
@@ -988,6 +1021,7 @@ export class LoansService {
     // Notify borrower
     try {
       const deadlineStr = pickupDeadline.toLocaleDateString('id-ID', {
+        timeZone: 'Asia/Jakarta',
         day: 'numeric',
         month: 'short',
         year: 'numeric',
@@ -1183,6 +1217,7 @@ export class LoansService {
       if (borrowerId) {
         const dueStr = result.data.dueDate
           ? new Date(result.data.dueDate).toLocaleDateString('id-ID', {
+              timeZone: 'Asia/Jakarta',
               day: 'numeric',
               month: 'short',
               year: 'numeric',
@@ -1254,6 +1289,27 @@ export class LoansService {
         newCopyStatus = BookCopyStatus.DAMAGED;
       }
 
+      // Optimistic concurrency check: atomically transition status to prevent double-returns
+      const updateResult = await tx.loan.updateMany({
+        where: {
+          id: loanId,
+          status: {
+            in: [LoanStatus.BORROWED, LoanStatus.OVERDUE] as any[],
+          },
+        },
+        data: {
+          status: newLoanStatus as unknown as any,
+          returnCondition: condition as unknown as any,
+          adminNote: note ? note.trim() : null,
+          returnedAt: new Date(),
+          receivedById: user.userId,
+        },
+      });
+
+      if (updateResult.count === 0) {
+        throw HttpError.conflict('Pinjaman ini sudah diproses pengembaliannya sebelumnya.');
+      }
+
       // Update book copy if exists
       if (loan.bookCopyId) {
         await tx.bookCopy.update({
@@ -1315,15 +1371,8 @@ export class LoansService {
         });
       }
 
-      const updated = await tx.loan.update({
+      const updated = await tx.loan.findUniqueOrThrow({
         where: { id: loanId },
-        data: {
-          status: newLoanStatus as unknown as any,
-          returnCondition: condition as unknown as any,
-          adminNote: note ? note.trim() : null,
-          returnedAt: new Date(),
-          receivedById: user.userId,
-        },
         include: {
           book: {
             select: {
@@ -1653,17 +1702,31 @@ export class LoansService {
 
     const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Ags', 'Sep', 'Okt', 'Nov', 'Des'];
 
-    // 6 Months Circulation Trend
-    const trendPromises = Array.from({ length: 6 }).map((_, idx) => {
-      const offset = 5 - idx;
-      const mStart = new Date(now.getFullYear(), now.getMonth() - offset, 1);
-      const mEnd = new Date(now.getFullYear(), now.getMonth() - offset + 1, 1);
-      const label = `${monthNames[mStart.getMonth()]} ${mStart.getFullYear().toString().slice(2)}`;
-      return Promise.all([
-        prisma.loan.count({ where: { createdAt: { gte: mStart, lt: mEnd } } }),
-        prisma.loan.count({ where: { returnedAt: { gte: mStart, lt: mEnd } } }),
-      ]).then(([borrowed, returned]) => ({ month: label, borrowed, returned }));
-    });
+    // 6 Months Circulation Trend (Optimized from 12 separate count queries to 1 single date-window query)
+    const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+    const trendPromise = prisma.loan
+      .findMany({
+        where: {
+          OR: [
+            { createdAt: { gte: sixMonthsAgo } },
+            { returnedAt: { gte: sixMonthsAgo } },
+          ],
+        },
+        select: { createdAt: true, returnedAt: true },
+      })
+      .then((records) => {
+        return Array.from({ length: 6 }).map((_, idx) => {
+          const offset = 5 - idx;
+          const mStart = new Date(now.getFullYear(), now.getMonth() - offset, 1);
+          const mEnd = new Date(now.getFullYear(), now.getMonth() - offset + 1, 1);
+          const label = `${monthNames[mStart.getMonth()]} ${mStart.getFullYear().toString().slice(2)}`;
+          const borrowed = records.filter((r) => r.createdAt >= mStart && r.createdAt < mEnd).length;
+          const returned = records.filter(
+            (r) => r.returnedAt && r.returnedAt >= mStart && r.returnedAt < mEnd
+          ).length;
+          return { month: label, borrowed, returned };
+        });
+      });
 
     const [
       totalLoans,
@@ -1732,7 +1795,7 @@ export class LoansService {
         by: ['condition'],
         _count: { id: true },
       }),
-      Promise.all(trendPromises),
+      trendPromise,
       prisma.$queryRaw<Array<{ count: bigint }>>`
         SELECT COUNT(*) as count FROM "Loan"
         WHERE status = 'RETURNED' AND "returnedAt" IS NOT NULL AND "dueDate" IS NOT NULL AND "returnedAt" > "dueDate"

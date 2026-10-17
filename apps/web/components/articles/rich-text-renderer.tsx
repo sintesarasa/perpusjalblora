@@ -1,4 +1,5 @@
 import * as React from 'react';
+import DOMPurify from 'isomorphic-dompurify';
 import { cn } from '@/lib/utils';
 
 interface TipTapMark {
@@ -21,18 +22,23 @@ interface RichTextRendererProps {
 }
 
 /**
- * Fast, secure zero-dependency HTML sanitizer for editorial rich text rendering
- * Strips executable scripts, event handlers, and dangerous tags
+ * Robust, DOM-based HTML sanitizer for editorial rich text rendering
+ * Strips executable scripts, event handlers, and dangerous tags using DOMPurify
  */
 function sanitizeEditorialHtml(raw: string): string {
   if (!raw) return '';
 
-  return raw
-    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-    .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
-    .replace(/<\/?(iframe|object|embed|applet|form|input|button|select|textarea|base|meta|link)\b[^>]*>/gi, '')
-    .replace(/\s+(href|src)\s*=\s*["']\s*(javascript|vbscript|data):[^"']*["']/gi, ' $1="#"')
-    .replace(/\s+on\w+\s*=\s*(["'][^"']*["']|[^\s>]+)/gi, '');
+  return DOMPurify.sanitize(raw, {
+    ALLOWED_TAGS: [
+      'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote',
+      'ul', 'ol', 'li', 'strong', 'em', 's', 'u', 'a',
+      'img', 'hr', 'br', 'span', 'code', 'pre', 'figure', 'figcaption'
+    ],
+    ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'class', 'target', 'rel'],
+    ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto|tel):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
+    FORBID_TAGS: ['script', 'style', 'iframe', 'object', 'embed', 'form', 'input'],
+    FORBID_ATTR: ['onerror', 'onload', 'onclick', 'onmouseover'],
+  });
 }
 
 export function RichTextRenderer({

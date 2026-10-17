@@ -398,6 +398,7 @@ export class WaitlistService {
     // Send notification to the lucky reader
     try {
       const deadlineStr = result.pickupDeadline.toLocaleDateString('id-ID', {
+        timeZone: 'Asia/Jakarta',
         day: 'numeric',
         month: 'short',
         year: 'numeric',

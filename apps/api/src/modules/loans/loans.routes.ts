@@ -1,12 +1,13 @@
 import { Router } from 'express';
 import { loansController } from './loans.controller.js';
 import { requireAuth, requireVerified, requireRole } from '../../middleware/auth.js';
+import { loanRequestLimiter } from '../../middleware/rate-limit.js';
 import { Role } from '@perpusjal/types';
 
 const router = Router();
 
-// Member loans routes (Protected: U+)
-router.post('/', requireAuth, requireVerified, (req, res, next) =>
+// Member loans routes (Protected: U+) with anti-bot rate limiting
+router.post('/', requireAuth, requireVerified, loanRequestLimiter, (req, res, next) =>
   loansController.requestLoan(req, res, next)
 );
 router.get('/me', requireAuth, (req, res, next) =>

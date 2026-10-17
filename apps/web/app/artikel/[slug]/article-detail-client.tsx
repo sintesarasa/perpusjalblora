@@ -392,6 +392,7 @@ export function ArticleDetailClient({
                   <span className="text-muted text-[11px]">Topik Terkait:</span>
                   {article.tags.map((t) => (
                     <Link
+                      key={t.slug || t.name}
                       href={`/artikel?tag=${t.slug}`}
                       className="px-2.5 py-1 border border-border hover:border-foreground transition-colors text-muted hover:text-foreground text-[11px]"
                     >

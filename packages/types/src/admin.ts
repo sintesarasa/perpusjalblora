@@ -55,10 +55,16 @@ export interface LandingCfdScheduleSetting {
   alertNotice?: string | null;
 }
 
+export interface LandingFeaturedArticlesSetting {
+  headlineArticleId: string | null;
+  sideArticleIds: string[];
+}
+
 export interface LandingSettings {
   featuredEvent: LandingFeaturedEventSetting;
   ticker: LandingTickerSetting;
   cfdSchedule: LandingCfdScheduleSetting;
+  featuredArticles?: LandingFeaturedArticlesSetting;
 }
 
 export interface LandingFeaturedEventData {
@@ -77,9 +83,27 @@ export interface LandingFeaturedEventData {
   status: string;
 }
 
+export interface LandingFeaturedArticleItem {
+  id: string;
+  slug: string;
+  title: string;
+  excerpt?: string | null;
+  readingTime: number;
+  authorName: string;
+  authorUsername: string;
+  categoryName: string;
+  categorySlug: string;
+  publishedAt: string;
+  isFeatured: boolean;
+}
+
 export interface LandingPublicConfigResponse {
   settings: LandingSettings;
   featuredEventData?: LandingFeaturedEventData | null;
+  featuredArticlesData?: {
+    headlineArticle?: LandingFeaturedArticleItem | null;
+    sideArticles: LandingFeaturedArticleItem[];
+  } | null;
 }
 
 export const DEFAULT_LANDING_SETTINGS: LandingSettings = {
@@ -125,5 +149,9 @@ export const DEFAULT_LANDING_SETTINGS: LandingSettings = {
     badgeText: 'MINGGU 06.00–10.00 WIB // ALUN-ALUN BLORA',
     note: 'Lapak Terbuka: Setiap Minggu 06.00–10.00 WIB di hamparan terpal trotoar Alun-Alun Blora.',
     alertNotice: null,
+  },
+  featuredArticles: {
+    headlineArticleId: null,
+    sideArticleIds: [],
   },
 };

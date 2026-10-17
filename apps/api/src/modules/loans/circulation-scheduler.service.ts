@@ -54,12 +54,21 @@ export class CirculationSchedulerService {
             },
           });
         }
+
+        // Fix Critical Bug: Mark loan as EXPIRED to avoid infinite looping and repeated restorations
+        await tx.loan.update({
+          where: { id: loan.id },
+          data: {
+            status: LoanStatus.EXPIRED as unknown as any,
+          },
+        });
       });
 
       // Send in-app notification
       try {
         const deadlineStr = loan.pickupDeadline
           ? new Date(loan.pickupDeadline).toLocaleDateString('id-ID', {
+              timeZone: 'Asia/Jakarta',
               day: 'numeric',
               month: 'short',
               year: 'numeric',
@@ -110,6 +119,7 @@ export class CirculationSchedulerService {
       try {
         const dueStr = loan.dueDate
           ? new Date(loan.dueDate).toLocaleDateString('id-ID', {
+              timeZone: 'Asia/Jakarta',
               day: 'numeric',
               month: 'short',
               year: 'numeric',
@@ -157,7 +167,12 @@ export class CirculationSchedulerService {
     for (const loan of loans) {
       try {
         const dueStr = loan.dueDate
-          ? loan.dueDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+          ? loan.dueDate.toLocaleDateString('id-ID', {
+              timeZone: 'Asia/Jakarta',
+              day: 'numeric',
+              month: 'short',
+              year: 'numeric',
+            })
           : 'besok';
 
         await notificationsService.createNotification(loan.userId, {
@@ -205,6 +220,7 @@ export class CirculationSchedulerService {
     for (const loan of severeLoans) {
       const suspendedUntil = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
       const untilStr = suspendedUntil.toLocaleDateString('id-ID', {
+        timeZone: 'Asia/Jakarta',
         day: 'numeric',
         month: 'long',
         year: 'numeric',

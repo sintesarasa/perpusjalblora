@@ -35,8 +35,9 @@ import { CustomLoader } from '@/components/ui/custom-loader';
 import { cn } from '@/lib/utils';
 import { DigitalStampEffect } from '@/components/circulation/digital-stamp-effect';
 import { PetaNavigasi } from '@/components/layout/peta-navigasi';
+import { CuratorWritingsTab } from '@/components/dashboard/curator-canons-tab';
 
-type TabType = 'sorotan' | 'ticker' | 'cfd';
+type TabType = 'sorotan' | 'ticker' | 'cfd' | 'mimbar';
 
 export default function AdminBerandaPage() {
   const [activeTab, setActiveTab] = React.useState<TabType>('sorotan');
@@ -355,6 +356,26 @@ export default function AdminBerandaPage() {
               activeTab === 'cfd' ? 'bg-background text-foreground' : 'bg-foreground text-background'
             )}>
               {settings.cfdSchedule.status}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('mimbar')}
+            className={cn(
+              'px-5 py-3 border-r border-border-hairline transition-colors flex items-center gap-2 shrink-0 uppercase tracking-wider font-bold',
+              activeTab === 'mimbar'
+                ? 'bg-foreground text-background'
+                : 'bg-surface text-muted hover:text-foreground hover:bg-surface-muted'
+            )}
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>4. Mimbar Warga (Slot 1-4)</span>
+            <span className={cn(
+              'ml-1 text-[9px] px-1 py-0.2 uppercase font-bold',
+              activeTab === 'mimbar' ? 'bg-background text-foreground' : 'bg-foreground text-background'
+            )}>
+              TAJUK &amp; 3 CATATAN
             </span>
           </button>
         </div>
@@ -1026,6 +1047,15 @@ export default function AdminBerandaPage() {
                 </div>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* ========================================================================= */}
+        {/* TAB 4: MIMBAR WARGA (SLOT 1-4)                                             */}
+        {/* ========================================================================= */}
+        {activeTab === 'mimbar' && (
+          <div className="space-y-6">
+            <CuratorWritingsTab />
           </div>
         )}
       </main>
