@@ -27,6 +27,10 @@ const nextConfig = {
     const apiTarget = rawTarget.replace(/\/api\/v1\/?$/, '').replace(/\/+$/, '');
     return [
       {
+        source: '/api/health',
+        destination: `${apiTarget}/api/health`,
+      },
+      {
         source: '/api/v1/:path*',
         destination: `${apiTarget}/api/v1/:path*`,
       },

@@ -66,9 +66,16 @@ export interface ApiResponse<T> {
   error?: ApiError;
 }
 
+export interface ApiFetchOptions extends RequestInit {
+  next?: {
+    revalidate?: number | false;
+    tags?: string[];
+  };
+}
+
 export async function apiClient<T>(
   endpoint: string,
-  options: RequestInit = {}
+  options: ApiFetchOptions = {}
 ): Promise<ApiResponse<T>> {
   try {
     let apiUrl = getApiUrl();
@@ -82,15 +89,25 @@ export async function apiClient<T>(
         ? `${apiUrl.slice(0, -7)}${cleanEndpoint}`
         : `${apiUrl}${cleanEndpoint}`;
 
-    const res = await fetch(targetUrl, {
-      cache: 'no-store',
-      ...options,
+    const { next, cache, headers, ...restOptions } = options;
+    const fetchInit: RequestInit & { next?: { revalidate?: number | false; tags?: string[] } } = {
       credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
-        ...options.headers,
+        ...headers,
       },
-    });
+      ...restOptions,
+    };
+
+    if (next) {
+      fetchInit.next = next;
+    } else if (cache) {
+      fetchInit.cache = cache;
+    } else {
+      fetchInit.cache = 'no-store';
+    }
+
+    const res = await fetch(targetUrl, fetchInit);
 
     if (res.status === 204) {
       return { data: undefined as unknown as T };

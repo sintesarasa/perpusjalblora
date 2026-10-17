@@ -97,3 +97,21 @@ export const loanRequestLimiter = rateLimit({
   },
 });
 
+/**
+ * Health check rate limiter (Anti DB-Flooding: max 60 requests per minute per IP)
+ */
+export const healthLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  limit: 60,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  message: {
+    status: 'rate_limited',
+    service: 'perpusjal-api',
+    error: {
+      code: 'HEALTH_RATE_LIMIT_EXCEEDED',
+      message: 'Pemeriksaan kesehatan sistem terlalu sering. Silakan coba lagi sebentar lagi.',
+    },
+  },
+});
+

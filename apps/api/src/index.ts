@@ -6,6 +6,7 @@ import morgan from 'morgan';
 import dotenv from 'dotenv';
 import { errorHandler } from './middleware/errorHandler.js';
 import { authMiddleware, requireAuth, requireRole } from './middleware/auth.js';
+import { healthLimiter } from './middleware/rate-limit.js';
 import { authRoutes } from './modules/auth/auth.routes.js';
 import { articlesRoutes } from './modules/articles/articles.routes.js';
 import { articlesController } from './modules/articles/articles.controller.js';
@@ -182,9 +183,9 @@ const healthHandler = async (req: express.Request, res: express.Response) => {
   }
 };
 
-app.get('/health', healthHandler);
-app.get('/api/health', healthHandler);
-app.get('/api/v1/health', healthHandler);
+app.get('/health', healthLimiter, healthHandler);
+app.get('/api/health', healthLimiter, healthHandler);
+app.get('/api/v1/health', healthLimiter, healthHandler);
 
 // API Root Information
 app.get('/api/v1', (req, res) => {

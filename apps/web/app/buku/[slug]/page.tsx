@@ -10,13 +10,17 @@ interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
+export const revalidate = 60;
+
 const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://perpusjalblora.org';
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
 
   try {
-    const res = await apiClient<BookDetail>(`/books/${slug}`);
+    const res = await apiClient<BookDetail>(`/books/${slug}`, {
+      next: { revalidate: 60, tags: ['books', `book-${slug}`] },
+    });
     const book = res.data;
 
     if (!book) {
@@ -84,7 +88,9 @@ export default async function BookDetailPage({ params }: PageProps) {
   const { slug } = await params;
   let book: BookDetail | null = null;
   try {
-    const res = await apiClient<BookDetail>(`/books/${slug}`);
+    const res = await apiClient<BookDetail>(`/books/${slug}`, {
+      next: { revalidate: 60, tags: ['books', `book-${slug}`] },
+    });
     book = res.data || null;
   } catch {
     // Fallback if API is offline or during build time

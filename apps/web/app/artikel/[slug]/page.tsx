@@ -11,6 +11,8 @@ interface PageProps {
   searchParams: Promise<{ preview?: string }>;
 }
 
+export const revalidate = 60;
+
 const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://perpusjalblora.org';
 
 export async function generateMetadata({ params, searchParams }: PageProps): Promise<Metadata> {
@@ -19,7 +21,9 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
   const previewQuery = preview ? `?preview=${preview}` : '';
 
   try {
-    const res = await apiClient<ArticleDetail>(`/articles/${slug}${previewQuery}`);
+    const res = await apiClient<ArticleDetail>(`/articles/${slug}${previewQuery}`, {
+      next: { revalidate: 60, tags: ['articles', `article-${slug}`] },
+    });
     const article = res.data;
 
     if (!article) {
@@ -91,7 +95,9 @@ export default async function ArticleDetailPage({ params, searchParams }: PagePr
   let article: ArticleDetail | null = null;
   try {
     const previewQuery = preview ? `?preview=${preview}` : '';
-    const res = await apiClient<ArticleDetail>(`/articles/${slug}${previewQuery}`);
+    const res = await apiClient<ArticleDetail>(`/articles/${slug}${previewQuery}`, {
+      next: { revalidate: 60, tags: ['articles', `article-${slug}`] },
+    });
     article = res.data || null;
   } catch {
     // Graceful fallback
