@@ -4,7 +4,7 @@ import * as React from 'react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { ArticleSummary, LandingFeaturedArticleItem, LandingPublicConfigResponse } from '@perpusjal/types';
-import { ArrowRight, Feather, Quote, Sparkles, Clock, ArrowUpRight, BookOpen } from 'lucide-react';
+import { ArrowRight, Feather, Quote, Sparkles, Clock, FileText } from 'lucide-react';
 import { apiClient } from '@/lib/api';
 
 export interface IndexArticleItem {
@@ -21,84 +21,6 @@ export interface IndexArticleItem {
   publishedAt: string;
   isFeatured?: boolean;
 }
-
-export const SAMPLE_ARTICLES: IndexArticleItem[] = [
-  {
-    id: 'art-01',
-    slug: 'secangkir-kopi-terpal-biru-alun-alun-blora',
-    title: 'Secangkir Kopi, Terpal Biru, dan Obrolan Hangat di Alun-Alun Blora',
-    authorName: 'Wawan Prasetyo',
-    authorUsername: 'wawan_lapak',
-    categoryName: 'Suara Lapak',
-    categorySlug: 'suara-lapak',
-    rubrikKey: 'suara-lapak',
-    excerpt:
-      'Di bawah rindang pohon beringin Alun-Alun, selembar terpal biru digelar setiap Minggu pagi. Tak ada sekat antara pedagang keliling, guru, siswa sekolah, dan mahasiswa. Buku menjadi jembatan paling bersahaja untuk saling menyapa dan bertukar cerita hidup.',
-    readingTime: 3,
-    publishedAt: '2026-10-12T07:30:00Z',
-    isFeatured: true,
-  },
-  {
-    id: 'art-02',
-    slug: 'menyusuri-riwayat-pasar-pon-keringat-bakul',
-    title: 'Menyusuri Riwayat Pasar Pon: Keringat Bakul dan Guyub Rukun yang Bertahan',
-    authorName: 'Siti Rahayu',
-    authorUsername: 'sitiblora',
-    categoryName: 'Pojok Blora',
-    categorySlug: 'pojok-blora',
-    rubrikKey: 'pojok-blora',
-    excerpt:
-      'Pasar Pon bukan sekadar tempat bertukarnya rupiah dengan hasil bumi. Ia adalah denyut nadi sosial Blora di mana tradisi tawar-menawar masih menyimpan laku saling menghargai dan welas asih antarwarga.',
-    readingTime: 4,
-    publishedAt: '2026-10-10T09:15:00Z',
-    isFeatured: true,
-  },
-  {
-    id: 'art-03',
-    slug: 'ruang-publik-ramah-pejalan-kaki-menagih-hak-trotoar',
-    title: 'Ruang Publik Ramah Pejalan Kaki: Menagih Hak Trotoar yang Bermartabat',
-    authorName: 'Budi Santoso',
-    authorUsername: 'budisantoso',
-    categoryName: 'Opini Warga',
-    categorySlug: 'opini-warga',
-    rubrikKey: 'opini-warga',
-    excerpt:
-      'Trotoar adalah tolok ukur kesetaraan peradaban sebuah kota. Melalui lapak buku trotoar, kita belajar menuntut ruang publik yang aman, terbuka, dan adil bagi seluruh lapisan warga.',
-    readingTime: 5,
-    publishedAt: '2026-10-08T14:20:00Z',
-    isFeatured: false,
-  },
-  {
-    id: 'art-04',
-    slug: 'sajak-debu-trotoar-secangkir-kopi-hitam',
-    title: 'Sajak Debu Trotoar & Secangkir Kopi Pahit',
-    authorName: 'Larasati Dewi',
-    authorUsername: 'laraspuisi',
-    categoryName: 'Puisi Trotoar',
-    categorySlug: 'puisi',
-    rubrikKey: 'puisi',
-    excerpt:
-      'Di atas terpal ini kita mengeja kata / huruf-huruf bangun dari lelapnya sampul tua / angin Alun-Alun membisikkan pesan sunyi: bahwa membaca adalah laku berbahagia yang tak akan pernah bisa dirampas.',
-    readingTime: 2,
-    publishedAt: '2026-09-28T20:10:00Z',
-    isFeatured: false,
-  },
-  {
-    id: 'art-05',
-    slug: 'menjaga-nyawa-hutan-jati-menatap-krisis-air',
-    title: 'Menjaga Nyawa Hutan Jati: Menatap Ancaman Krisis Air Musim Kemarau',
-    authorName: 'Agus Rimba',
-    authorUsername: 'agus_sikep',
-    categoryName: 'Lingkungan',
-    categorySlug: 'lingkungan',
-    rubrikKey: 'lingkungan',
-    excerpt:
-      'Merawat tegakan pohon jati dan menjaga mata air desa bukan sekadar urusan formalitas dinas, melainkan ikhtiar mutlak menjaga napas kehidupan anak cucu kita di tanah Blora.',
-    readingTime: 4,
-    publishedAt: '2026-10-05T11:00:00Z',
-    isFeatured: false,
-  },
-];
 
 function mapToItem(art: LandingFeaturedArticleItem | ArticleSummary): IndexArticleItem {
   const catSlug = ('categorySlug' in art ? art.categorySlug : art.category?.slug || '').toLowerCase();
@@ -136,36 +58,66 @@ export interface InteractiveLiteraryIndexProps {
   featuredData?: LandingPublicConfigResponse['featuredArticlesData'];
 }
 
-export function InteractiveLiteraryIndex({ className, featuredData }: InteractiveLiteraryIndexProps) {
-  const [articles, setArticles] = React.useState<IndexArticleItem[]>(SAMPLE_ARTICLES);
+function LiteraryIndexSkeleton() {
+  return (
+    <div className="space-y-8 sm:space-y-10 animate-pulse">
+      <div className="border-b-2 border-foreground pb-6 sm:pb-8 space-y-3">
+        <div className="h-4 w-40 bg-foreground/10" />
+        <div className="h-8 sm:h-10 w-3/4 bg-foreground/15" />
+        <div className="h-4 w-1/2 bg-foreground/10" />
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10">
+        <div className="lg:col-span-7 border-2 border-foreground p-6 sm:p-8 space-y-5 bg-surface">
+          <div className="h-4 w-32 bg-foreground/15" />
+          <div className="h-10 w-full bg-foreground/15" />
+          <div className="h-12 w-full bg-foreground/10" />
+          <div className="h-24 w-full bg-foreground/5 border-l-4 border-foreground/30" />
+        </div>
+        <div className="lg:col-span-5 space-y-3">
+          <div className="h-5 w-48 bg-foreground/15" />
+          <div className="border-2 border-foreground bg-background p-4 space-y-4">
+            <div className="h-16 w-full bg-foreground/10" />
+            <div className="h-16 w-full bg-foreground/10" />
+            <div className="h-16 w-full bg-foreground/10" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
-  // Load published articles dynamically from backend API as fallback / complement
+export function InteractiveLiteraryIndex({ className, featuredData }: InteractiveLiteraryIndexProps) {
+  const [articles, setArticles] = React.useState<IndexArticleItem[]>([]);
+  const [loading, setLoading] = React.useState(true);
+
+  // Load published articles dynamically from backend API
   React.useEffect(() => {
+    let isMounted = true;
     async function fetchPublishedArticles() {
       try {
         const res = await apiClient<{ data: ArticleSummary[] }>('/articles?status=PUBLISHED&perPage=10&sort=terbaru');
+        if (!isMounted) return;
+
         if (res.data?.data && res.data.data.length > 0) {
           const apiArticles: IndexArticleItem[] = res.data.data.map(mapToItem);
-
-          // Sort so featured articles come first
           apiArticles.sort((a, b) => (b.isFeatured ? 1 : 0) - (a.isFeatured ? 1 : 0));
-
-          // Ensure we have at least 4 items by complementing with sample data
-          const combined = [...apiArticles];
-          SAMPLE_ARTICLES.forEach((sample) => {
-            if (combined.length < 4 && !combined.some((item) => item.slug === sample.slug)) {
-              combined.push(sample);
-            }
-          });
-
-          setArticles(combined);
+          setArticles(apiArticles);
         }
-      } catch {
-        // Fallback to SAMPLE_ARTICLES
+      } catch (err) {
+        console.error('Failed to load published articles for literary index:', err);
+      } finally {
+        if (isMounted) setLoading(false);
       }
     }
     fetchPublishedArticles();
+    return () => {
+      isMounted = false;
+    };
   }, []);
+
+  if (loading) {
+    return <LiteraryIndexSkeleton />;
+  }
 
   // Priority: If featuredData from admin settings is present, honor curated slots
   const curatedLead = featuredData?.headlineArticle ? mapToItem(featuredData.headlineArticle) : null;
@@ -173,9 +125,47 @@ export function InteractiveLiteraryIndex({ className, featuredData }: Interactiv
     ? featuredData.sideArticles.map(mapToItem)
     : null;
 
-  const leadArticle = curatedLead || articles[0] || SAMPLE_ARTICLES[0];
+  const leadArticle = curatedLead || articles[0] || null;
 
-  // For side articles: use curatedSides if available, complement if fewer than 3
+  // Empty state if database has no published articles and no featured articles
+  if (!leadArticle) {
+    return (
+      <div className={cn('space-y-8 sm:space-y-10', className)}>
+        <div className="border-b-2 border-foreground pb-6 sm:pb-8 space-y-3">
+          <div className="font-mono text-xs font-bold uppercase tracking-widest text-muted">
+            [ MIMBAR WARGA // SUARA DARI TROTOAR ]
+          </div>
+          <h2 className="font-serif text-[28px] sm:text-4xl md:text-5xl font-black uppercase tracking-tight text-foreground leading-[1.12]">
+            Gagasan, Catatan Lapak, &amp; Suara Warga
+          </h2>
+          <p className="font-serif text-sm sm:text-base text-foreground/85 max-w-3xl leading-relaxed">
+            Di hamparan terpal ini, setiap warga punya hak bersuara. Kami mengurasi pemikiran jujur, kritik sosial, dan sajak jalanan yang lahir dari denyut keseharian masyarakat Blora.
+          </p>
+        </div>
+
+        <div className="p-8 sm:p-12 border-2 border-foreground bg-surface text-center space-y-4 font-mono">
+          <FileText className="w-8 h-8 text-muted mx-auto stroke-1" />
+          <div className="font-serif text-xl sm:text-2xl font-bold text-foreground">
+            Belum Ada Naskah Warga yang Terbit
+          </div>
+          <p className="font-serif text-sm text-muted max-w-md mx-auto">
+            Jadilah penggerak pertama yang mencatatkan pemikiranmu di koran terpal digital Perpusjal Blora.
+          </p>
+          <div className="pt-2">
+            <Link
+              href="/dashboard/tulisan/tulis"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-foreground text-background font-mono text-xs font-bold uppercase tracking-wider hover:bg-foreground/90 transition-colors border-2 border-foreground"
+            >
+              <Feather className="w-4 h-4" />
+              <span>TULIS NASKAH PERTAMA</span>
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Side articles
   let sideArticles: IndexArticleItem[] = [];
   if (curatedSides && curatedSides.length > 0) {
     sideArticles = [...curatedSides];
@@ -189,19 +179,9 @@ export function InteractiveLiteraryIndex({ className, featuredData }: Interactiv
     sideArticles = articles.filter((a) => a.id !== leadArticle.id).slice(0, 3);
   }
 
-  // Ensure at least 3 side articles using SAMPLE_ARTICLES fallback
-  if (sideArticles.length < 3) {
-    for (const sample of SAMPLE_ARTICLES) {
-      if (sideArticles.length >= 3) break;
-      if (sample.id !== leadArticle.id && !sideArticles.some((s) => s.slug === sample.slug)) {
-        sideArticles.push(sample);
-      }
-    }
-  }
-
   return (
     <div className={cn('space-y-8 sm:space-y-10', className)}>
-      {/* 1. Full-Width Masthead Header (Zero Database Filter Clutter) */}
+      {/* 1. Full-Width Masthead Header */}
       <div className="border-b-2 border-foreground pb-6 sm:pb-8 space-y-3 sm:space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="font-mono text-xs font-bold uppercase tracking-widest text-muted">
@@ -221,7 +201,7 @@ export function InteractiveLiteraryIndex({ className, featuredData }: Interactiv
         </p>
       </div>
 
-      {/* 2. Front-Page Broadsheet Headline Spread (7 cols Lead Story + 5 cols Side Dispatches) */}
+      {/* 2. Front-Page Broadsheet Headline Spread */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-stretch">
         {/* Left Column: Tajuk Utama (Lead Story - 7 cols) */}
         <div className="lg:col-span-7 border-2 border-foreground bg-surface p-6 sm:p-8 flex flex-col justify-between space-y-6 rounded-none relative">
@@ -233,7 +213,7 @@ export function InteractiveLiteraryIndex({ className, featuredData }: Interactiv
                   TAJUK UTAMA
                 </span>
                 <span className="font-bold text-foreground">
-                  // {leadArticle.categoryName.toUpperCase()}
+                  {'//'} {leadArticle.categoryName.toUpperCase()}
                 </span>
               </div>
               <span className="text-muted inline-flex items-center gap-1 text-[10px]">
@@ -250,7 +230,7 @@ export function InteractiveLiteraryIndex({ className, featuredData }: Interactiv
             </Link>
 
             {/* Author Persona Strip */}
-            <div className="flex items-center gap-3 pt-1 border-t border-border-hairline pt-3 font-mono">
+            <div className="flex items-center gap-3 pt-3 border-t border-border-hairline font-mono">
               <div className="w-10 h-10 rounded-none border-2 border-foreground bg-background flex items-center justify-center font-serif font-black text-lg text-foreground shrink-0">
                 {leadArticle.authorName.charAt(0).toUpperCase()}
               </div>
@@ -288,52 +268,70 @@ export function InteractiveLiteraryIndex({ className, featuredData }: Interactiv
           </div>
         </div>
 
-        {/* Right Column: 3 Catatan Warga Pilihan (5 cols) */}
+        {/* Right Column: Catatan Warga Pilihan (5 cols) */}
         <div className="lg:col-span-5 flex flex-col justify-between space-y-3">
           <div className="flex items-center justify-between border-b-2 border-foreground pb-2.5 font-mono text-xs uppercase tracking-wider text-muted font-bold">
-            <span>[ CATATAN PINGGIR // 3 GAGASAN TERPILIH ]</span>
+            <span>[ CATATAN PINGGIR // GAGASAN TERPILIH ]</span>
             <span>KORAN TERPAL</span>
           </div>
 
-          <div className="border-2 border-foreground bg-background divide-y-2 divide-border-hairline flex-1 flex flex-col justify-between">
-            {sideArticles.map((item, idx) => (
-              <Link
-                key={item.id}
-                href={`/artikel/${item.slug}`}
-                className="p-4 sm:p-5 flex-1 flex flex-col justify-between space-y-2 group hover:bg-surface transition-colors"
-              >
-                <div>
-                  <div className="flex items-center justify-between text-[9.5px] font-mono pb-1">
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono text-xs font-bold text-muted">
-                        {`${idx + 1}`.padStart(2, '0')}
-                      </span>
-                      <span className="px-1.5 py-0.5 bg-surface-muted border border-border-hairline text-foreground uppercase font-bold tracking-wider rounded-none">
-                        {item.categoryName}
-                      </span>
+          {sideArticles.length > 0 ? (
+            <div className="border-2 border-foreground bg-background divide-y-2 divide-border-hairline flex-1 flex flex-col justify-between">
+              {sideArticles.map((item, idx) => (
+                <Link
+                  key={item.id}
+                  href={`/artikel/${item.slug}`}
+                  className="p-4 sm:p-5 flex-1 flex flex-col justify-between space-y-2 group hover:bg-surface transition-colors"
+                >
+                  <div>
+                    <div className="flex items-center justify-between text-[9.5px] font-mono pb-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-xs font-bold text-muted">
+                          {`${idx + 1}`.padStart(2, '0')}
+                        </span>
+                        <span className="px-1.5 py-0.5 bg-surface-muted border border-border-hairline text-foreground uppercase font-bold tracking-wider rounded-none">
+                          {item.categoryName}
+                        </span>
+                      </div>
+                      <span className="text-muted">{item.readingTime} MNT</span>
                     </div>
-                    <span className="text-muted">{item.readingTime} MNT</span>
+
+                    <h4 className="font-serif text-base sm:text-lg font-bold text-foreground leading-snug line-clamp-2 group-hover:underline mt-1">
+                      {item.title}
+                    </h4>
+
+                    <p className="font-serif italic text-xs text-foreground/75 line-clamp-2 mt-1.5 leading-relaxed">
+                      &ldquo;{item.excerpt}&rdquo;
+                    </p>
                   </div>
 
-                  <h4 className="font-serif text-base sm:text-lg font-bold text-foreground leading-snug line-clamp-2 group-hover:underline mt-1">
-                    {item.title}
-                  </h4>
-
-                  <p className="font-serif italic text-xs text-foreground/75 line-clamp-2 mt-1.5 leading-relaxed">
-                    &ldquo;{item.excerpt}&rdquo;
-                  </p>
-                </div>
-
-                <div className="pt-2 flex items-center justify-between font-mono text-[10.5px] text-muted border-t border-border-hairline/60">
-                  <span className="truncate">Oleh {item.authorName}</span>
-                  <span className="inline-flex items-center gap-1 font-bold text-foreground group-hover:translate-x-0.5 transition-transform">
-                    <span>BACA</span>
-                    <ArrowRight className="w-3 h-3" />
-                  </span>
-                </div>
+                  <div className="pt-2 flex items-center justify-between font-mono text-[10.5px] text-muted border-t border-border-hairline/60">
+                    <span className="truncate">Oleh {item.authorName}</span>
+                    <span className="inline-flex items-center gap-1 font-bold text-foreground group-hover:translate-x-0.5 transition-transform">
+                      <span>BACA</span>
+                      <ArrowRight className="w-3 h-3" />
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className="border-2 border-foreground bg-background p-6 flex-1 flex flex-col items-center justify-center text-center space-y-3 font-mono">
+              <Feather className="w-6 h-6 text-muted stroke-1" />
+              <div className="font-serif text-sm font-bold text-foreground">
+                Ruang Opini Terpal Masih Terbuka
+              </div>
+              <p className="font-serif text-xs text-muted max-w-xs">
+                Kirimkan resensi buku atau catatanmu untuk melengkapi mimbar redaksi warga.
+              </p>
+              <Link
+                href="/dashboard/tulisan/tulis"
+                className="text-xs uppercase font-bold underline underline-offset-4 text-foreground"
+              >
+                Mulai Menulis &rarr;
               </Link>
-            ))}
-          </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -354,7 +352,7 @@ export function InteractiveLiteraryIndex({ className, featuredData }: Interactiv
 
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 shrink-0 text-xs font-bold uppercase tracking-wider">
           <Link
-            href="/tulis"
+            href="/dashboard/tulisan/tulis"
             className="h-11 px-5 bg-foreground text-background hover:bg-foreground/90 transition-colors inline-flex items-center justify-center gap-2 border-2 border-foreground"
           >
             <Feather className="w-3.5 h-3.5" />

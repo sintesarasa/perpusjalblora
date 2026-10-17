@@ -6,6 +6,7 @@ import { apiClient } from '@/lib/api';
 import { LetterStatus } from '@perpusjal/types';
 import { CustomLoader } from '@/components/ui/custom-loader';
 import { EmptyState } from '@/components/ui/empty-state';
+import { toast } from '@/components/ui/toast';
 import {
   Mail,
   Check,
@@ -134,7 +135,7 @@ export function CuratorLettersTab() {
   const handleExecuteReject = async () => {
     if (!targetLetter) return;
     if (!rejectReason.trim()) {
-      alert('Alasan penolakan surat wajib diisi.');
+      toast.error('Alasan penolakan surat wajib diisi.');
       return;
     }
 

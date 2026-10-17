@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" width="1200" height="800">
+  <rect width="1200" height="800" fill="#09090b" />
+  <defs>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <line x1="0" y1="0" x2="40" y2="0" stroke="#27272a" stroke-width="1" stroke-opacity="0.4" />
+      <line x1="0" y1="0" x2="0" y2="40" stroke="#27272a" stroke-width="1" stroke-opacity="0.4" />
+    </pattern>
+  </defs>
+  <rect width="1200" height="800" fill="url(#grid)" />
+  
+  <!-- Outer double border -->
+  <rect x="30" y="30" width="1140" height="740" fill="none" stroke="#fafafa" stroke-width="4" />
+  <rect x="42" y="42" width="1116" height="716" fill="none" stroke="#52525b" stroke-width="1" />
+  
+  <!-- Corner marks -->
+  <line x1="20" y1="30" x2="50" y2="30" stroke="#fafafa" stroke-width="4" />
+  <line x1="30" y1="20" x2="30" y2="50" stroke="#fafafa" stroke-width="4" />
+  <line x1="1150" y1="30" x2="1180" y2="30" stroke="#fafafa" stroke-width="4" />
+  <line x1="1170" y1="20" x2="1170" y2="50" stroke="#fafafa" stroke-width="4" />
+  <line x1="20" y1="770" x2="50" y2="770" stroke="#fafafa" stroke-width="4" />
+  <line x1="30" y1="750" x2="30" y2="780" stroke="#fafafa" stroke-width="4" />
+  <line x1="1150" y1="770" x2="1180" y2="770" stroke="#fafafa" stroke-width="4" />
+  <line x1="1170" y1="750" x2="1170" y2="780" stroke="#fafafa" stroke-width="4" />
+
+  <!-- Masthead Top -->
+  <text x="70" y="90" font-family="monospace" font-size="18" font-weight="bold" fill="#a1a1aa" letter-spacing="4">PERPUSJAL BLORA &bull; DOKUMENTASI AGENDA TERPAL</text>
+  <text x="1130" y="90" font-family="monospace" font-size="18" font-weight="bold" fill="#a1a1aa" text-anchor="end" letter-spacing="3">EDISI 2026</text>
+  <line x1="70" y1="115" x2="1130" y2="115" stroke="#fafafa" stroke-width="2" />
+
+  <!-- Center Graphic Box -->
+  <g transform="translate(600, 360)">
+    <circle r="110" fill="#18181b" stroke="#fafafa" stroke-width="3" />
+    <!-- Book Graphic -->
+    <path d="M-60,-20 C-30,-40 0,-30 0,-10 L0,50 C0,30 -30,20 -60,40 Z" fill="#fafafa" opacity="0.9" />
+    <path d="M60,-20 C30,-40 0,-30 0,-10 L0,50 C0,30 30,20 60,40 Z" fill="#fafafa" opacity="0.9" />
+    <line x1="0" y1="-10" x2="0" y2="50" stroke="#09090b" stroke-width="3" />
+  </g>
+
+  <!-- Typography Lockup -->
+  <text x="600" y="540" font-family="serif" font-size="48" font-weight="900" fill="#fafafa" text-anchor="middle" letter-spacing="2">PENTAS SENI & CUKIL KAYU</text>
+  <text x="600" y="590" font-family="serif" font-style="italic" font-size="24" fill="#d4d4d8" text-anchor="middle">Merawat ekspresi kebudayaan rakyat tanpa sekat</text>
+
+  <!-- Footer Ledger -->
+  <line x1="70" y1="690" x2="1130" y2="690" stroke="#52525b" stroke-width="1" />
+  <text x="70" y="725" font-family="monospace" font-size="16" font-weight="bold" fill="#fafafa" letter-spacing="3">ALUN-ALUN BLORA // MEMBACA DAN BERBAHAGIA</text>
+  <text x="1130" y="725" font-family="monospace" font-size="16" fill="#a1a1aa" text-anchor="end" letter-spacing="2">RUANG BACA RAKYAT SWADAYA</text>
+</svg>

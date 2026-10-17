@@ -287,7 +287,7 @@ export default function EventDetailPage() {
         },
     image: [
       event.coverImage ||
-        'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=1200&q=80',
+        '/images/default-event-cover.svg',
     ],
     organizer: {
       '@type': 'Organization',
@@ -401,7 +401,7 @@ export default function EventDetailPage() {
                     <img
                       src={
                         event.coverImage ||
-                        'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=1000&q=80'
+                        '/images/default-event-cover.svg'
                       }
                       alt={event.title}
                       className="w-full h-full object-cover grayscale contrast-110 hover:grayscale-0 transition-all duration-500"

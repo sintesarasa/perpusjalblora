@@ -19,6 +19,8 @@ import {
   X,
   CornerDownRight,
   SlidersHorizontal,
+  AlertTriangle,
+  RefreshCw,
 } from 'lucide-react';
 
 function SearchPageContent() {
@@ -33,6 +35,7 @@ function SearchPageContent() {
   const [results, setResults] = React.useState<SearchResultsData | null>(null);
   const [loading, setLoading] = React.useState(false);
   const [hasSearched, setHasSearched] = React.useState(false);
+  const [searchError, setSearchError] = React.useState<string | null>(null);
 
   const inputRef = React.useRef<HTMLInputElement>(null);
 
@@ -58,11 +61,13 @@ function SearchPageContent() {
       if (!trimmed || trimmed.length < 2) {
         setResults(null);
         setHasSearched(false);
+        setSearchError(null);
         return;
       }
 
       setLoading(true);
       setHasSearched(true);
+      setSearchError(null);
 
       const params = new URLSearchParams({
         q: trimmed,
@@ -73,6 +78,12 @@ function SearchPageContent() {
       const res = await apiClient<{ data: SearchResultsData }>(`/search?${params.toString()}`);
 
       setLoading(false);
+
+      if (res.error) {
+        setSearchError(res.error.message || 'Gagal menghubungi pangkalan data katalog. Silakan coba sesaat lagi.');
+        setResults(null);
+        return;
+      }
 
       if (res.data) {
         setResults(res.data.data);
@@ -228,6 +239,32 @@ function SearchPageContent() {
           <div className="py-20 flex justify-center">
             <CustomLoader size="lg" label="MENELUSURI ARSIP & KATALOG..." />
           </div>
+        ) : searchError ? (
+          /* Error State */
+          <RevealOnScroll variant="stamp" delayMs={60}>
+            <div className="border-2 border-red-600 bg-surface p-8 sm:p-12 text-center space-y-4">
+              <AlertTriangle className="w-8 h-8 text-red-600 mx-auto" />
+              <span className="font-mono text-xs uppercase tracking-widest text-red-600 font-bold block">
+                TERJADI KENDALA KONEKSI PUSTAKA
+              </span>
+              <h2 className="font-serif text-2xl font-bold text-foreground">
+                Gagal Memuat Hasil Pencarian
+              </h2>
+              <p className="font-sans text-sm text-muted max-w-md mx-auto">
+                {searchError}
+              </p>
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={() => executeSearch(query, activeType)}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-foreground text-background font-mono text-xs font-bold uppercase tracking-wider hover:bg-foreground/90 transition-colors border-2 border-foreground"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                  <span>COBA CARI LAGI</span>
+                </button>
+              </div>
+            </div>
+          </RevealOnScroll>
         ) : !hasSearched ? (
           /* Initial Empty State / Suggestions */
           <RevealOnScroll variant="stamp" delayMs={60}>

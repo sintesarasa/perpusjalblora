@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { CustomLoader } from '@/components/ui/custom-loader';
 import { apiClient } from '@/lib/api';
+import { toast } from '@/components/ui/toast';
 import { PetaNavigasi } from '@/components/layout/peta-navigasi';
 import { EventItem, EventType, EventStatus, Role } from '@perpusjal/types';
 import { EventFormModal } from '@/components/dashboard/event-form-modal';
@@ -102,12 +103,13 @@ export default function DashboardKegiatanPage() {
         method: 'DELETE',
       });
       if (res.error) {
-        alert(res.error.message || 'Gagal menghapus kegiatan.');
+        toast.error(res.error.message || 'Gagal menghapus kegiatan.');
         return;
       }
+      toast.success('Kegiatan berhasil dihapus.');
       loadEvents();
     } catch (err: any) {
-      alert(err?.message || 'Terjadi kesalahan sistem.');
+      toast.error(err?.message || 'Terjadi kesalahan sistem.');
     }
   };
 

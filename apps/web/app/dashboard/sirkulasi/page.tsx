@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { CustomLoader } from '@/components/ui/custom-loader';
 import { apiClient } from '@/lib/api';
 import { cn } from '@/lib/utils';
+import { toast } from '@/components/ui/toast';
 import {
   LoanItem,
   LoanPickupBoardItem,
@@ -231,7 +232,7 @@ export default function DashboardCirculationPage() {
     setMaintenanceLoading(false);
 
     if (res.error) {
-      alert(res.error.message);
+      toast.error(res.error.message);
       return;
     }
 
@@ -339,7 +340,7 @@ export default function DashboardCirculationPage() {
     });
     setRejectLoading(false);
     if (res.error) {
-      alert(res.error.message);
+      toast.error(res.error.message);
       return;
     }
     setPendingSuccess(`Pengajuan pinjaman "${rejectModalLoan.book.title}" telah ditolak.`);
@@ -545,7 +546,7 @@ export default function DashboardCirculationPage() {
     setAllocateLoading(false);
 
     if (res.error) {
-      alert(res.error.message);
+      toast.error(res.error.message);
       return;
     }
 

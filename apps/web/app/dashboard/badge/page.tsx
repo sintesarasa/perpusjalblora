@@ -33,6 +33,7 @@ import { BadgeInsignia } from '@/components/gamification/badge-insignia';
 import { BadgeShowcasePicker } from '@/components/gamification/badge-showcase-picker';
 import { getTierInfo } from '@/lib/badge-tier-styles';
 import { PetaNavigasi } from '@/components/layout/peta-navigasi';
+import { toast } from '@/components/ui/toast';
 
 const PILLAR_CONFIG: Record<
   BadgeCategory,
@@ -154,7 +155,7 @@ export default function DashboardBadgesPage() {
         setTimeout(() => setEquipMessage(null), 3500);
       }
     } catch (err: any) {
-      alert(err.message || 'Gagal mengubah gelar.');
+      toast.error(err.message || 'Gagal mengubah gelar.');
     } finally {
       setEquipping(false);
     }

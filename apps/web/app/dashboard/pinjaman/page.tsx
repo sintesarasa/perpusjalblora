@@ -6,6 +6,7 @@ import { CustomLoader } from '@/components/ui/custom-loader';
 import { apiClient } from '@/lib/api';
 import { LoanItem, LoanStatus, WaitlistItem } from '@perpusjal/types';
 import { PetaNavigasi } from '@/components/layout/peta-navigasi';
+import { toast } from '@/components/ui/toast';
 import {
   BookOpen,
   Calendar,
@@ -70,7 +71,7 @@ export default function MemberLoansDashboardPage() {
     setActionLoading(false);
 
     if (res.error) {
-      alert(res.error.message);
+      toast.error(res.error.message);
       return;
     }
 
@@ -91,7 +92,7 @@ export default function MemberLoansDashboardPage() {
     setActionLoading(false);
 
     if (res.error) {
-      alert(res.error.message);
+      toast.error(res.error.message);
       return;
     }
 

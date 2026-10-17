@@ -6,6 +6,7 @@ import { ThemeProvider } from '@/components/theme-provider';
 import { AuthProvider } from '@/contexts/auth-context';
 import { NotificationsProvider } from '@/contexts/notifications-context';
 import { NotificationToast } from '@/components/notifications/notification-toast';
+import { ToastContainer } from '@/components/ui/toast';
 import { PageProgressBar } from '@/components/ui/page-progress-bar';
 
 const playfair = Playfair_Display({
@@ -185,6 +186,7 @@ export default function RootLayout({
               </React.Suspense>
               {children}
               <NotificationToast />
+              <ToastContainer />
             </NotificationsProvider>
           </AuthProvider>
         </ThemeProvider>

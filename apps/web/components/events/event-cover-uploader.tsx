@@ -23,23 +23,19 @@ interface EventCoverUploaderProps {
 const COVER_PRESETS = [
   {
     name: 'Terpal CFD Alun-Alun',
-    url: 'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=1000&q=80',
+    url: '/images/default-event-cover.svg',
   },
   {
-    name: 'Diskusi Buku Malam',
-    url: 'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&w=1000&q=80',
+    name: 'Mimbar & Diskusi Warga',
+    url: '/images/preset-diskusi.svg',
   },
   {
-    name: 'Workshop & Kriya Anak',
-    url: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=1000&q=80',
+    name: 'Kelas Sastra & Menulis',
+    url: '/images/preset-kelas-sastra.svg',
   },
   {
-    name: 'Kemah Tepi Hutan Jati',
-    url: 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&w=1000&q=80',
-  },
-  {
-    name: 'Nobar & Bedah Film',
-    url: 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=1000&q=80',
+    name: 'Pentas Seni & Workshop',
+    url: '/images/preset-workshop.svg',
   },
 ];
 

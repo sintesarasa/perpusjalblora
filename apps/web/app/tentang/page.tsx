@@ -36,6 +36,7 @@ import {
   Quote,
   Radio,
 } from 'lucide-react';
+import { getWhatsAppUrl } from '@/lib/contact';
 import { cn } from '@/lib/utils';
 
 interface TimelineEvent {
@@ -963,7 +964,7 @@ export default function AboutPage() {
                     </p>
                   </div>
                   <a
-                    href="https://wa.me/6281234567890?text=Halo%20Relawan%20Perpusjal%20Blora%2C%20saya%20ingin%20menitipkan%20donasi%20buku..."
+                    href={getWhatsAppUrl('Halo Relawan Perpusjal Blora, saya ingin menitipkan donasi buku...')}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="min-h-[44px] font-bold text-foreground underline inline-flex items-center gap-1 hover:opacity-80 pt-2"

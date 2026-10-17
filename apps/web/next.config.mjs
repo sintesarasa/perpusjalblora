@@ -32,6 +32,60 @@ const nextConfig = {
       },
     ];
   },
+  async redirects() {
+    return [
+      {
+        source: '/admin/sirkulasi',
+        destination: '/dashboard/sirkulasi',
+        permanent: true,
+      },
+      {
+        source: '/admin/kurasi',
+        destination: '/dashboard/kurasi',
+        permanent: true,
+      },
+      {
+        source: '/admin/buku',
+        destination: '/dashboard/buku',
+        permanent: true,
+      },
+      {
+        source: '/notifikasi',
+        destination: '/dashboard/notifikasi',
+        permanent: true,
+      },
+      {
+        source: '/u/:username',
+        destination: '/warga/:username',
+        permanent: true,
+      },
+      {
+        source: '/tulis',
+        destination: '/dashboard/tulisan/tulis',
+        permanent: true,
+      },
+      {
+        source: '/tulis/:id',
+        destination: '/dashboard/tulisan/tulis/:id',
+        permanent: true,
+      },
+      {
+        source: '/dashboard/tulis',
+        destination: '/dashboard/tulisan/tulis',
+        permanent: true,
+      },
+      {
+        source: '/dashboard/tulis/:id',
+        destination: '/dashboard/tulisan/tulis/:id',
+        permanent: true,
+      },
+      {
+        source: '/warta',
+        destination: '/artikel',
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [
       {

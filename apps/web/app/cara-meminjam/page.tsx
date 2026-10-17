@@ -29,6 +29,7 @@ import {
   CalendarPlus,
   Radio,
 } from 'lucide-react';
+import { getWhatsAppUrl } from '@/lib/contact';
 import { cn } from '@/lib/utils';
 
 interface StepItem {
@@ -1236,9 +1237,8 @@ export default function CaraMeminjamPage() {
                 </p>
               </div>
 
-              {/* TODO: Ganti nomor placeholder 6281234567890 dengan nomor WhatsApp resmi Perpusjal Blora */}
               <a
-                href="https://wa.me/6281234567890?text=Halo%20Relawan%20Perpusjal%20Blora%2C%20saya%20membaca%20panduan%20cara%20meminjam%20dan%20ingin%20bertanya..."
+                href={getWhatsAppUrl('Halo Relawan Perpusjal Blora, saya membaca panduan cara meminjam dan ingin bertanya...')}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="min-h-[44px] px-5 py-2.5 bg-foreground text-background font-mono text-xs uppercase tracking-wider font-bold inline-flex items-center gap-2 hover:opacity-90 transition-opacity shrink-0 w-full sm:w-auto justify-center"

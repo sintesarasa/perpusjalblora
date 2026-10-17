@@ -6,6 +6,7 @@ import { CustomLoader } from '@/components/ui/custom-loader';
 import { apiClient, getApiUrl } from '@/lib/api';
 import { Role } from '@perpusjal/types';
 import { PetaNavigasi } from '@/components/layout/peta-navigasi';
+import { toast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
 import {
   BarChart3,
@@ -193,8 +194,9 @@ export default function DashboardReportsPage() {
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
+      toast.success('Berkas CSV berhasil diunduh.');
     } catch (err: any) {
-      alert(err?.message || 'Gagal mengunduh berkas CSV.');
+      toast.error(err?.message || 'Gagal mengunduh berkas CSV.');
     } finally {
       setDownloading(false);
     }

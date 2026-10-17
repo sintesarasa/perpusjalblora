@@ -29,6 +29,8 @@ import {
   Users,
   Star,
   MessageSquare,
+  Sparkles,
+  Quote,
 } from 'lucide-react';
 
 export function BookDetailClient({ slug: initialSlug }: { slug?: string } = {}) {
@@ -497,6 +499,24 @@ export function BookDetailClient({ slug: initialSlug }: { slug?: string } = {}) 
               </div>
             </div>
           </RevealOnScroll>
+
+            {/* Curator Note / Catatan Kurator Lapak */}
+            {book.curatorNote && (
+              <RevealOnScroll variant="cinematic" delayMs={90}>
+                <div className="p-4 sm:p-5 border-2 border-foreground bg-surface-muted/40 font-mono text-xs space-y-2.5">
+                  <div className="flex items-center justify-between border-b border-border-hairline pb-2 text-[10px] uppercase tracking-widest text-muted">
+                    <span className="font-bold text-foreground flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5 text-foreground" />
+                      [ CATATAN KURATOR LAPAK // REKOMENDASI RELAWAN ]
+                    </span>
+                    <span className="hidden sm:inline">PERPUSJAL BLORA</span>
+                  </div>
+                  <blockquote className="font-serif italic text-sm sm:text-base text-foreground leading-relaxed pt-1">
+                    &ldquo;{book.curatorNote}&rdquo;
+                  </blockquote>
+                </div>
+              </RevealOnScroll>
+            )}
 
             {/* Synopsis / Description */}
             <RevealOnScroll variant="cinematic" delayMs={100}>

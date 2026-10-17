@@ -34,6 +34,7 @@ import {
   Compass,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { getWhatsAppUrl } from '@/lib/contact';
 
 interface BooksApiResponse {
   data: BookItem[];
@@ -891,7 +892,7 @@ function BookCatalogContent() {
                       BACA ALAMAT BASECAMP &rarr;
                     </Link>
                     <a
-                      href="https://wa.me/6281234567890?text=Halo%20Kolektif%20Perpusjal,%20saya%20ingin%20mendonasikan%20buku%20fisik."
+                      href={getWhatsAppUrl('Halo Kolektif Perpusjal, saya ingin mendonasikan buku fisik.')}
                       target="_blank"
                       rel="noreferrer"
                       className="px-3.5 py-1.5 border border-border text-muted hover:text-foreground uppercase tracking-wider text-[10px] transition-colors"

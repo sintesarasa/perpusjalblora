@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@perpusjal/types": "workspace:*",
-    "@prisma/client": "^6.4.1",
+    "@prisma/client": "^6.19.3",
     "bcryptjs": "^3.0.2",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
@@ -32,7 +32,7 @@
     "@types/jsonwebtoken": "^9.0.9",
     "@types/morgan": "^1.9.9",
     "@types/node": "^22.13.9",
-    "prisma": "^6.4.1",
+    "prisma": "^6.19.3",
     "tsx": "^4.19.3",
     "typescript": "^5.7.3"
   }

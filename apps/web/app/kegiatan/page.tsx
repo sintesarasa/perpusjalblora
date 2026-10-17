@@ -34,6 +34,7 @@ import {
   Tent,
   Archive,
 } from 'lucide-react';
+import { getWhatsAppUrl } from '@/lib/contact';
 
 interface EventsApiResponse {
   data: EventItem[];
@@ -334,7 +335,7 @@ function EventCatalogContent() {
                     <img
                       src={
                         spotlightEvent?.coverImage ||
-                        'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=1000&q=80'
+                        '/images/default-event-cover.svg'
                       }
                       alt={spotlightEvent?.title || 'Suasana Lapak Baca Terpal Perpusjal Blora'}
                       className="w-full h-full object-cover grayscale contrast-110 hover:grayscale-0 transition-all duration-500"
@@ -459,7 +460,7 @@ function EventCatalogContent() {
                   </div>
 
                   <a
-                    href="https://wa.me/6281234567890?text=Halo%20Perpusjal%20Blora,%20saya%20ingin%20bertanya%20tentang%20sesi%20lapak%20berikutnya"
+                    href={getWhatsAppUrl('Halo Perpusjal Blora, saya ingin bertanya tentang sesi lapak berikutnya')}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="font-mono text-xs uppercase font-bold text-foreground hover:underline inline-flex items-center justify-center sm:justify-start gap-1.5 pt-1 sm:pt-0"
@@ -797,7 +798,7 @@ function EventCatalogContent() {
 
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
                 <a
-                  href="https://wa.me/6281234567890?text=Halo%20Perpusjal%20Blora,%20kami%20ingin%20berkolaborasi%20kegiatan%20bersama"
+                  href={getWhatsAppUrl('Halo Perpusjal Blora, kami ingin berkolaborasi kegiatan bersama')}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="px-6 py-3.5 bg-background text-foreground hover:bg-background/90 font-mono text-xs font-bold uppercase tracking-wider text-center transition-colors inline-flex items-center justify-center gap-2 border border-foreground"

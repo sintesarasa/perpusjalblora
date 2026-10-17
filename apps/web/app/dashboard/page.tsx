@@ -16,6 +16,7 @@ import {
   Layers,
   Sparkles,
   Compass,
+  AlertTriangle,
 } from 'lucide-react';
 import { CustomLoader } from '@/components/ui/custom-loader';
 import { apiClient } from '@/lib/api';
@@ -127,16 +128,39 @@ export default function DashboardOverviewPage() {
           <div className="p-3 sm:p-4 border border-border-hairline bg-surface-muted/20">
             <span className="text-[10px] text-muted uppercase tracking-wider block">Lencana Terbuka</span>
             <div className="font-serif text-2xl sm:text-3xl font-bold text-foreground mt-0.5">
-              {badgeProgress?.earnedCount || 0} <span className="text-xs text-muted font-normal">/ 12 Badge</span>
+              {badgeProgress?.earnedCount || 0}{' '}
+              <span className="text-xs text-muted font-normal">
+                / {badgeProgress?.totalCount || badgeProgress?.badges?.length || 12} Badge
+              </span>
             </div>
           </div>
 
           <div className="p-3 sm:p-4 border border-border-hairline bg-surface-muted/20">
             <span className="text-[10px] text-muted uppercase tracking-wider block">Status Hak Pinjam</span>
-            <div className="text-xs font-bold text-foreground mt-1.5 flex items-center gap-1.5">
-              <CheckCircle2 className="w-4 h-4 text-foreground shrink-0" />
-              <span className="truncate">Memenuhi Syarat</span>
-            </div>
+            {(() => {
+              const isSuspended = Boolean(
+                user?.borrowSuspendedUntil && new Date(user.borrowSuspendedUntil) > new Date()
+              );
+              const isEligible = user?.borrowing?.isEligible !== false && !isSuspended;
+
+              return (
+                <div className="text-xs font-bold mt-1.5 flex items-center gap-1.5">
+                  {isEligible ? (
+                    <>
+                      <CheckCircle2 className="w-4 h-4 text-foreground shrink-0" />
+                      <span className="truncate text-foreground">Memenuhi Syarat</span>
+                    </>
+                  ) : (
+                    <>
+                      <AlertTriangle className="w-4 h-4 text-destructive shrink-0" />
+                      <span className="truncate text-destructive">
+                        {isSuspended ? 'Ditangguhkan' : 'Perlu Verifikasi'}
+                      </span>
+                    </>
+                  )}
+                </div>
+              );
+            })()}
           </div>
         </div>
       </section>

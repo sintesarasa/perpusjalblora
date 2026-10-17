@@ -8,6 +8,7 @@ import { CustomLoader } from '@/components/ui/custom-loader';
 import { apiClient } from '@/lib/api';
 import { ArticleStatus, RejectionReason, Role, ArticleDetail } from '@perpusjal/types';
 import { PetaNavigasi } from '@/components/layout/peta-navigasi';
+import { toast } from '@/components/ui/toast';
 import {
   Check,
   X,
@@ -284,8 +285,9 @@ export default function DashboardCuratorPage() {
     });
 
     if (res.error) {
-      alert(res.error.message);
+      toast.error(res.error.message);
     } else {
+      toast.success(currentFeatured ? 'Status sorotan dihapus.' : 'Artikel dijadikan sorotan!');
       loadQueue();
     }
   };

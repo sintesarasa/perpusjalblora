@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { StatusPill } from '@/components/ui/status-pill';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
+import { toast } from '@/components/ui/toast';
 
 import { Logo, LogoIcon } from '@/components/logo';
 import { CustomLoader } from '@/components/ui/custom-loader';
@@ -267,7 +268,7 @@ export default function StyleguidePage() {
             title="Belum Ada Naskah di Arsip Ini"
             description="Lembaran pertama menanti goresan penamu. Kirimkan resensi, esai, atau opini seputar kegiatan literasi Blora."
             actionLabel="KIRIM TULISAN SEKARANG"
-            onAction={() => alert('Mengarah ke formulir tulis naskah')}
+            onAction={() => toast.info('Mengarah ke formulir tulis naskah')}
           />
         </section>
 

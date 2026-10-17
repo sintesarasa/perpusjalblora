@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import { BadgeInsignia } from './badge-insignia';
 import { getTierInfo } from '@/lib/badge-tier-styles';
 import { apiClient } from '@/lib/api';
+import { toast } from '@/components/ui/toast';
 import { UserBadgeProgress } from '@perpusjal/types';
 
 interface BadgeShowcasePickerProps {
@@ -71,11 +72,12 @@ export function BadgeShowcasePicker({
 
       if (res.data) {
         setMessage('Etalase 3 Lencana Kebanggaan berhasil diperbarui!');
+        toast.success('Etalase 3 Lencana Kebanggaan berhasil diperbarui!');
         onSaved?.(res.data.showcaseBadgeCodes);
         setTimeout(() => setMessage(null), 3500);
       }
     } catch (err: any) {
-      alert(err.message || 'Gagal menyimpan etalase lencana.');
+      toast.error(err.message || 'Gagal menyimpan etalase lencana.');
     } finally {
       setSaving(false);
     }
