@@ -1141,8 +1141,8 @@ export default function DashboardCuratorPage() {
 
       {/* CURATION DECISION MODAL DIALOG */}
       {modalMode && selectedArticle && (
-        <div className="fixed inset-0 z-[60] bg-black/75 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-          <div className="border-2 border-foreground bg-background p-5 sm:p-8 max-w-xl w-full space-y-5 sm:space-y-6 my-auto animate-in fade-in-50 duration-200">
+        <div className="fixed inset-0 z-[60] bg-black/75 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-y-auto">
+          <div className="border-2 border-foreground bg-background p-5 sm:p-8 max-w-xl w-full max-md:rounded-t-2xl max-md:border-b-0 max-md:max-h-[92vh] overflow-y-auto space-y-5 sm:space-y-6 my-auto animate-in slide-in-from-bottom duration-200 sm:zoom-in-95">
             <div className="space-y-1">
               <span className="font-mono text-[10px] uppercase tracking-widest text-muted">
                 TINDAKAN KURASI REDAKSI
@@ -1167,7 +1167,7 @@ export default function DashboardCuratorPage() {
                   Naskah akan langsung diterbitkan secara publik di katalog warta dan halaman utama Perpusjal Blora. Penulis akan menerima pemberitahuan otomatis.
                 </p>
                 <div className="pt-2 flex flex-col-reverse sm:flex-row justify-end gap-2">
-                  <Button variant="outline" size="sm" onClick={() => setModalMode(null)} className="justify-center">
+                  <Button variant="outline" size="sm" onClick={() => setModalMode(null)} className="min-h-[44px] sm:min-h-0 justify-center">
                     Batal
                   </Button>
                   <Button
@@ -1175,7 +1175,7 @@ export default function DashboardCuratorPage() {
                     size="sm"
                     onClick={() => handleApprove(selectedArticle.id)}
                     isLoading={isProcessing}
-                    className="justify-center"
+                    className="min-h-[44px] sm:min-h-0 justify-center font-bold"
                   >
                     Konfirmasi Terbitkan Naskah
                   </Button>
@@ -1202,14 +1202,14 @@ export default function DashboardCuratorPage() {
                     placeholder="Jelaskan bagian naskah yang perlu disempurnakan atau diperbaiki..."
                     value={revisionNote}
                     onChange={(e) => setRevisionNote(e.target.value)}
-                    className="w-full p-3 bg-surface border border-border text-sm sm:text-xs font-mono leading-relaxed focus:outline-none focus:border-foreground rounded-none"
+                    className="w-full p-3 bg-surface border border-border text-base sm:text-xs font-mono leading-relaxed focus:outline-none focus:border-foreground rounded-none"
                   />
                   <p className="font-mono text-[10px] text-muted">
                     Catatan ini akan dikirimkan langsung ke lonceng notifikasi dan dasbor penulis agar dapat diperbaiki dengan jelas.
                   </p>
                 </div>
                 <div className="pt-2 flex flex-col-reverse sm:flex-row justify-end gap-2">
-                  <Button variant="outline" size="sm" onClick={() => setModalMode(null)} className="justify-center">
+                  <Button variant="outline" size="sm" onClick={() => setModalMode(null)} className="min-h-[44px] sm:min-h-0 justify-center">
                     Batal
                   </Button>
                   <Button
@@ -1217,7 +1217,7 @@ export default function DashboardCuratorPage() {
                     size="sm"
                     onClick={() => handleRequestRevision(selectedArticle.id)}
                     isLoading={isProcessing}
-                    className="justify-center"
+                    className="min-h-[44px] sm:min-h-0 justify-center font-bold"
                   >
                     Kirim Catatan Revisi
                   </Button>
@@ -1235,7 +1235,7 @@ export default function DashboardCuratorPage() {
                   <select
                     value={rejectionReason}
                     onChange={(e) => setRejectionReason(e.target.value as RejectionReason)}
-                    className="w-full h-10 px-3 bg-surface border border-border text-sm sm:text-xs font-sans focus:outline-none focus:border-foreground rounded-none cursor-pointer"
+                    className="w-full h-11 sm:h-10 px-3 bg-surface border border-border text-base sm:text-xs font-sans focus:outline-none focus:border-foreground rounded-none cursor-pointer"
                   >
                     <option value={RejectionReason.PLAGIARISM}>Plagiarisme / Bukan Karya Sendiri</option>
                     <option value={RejectionReason.HATE_SPEECH}>Ujaran Kebencian / Diskriminasi</option>
@@ -1255,12 +1255,12 @@ export default function DashboardCuratorPage() {
                     placeholder="Tambahan keterangan alasan penolakan..."
                     value={rejectionNote}
                     onChange={(e) => setRejectionNote(e.target.value)}
-                    className="w-full p-3 bg-surface border border-border text-sm sm:text-xs font-sans focus:outline-none focus:border-foreground rounded-none"
+                    className="w-full p-3 bg-surface border border-border text-base sm:text-xs font-sans focus:outline-none focus:border-foreground rounded-none"
                   />
                 </div>
 
                 <div className="pt-2 flex flex-col-reverse sm:flex-row justify-end gap-2">
-                  <Button variant="outline" size="sm" onClick={() => setModalMode(null)} className="justify-center">
+                  <Button variant="outline" size="sm" onClick={() => setModalMode(null)} className="min-h-[44px] sm:min-h-0 justify-center">
                     Batal
                   </Button>
                   <Button
@@ -1268,7 +1268,7 @@ export default function DashboardCuratorPage() {
                     size="sm"
                     onClick={() => handleReject(selectedArticle.id)}
                     isLoading={isProcessing}
-                    className="justify-center"
+                    className="min-h-[44px] sm:min-h-0 justify-center font-bold"
                   >
                     Konfirmasi Tolak Naskah
                   </Button>

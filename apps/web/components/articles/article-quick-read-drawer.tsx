@@ -84,18 +84,23 @@ export function ArticleQuickReadDrawer({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-stretch sm:justify-end">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300 animate-in fade-in"
+        className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity duration-300 animate-in fade-in"
         onClick={onClose}
         aria-hidden="true"
       />
 
-      {/* Drawer Content */}
-      <div className="relative w-full max-w-xl bg-background border-l-2 border-foreground z-10 flex flex-col h-full overflow-hidden animate-in slide-in-from-right duration-300">
+      {/* Drawer / Bottom Sheet Content */}
+      <div className="relative w-full max-w-xl bg-background border-t-2 sm:border-t-0 sm:border-l-2 border-foreground z-10 flex flex-col max-h-[90vh] sm:max-h-full sm:h-full overflow-hidden animate-in slide-in-from-bottom sm:slide-in-from-right duration-300 rounded-none shadow-2xl safe-bottom">
+        {/* Mobile Drag Handle */}
+        <div className="sm:hidden flex justify-center pt-2.5 pb-1 bg-surface border-b border-border-hairline/50">
+          <div className="w-10 h-1 bg-foreground/30 rounded-none" />
+        </div>
+
         {/* Drawer Header */}
-        <div className="p-5 sm:p-6 border-b border-border-hairline flex items-center justify-between bg-surface">
+        <div className="p-4 sm:p-6 border-b border-border-hairline flex items-center justify-between bg-surface">
           <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-muted">
             <span className="w-1.5 h-1.5 rounded-none bg-foreground inline-block" />
             <span>PRATINJAU KILAS NASKAH // DOKUMEN PUBLIK</span>
@@ -103,7 +108,7 @@ export function ArticleQuickReadDrawer({
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 hover:bg-surface-muted text-muted hover:text-foreground transition-colors border border-transparent hover:border-border"
+            className="p-1.5 min-w-[36px] min-h-[36px] flex items-center justify-center hover:bg-surface-muted text-muted hover:text-foreground transition-colors border border-transparent hover:border-border active:scale-95 touch-tactile"
             aria-label="Tutup Pratinjau"
           >
             <X className="w-5 h-5" />
@@ -195,7 +200,7 @@ export function ArticleQuickReadDrawer({
             </div>
 
             {article.isFeatured && (
-              <span className="px-2 py-1 bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 font-mono text-[9px] uppercase tracking-widest font-bold">
+              <span className="px-2 py-0.5 bg-foreground text-background font-mono text-[9px] uppercase tracking-widest font-bold">
                 ★ PILIHAN REDAKSI
               </span>
             )}
@@ -203,11 +208,11 @@ export function ArticleQuickReadDrawer({
 
           {/* Engagement Statistics */}
           <div className="grid grid-cols-2 gap-3 font-mono text-xs">
-            <div className="p-3 border border-border bg-surface text-center">
+            <div className="p-3 border border-border-hairline bg-surface text-center">
               <span className="text-[10px] text-muted block uppercase">DIBACA SEBANYAK</span>
               <span className="font-bold text-base text-foreground">{article.viewCount || 0} Kali</span>
             </div>
-            <div className="p-3 border border-border bg-surface text-center">
+            <div className="p-3 border border-border-hairline bg-surface text-center">
               <span className="text-[10px] text-muted block uppercase">RESPON WARGA</span>
               <span className="font-bold text-base text-foreground">{article.commentCount || 0} Komentar</span>
             </div>
@@ -223,7 +228,7 @@ export function ArticleQuickReadDrawer({
                 {article.tags.map((t) => (
                   <span
                     key={t.id}
-                    className="px-2 py-0.5 bg-surface border border-border text-muted"
+                    className="px-2 py-0.5 bg-surface border border-border-hairline text-muted"
                   >
                     #{t.name}
                   </span>
@@ -234,21 +239,21 @@ export function ArticleQuickReadDrawer({
         </div>
 
         {/* Drawer Footer Actions */}
-        <div className="p-5 border-t-2 border-foreground bg-surface flex flex-col sm:flex-row items-center gap-3">
+        <div className="p-4 sm:p-5 border-t-2 border-foreground bg-surface flex flex-col sm:flex-row items-center gap-2.5">
           <div className="flex items-center gap-2 w-full sm:w-auto">
             <button
               type="button"
               onClick={handleCopyLink}
-              className="flex-1 sm:flex-initial px-3 py-2.5 border border-border bg-background hover:bg-surface-muted font-mono text-xs text-muted hover:text-foreground flex items-center justify-center gap-1.5 transition-colors"
-              title="Salin Tautan"
+              className="flex-1 sm:flex-initial min-h-[44px] px-3.5 border border-foreground bg-background hover:bg-foreground hover:text-background font-mono text-xs uppercase font-bold text-foreground flex items-center justify-center gap-1.5 transition-colors active:scale-95 touch-tactile rounded-none cursor-pointer"
+              title="Salin Tautan Naskah"
             >
-              {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Share2 className="w-3.5 h-3.5" />}
+              {copied ? <Check className="w-3.5 h-3.5" /> : <Share2 className="w-3.5 h-3.5" />}
               <span>{copied ? 'Tersalin' : 'Bagikan'}</span>
             </button>
             <button
               type="button"
               onClick={handleShareWhatsApp}
-              className="px-3 py-2.5 border border-border bg-background hover:bg-surface-muted font-mono text-xs text-emerald-600 hover:text-emerald-700 transition-colors"
+              className="min-h-[44px] px-3.5 border border-foreground bg-background hover:bg-foreground hover:text-background font-mono text-xs font-bold uppercase transition-colors active:scale-95 touch-tactile rounded-none cursor-pointer"
               title="Kirim ke WhatsApp"
             >
               WA
@@ -258,9 +263,9 @@ export function ArticleQuickReadDrawer({
           <Link
             href={`/artikel/${article.slug}`}
             onClick={onClose}
-            className="w-full sm:flex-1 py-2.5 px-4 bg-foreground text-background font-mono text-xs uppercase tracking-wider font-bold hover:opacity-90 flex items-center justify-center gap-2 transition-opacity"
+            className="w-full sm:flex-1 min-h-[44px] px-4 bg-foreground text-background font-mono text-xs uppercase tracking-wider font-bold hover:bg-foreground/90 flex items-center justify-center gap-2 transition-all active:scale-95 touch-tactile rounded-none"
           >
-            <span>Buka Lembaran Naskah Lengkap</span>
+            <span>Buka Naskah Lengkap</span>
             <ArrowRight className="w-4 h-4" />
           </Link>
         </div>

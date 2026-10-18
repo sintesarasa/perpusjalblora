@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { commentsController } from './comments.controller.js';
 import { requireAuth, requireVerified, requireRole } from '../../middleware/auth.js';
+import { commentLimiter } from '../../middleware/rate-limit.js';
 import { Role } from '@perpusjal/types';
 
 const router = Router();
@@ -9,7 +10,7 @@ const router = Router();
 router.get('/', (req, res, next) => commentsController.getComments(req, res, next));
 
 // Authenticated comment actions
-router.post('/', requireAuth, requireVerified, (req, res, next) =>
+router.post('/', requireAuth, requireVerified, commentLimiter, (req, res, next) =>
   commentsController.createComment(req, res, next)
 );
 router.patch('/:id', requireAuth, (req, res, next) =>

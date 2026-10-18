@@ -43,4 +43,4 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/apps/api/node_modules ./apps/api/node_modules
 
 EXPOSE 4000
-CMD ["node", "apps/api/dist/index.js"]
+CMD ["node", "--max-old-space-size=384", "apps/api/dist/index.js"]

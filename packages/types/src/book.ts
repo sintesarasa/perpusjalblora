@@ -19,6 +19,7 @@ export const bookQuerySchema = z.object({
   featured: z
     .union([z.boolean(), z.string().transform((v) => v === 'true' || v === '1')])
     .optional(),
+  pageRange: z.enum(['ringan', 'menengah', 'mendalam']).optional(),
   page: z.coerce.number().int().positive().default(1),
   perPage: z.coerce.number().int().positive().max(50).default(24),
 });
@@ -56,6 +57,11 @@ export const bookFeaturedSchema = z.object({
 });
 export type BookFeaturedInput = z.infer<typeof bookFeaturedSchema>;
 
+export const bookToggleBorrowableSchema = z.object({
+  isBorrowable: z.boolean().optional(),
+});
+export type BookToggleBorrowableInput = z.infer<typeof bookToggleBorrowableSchema>;
+
 export const bookCopyCreateSchema = z.object({
   inventoryCode: z.string().max(20).optional(),
   condition: z.nativeEnum(BookCondition).default(BookCondition.BAIK),
@@ -91,6 +97,7 @@ export interface BookItem {
   isPublished?: boolean;
   isFeatured?: boolean;
   curatorNote?: string | null;
+  pages?: number | null;
   shelfLocation?: string | null;
   publicationYear?: number | null;
   isbn?: string | null;

@@ -217,7 +217,7 @@ function ArticlesCatalogContent() {
 
       <Header />
 
-      <main className="flex-1 pb-16 sm:pb-24">
+      <main className="flex-1 pb-28 sm:pb-24">
         {/* ========================================================= */}
         {/* 1. CINEMATIC BROADSHEET OPENING SCENE                     */}
         {/* ========================================================= */}
@@ -311,17 +311,17 @@ function ArticlesCatalogContent() {
             {/* Top Toolbar: Categories & View Switcher */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border-hairline pb-3 sm:pb-4">
               {/* Category Pills (Horizontal Swipe on Mobile, Wrap on Desktop) */}
-              <div className="flex items-center gap-1.5 font-mono text-[10px] sm:text-[11px] uppercase tracking-wider overflow-x-auto no-scrollbar lg:flex-wrap py-0.5">
-                <span className="text-muted text-[9.5px] sm:text-[10px] font-bold mr-1 flex items-center gap-1 shrink-0">
+              <div className="flex items-center gap-2 font-mono text-[10px] sm:text-[11px] uppercase tracking-wider overflow-x-auto no-scrollbar snap-x snap-mandatory lg:flex-wrap py-1 -mx-2 px-2 sm:mx-0 sm:px-0">
+                <span className="text-muted text-[9.5px] sm:text-[10px] font-bold mr-1 flex items-center gap-1 shrink-0 snap-start">
                   RUBRIK:
                 </span>
                 <button
                   type="button"
                   onClick={() => updateQueryParams({ kategori: null }, { scrollToSearch: false })}
                   className={cn(
-                    'px-2.5 sm:px-3 py-1 sm:py-1.5 border transition-all cursor-pointer font-bold shrink-0 whitespace-nowrap',
+                    'px-3 py-2 sm:py-1.5 min-h-[38px] sm:min-h-0 border transition-all cursor-pointer font-bold shrink-0 whitespace-nowrap snap-start active:scale-95 touch-tactile rounded-none',
                     !currentCategory
-                      ? 'bg-foreground text-background border-foreground'
+                      ? 'bg-foreground text-background border-foreground shadow-xs'
                       : 'bg-surface text-foreground border-border hover:border-foreground'
                   )}
                 >
@@ -333,9 +333,9 @@ function ArticlesCatalogContent() {
                     type="button"
                     onClick={() => updateQueryParams({ kategori: c.slug }, { scrollToSearch: false })}
                     className={cn(
-                      'px-2.5 sm:px-3 py-1 sm:py-1.5 border transition-all cursor-pointer font-bold shrink-0 whitespace-nowrap',
+                      'px-3 py-2 sm:py-1.5 min-h-[38px] sm:min-h-0 border transition-all cursor-pointer font-bold shrink-0 whitespace-nowrap snap-start active:scale-95 touch-tactile rounded-none',
                       currentCategory === c.slug
-                        ? 'bg-foreground text-background border-foreground'
+                        ? 'bg-foreground text-background border-foreground shadow-xs'
                         : 'bg-surface text-foreground border-border hover:border-foreground'
                     )}
                   >

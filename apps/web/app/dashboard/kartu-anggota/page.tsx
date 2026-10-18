@@ -142,11 +142,11 @@ export default function MemberCardPage() {
           ]}
         />
 
-        <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+        <div className="grid grid-cols-1 sm:flex sm:flex-wrap items-stretch sm:items-center gap-2 w-full sm:w-auto">
           <button
             type="button"
             onClick={handleCopyCode}
-            className="px-3.5 py-2 border border-border-hairline bg-surface font-mono text-xs uppercase tracking-wider hover:border-foreground transition-colors inline-flex items-center gap-1.5"
+            className="min-h-[44px] px-3.5 py-2 border border-border-hairline bg-surface font-mono text-xs uppercase tracking-wider hover:border-foreground active:scale-[0.98] transition-all inline-flex items-center justify-center gap-1.5 touch-tactile"
             title="Salin Kode Anggota"
           >
             {copied ? <Check className="w-3.5 h-3.5 text-foreground" /> : <Copy className="w-3.5 h-3.5 text-muted" />}
@@ -157,7 +157,7 @@ export default function MemberCardPage() {
             type="button"
             onClick={handleDownloadPng}
             disabled={downloading}
-            className="px-3.5 py-2 border border-foreground bg-surface font-mono text-xs uppercase tracking-wider font-semibold hover:bg-surface-muted transition-colors inline-flex items-center gap-2 disabled:opacity-50"
+            className="min-h-[44px] px-3.5 py-2 border border-foreground bg-surface font-mono text-xs uppercase tracking-wider font-semibold hover:bg-surface-muted active:scale-[0.98] transition-all inline-flex items-center justify-center gap-2 disabled:opacity-50 touch-tactile"
             title="Simpan kartu resolusi tinggi (PNG) ke galeri foto HP untuk offline & cetak"
           >
             <Download className="w-3.5 h-3.5" />
@@ -167,7 +167,7 @@ export default function MemberCardPage() {
           <button
             type="button"
             onClick={handlePrint}
-            className="px-4 py-2 bg-foreground text-background border border-foreground font-mono text-xs uppercase tracking-wider font-semibold hover:bg-foreground/90 transition-colors inline-flex items-center gap-2 shadow-sm"
+            className="min-h-[44px] px-4 py-2 bg-foreground text-background border border-foreground font-mono text-xs uppercase tracking-wider font-semibold hover:bg-foreground/90 active:scale-[0.98] transition-all inline-flex items-center justify-center gap-2 shadow-sm touch-tactile"
             title="Cetak kartu dengan ukuran standar kartu ATM (85.6 × 54 mm)"
           >
             <Printer className="w-3.5 h-3.5" />

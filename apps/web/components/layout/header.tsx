@@ -10,6 +10,7 @@ import { ScrollProgress } from '@/components/ui/scroll-progress';
 import { NotificationBell } from '@/components/layout/notification-bell';
 import { UserMenu } from '@/components/layout/user-menu';
 import { GlobalSearchModal } from '@/components/layout/global-search-modal';
+import { apiClient } from '@/lib/api';
 import {
   Menu,
   X,
@@ -19,32 +20,123 @@ import {
   Calendar,
   Compass,
   Sparkles,
-  Bell,
+  MapPin,
+  Clock,
+  Radio,
+  ArrowUpRight,
+  Info,
 } from 'lucide-react';
+
+interface LapakScheduleStatus {
+  badgeText: string;
+  isLiveNow: boolean;
+}
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const [searchModalOpen, setSearchModalOpen] = React.useState(false);
   const [isScrolled, setIsScrolled] = React.useState(false);
+  const [isVisible, setIsVisible] = React.useState(true);
+  const lastScrollYRef = React.useRef(0);
+
+  const [lapakStatus, setLapakStatus] = React.useState<LapakScheduleStatus>({
+    badgeText: 'CFD ALUN-ALUN BLORA (MINGGU 06.00–09.30 WIB)',
+    isLiveNow: false,
+  });
 
   const pathname = usePathname();
 
-  // Track scroll position for adaptive navbar elevation
+  // 1. Detect if CFD Lapak is currently live (Sunday 06:00 - 09:30 WIB / UTC+7)
   React.useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 15);
+    const checkLiveSession = () => {
+      const now = new Date();
+      // WIB is UTC+7
+      const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+      const wibDate = new Date(utc + 3600000 * 7);
+
+      const day = wibDate.getDay(); // 0 is Sunday
+      const hours = wibDate.getHours();
+      const minutes = wibDate.getMinutes();
+      const timeNum = hours + minutes / 60;
+
+      if (day === 0 && timeNum >= 6.0 && timeNum <= 9.5) {
+        setLapakStatus({
+          badgeText: 'LAPAK TERPAL SEDANG BERLANGSUNG DI ALUN-ALUN BLORA',
+          isLiveNow: true,
+        });
+      } else {
+        setLapakStatus({
+          badgeText: 'LAPAK RUTIN MINGGU INI: CFD ALUN-ALUN BLORA (06.00–09.30 WIB)',
+          isLiveNow: false,
+        });
+      }
     };
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    handleScroll();
-    return () => window.removeEventListener('scroll', handleScroll);
+
+    checkLiveSession();
+    const interval = setInterval(checkLiveSession, 60000);
+    return () => clearInterval(interval);
   }, []);
 
-  // Close mobile drawer on route change
+  // 2. Fetch remote announcement if available from landing-config
+  React.useEffect(() => {
+    let isMounted = true;
+    async function loadAnnouncement() {
+      try {
+        const res = await apiClient<any>('/landing/config');
+        if (isMounted && res.data?.settings?.cfdSchedule?.badgeText) {
+          const cfg = res.data.settings.cfdSchedule;
+          setLapakStatus((prev) => ({
+            badgeText: cfg.badgeText,
+            isLiveNow: cfg.status === 'BERLANGSUNG' || prev.isLiveNow,
+          }));
+        }
+      } catch {
+        // graceful fallback to local detection
+      }
+    }
+    loadAnnouncement();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // 3. Direction-aware Smart Sticky Header (auto-hides on scroll down, shows on scroll up)
+  React.useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+
+      // Always show at the very top of the page
+      if (currentScrollY <= 40) {
+        setIsVisible(true);
+        setIsScrolled(false);
+      } else {
+        setIsScrolled(true);
+
+        // If scrolling down by more than 10px, hide header
+        if (currentScrollY > lastScrollYRef.current + 10 && currentScrollY > 90) {
+          if (!mobileMenuOpen && !searchModalOpen) {
+            setIsVisible(false);
+          }
+        }
+        // If scrolling up by more than 6px, show header
+        else if (currentScrollY < lastScrollYRef.current - 6) {
+          setIsVisible(true);
+        }
+      }
+
+      lastScrollYRef.current = currentScrollY;
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [mobileMenuOpen, searchModalOpen]);
+
+  // 4. Close mobile drawer on route change
   React.useEffect(() => {
     setMobileMenuOpen(false);
   }, [pathname]);
 
-  // Close mobile drawer on Escape key
+  // 5. Close mobile drawer on Escape key
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -57,8 +149,12 @@ export function Header() {
     }
   }, [mobileMenuOpen]);
 
-  // Global shortcut (Cmd+K / Ctrl+K or '/') to open GlobalSearchModal
+  // 6. Listen for Global Search Trigger Event & Shortcut (Cmd+K / Ctrl+K / '/')
   React.useEffect(() => {
+    const handleOpenSearchEvent = () => {
+      setSearchModalOpen(true);
+    };
+
     const handleGlobalSearchKey = (e: KeyboardEvent) => {
       if (
         (e.metaKey || e.ctrlKey) &&
@@ -78,25 +174,59 @@ export function Header() {
       }
     };
 
+    window.addEventListener('open-global-search', handleOpenSearchEvent);
     window.addEventListener('keydown', handleGlobalSearchKey);
-    return () => window.removeEventListener('keydown', handleGlobalSearchKey);
+    return () => {
+      window.removeEventListener('open-global-search', handleOpenSearchEvent);
+      window.removeEventListener('keydown', handleGlobalSearchKey);
+    };
   }, []);
 
   return (
     <>
       <header
         className={cn(
-          'sticky top-0 z-50 transition-all duration-150 print:hidden',
+          'sticky top-0 z-50 transition-all duration-300 ease-in-out print:hidden',
+          isVisible ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0 pointer-events-none',
           isScrolled
-            ? 'bg-background/95 backdrop-blur-xl border-b border-foreground'
-            : 'bg-background/80 backdrop-blur-md border-b border-border-hairline'
+            ? 'bg-background/95 backdrop-blur-xl border-b border-foreground shadow-[0_1px_3px_rgba(0,0,0,0.04)]'
+            : 'bg-background/85 backdrop-blur-md border-b border-border-hairline'
         )}
       >
         {/* Scroll reading progress indicator at bottom hairline */}
         <ScrollProgress />
 
+        {/* 1. EDITORIAL TOP ANNOUNCEMENT TICKER (MICRO-STRIP) */}
+        <div className="border-b border-border-hairline/80 bg-surface-muted/60 text-[9px] sm:text-[10px] font-mono uppercase tracking-wider py-1 px-4 sm:px-6">
+          <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2 truncate">
+              <span
+                className={cn(
+                  'w-1.5 h-1.5 rounded-none shrink-0',
+                  lapakStatus.isLiveNow ? 'bg-red-600 animate-pulse' : 'bg-foreground'
+                )}
+              />
+              <span className="font-semibold text-foreground truncate">
+                {lapakStatus.badgeText}
+              </span>
+            </div>
+
+            <div className="hidden md:flex items-center gap-3 text-muted shrink-0 text-[9.5px]">
+              <span>Sirkulasi Mandiri &bull; Bebas Denda</span>
+              <span className="text-border-hairline">{'//'}</span>
+              <Link
+                href="/cara-meminjam"
+                className="hover:text-foreground transition-colors underline underline-offset-2"
+              >
+                Panduan Peminjaman
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        {/* 2. MAIN HEADER BAR */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between gap-3 sm:gap-6">
-          {/* 1. LEFT: OFFICIAL LOGO */}
+          {/* LEFT: OFFICIAL LOGO */}
           <div className="flex items-center space-x-3 shrink-0">
             <Link href="/" className="flex items-center space-x-2 group" aria-label="Beranda Perpusjal Blora">
               <Logo className="h-6 sm:h-7 w-auto text-foreground group-hover:opacity-85 transition-opacity" />
@@ -106,7 +236,7 @@ export function Header() {
             </span>
           </div>
 
-          {/* 2. CENTER: STREAMLINED & BALANCED DESKTOP NAVIGATION (5 DIRECT LINKS) */}
+          {/* CENTER: DESKTOP NAVIGATION (5 DIRECT LINKS) */}
           <nav className="hidden lg:flex items-center space-x-1 font-mono text-[11px] uppercase tracking-wider">
             {/* Artikel */}
             <Link
@@ -119,7 +249,7 @@ export function Header() {
                   : 'text-foreground/75 hover:text-foreground hover:bg-surface-muted/50 border-transparent'
               )}
             >
-              Artikel
+              Artikel &amp; Warta
             </Link>
 
             {/* Buku */}
@@ -133,7 +263,7 @@ export function Header() {
                   : 'text-foreground/75 hover:text-foreground hover:bg-surface-muted/50 border-transparent'
               )}
             >
-              Buku
+              Katalog Buku
             </Link>
 
             {/* Kegiatan */}
@@ -147,7 +277,7 @@ export function Header() {
                   : 'text-foreground/75 hover:text-foreground hover:bg-surface-muted/50 border-transparent'
               )}
             >
-              Kegiatan
+              Agenda Lapak
             </Link>
 
             {/* Cara Meminjam */}
@@ -179,13 +309,13 @@ export function Header() {
             </Link>
           </nav>
 
-          {/* 3. RIGHT: SEARCH, THEME TOGGLE, AND USER CLUSTER */}
+          {/* RIGHT: SEARCH, THEME TOGGLE, AND USER CLUSTER */}
           <div className="flex items-center space-x-1.5 sm:space-x-2 shrink-0">
             {/* Quick Interactive Search Trigger */}
             <button
               type="button"
               onClick={() => setSearchModalOpen(true)}
-              className="px-2 sm:px-2.5 py-1.5 text-muted hover:text-foreground hover:bg-surface-muted transition-colors flex items-center gap-1.5 text-xs font-mono uppercase tracking-wider border border-border-hairline hover:border-foreground cursor-pointer"
+              className="px-2 sm:px-2.5 py-1.5 text-muted hover:text-foreground hover:bg-surface-muted transition-colors flex items-center gap-1.5 text-xs font-mono uppercase tracking-wider border border-border-hairline hover:border-foreground cursor-pointer touch-tactile"
               title="Pencarian cepat arsip (Cmd+K atau /)"
               aria-label="Buka pencarian global (Cmd+K)"
             >
@@ -210,12 +340,12 @@ export function Header() {
             {/* User Session Dropdown / Login */}
             <UserMenu />
 
-            {/* Mobile Hamburger Toggle (Touch target & aria-expanded) */}
+            {/* Mobile Hamburger Toggle */}
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden min-w-[38px] min-h-[38px] sm:min-w-[44px] sm:min-h-[44px] flex items-center justify-center text-foreground hover:bg-surface-muted transition-colors border border-border-hairline cursor-pointer"
-              aria-label={mobileMenuOpen ? 'Tutup navigasi' : 'Buka navigasi'}
+              className="lg:hidden min-w-[38px] min-h-[38px] sm:min-w-[44px] sm:min-h-[44px] flex items-center justify-center text-foreground hover:bg-surface-muted transition-colors border border-border-hairline cursor-pointer touch-tactile active:scale-95"
+              aria-label={mobileMenuOpen ? 'Tutup menu' : 'Buka menu lengkap'}
               aria-expanded={mobileMenuOpen}
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -223,15 +353,15 @@ export function Header() {
           </div>
         </div>
 
-        {/* 4. MOBILE DRAWER WITH BACKDROP */}
+        {/* 3. MOBILE EXTENDED DRAWER WITH BACKDROP */}
         {mobileMenuOpen && (
           <>
             <div
-              className="fixed inset-0 top-14 sm:top-16 bg-background/60 backdrop-blur-xs z-40 lg:hidden"
+              className="fixed inset-0 top-[88px] bg-background/60 backdrop-blur-xs z-40 lg:hidden"
               onClick={() => setMobileMenuOpen(false)}
               aria-hidden="true"
             />
-            <div className="relative z-50 lg:hidden border-t border-b-2 border-border-hairline border-b-foreground bg-surface p-5 max-h-[calc(100vh-4rem)] overflow-y-auto font-mono text-xs">
+            <div className="relative z-50 lg:hidden border-t border-b-2 border-border-hairline border-b-foreground bg-surface p-5 max-h-[calc(100vh-6rem)] overflow-y-auto font-mono text-xs shadow-xl pb-24">
               {/* Quick Search in Mobile Drawer */}
               <div className="pb-3 border-b border-border-hairline">
                 <button
@@ -240,7 +370,7 @@ export function Header() {
                     setMobileMenuOpen(false);
                     setSearchModalOpen(true);
                   }}
-                  className="w-full px-3 py-2 border border-border-hairline bg-background text-muted hover:border-foreground hover:text-foreground transition-colors flex items-center justify-between text-left cursor-pointer"
+                  className="w-full px-3 py-2 border border-border-hairline bg-background text-muted hover:border-foreground hover:text-foreground transition-colors flex items-center justify-between text-left cursor-pointer touch-tactile"
                 >
                   <span className="flex items-center gap-2">
                     <Search className="w-4 h-4 text-foreground" />
@@ -255,14 +385,14 @@ export function Header() {
               {/* Main Navigation Links */}
               <nav className="py-3 space-y-1">
                 <span className="text-[9px] uppercase tracking-widest text-muted font-bold block mb-1">
-                  NAVIGASI UTAMA
+                  INDEX HALAMAN
                 </span>
 
                 <Link
                   href="/artikel"
                   onClick={() => setMobileMenuOpen(false)}
                   className={cn(
-                    'block py-2 px-3 transition-colors border-l-2',
+                    'block py-2.5 px-3 transition-colors border-l-2',
                     pathname?.startsWith('/artikel')
                       ? 'bg-surface-muted font-bold text-foreground border-foreground'
                       : 'text-foreground/80 hover:bg-surface-muted/50 border-transparent'
@@ -275,7 +405,7 @@ export function Header() {
                   href="/buku"
                   onClick={() => setMobileMenuOpen(false)}
                   className={cn(
-                    'block py-2 px-3 transition-colors border-l-2',
+                    'block py-2.5 px-3 transition-colors border-l-2',
                     pathname?.startsWith('/buku')
                       ? 'bg-surface-muted font-bold text-foreground border-foreground'
                       : 'text-foreground/80 hover:bg-surface-muted/50 border-transparent'
@@ -288,7 +418,7 @@ export function Header() {
                   href="/kegiatan"
                   onClick={() => setMobileMenuOpen(false)}
                   className={cn(
-                    'block py-2 px-3 transition-colors border-l-2',
+                    'block py-2.5 px-3 transition-colors border-l-2',
                     pathname?.startsWith('/kegiatan')
                       ? 'bg-surface-muted font-bold text-foreground border-foreground'
                       : 'text-foreground/80 hover:bg-surface-muted/50 border-transparent'
@@ -301,7 +431,7 @@ export function Header() {
                   href="/cara-meminjam"
                   onClick={() => setMobileMenuOpen(false)}
                   className={cn(
-                    'block py-2 px-3 transition-colors border-l-2',
+                    'block py-2.5 px-3 transition-colors border-l-2',
                     pathname === '/cara-meminjam' || pathname?.startsWith('/cara-meminjam/')
                       ? 'bg-surface-muted font-bold text-foreground border-foreground'
                       : 'text-foreground/80 hover:bg-surface-muted/50 border-transparent'
@@ -314,7 +444,7 @@ export function Header() {
                   href="/tentang"
                   onClick={() => setMobileMenuOpen(false)}
                   className={cn(
-                    'block py-2 px-3 transition-colors border-l-2',
+                    'block py-2.5 px-3 transition-colors border-l-2',
                     pathname === '/tentang'
                       ? 'bg-surface-muted font-bold text-foreground border-foreground'
                       : 'text-foreground/80 hover:bg-surface-muted/50 border-transparent'
@@ -322,13 +452,39 @@ export function Header() {
                 >
                   Tentang Perpustakaan Jalanan
                 </Link>
+
+                <Link
+                  href="/surat-pembaca"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={cn(
+                    'block py-2.5 px-3 transition-colors border-l-2',
+                    pathname === '/surat-pembaca' || pathname?.startsWith('/surat-pembaca/')
+                      ? 'bg-surface-muted font-bold text-foreground border-foreground'
+                      : 'text-foreground/80 hover:bg-surface-muted/50 border-transparent'
+                  )}
+                >
+                  Mimbar Surat Pembaca
+                </Link>
+
+                <Link
+                  href="/kontributor"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={cn(
+                    'block py-2.5 px-3 transition-colors border-l-2',
+                    pathname === '/kontributor'
+                      ? 'bg-surface-muted font-bold text-foreground border-foreground'
+                      : 'text-foreground/80 hover:bg-surface-muted/50 border-transparent'
+                  )}
+                >
+                  Jejaring Pegiat &amp; Relawan
+                </Link>
               </nav>
 
-              {/* User Shortcuts & Mobile Preferences in Drawer */}
+              {/* User Shortcuts & Mobile Preferences */}
               <div className="pt-3 border-t border-border-hairline flex flex-col gap-2.5">
                 <div className="flex items-center justify-between py-1 px-1 border-b border-border-hairline">
                   <span className="text-[10px] uppercase font-bold tracking-wider text-muted font-mono">
-                    Mode Tampilan
+                    Mode Tema Tampilan
                   </span>
                   <ThemeToggle />
                 </div>
@@ -336,24 +492,24 @@ export function Header() {
                 <Link
                   href="/dashboard"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="w-full text-center py-2.5 bg-foreground text-background font-bold text-xs tracking-wider uppercase hover:opacity-90 transition-opacity"
+                  className="w-full text-center py-2.5 bg-foreground text-background font-bold text-xs tracking-wider uppercase hover:opacity-90 transition-opacity touch-tactile"
                 >
                   Dasbor Anggota
                 </Link>
                 <div className="flex gap-2">
                   <Link
-                    href="/tulis"
+                    href="/dashboard/tulisan/tulis"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="flex-1 text-center py-2 border border-foreground text-foreground text-xs font-bold uppercase hover:bg-surface-muted transition-colors"
+                    className="flex-1 text-center py-2 border border-foreground text-foreground text-xs font-bold uppercase hover:bg-surface-muted transition-colors touch-tactile"
                   >
                     + Tulis Naskah
                   </Link>
                   <Link
-                    href="/notifikasi"
+                    href="/dashboard/notifikasi"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="flex-1 text-center py-2 border border-border-hairline text-foreground text-xs font-bold uppercase hover:bg-surface-muted transition-colors flex items-center justify-center gap-1.5"
+                    className="flex-1 text-center py-2 border border-border-hairline text-foreground text-xs font-bold uppercase hover:bg-surface-muted transition-colors flex items-center justify-center gap-1.5 touch-tactile"
                   >
-                    <Bell className="w-3.5 h-3.5" />
+                    <NotificationBell />
                     <span>Warta</span>
                   </Link>
                 </div>

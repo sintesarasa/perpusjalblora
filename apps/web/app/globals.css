@@ -773,3 +773,31 @@ body.editor-focus-mode nav {
   }
 }
 
+/* ── Mobile-First Tactile Ergonomics & Safe Area Utilities ── */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.pt-safe {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+.min-h-dvh {
+  min-height: 100dvh;
+}
+
+.touch-tactile {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Clean Horizontal Snap Carousel (No Scrollbar) */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+

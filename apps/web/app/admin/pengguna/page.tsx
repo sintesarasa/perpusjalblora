@@ -149,7 +149,7 @@ export default function AdminUsersPage() {
                 setSearchQuery(e.target.value);
                 setPage(1);
               }}
-              className="w-full pl-9 pr-3 py-2 border border-border-hairline bg-background text-foreground font-mono text-xs focus:outline-none focus:border-foreground"
+              className="w-full pl-9 pr-3 py-2 min-h-[44px] sm:min-h-0 border border-border-hairline bg-background text-foreground font-mono text-base sm:text-xs focus:outline-none focus:border-foreground"
             />
           </div>
 
@@ -160,7 +160,7 @@ export default function AdminUsersPage() {
                 setRoleFilter(e.target.value);
                 setPage(1);
               }}
-              className="px-3 py-2 border border-border-hairline bg-background text-foreground font-mono text-xs uppercase"
+              className="px-3 py-2 min-h-[44px] sm:min-h-0 border border-border-hairline bg-background text-foreground font-mono text-base sm:text-xs uppercase"
             >
               <option value="">Semua Peran</option>
               <option value="USER">Warga (User)</option>
@@ -174,7 +174,7 @@ export default function AdminUsersPage() {
                 setStatusFilter(e.target.value);
                 setPage(1);
               }}
-              className="px-3 py-2 border border-border-hairline bg-background text-foreground font-mono text-xs uppercase"
+              className="px-3 py-2 min-h-[44px] sm:min-h-0 border border-border-hairline bg-background text-foreground font-mono text-base sm:text-xs uppercase"
             >
               <option value="">Semua Status</option>
               <option value="ACTIVE">Aktif</option>
@@ -200,45 +200,50 @@ export default function AdminUsersPage() {
                 {users.map((u) => (
                   <div key={u.id} className="p-4 space-y-3 font-mono text-xs">
                     {/* Header: Name, Username & Email */}
-                    <div>
-                      <div className="font-serif font-bold text-sm text-foreground">
-                        <Link href={`/u/${u.username}`} className="hover:underline">
-                          {u.name}
-                        </Link>
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <div className="font-serif font-bold text-base text-foreground leading-snug">
+                          <Link href={`/u/${u.username}`} className="hover:underline">
+                            {u.name}
+                          </Link>
+                        </div>
+                        <div className="text-muted text-xs truncate">@{u.username} &bull; {u.email}</div>
                       </div>
-                      <div className="text-muted text-[11px] truncate">@{u.username} • {u.email}</div>
+
+                      <span
+                        className={`px-2 py-0.5 border uppercase text-[10px] font-bold shrink-0 ${
+                          u.status === UserStatus.ACTIVE
+                            ? 'border-foreground bg-foreground text-background'
+                            : 'border-red-600 bg-red-50 text-red-900'
+                        }`}
+                      >
+                        {u.status}
+                      </span>
                     </div>
 
-                    {/* Meta Row: Role & Status & Active Loans */}
-                    <div className="flex flex-wrap items-center justify-between gap-2 text-[10px]">
-                      <div className="flex items-center gap-2">
-                        <span className="px-2 py-0.5 border border-foreground font-bold uppercase">
+                    {/* Meta Row: Role & Active Loans */}
+                    <div className="flex flex-wrap items-center justify-between gap-2 text-xs p-2.5 bg-surface-muted/50 border border-border-hairline">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-muted text-[10.5px] uppercase">Peran:</span>
+                        <span className="px-2 py-0.5 border border-foreground bg-surface font-bold text-[10.5px] uppercase">
                           {u.role}
                         </span>
-                        <span
-                          className={`px-2 py-0.5 border uppercase font-bold ${
-                            u.status === UserStatus.ACTIVE
-                              ? 'border-foreground bg-foreground text-background'
-                              : 'border-red-600 bg-red-50 text-red-900'
-                          }`}
-                        >
-                          {u.status}
-                        </span>
                       </div>
-                      <span className="text-muted text-[11px]">
-                        Pinjaman Aktif: <strong className="text-foreground">{u.activeLoansCount}</strong>
+                      <span className="text-muted text-xs">
+                        Pinjaman Aktif: <strong className="text-foreground font-bold">{u.activeLoansCount}</strong>
                       </span>
                     </div>
 
                     {u.suspensionReason && (
-                      <div className="text-[10px] text-red-800 bg-red-50/80 p-2 border border-red-200">
-                        Alasan Sanksi: {u.suspensionReason}
+                      <div className="text-xs text-red-800 bg-red-50/90 dark:bg-red-950/40 p-2.5 border border-red-300 dark:border-red-800 font-sans leading-relaxed">
+                        <strong className="font-mono text-[10.5px] uppercase tracking-wider block mb-0.5">Alasan Sanksi:</strong>
+                        {u.suspensionReason}
                       </div>
                     )}
 
-                    {/* Footer: Date & Actions */}
-                    <div className="pt-2 border-t border-border-hairline flex items-center justify-between gap-2">
-                      <span className="text-muted text-[10px]">
+                    {/* Footer: Date & Thumb-Friendly Action Buttons */}
+                    <div className="pt-2 border-t border-border-hairline flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <span className="text-muted text-[10.5px]">
                         Bergabung: {new Date(u.createdAt).toLocaleDateString('id-ID', {
                           day: 'numeric',
                           month: 'short',
@@ -246,14 +251,14 @@ export default function AdminUsersPage() {
                         })}
                       </span>
 
-                      <div className="flex items-center gap-2">
+                      <div className="grid grid-cols-2 gap-2 w-full sm:w-auto">
                         <button
                           onClick={() => {
                             setActiveModalUser(u);
                             setSelectedRole(u.role);
                             setModalType('ROLE');
                           }}
-                          className="px-2.5 py-1 border border-border-hairline hover:border-foreground text-foreground text-[11px] font-semibold"
+                          className="min-h-[40px] px-3.5 py-2 border border-border-hairline hover:border-foreground bg-surface text-foreground text-xs font-mono uppercase font-bold active:scale-95 touch-tactile transition-all inline-flex items-center justify-center"
                         >
                           Ubah Peran
                         </button>
@@ -264,7 +269,7 @@ export default function AdminUsersPage() {
                               setActiveModalUser(u);
                               setModalType('SUSPEND');
                             }}
-                            className="px-2.5 py-1 border border-red-300 text-red-700 hover:border-red-600 text-[11px]"
+                            className="min-h-[40px] px-3.5 py-2 border border-red-300 hover:border-red-600 bg-red-50/50 text-red-700 text-xs font-mono uppercase font-bold active:scale-95 touch-tactile transition-all inline-flex items-center justify-center"
                           >
                             Tangguhkan
                           </button>
@@ -274,7 +279,7 @@ export default function AdminUsersPage() {
                               setActiveModalUser(u);
                               handleSuspendUser(false);
                             }}
-                            className="px-2.5 py-1 border border-foreground bg-foreground text-background text-[11px]"
+                            className="min-h-[40px] px-3.5 py-2 border border-foreground bg-foreground text-background text-xs font-mono uppercase font-bold active:scale-95 touch-tactile transition-all inline-flex items-center justify-center"
                           >
                             Pulihkan
                           </button>
@@ -416,63 +421,67 @@ export default function AdminUsersPage() {
 
       {/* MODAL UBAH PERAN */}
       {modalType === 'ROLE' && activeModalUser && (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-          <div className="bg-surface border border-foreground p-6 max-w-md w-full animate-in fade-in-50 duration-150">
-            <div className="flex items-center gap-2 border-b border-border-hairline pb-3 mb-4">
-              <Shield className="w-4 h-4 text-foreground" />
-              <h3 className="font-serif text-lg font-bold text-foreground">
-                Ubah Peran Akses Pengguna
-              </h3>
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-xs z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-150">
+          <div className="bg-surface border-2 border-foreground p-5 sm:p-6 w-full max-w-md max-md:rounded-t-2xl max-md:border-b-0 max-md:max-h-[90vh] overflow-y-auto animate-in slide-in-from-bottom duration-200 sm:zoom-in-95 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center gap-2 border-b border-border-hairline pb-3 mb-4">
+                <Shield className="w-4 h-4 text-foreground" />
+                <h3 className="font-serif text-lg font-bold text-foreground">
+                  Ubah Peran Akses Pengguna
+                </h3>
+              </div>
+
+              <p className="font-serif text-sm text-foreground/80 mb-4 leading-relaxed">
+                Ubah hak akses wewenang untuk <strong>{activeModalUser.name}</strong> (@{activeModalUser.username}):
+              </p>
+
+              <div className="space-y-3 font-mono text-xs mb-6">
+                {[
+                  { r: Role.USER, label: 'WARGA (USER)', desc: 'Hak pinjam buku, kirim artikel/surat, dan komentar.' },
+                  { r: Role.KURATOR, label: 'KURATOR', desc: 'Hak meninjau tulisan warga di meja kurasi dan moderasi komentar.' },
+                  { r: Role.ADMIN, label: 'PENGURUS (ADMIN)', desc: 'Hak kendali penuh atas sistem, sirkulasi lapak, dan keanggotaan.' },
+                ].map((item) => (
+                  <label
+                    key={item.r}
+                    className={`block p-3 border-2 cursor-pointer transition-colors ${
+                      selectedRole === item.r
+                        ? 'border-foreground bg-surface-muted'
+                        : 'border-border-hairline hover:border-foreground/50'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="radio"
+                        name="userRole"
+                        checked={selectedRole === item.r}
+                        onChange={() => setSelectedRole(item.r)}
+                        className="accent-foreground w-4 h-4"
+                      />
+                      <span className="font-bold text-xs">{item.label}</span>
+                    </div>
+                    <span className="font-sans text-xs text-muted block mt-1 ml-6">
+                      {item.desc}
+                    </span>
+                  </label>
+                ))}
+              </div>
             </div>
 
-            <p className="font-serif text-sm text-foreground/80 mb-4">
-              Ubah hak akses wewenang untuk <strong>{activeModalUser.name}</strong> (@{activeModalUser.username}):
-            </p>
-
-            <div className="space-y-3 font-mono text-xs mb-6">
-              {[
-                { r: Role.USER, label: 'WARGA (USER)', desc: 'Hak pinjam buku, kirim artikel/surat, dan komentar.' },
-                { r: Role.KURATOR, label: 'KURATOR', desc: 'Hak meninjau tulisan warga di meja kurasi dan moderasi komentar.' },
-                { r: Role.ADMIN, label: 'PENGURUS (ADMIN)', desc: 'Hak kendali penuh atas sistem, sirkulasi lapak, dan keanggotaan.' },
-              ].map((item) => (
-                <label
-                  key={item.r}
-                  className={`block p-3 border cursor-pointer transition-colors ${
-                    selectedRole === item.r
-                      ? 'border-foreground bg-surface-muted'
-                      : 'border-border-hairline hover:border-foreground/50'
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="radio"
-                      name="userRole"
-                      checked={selectedRole === item.r}
-                      onChange={() => setSelectedRole(item.r)}
-                      className="accent-foreground"
-                    />
-                    <span className="font-bold">{item.label}</span>
-                  </div>
-                  <span className="font-sans text-xs text-muted block mt-1 ml-5">
-                    {item.desc}
-                  </span>
-                </label>
-              ))}
-            </div>
-
-            <div className="flex justify-end gap-3 font-mono text-xs">
+            <div className="sticky bottom-0 bg-surface/95 backdrop-blur-xs pt-3 pb-1 border-t border-border-hairline flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 font-mono text-xs">
               <button
+                type="button"
                 onClick={() => {
                   setModalType(null);
                   setActiveModalUser(null);
                 }}
-                className="px-4 py-2 border border-border-hairline hover:border-foreground"
+                className="w-full sm:w-auto min-h-[44px] sm:min-h-0 px-4 py-2 border border-border-hairline hover:border-foreground active:scale-[0.98] transition-all touch-tactile font-semibold inline-flex items-center justify-center"
               >
                 Batal
               </button>
               <button
+                type="button"
                 onClick={handleUpdateRole}
-                className="px-5 py-2 border border-foreground bg-foreground text-background font-bold hover:opacity-90"
+                className="w-full sm:w-auto min-h-[44px] sm:min-h-0 px-5 py-2 border-2 border-foreground bg-foreground text-background font-bold hover:opacity-90 active:scale-[0.98] transition-all touch-tactile inline-flex items-center justify-center"
               >
                 Simpan Perubahan
               </button>
@@ -483,48 +492,52 @@ export default function AdminUsersPage() {
 
       {/* MODAL PENANGGUHAN AKUN */}
       {modalType === 'SUSPEND' && activeModalUser && (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-          <div className="bg-surface border border-red-600 p-6 max-w-md w-full animate-in fade-in-50 duration-150">
-            <div className="flex items-center gap-2 border-b border-red-200 pb-3 mb-4 text-red-900">
-              <UserX className="w-5 h-5 text-red-600" />
-              <h3 className="font-serif text-lg font-bold">
-                Penangguhan Akses Akun
-              </h3>
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-xs z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-150">
+          <div className="bg-surface border-2 border-red-600 p-5 sm:p-6 w-full max-w-md max-md:rounded-t-2xl max-md:border-b-0 max-md:max-h-[90vh] overflow-y-auto animate-in slide-in-from-bottom duration-200 sm:zoom-in-95 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center gap-2 border-b border-red-200 dark:border-red-800 pb-3 mb-4 text-red-900 dark:text-red-200">
+                <UserX className="w-5 h-5 text-red-600 dark:text-red-400 shrink-0" />
+                <h3 className="font-serif text-lg font-bold">
+                  Penangguhan Akses Akun
+                </h3>
+              </div>
+
+              <p className="font-serif text-sm text-foreground/85 mb-3 leading-relaxed">
+                Kamu akan membekukan akses akun <strong>{activeModalUser.name}</strong> (@{activeModalUser.username}). Pengguna tidak dapat meminjam buku atau mengirim tulisan selama status ditangguhkan.
+              </p>
+
+              <div className="mb-6">
+                <label className="block font-mono text-xs uppercase tracking-wider text-muted mb-1.5 font-bold">
+                  Alasan Penangguhan (Wajib Diisi):
+                </label>
+                <textarea
+                  required
+                  rows={3}
+                  placeholder="Misal: Keterlambatan buku berulang tanpa konfirmasi / pelanggaran etika diskusi..."
+                  value={suspendReason}
+                  onChange={(e) => setSuspendReason(e.target.value)}
+                  className="w-full px-3 py-2 border border-border-hairline bg-background text-foreground font-serif text-base sm:text-xs focus:outline-none focus:border-red-600 leading-relaxed"
+                />
+              </div>
             </div>
 
-            <p className="font-serif text-sm text-foreground/85 mb-3 leading-relaxed">
-              Kamu akan membekukan akses akun <strong>{activeModalUser.name}</strong> (@{activeModalUser.username}). Pengguna tidak dapat meminjam buku atau mengirim tulisan selama status ditangguhkan.
-            </p>
-
-            <div className="mb-6">
-              <label className="block font-mono text-xs uppercase tracking-wider text-muted mb-1.5">
-                Alasan Penangguhan (Wajib Diisi):
-              </label>
-              <textarea
-                required
-                rows={3}
-                placeholder="Misal: Keterlambatan buku berulang tanpa konfirmasi / pelanggaran etika diskusi..."
-                value={suspendReason}
-                onChange={(e) => setSuspendReason(e.target.value)}
-                className="w-full px-3 py-2 border border-border-hairline bg-background text-foreground font-serif text-xs focus:outline-none focus:border-red-600"
-              />
-            </div>
-
-            <div className="flex justify-end gap-3 font-mono text-xs">
+            <div className="sticky bottom-0 bg-surface/95 backdrop-blur-xs pt-3 pb-1 border-t border-border-hairline flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 font-mono text-xs">
               <button
+                type="button"
                 onClick={() => {
                   setModalType(null);
                   setActiveModalUser(null);
                   setSuspendReason('');
                 }}
-                className="px-4 py-2 border border-border-hairline hover:border-foreground"
+                className="w-full sm:w-auto min-h-[44px] sm:min-h-0 px-4 py-2 border border-border-hairline hover:border-foreground active:scale-[0.98] transition-all touch-tactile font-semibold inline-flex items-center justify-center"
               >
                 Batal
               </button>
               <button
+                type="button"
                 disabled={!suspendReason.trim()}
                 onClick={() => handleSuspendUser(true)}
-                className="px-5 py-2 border border-red-600 bg-red-600 text-white font-bold hover:opacity-90 disabled:opacity-50"
+                className="w-full sm:w-auto min-h-[44px] sm:min-h-0 px-5 py-2 border border-red-600 bg-red-600 text-white font-bold hover:opacity-90 active:scale-[0.98] transition-all touch-tactile disabled:opacity-50 inline-flex items-center justify-center"
               >
                 Tangguhkan Akun
               </button>

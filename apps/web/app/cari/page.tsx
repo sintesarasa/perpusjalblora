@@ -186,17 +186,17 @@ function SearchPageContent() {
               </button>
             </div>
 
-            {/* Filter Type Tabs */}
-            <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider overflow-x-auto pb-1">
-              <span className="text-muted flex items-center gap-1 mr-2 text-[11px]">
+            {/* Filter Type Tabs with 44px+ Touch Targets */}
+            <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider overflow-x-auto pb-1 scrollbar-none snap-x snap-mandatory">
+              <span className="text-muted flex items-center gap-1 mr-1 text-[11px] shrink-0">
                 <SlidersHorizontal className="w-3.5 h-3.5" />
-                Kategori:
+                Filter:
               </span>
 
               <button
                 type="button"
                 onClick={() => handleTypeChange('all')}
-                className={`px-3 py-1.5 border transition-colors ${
+                className={`min-h-[44px] px-4 py-2.5 sm:min-h-0 sm:py-1.5 border text-xs font-mono uppercase tracking-wider transition-all shrink-0 snap-start active:scale-95 ${
                   activeType === 'all'
                     ? 'bg-foreground text-background border-foreground font-bold'
                     : 'bg-surface text-foreground border-border-hairline hover:border-foreground'
@@ -208,7 +208,7 @@ function SearchPageContent() {
               <button
                 type="button"
                 onClick={() => handleTypeChange('artikel')}
-                className={`px-3 py-1.5 border transition-colors flex items-center gap-1.5 ${
+                className={`min-h-[44px] px-4 py-2.5 sm:min-h-0 sm:py-1.5 border text-xs font-mono uppercase tracking-wider transition-all flex items-center gap-1.5 shrink-0 snap-start active:scale-95 ${
                   activeType === 'artikel'
                     ? 'bg-foreground text-background border-foreground font-bold'
                     : 'bg-surface text-foreground border-border-hairline hover:border-foreground'
@@ -221,7 +221,7 @@ function SearchPageContent() {
               <button
                 type="button"
                 onClick={() => handleTypeChange('buku')}
-                className={`px-3 py-1.5 border transition-colors flex items-center gap-1.5 ${
+                className={`min-h-[44px] px-4 py-2.5 sm:min-h-0 sm:py-1.5 border text-xs font-mono uppercase tracking-wider transition-all flex items-center gap-1.5 shrink-0 snap-start active:scale-95 ${
                   activeType === 'buku'
                     ? 'bg-foreground text-background border-foreground font-bold'
                     : 'bg-surface text-foreground border-border-hairline hover:border-foreground'
@@ -257,7 +257,7 @@ function SearchPageContent() {
                 <button
                   type="button"
                   onClick={() => executeSearch(query, activeType)}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-foreground text-background font-mono text-xs font-bold uppercase tracking-wider hover:bg-foreground/90 transition-colors border-2 border-foreground"
+                  className="inline-flex items-center gap-2 min-h-[44px] px-6 py-3 bg-foreground text-background font-mono text-xs font-bold uppercase tracking-wider hover:bg-foreground/90 transition-colors border-2 border-foreground active:scale-95"
                 >
                   <RefreshCw className="w-3.5 h-3.5" />
                   <span>COBA CARI LAGI</span>
@@ -268,33 +268,49 @@ function SearchPageContent() {
         ) : !hasSearched ? (
           /* Initial Empty State / Suggestions */
           <RevealOnScroll variant="stamp" delayMs={60}>
-            <div className="border border-border-hairline bg-surface p-8 sm:p-12 text-center space-y-4">
-              <div className="w-12 h-12 border-2 border-foreground mx-auto flex items-center justify-center font-mono font-bold">
+            <div className="border border-border-hairline bg-surface p-6 sm:p-12 text-center space-y-4">
+              <div className="w-12 h-12 border-2 border-foreground mx-auto flex items-center justify-center font-mono font-bold text-lg">
                 /
               </div>
-              <h2 className="font-serif text-xl font-normal text-foreground">
+              <h2 className="font-serif text-xl sm:text-2xl font-bold text-foreground">
                 Mulai Penelusuran Pengetahuan
               </h2>
-              <p className="font-sans text-xs text-muted max-w-md mx-auto">
+              <p className="font-sans text-xs sm:text-sm text-muted max-w-md mx-auto leading-relaxed">
                 Gunakan bilah pencarian di atas untuk menjelajahi warta komunitas, esai kritis, resensi,
-                serta inventaris perpustakaan Blora.
+                serta inventaris buku perpustakaan jalanan Blora.
               </p>
-              <div className="pt-4 flex flex-wrap justify-center gap-2 font-mono text-xs text-muted">
-                <span className="uppercase text-[10px] self-center mr-1">Saran Topik:</span>
-                {['Literasi', 'Sejarah Blora', 'Pramoedya', 'Filsafat', 'Buku Anak', 'Zine'].map(
-                  (tag) => (
+              
+              {/* Horizontal Snap Tags for Mobile */}
+              <div className="pt-4 space-y-2">
+                <span className="font-mono uppercase text-[10px] tracking-widest text-muted block">
+                  Topik Pilihan Warga:
+                </span>
+                <div className="flex items-center justify-start sm:justify-center gap-2 overflow-x-auto pb-2 scrollbar-none snap-x snap-mandatory">
+                  {[
+                    'Pramoedya',
+                    'Samin',
+                    'Filsafat',
+                    'Buku Anak',
+                    'Sejarah Blora',
+                    'CFD Alun-Alun',
+                    'Puisi Jalanan',
+                    'Zine',
+                    'Sosial Politik',
+                  ].map((tag) => (
                     <button
                       key={tag}
+                      type="button"
                       onClick={() => {
                         setQuery(tag);
+                        router.replace(`/cari?q=${encodeURIComponent(tag)}&type=${activeType}`);
                         executeSearch(tag, activeType);
                       }}
-                      className="px-2.5 py-1 border border-border-hairline hover:border-foreground text-foreground transition-colors"
+                      className="min-h-[40px] px-3.5 py-2 border border-border-hairline bg-surface hover:border-foreground text-foreground text-xs font-mono shrink-0 snap-start active:scale-95 transition-transform"
                     >
                       #{tag}
                     </button>
-                  )
-                )}
+                  ))}
+                </div>
               </div>
             </div>
           </RevealOnScroll>
@@ -302,10 +318,10 @@ function SearchPageContent() {
           /* No Results Found State */
           <RevealOnScroll variant="stamp" delayMs={60}>
             <div className="border-2 border-foreground bg-surface p-8 sm:p-12 text-center space-y-4">
-              <span className="font-mono text-xs uppercase tracking-widest text-muted">
+              <span className="font-mono text-xs uppercase tracking-widest text-muted font-bold">
                 STATUS // HASIL NIHIL
               </span>
-              <h2 className="font-serif text-2xl font-normal text-foreground">
+              <h2 className="font-serif text-2xl font-bold text-foreground">
                 Tidak Ada Hasil Ditemukan
               </h2>
               <p className="font-sans text-sm text-muted max-w-md mx-auto">
@@ -360,7 +376,7 @@ function SearchPageContent() {
                             {art.readingTime && (
                               <span className="inline-flex items-center gap-1">
                                 <Clock className="w-3 h-3" />
-                                {art.readingTime} mnt
+                                {art.readingTime} mnt baca
                               </span>
                             )}
                             {art.publishedAt && (
@@ -412,25 +428,42 @@ function SearchPageContent() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {results?.books.items.map((book, idx) => (
                     <RevealOnScroll key={book.id} variant="cinematic" delayMs={(idx % 2) * 80} className="h-full">
-                      <div className="border border-border-hairline bg-surface p-4 flex gap-4 hover:border-foreground transition-colors group h-full">
-                        {/* Monogram / Book Cover placeholder */}
-                        <div className="w-20 h-28 bg-surface-muted border border-border-hairline shrink-0 flex flex-col items-center justify-center p-2 text-center">
-                          <BookOpen className="w-6 h-6 text-muted mb-1" />
-                          <span className="font-mono text-[9px] uppercase tracking-tighter text-muted">
-                            PERPUSJAL
-                          </span>
+                      <Link
+                        href={`/buku/${book.slug}`}
+                        className="border-2 border-foreground bg-surface p-4 flex gap-4 hover:bg-surface-muted/40 transition-colors group h-full block active:scale-[0.99]"
+                      >
+                        {/* Book Spine Cover Preview */}
+                        <div className="w-20 h-28 bg-surface-muted border border-border-hairline shrink-0 flex flex-col items-center justify-center p-2 text-center relative overflow-hidden shadow-[-3px_0_6px_rgba(0,0,0,0.15)]">
+                          {book.coverImage ? (
+                            <img
+                              src={book.coverImage}
+                              alt={book.title}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <>
+                              <BookOpen className="w-6 h-6 text-muted mb-1" />
+                              <span className="font-mono text-[9px] uppercase tracking-tighter text-muted">
+                                PERPUSJAL
+                              </span>
+                            </>
+                          )}
+                          {/* Book spine line overlay */}
+                          <div className="absolute left-0 top-0 bottom-0 w-[4px] bg-black/10 dark:bg-white/10 pointer-events-none" />
                         </div>
 
-                        <div className="flex-1 flex flex-col justify-between">
+                        <div className="flex-1 flex flex-col justify-between min-w-0">
                           <div>
                             <div className="flex items-center justify-between gap-2 text-[10px] font-mono text-muted uppercase">
-                              <span>{book.category?.name || 'UMUM'}</span>
-                              {book.isbn && <span>ISBN: {book.isbn}</span>}
+                              <span className="font-bold text-foreground truncate">{book.category?.name || 'UMUM'}</span>
+                              <span className={book.isBorrowable !== false ? 'text-foreground font-semibold' : 'text-muted'}>
+                                {book.isBorrowable !== false ? '● BISA PINJAM' : '○ BACA DI TEMPAT'}
+                              </span>
                             </div>
-                            <h3 className="font-serif text-base font-bold text-foreground mt-1 group-hover:underline underline-offset-2">
+                            <h3 className="font-serif text-base font-bold text-foreground mt-1 group-hover:underline underline-offset-2 line-clamp-2">
                               {book.title}
                             </h3>
-                            <p className="font-sans text-xs text-muted mt-0.5">
+                            <p className="font-sans text-xs text-muted mt-0.5 truncate">
                               Karya: <strong className="text-foreground">{book.author}</strong>
                             </p>
                             {book.synopsis && (
@@ -441,13 +474,13 @@ function SearchPageContent() {
                           </div>
 
                           <div className="pt-2 mt-2 border-t border-border-hairline flex items-center justify-between text-xs font-mono">
-                            <span className="text-[10px] uppercase text-muted">KOLEKSI FISIK</span>
+                            <span className="text-[10px] uppercase text-muted">KOLEKSI TERPAL</span>
                             <span className="font-bold text-foreground group-hover:translate-x-1 transition-transform inline-flex items-center gap-1">
-                              DETAIL &rarr;
+                              LIHAT DETAIL &rarr;
                             </span>
                           </div>
                         </div>
-                      </div>
+                      </Link>
                     </RevealOnScroll>
                   ))}
                 </div>

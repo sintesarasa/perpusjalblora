@@ -12,6 +12,7 @@ import { apiClient } from '@/lib/api';
 import { Role } from '@perpusjal/types';
 import { Menu, X, ArrowLeft } from 'lucide-react';
 import { PrintQueueProvider } from '@/lib/print-queue-context';
+import { DashboardBottomNav } from '@/components/dashboard/dashboard-bottom-nav';
 
 interface CurrentUser {
   id: string;
@@ -139,13 +140,19 @@ export default function DashboardLayout({
           </div>
         )}
 
-        {/* Right Content Area */}
-        <main className="flex-1 min-w-0 bg-background overflow-x-clip">
+        {/* Right Content Area with Mobile Bottom Nav clearance */}
+        <main className="flex-1 min-w-0 bg-background overflow-x-clip pb-28 sm:pb-24 lg:pb-12">
           <PrintQueueProvider>
             {children}
           </PrintQueueProvider>
         </main>
       </div>
+
+      {/* 3. MOBILE-NATIVE FIXED BOTTOM NAVIGATION BAR */}
+      <DashboardBottomNav
+        onOpenMore={() => setMobileSidebarOpen(true)}
+        isMoreOpen={mobileSidebarOpen}
+      />
     </div>
   );
 }

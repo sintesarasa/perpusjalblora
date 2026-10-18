@@ -20,7 +20,10 @@ import {
   ExternalLink,
   Users,
   Star,
+  MessageCircle,
 } from 'lucide-react';
+import { getWhatsAppUrl } from '@/lib/contact';
+import { cn } from '@/lib/utils';
 
 export default function MemberLoansDashboardPage() {
   const [activeTab, setActiveTab] = React.useState<'aktif' | 'riwayat' | 'antrean'>('aktif');
@@ -104,7 +107,7 @@ export default function MemberLoansDashboardPage() {
     switch (status) {
       case LoanStatus.PENDING:
         return (
-          <span className="font-mono text-[10px] uppercase tracking-wider px-2 py-0.5 border border-border-hairline text-muted">
+          <span className="font-mono text-[10px] uppercase tracking-wider px-2 py-0.5 border border-foreground/40 bg-surface text-foreground font-bold">
             MENUNGGU PERSETUJUAN
           </span>
         );
@@ -112,14 +115,14 @@ export default function MemberLoansDashboardPage() {
         return (
           <span className="font-mono text-[10px] uppercase tracking-wider px-2 py-0.5 bg-foreground text-background font-bold inline-flex items-center gap-1">
             <CheckCircle2 className="w-3 h-3" />
-            SIAP DIAMBIL
+            SIAP DIAMBIL DI LAPAK
           </span>
         );
       case LoanStatus.BORROWED:
         return (
-          <span className="font-mono text-[10px] uppercase tracking-wider px-2 py-0.5 border border-foreground font-bold text-foreground inline-flex items-center gap-1">
+          <span className="font-mono text-[10px] uppercase tracking-wider px-2 py-0.5 border-2 border-foreground font-bold text-foreground inline-flex items-center gap-1 bg-surface">
             <BookOpen className="w-3 h-3" />
-            SEDANG DIPINJAM
+            SEDANG DIBACA
           </span>
         );
       case LoanStatus.OVERDUE:
@@ -131,13 +134,13 @@ export default function MemberLoansDashboardPage() {
         );
       case LoanStatus.RETURNED:
         return (
-          <span className="font-mono text-[10px] uppercase tracking-wider px-2 py-0.5 border border-border-hairline text-muted">
-            SELESAI
+          <span className="font-mono text-[10px] uppercase tracking-wider px-2 py-0.5 border border-border-hairline bg-surface-muted text-muted font-bold">
+            SELESAI DIPULANGKAN
           </span>
         );
       case LoanStatus.RETURNED_LOST:
         return (
-          <span className="font-mono text-[10px] uppercase tracking-wider px-2 py-0.5 border border-destructive text-destructive">
+          <span className="font-mono text-[10px] uppercase tracking-wider px-2 py-0.5 border border-destructive text-destructive font-bold">
             TERCATAT HILANG
           </span>
         );
@@ -169,255 +172,282 @@ export default function MemberLoansDashboardPage() {
   };
 
   return (
-    <div className="p-3 sm:p-6 md:p-8 space-y-6 sm:space-y-8 max-w-6xl">
-      {/* Masthead */}
-        <div className="border-b-2 border-foreground pb-4 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-          <div className="space-y-1.5">
-            <PetaNavigasi
-              items={[
-                { label: 'PERPUSJAL', href: '/' },
-                { label: 'DASBOR', href: '/dashboard' },
-                { label: 'SIRKULASI', href: '/dashboard/pinjaman' },
-                { label: 'STATUS PINJAMAN BUKU' },
-              ]}
-              className="mb-2"
-            />
-            <h1 className="font-serif text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-foreground">
-              Dasbor Peminjaman
-            </h1>
-          </div>
-
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
-            <Link
-              href="/dashboard/kartu-anggota"
-              className="px-4 py-2 border border-foreground font-mono text-xs uppercase tracking-wider font-semibold hover:bg-foreground hover:text-background transition-colors inline-flex items-center justify-center gap-1.5 text-center"
-            >
-              <CreditCard className="w-3.5 h-3.5" />
-              <span>Kartu Anggota</span>
-            </Link>
-            <Link
-              href="/buku"
-              className="px-4 py-2 bg-foreground text-background font-mono text-xs uppercase tracking-wider font-bold hover:bg-foreground/90 transition-colors inline-flex items-center justify-center gap-1.5 text-center"
-            >
-              <BookOpen className="w-3.5 h-3.5" />
-              <span>Cari Buku Lain</span>
-            </Link>
-          </div>
+    <div className="p-4 sm:p-6 md:p-8 space-y-6 sm:space-y-8 max-w-6xl mx-auto">
+      {/* 1. MASTHEAD BANNER */}
+      <div className="border-b-2 border-foreground pb-4 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        <div className="space-y-1.5">
+          <PetaNavigasi
+            items={[
+              { label: 'PERPUSJAL', href: '/' },
+              { label: 'RUANG KENDALI', href: '/dashboard' },
+              { label: 'PINJAMAN BUKU' },
+            ]}
+            className="mb-2"
+          />
+          <h1 className="font-serif text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-foreground">
+            Buku Catatan Peminjaman
+          </h1>
+          <p className="font-serif text-xs sm:text-sm text-muted">
+            Pantau status peminjaman aktif, kode pengambilan lapak, dan antrean tunggu buku incaranmu.
+          </p>
         </div>
 
-        {/* Tab switchers */}
-        <div className="flex flex-wrap items-center gap-2 border-b border-border-hairline font-mono text-xs uppercase tracking-wider pb-px">
-          <button
-            type="button"
-            onClick={() => setActiveTab('aktif')}
-            className={`px-4 py-2 border-b-2 transition-colors ${
-              activeTab === 'aktif'
-                ? 'border-foreground text-foreground font-bold'
-                : 'border-transparent text-muted hover:text-foreground'
-            }`}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 shrink-0">
+          <Link
+            href="/dashboard/kartu-anggota"
+            className="min-h-[44px] px-4 py-2 border border-border-hairline hover:border-foreground bg-surface font-mono text-xs uppercase tracking-wider font-semibold transition-all active:scale-95 touch-tactile inline-flex items-center justify-center gap-1.5 text-center"
           >
-            Pinjaman Aktif
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab('riwayat')}
-            className={`px-4 py-2 border-b-2 transition-colors ${
-              activeTab === 'riwayat'
-                ? 'border-foreground text-foreground font-bold'
-                : 'border-transparent text-muted hover:text-foreground'
-            }`}
+            <CreditCard className="w-3.5 h-3.5" />
+            <span>Kartu Anggota</span>
+          </Link>
+          <Link
+            href="/buku"
+            className="min-h-[44px] px-4 py-2 bg-foreground text-background font-mono text-xs uppercase tracking-wider font-bold hover:opacity-90 transition-all active:scale-95 touch-tactile inline-flex items-center justify-center gap-1.5 text-center"
           >
-            Riwayat Selesai
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab('antrean')}
-            className={`px-4 py-2 border-b-2 transition-colors inline-flex items-center gap-1.5 ${
-              activeTab === 'antrean'
-                ? 'border-foreground text-foreground font-bold'
-                : 'border-transparent text-muted hover:text-foreground'
-            }`}
-          >
-            <Users className="w-3.5 h-3.5" />
-            <span>Antrean Pembaca</span>
-            {waitlists.length > 0 && (
-              <span className="px-1.5 py-0.5 bg-foreground text-background text-[10px] font-bold">
-                {waitlists.length}
-              </span>
-            )}
-          </button>
+            <BookOpen className="w-3.5 h-3.5" />
+            <span>Cari Buku di Katalog</span>
+          </Link>
         </div>
+      </div>
 
-        {/* Action feedback notice */}
-        {actionMessage && (
-          <div className="p-3 bg-surface border border-foreground font-mono text-xs text-foreground flex items-center justify-between">
-            <span>{actionMessage}</span>
-            <button
-              onClick={() => setActionMessage(null)}
-              className="text-muted hover:text-foreground"
+      {/* 2. SEGMENTED CONTROL TABS (MOBILE-FRIENDLY & TOUCH TACTILE) */}
+      <div className="grid grid-cols-3 gap-2 border-2 border-foreground bg-surface p-1 font-mono text-xs uppercase tracking-wider">
+        <button
+          type="button"
+          onClick={() => setActiveTab('aktif')}
+          className={cn(
+            'min-h-[44px] px-3 py-2 text-center transition-all active:scale-95 touch-tactile flex items-center justify-center gap-1.5 rounded-none font-bold',
+            activeTab === 'aktif'
+              ? 'bg-foreground text-background'
+              : 'text-muted hover:text-foreground'
+          )}
+        >
+          <span>Pinjaman Aktif</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('riwayat')}
+          className={cn(
+            'min-h-[44px] px-3 py-2 text-center transition-all active:scale-95 touch-tactile flex items-center justify-center gap-1.5 rounded-none font-bold',
+            activeTab === 'riwayat'
+              ? 'bg-foreground text-background'
+              : 'text-muted hover:text-foreground'
+          )}
+        >
+          <span>Riwayat Selesai</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('antrean')}
+          className={cn(
+            'min-h-[44px] px-3 py-2 text-center transition-all active:scale-95 touch-tactile flex items-center justify-center gap-1.5 rounded-none font-bold',
+            activeTab === 'antrean'
+              ? 'bg-foreground text-background'
+              : 'text-muted hover:text-foreground'
+          )}
+        >
+          <Users className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">Antrean Pembaca</span>
+          <span className="sm:hidden">Antrean</span>
+          {waitlists.length > 0 && (
+            <span
+              className={cn(
+                'px-1.5 py-0.2 text-[10px] font-bold font-mono ml-0.5',
+                activeTab === 'antrean'
+                  ? 'bg-background text-foreground'
+                  : 'bg-foreground text-background'
+              )}
             >
-              &times;
-            </button>
-          </div>
-        )}
-
-        {/* Loan list */}
-        {loading ? (
-          <div className="py-20 flex justify-center">
-            <CustomLoader size="lg" label="MEMUAT DATA PEMINJAMAN..." />
-          </div>
-        ) : error ? (
-          <div className="p-8 border border-foreground bg-surface-muted text-center space-y-3 font-mono text-xs">
-            <p className="text-foreground">{error}</p>
-            <button
-              onClick={fetchData}
-              className="px-4 py-1.5 bg-foreground text-background font-bold uppercase tracking-wider"
-            >
-              Coba Lagi
-            </button>
-          </div>
-        ) : activeTab === 'antrean' ? (
-          waitlists.length === 0 ? (
-            <div className="py-16 text-center border border-border-hairline bg-surface p-8 space-y-3">
-              <span className="font-mono text-xs text-muted uppercase tracking-widest">
-                [ BELUM ADA ANTREAN ]
-              </span>
-              <h2 className="font-serif text-2xl font-normal text-foreground">
-                Anda Belum Terdaftar di Antrean Buku Mana Pun
-              </h2>
-              <p className="font-sans text-xs text-muted max-w-md mx-auto">
-                Jika buku bacaan yang Anda inginkan sedang dipinjam oleh pembaca lain, Anda dapat mendaftar antrean melalui halaman detail buku di katalog.
-              </p>
-              <div className="pt-2">
-                <Link
-                  href="/buku"
-                  className="px-5 py-2.5 bg-foreground text-background font-mono text-xs uppercase tracking-widest font-bold inline-block hover:bg-foreground/90 transition-colors"
-                >
-                  Jelajahi Katalog Buku &rarr;
-                </Link>
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-6">
-              {waitlists.map((w) => (
-                <div
-                  key={w.id}
-                  className="border-2 border-foreground bg-surface p-4 sm:p-6 space-y-4 sm:space-y-6"
-                >
-                  {/* Top row */}
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border-hairline pb-4 font-mono text-xs">
-                    <div className="flex items-center gap-3">
-                      <span className="px-2.5 py-1 bg-foreground text-background font-mono font-bold text-xs uppercase tracking-widest flex items-center gap-1.5">
-                        <Users className="w-3.5 h-3.5" />
-                        ANTREAN POSISI #{w.position}
-                      </span>
-                      <span className="border border-border-hairline px-2 py-0.5 text-muted uppercase text-[10px]">
-                        {w.status === 'NOTIFIED' ? 'SIAP DIALOKASIKAN' : 'MENUNGGU DIKEMBALIKAN'}
-                      </span>
-                    </div>
-                    <span className="text-muted">
-                      Terdaftar pada{' '}
-                      {new Date(w.createdAt).toLocaleDateString('id-ID', {
-                        day: 'numeric',
-                        month: 'long',
-                        year: 'numeric',
-                      })}
-                    </span>
-                  </div>
-
-                  {/* Body grid */}
-                  <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
-                    <div className="md:col-span-8 flex gap-4">
-                      <div className="w-16 h-22 sm:w-20 sm:h-28 bg-surface-muted border border-border-hairline shrink-0 flex items-center justify-center p-2 text-center overflow-hidden">
-                        {w.book.coverImage ? (
-                          <img
-                            src={w.book.coverImage}
-                            alt={w.book.title}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <BookOpen className="w-6 h-6 text-muted" />
-                        )}
-                      </div>
-                      <div className="space-y-1">
-                        <Link
-                          href={`/buku/${w.book.slug}`}
-                          className="font-serif font-bold text-lg sm:text-xl text-foreground hover:underline line-clamp-2"
-                        >
-                          {w.book.title}
-                        </Link>
-                        <p className="font-sans text-xs text-muted">Karya {w.book.author}</p>
-                        <p className="font-mono text-[11px] text-muted pt-1">
-                          Ketersediaan Lapak saat ini:{' '}
-                          <strong className="text-foreground">{w.book.availableCopies} eksemplar</strong>
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="md:col-span-4 bg-surface-muted p-4 border border-border-hairline space-y-2 font-mono text-xs">
-                      <span className="text-[10px] uppercase text-muted tracking-widest block font-bold">
-                        STATUS ALOKASI
-                      </span>
-                      <p className="font-sans text-xs text-muted leading-relaxed">
-                        {w.status === 'NOTIFIED'
-                          ? 'Buku telah tersedia! Kurator lapak sedang memproses alokasi pinjaman untuk Anda.'
-                          : 'Buku sedang dibaca peminjam lain. Anda akan otomatis mendapat prioritas pertama saat buku kembali ke lapak.'}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Footer action */}
-                  <div className="pt-3 border-t border-border-hairline flex items-center justify-end font-mono text-xs">
-                    <button
-                      type="button"
-                      onClick={() => handleLeaveWaitlist(w.id)}
-                      disabled={actionLoading}
-                      className="px-3 py-1.5 border border-border-hairline text-muted hover:text-foreground hover:border-foreground uppercase tracking-wider transition-colors inline-flex items-center gap-1.5"
-                    >
-                      <XCircle className="w-3.5 h-3.5" />
-                      <span>Keluar dari Antrean</span>
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )
-        ) : loans.length === 0 ? (
-          <div className="py-16 text-center border border-border-hairline bg-surface p-8 space-y-3">
-            <span className="font-mono text-xs text-muted uppercase tracking-widest">
-              [ TIDAK ADA CATATAN ]
+              {waitlists.length}
             </span>
-            <h2 className="font-serif text-2xl font-normal text-foreground">
-              {activeTab === 'aktif'
-                ? 'Tidak Ada Pinjaman yang Sedang Berjalan'
-                : 'Belum Ada Riwayat Peminjaman Buku'}
+          )}
+        </button>
+      </div>
+
+      {/* 3. ACTION FEEDBACK NOTICE */}
+      {actionMessage && (
+        <div className="p-3.5 bg-surface border-2 border-foreground font-mono text-xs text-foreground flex items-center justify-between gap-3 animate-in fade-in">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-foreground shrink-0" />
+            <span>{actionMessage}</span>
+          </div>
+          <button
+            onClick={() => setActionMessage(null)}
+            className="p-1 hover:bg-surface-muted text-muted hover:text-foreground transition-colors"
+          >
+            &times;
+          </button>
+        </div>
+      )}
+
+      {/* 4. CONTENT AREA */}
+      {loading ? (
+        <div className="py-20 flex justify-center">
+          <CustomLoader size="lg" label="MEMUAT CATATAN PINJAMAN..." />
+        </div>
+      ) : error ? (
+        <div className="p-8 border-2 border-foreground bg-surface-muted text-center space-y-3 font-mono text-xs">
+          <p className="text-foreground">{error}</p>
+          <button
+            onClick={fetchData}
+            className="min-h-[44px] px-5 py-2 bg-foreground text-background font-bold uppercase tracking-wider hover:opacity-90 transition-opacity active:scale-95 touch-tactile"
+          >
+            Coba Lagi
+          </button>
+        </div>
+      ) : activeTab === 'antrean' ? (
+        waitlists.length === 0 ? (
+          <div className="py-16 text-center border-2 border-dashed border-border-hairline bg-surface p-6 sm:p-10 space-y-3">
+            <span className="font-mono text-xs text-muted uppercase tracking-widest block font-bold">
+              [ TIDAK ADA ANTREAN ]
+            </span>
+            <h2 className="font-serif text-2xl font-bold text-foreground">
+              Kamu Belum Terdaftar di Antrean Buku Mana Pun
             </h2>
-            <p className="font-sans text-xs text-muted max-w-md mx-auto">
-              Jelajahi koleksi pustaka kami dan ajukan peminjaman buku bacaan secara gratis.
+            <p className="font-sans text-xs text-muted max-w-md mx-auto leading-relaxed">
+              Jika buku incaranmu sedang dipinjam oleh kawan pembaca lain, kamu bisa mendaftar antrean secara gratis melalui halaman katalog buku.
             </p>
             <div className="pt-2">
               <Link
                 href="/buku"
-                className="px-5 py-2.5 bg-foreground text-background font-mono text-xs uppercase tracking-widest font-bold inline-block hover:bg-foreground/90 transition-colors"
+                className="min-h-[44px] px-5 py-2.5 bg-foreground text-background font-mono text-xs uppercase tracking-wider font-bold inline-flex items-center justify-center gap-1.5 hover:opacity-90 transition-all active:scale-95 touch-tactile"
               >
-                Jelajahi Katalog Buku &rarr;
+                <span>Jelajahi Katalog Buku</span>
+                <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </div>
           </div>
         ) : (
-          <div className="space-y-6">
-            {loans.map((loan) => (
+          <div className="space-y-4 sm:space-y-6">
+            {waitlists.map((w) => (
+              <div
+                key={w.id}
+                className="border-2 border-foreground bg-surface p-4 sm:p-6 space-y-4 relative overflow-hidden"
+              >
+                {/* Top Row */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border-hairline pb-3 font-mono text-xs">
+                  <div className="flex items-center gap-2.5">
+                    <span className="px-2.5 py-1 bg-foreground text-background font-bold text-xs uppercase tracking-wider flex items-center gap-1.5">
+                      <Users className="w-3.5 h-3.5" />
+                      ANTREAN #{w.position}
+                    </span>
+                    <span className="border border-border-hairline bg-surface-muted px-2 py-0.5 text-muted uppercase text-[10px] font-bold">
+                      {w.status === 'NOTIFIED' ? 'SIAP DIALOKASIKAN' : 'MENUNGGU DIKEMBALIKAN'}
+                    </span>
+                  </div>
+                  <span className="text-muted text-[11px]">
+                    Terdaftar: {new Date(w.createdAt).toLocaleDateString('id-ID', {
+                      day: 'numeric',
+                      month: 'long',
+                      year: 'numeric',
+                    })}
+                  </span>
+                </div>
+
+                {/* Body Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-start">
+                  <div className="md:col-span-8 flex gap-3.5 sm:gap-4">
+                    <div className="w-16 h-22 sm:w-20 sm:h-28 bg-surface-muted border border-border-hairline shrink-0 flex items-center justify-center p-1.5 text-center overflow-hidden">
+                      {w.book.coverImage ? (
+                        <img
+                          src={w.book.coverImage}
+                          alt={w.book.title}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <BookOpen className="w-6 h-6 text-muted" />
+                      )}
+                    </div>
+                    <div className="space-y-1">
+                      <Link
+                        href={`/buku/${w.book.slug}`}
+                        className="font-serif font-bold text-base sm:text-xl text-foreground hover:underline line-clamp-2"
+                      >
+                        {w.book.title}
+                      </Link>
+                      <p className="font-sans text-xs text-muted">Karya {w.book.author}</p>
+                      <p className="font-mono text-[11px] text-muted pt-1">
+                        Ketersediaan koleksi saat ini:{' '}
+                        <strong className="text-foreground">{w.book.availableCopies} eksemplar</strong>
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="md:col-span-4 bg-surface-muted/60 p-3.5 border border-border-hairline space-y-1 font-mono text-xs">
+                    <span className="text-[10px] uppercase text-muted tracking-widest block font-bold">
+                      STATUS ALOKASI SISTEM
+                    </span>
+                    <p className="font-sans text-[11px] text-foreground/80 leading-relaxed">
+                      {w.status === 'NOTIFIED'
+                        ? 'Buku telah kembali ke lapak! Relawan sedang menyiapkan buku ini untuk kamu ambil.'
+                        : 'Buku sedang dibaca peminjam lain. Sistem otomatis mengabari kamu saat buku dipulangkan.'}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Footer Action */}
+                <div className="pt-3 border-t border-dashed border-border-hairline flex items-center justify-end font-mono text-xs">
+                  <button
+                    type="button"
+                    onClick={() => handleLeaveWaitlist(w.id)}
+                    disabled={actionLoading}
+                    className="min-h-[44px] px-4 py-2 border border-border-hairline text-muted hover:text-foreground hover:border-foreground uppercase tracking-wider transition-all active:scale-95 touch-tactile inline-flex items-center gap-1.5"
+                  >
+                    <XCircle className="w-3.5 h-3.5" />
+                    <span>Keluar dari Antrean</span>
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )
+      ) : loans.length === 0 ? (
+        <div className="py-16 text-center border-2 border-dashed border-border-hairline bg-surface p-6 sm:p-10 space-y-3">
+          <span className="font-mono text-xs text-muted uppercase tracking-widest block font-bold">
+            [ TIDAK ADA CATATAN ]
+          </span>
+          <h2 className="font-serif text-2xl font-bold text-foreground">
+            {activeTab === 'aktif'
+              ? 'Tidak Ada Peminjaman Buku yang Berjalan'
+              : 'Belum Ada Riwayat Peminjaman Buku'}
+          </h2>
+          <p className="font-sans text-xs text-muted max-w-md mx-auto leading-relaxed">
+            Jelajahi koleksi pustaka Perpusjal Blora dan ajukan peminjaman buku bacaan secara gratis tanpa jaminan uang.
+          </p>
+          <div className="pt-2">
+            <Link
+              href="/buku"
+              className="min-h-[44px] px-5 py-2.5 bg-foreground text-background font-mono text-xs uppercase tracking-wider font-bold inline-flex items-center justify-center gap-1.5 hover:opacity-90 transition-all active:scale-95 touch-tactile"
+            >
+              <span>Jelajahi Katalog Buku</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+        </div>
+      ) : (
+        <div className="space-y-4 sm:space-y-6">
+          {loans.map((loan) => {
+            const dueDateObj = loan.dueDate ? new Date(loan.dueDate) : null;
+            const diffDays = dueDateObj
+              ? Math.ceil((dueDateObj.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+              : null;
+
+            return (
               <div
                 key={loan.id}
-                className="border-2 border-foreground bg-surface p-4 sm:p-6 space-y-4 sm:space-y-6"
+                className="border-2 border-foreground bg-surface p-4 sm:p-6 space-y-4 relative overflow-hidden"
               >
-                {/* Top header row */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border-hairline pb-4 font-mono text-xs">
-                  <div className="flex items-center gap-3">
-                    <span className="font-bold text-foreground text-sm">{loan.loanCode}</span>
+                {/* Top Header Row */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border-hairline pb-3 font-mono text-xs">
+                  <div className="flex items-center gap-2.5 flex-wrap">
+                    <span className="font-bold text-foreground text-sm font-mono tracking-wider">
+                      {loan.loanCode}
+                    </span>
                     {getStatusBadge(loan.status)}
                   </div>
-                  <span className="text-muted">
+                  <span className="text-muted text-[11px]">
                     Diajukan pada{' '}
                     {new Date(loan.requestedAt).toLocaleDateString('id-ID', {
                       day: 'numeric',
@@ -427,11 +457,11 @@ export default function MemberLoansDashboardPage() {
                   </span>
                 </div>
 
-                {/* Main loan content grid */}
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
-                  {/* Book summary */}
-                  <div className="md:col-span-7 flex gap-4">
-                    <div className="w-16 h-22 sm:w-20 sm:h-28 bg-surface-muted border border-border-hairline shrink-0 flex items-center justify-center p-2 text-center overflow-hidden">
+                {/* Main Loan Content Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-start">
+                  {/* Book Summary */}
+                  <div className="md:col-span-7 flex gap-3.5 sm:gap-4">
+                    <div className="w-16 h-22 sm:w-20 sm:h-28 bg-surface-muted border border-border-hairline shrink-0 flex items-center justify-center p-1.5 text-center overflow-hidden">
                       {loan.book.coverImage ? (
                         <img
                           src={loan.book.coverImage}
@@ -443,34 +473,35 @@ export default function MemberLoansDashboardPage() {
                       )}
                     </div>
 
-                    <div className="space-y-1">
+                    <div className="space-y-1 min-w-0">
                       <Link
                         href={`/buku/${loan.book.slug}`}
-                        className="font-serif font-bold text-lg sm:text-xl text-foreground hover:underline line-clamp-2"
+                        className="font-serif font-bold text-base sm:text-xl text-foreground hover:underline line-clamp-2"
                       >
                         {loan.book.title}
                       </Link>
                       <p className="font-sans text-xs text-muted">Karya {loan.book.author}</p>
                       {loan.bookCopy && (
-                        <p className="font-mono text-[11px] text-muted pt-1">
-                          Eksemplar Fisik: <strong>{loan.bookCopy.inventoryCode}</strong>
+                        <p className="font-mono text-[11px] text-muted pt-0.5">
+                          Eksemplar Fisik: <strong className="text-foreground">{loan.bookCopy.inventoryCode}</strong>
                         </p>
                       )}
-                      <div className="pt-2 font-mono text-xs text-muted flex items-center gap-1.5">
-                        <MapPin className="w-3.5 h-3.5" />
+                      <div className="pt-1.5 font-mono text-[11px] text-muted flex items-center gap-1.5">
+                        <MapPin className="w-3.5 h-3.5 shrink-0" />
                         <span>Titik Ambil: {loan.pickupPoint}</span>
                       </div>
                     </div>
                   </div>
 
-                  {/* Right: Pickup Code or Dates */}
-                  <div className="md:col-span-5 bg-surface-muted p-4 border border-border-hairline space-y-3 font-mono text-xs">
+                  {/* Right Details Box */}
+                  <div className="md:col-span-5 bg-surface-muted/60 p-3.5 border border-border-hairline space-y-2.5 font-mono text-xs">
+                    {/* Pickup Code for APPROVED */}
                     {loan.status === LoanStatus.APPROVED && loan.pickupCode && (
-                      <div className="text-center space-y-1 p-3 bg-surface border-2 border-foreground">
-                        <span className="text-[10px] uppercase text-muted tracking-widest block">
+                      <div className="text-center space-y-1 p-2.5 bg-surface border-2 border-foreground">
+                        <span className="text-[9px] uppercase text-muted tracking-widest block font-bold">
                           KODE AMBIL DI LAPAK
                         </span>
-                        <div className="font-mono text-3xl font-extrabold tracking-widest text-foreground py-1">
+                        <div className="font-mono text-2xl sm:text-3xl font-black tracking-widest text-foreground py-0.5">
                           {loan.pickupCode}
                         </div>
                         <span className="text-[10px] text-muted block">
@@ -485,32 +516,57 @@ export default function MemberLoansDashboardPage() {
                       </div>
                     )}
 
-                    {loan.dueDate && (
-                      <div className="flex items-center justify-between border-b border-border-hairline pb-2">
-                        <span className="text-muted uppercase">Tenggat Pengembalian:</span>
-                        <span
-                          className={`font-bold ${
-                            loan.status === LoanStatus.OVERDUE ? 'text-destructive' : 'text-foreground'
-                          }`}
-                        >
-                          {new Date(loan.dueDate).toLocaleDateString('id-ID', {
-                            day: 'numeric',
-                            month: 'short',
-                            year: 'numeric',
-                          })}
-                        </span>
+                    {/* Due Date Indicator */}
+                    {dueDateObj && (
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between border-b border-border-hairline pb-1.5 text-[11px]">
+                          <span className="text-muted uppercase">Tenggat Pengembalian:</span>
+                          <span
+                            className={cn(
+                              'font-bold',
+                              loan.status === LoanStatus.OVERDUE ? 'text-destructive' : 'text-foreground'
+                            )}
+                          >
+                            {dueDateObj.toLocaleDateString('id-ID', {
+                              day: 'numeric',
+                              month: 'short',
+                              year: 'numeric',
+                            })}
+                          </span>
+                        </div>
+                        {diffDays !== null && (
+                          <div className="flex items-center justify-between text-[10px] text-muted">
+                            <span>Sisa Waktu:</span>
+                            <span
+                              className={cn(
+                                'font-bold font-mono',
+                                diffDays < 0
+                                  ? 'text-destructive'
+                                  : diffDays <= 2
+                                  ? 'text-amber-700 dark:text-amber-400'
+                                  : 'text-foreground'
+                              )}
+                            >
+                              {diffDays < 0
+                                ? `Terlambat ${Math.abs(diffDays)} hari`
+                                : diffDays === 0
+                                ? 'Hari ini jatuh tempo'
+                                : `${diffDays} hari lagi`}
+                            </span>
+                          </div>
+                        )}
                       </div>
                     )}
 
-                    <div className="text-[11px] font-sans text-muted">
+                    <div className="text-[11px] font-sans text-muted leading-relaxed">
                       <strong>Petunjuk:</strong> {loan.nextAction}
                     </div>
                   </div>
                 </div>
 
-                {/* Footer action buttons & volunteer info */}
+                {/* Footer Action Buttons */}
                 {(loan.canCancel || loan.status === LoanStatus.BORROWED || loan.status === LoanStatus.RETURNED) && (
-                  <div className="pt-3 border-t border-border-hairline flex flex-col sm:flex-row sm:items-center justify-between gap-3 font-mono text-xs">
+                  <div className="pt-3 border-t border-dashed border-border-hairline flex flex-col sm:flex-row sm:items-center justify-between gap-3 font-mono text-xs">
                     {loan.status === LoanStatus.BORROWED ? (
                       <div className="text-[11px] text-muted font-sans italic bg-surface-muted p-2 border border-border-hairline">
                         * Perpanjangan masa pinjam (+7 hari) dilakukan oleh relawan di lapak atau hubungi relawan via WhatsApp.
@@ -519,14 +575,28 @@ export default function MemberLoansDashboardPage() {
                       <div />
                     )}
 
-                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full sm:w-auto sm:self-end shrink-0">
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-2.5 w-full sm:w-auto sm:self-end shrink-0">
+                      {loan.status === LoanStatus.BORROWED && (
+                        <a
+                          href={getWhatsAppUrl(
+                            `Halo Relawan Perpusjal Blora, mengenai pinjaman buku "${loan.book?.title}" (Kode: ${loan.loanCode}), saya ingin menanyakan perpanjangan...`
+                          )}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="min-h-[44px] px-3.5 py-2 border border-border-hairline hover:border-foreground bg-surface text-foreground font-mono text-xs uppercase tracking-wider font-semibold inline-flex items-center justify-center gap-1.5 transition-all active:scale-95 touch-tactile text-center"
+                        >
+                          <MessageCircle className="w-3.5 h-3.5 text-foreground" />
+                          <span>Hubungi Relawan WA</span>
+                        </a>
+                      )}
+
                       {loan.status === LoanStatus.RETURNED && (
                         <Link
                           href={`/buku/${loan.book.slug}#resensi`}
-                          className="px-3 py-1.5 border border-border-hairline text-foreground hover:bg-muted-bg transition-colors inline-flex items-center justify-center gap-1.5 uppercase font-medium tracking-wider text-center"
+                          className="min-h-[44px] px-4 py-2 border border-foreground bg-foreground text-background font-mono text-xs uppercase tracking-wider font-bold inline-flex items-center justify-center gap-1.5 hover:opacity-90 transition-all active:scale-95 touch-tactile text-center"
                         >
-                          <Star className="w-3.5 h-3.5 fill-foreground/20 text-foreground" />
-                          Tulis Resensi
+                          <Star className="w-3.5 h-3.5 fill-current" />
+                          <span>Tulis Resensi Buku</span>
                         </Link>
                       )}
 
@@ -535,19 +605,20 @@ export default function MemberLoansDashboardPage() {
                           type="button"
                           onClick={() => handleCancel(loan.id)}
                           disabled={actionLoading}
-                          className="px-3 py-1.5 border border-border-hairline text-muted hover:text-foreground uppercase tracking-wider transition-colors inline-flex items-center justify-center gap-1 text-center"
+                          className="min-h-[44px] px-4 py-2 border border-destructive/50 text-destructive hover:border-destructive hover:bg-destructive/5 uppercase tracking-wider transition-all active:scale-95 touch-tactile inline-flex items-center justify-center gap-1 text-center"
                         >
                           <XCircle className="w-3.5 h-3.5" />
-                          Batalkan Pengajuan
+                          <span>Batalkan Pengajuan</span>
                         </button>
                       )}
                     </div>
                   </div>
                 )}
               </div>
-            ))}
-          </div>
-        )}
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

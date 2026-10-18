@@ -304,8 +304,8 @@ export function AdminBookCopiesModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs font-sans">
-      <div className="relative w-full max-w-3xl bg-surface border-2 border-foreground rounded-none max-h-[90dvh] flex flex-col animate-in fade-in zoom-in-95 duration-150">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-xs font-sans">
+      <div className="relative w-full max-w-3xl bg-surface border-2 border-foreground max-md:rounded-t-2xl max-md:border-b-0 max-h-[92dvh] flex flex-col animate-in slide-in-from-bottom duration-200 sm:zoom-in-95">
         {/* Modal Header */}
         <div className="p-4 sm:p-5 border-b border-border-hairline flex items-start justify-between bg-surface-muted/30">
           <div>

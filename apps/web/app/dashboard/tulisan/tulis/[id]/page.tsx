@@ -14,7 +14,7 @@ import {
   OFFICIAL_CATEGORY_GUIDES,
 } from '@/components/articles/category-picker-modal';
 import { apiClient } from '@/lib/api';
-import { ArticleCategory, ArticleDetail, ArticleTag } from '@perpusjal/types';
+import { ArticleCategory, ArticleDetail, ArticleTag, BookItem } from '@perpusjal/types';
 import {
   Save,
   Send,
@@ -31,6 +31,8 @@ import {
   X,
   RotateCcw,
   Sparkles,
+  Quote,
+  Search,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -53,6 +55,8 @@ interface ArticleLocalDraft {
   tagIds: string[];
   contentJson: any;
   plainText: string;
+  pullQuote?: string;
+  relatedBookIds?: string[];
   updatedAt: string;
 }
 
@@ -70,6 +74,13 @@ export default function DashboardEditArticlePage() {
   const [tagIds, setTagIds] = React.useState<string[]>([]);
   const [contentJson, setContentJson] = React.useState<any>(null);
   const [plainText, setPlainText] = React.useState('');
+
+  // Editorial Value-Add: Pull-Quote & Cross-Linking Books
+  const [pullQuote, setPullQuote] = React.useState('');
+  const [relatedBookIds, setRelatedBookIds] = React.useState<string[]>([]);
+  const [catalogBooks, setCatalogBooks] = React.useState<BookItem[]>([]);
+  const [bookSearch, setBookSearch] = React.useState('');
+  const [loadingBooks, setLoadingBooks] = React.useState(false);
 
   const [categories, setCategories] = React.useState<ArticleCategory[]>(FALLBACK_ARTICLE_CATEGORIES);
   const [tags, setTags] = React.useState<ArticleTag[]>([]);
@@ -99,14 +110,21 @@ export default function DashboardEditArticlePage() {
     setErrorMessage(null);
 
     try {
-      const [catRes, tagRes, artRes] = await Promise.all([
+      const [catRes, tagRes, artRes, bookRes] = await Promise.all([
         apiClient<ArticleCategory[]>('/articles/categories'),
         apiClient<ArticleTag[]>('/articles/tags'),
         apiClient<ArticleDetail>(`/articles/id/${articleId}`),
+        apiClient<any>('/books?perPage=100'),
       ]);
 
       if (catRes.data) setCategories(catRes.data);
       if (tagRes.data) setTags(tagRes.data);
+      const bList: BookItem[] = Array.isArray(bookRes.data)
+        ? bookRes.data
+        : Array.isArray(bookRes.data?.data)
+        ? bookRes.data.data
+        : [];
+      setCatalogBooks(bList);
 
       let art = artRes.data;
       if (!art) {
@@ -125,6 +143,8 @@ export default function DashboardEditArticlePage() {
         setTagIds((art.tags || []).map((t) => t.id));
         setContentJson(art.content);
         setPlainText(art.plainText || '');
+        setPullQuote((art as any).pullQuote || '');
+        setRelatedBookIds((art as any).relatedBookIds || []);
 
         // Check if there is an offline local backup in localStorage
         try {
@@ -216,6 +236,8 @@ export default function DashboardEditArticlePage() {
           tagIds,
           contentJson,
           plainText,
+          pullQuote,
+          relatedBookIds,
           updatedAt: new Date().toISOString(),
           ...overrides,
         };
@@ -225,7 +247,7 @@ export default function DashboardEditArticlePage() {
         console.warn('Gagal menyimpan draf lokal:', e);
       }
     },
-    [articleId, title, subtitle, categoryId, coverImage, coverCredit, tagIds, contentJson, plainText]
+    [articleId, title, subtitle, categoryId, coverImage, coverCredit, tagIds, contentJson, plainText, pullQuote, relatedBookIds]
   );
 
   const restoreLocalBackup = () => {
@@ -238,6 +260,8 @@ export default function DashboardEditArticlePage() {
     if (localBackupData.tagIds !== undefined) setTagIds(localBackupData.tagIds);
     if (localBackupData.contentJson !== undefined) setContentJson(localBackupData.contentJson);
     if (localBackupData.plainText !== undefined) setPlainText(localBackupData.plainText);
+    if (localBackupData.pullQuote !== undefined) setPullQuote(localBackupData.pullQuote);
+    if (localBackupData.relatedBookIds !== undefined) setRelatedBookIds(localBackupData.relatedBookIds);
 
     setHasLocalBackup(false);
     setLocalBackupData(null);
@@ -321,6 +345,8 @@ export default function DashboardEditArticlePage() {
           coverImage: coverImage.trim() || undefined,
           coverCredit: coverCredit.trim() || undefined,
           content: contentJson,
+          pullQuote: pullQuote.trim() || undefined,
+          relatedBookIds: relatedBookIds.length > 0 ? relatedBookIds : undefined,
           tagIds: tagIds.length > 0 ? tagIds : undefined,
         }),
       });
@@ -887,6 +913,147 @@ export default function DashboardEditArticlePage() {
               tags={tagNames}
               coverImage={coverImage}
             />
+          </div>
+
+          {/* Section: Pull-Quote Editorial */}
+          <div className="pt-2 border-t border-border-hairline space-y-2">
+            <div className="flex items-center justify-between">
+              <label className="font-mono text-[10px] uppercase tracking-wider text-muted font-bold flex items-center gap-1.5">
+                <Quote className="w-3.5 h-3.5 text-foreground" />
+                <span>Kutipan Sorotan / Pull-Quote</span>
+              </label>
+              <span className="font-mono text-[9px] text-muted">
+                {pullQuote.length} / 400
+              </span>
+            </div>
+            <textarea
+              rows={3}
+              maxLength={400}
+              value={pullQuote}
+              onChange={(e) => {
+                const val = e.target.value;
+                setPullQuote(val);
+                persistLocalBackup({ pullQuote: val });
+              }}
+              placeholder="Kutipan paling bernas dari esai ini yang akan ditampilkan besar & elegan di ruang baca..."
+              className="w-full p-2.5 bg-surface border border-border font-serif italic text-xs text-foreground focus:outline-hidden focus:border-foreground leading-relaxed"
+            />
+            <p className="font-mono text-[9px] text-muted">
+              * Akan dirender sebagai kutipan estetis yang dapat dibagikan pembaca dengan 1-klik.
+            </p>
+          </div>
+
+          {/* Section: Buku Terkait di Perpusjal */}
+          <div className="pt-2 border-t border-border-hairline space-y-2">
+            <div className="flex items-center justify-between">
+              <label className="font-mono text-[10px] uppercase tracking-wider text-muted font-bold flex items-center gap-1.5">
+                <BookOpen className="w-3.5 h-3.5 text-foreground" />
+                <span>Kaitkan Koleksi Buku Terkait ({relatedBookIds.length})</span>
+              </label>
+              <span className="font-mono text-[9px] text-muted">Katalog Perpusjal</span>
+            </div>
+            <p className="font-mono text-[9px] text-muted">
+              Tautkan buku yang relevan dengan topik ini agar pembaca bisa langsung meminjam bukunya.
+            </p>
+
+            {/* Selected Book Chips */}
+            {relatedBookIds.length > 0 && (
+              <div className="flex flex-wrap gap-1 pb-1">
+                {relatedBookIds.map((bId) => {
+                  const b = catalogBooks.find((item) => item.id === bId);
+                  return (
+                    <span
+                      key={bId}
+                      className="inline-flex items-center gap-1 px-2 py-0.5 bg-surface-muted border border-border-hairline font-mono text-[9px] text-foreground"
+                    >
+                      <span className="truncate max-w-[140px]">{b?.title || bId}</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const updated = relatedBookIds.filter((id) => id !== bId);
+                          setRelatedBookIds(updated);
+                          persistLocalBackup({ relatedBookIds: updated });
+                        }}
+                        className="hover:text-destructive text-muted ml-0.5 font-bold"
+                      >
+                        &times;
+                      </button>
+                    </span>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Search Box */}
+            <div className="relative">
+              <Search className="w-3 h-3 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted" />
+              <input
+                type="text"
+                value={bookSearch}
+                onChange={(e) => setBookSearch(e.target.value)}
+                placeholder="Cari buku dari katalog..."
+                className="w-full pl-7 pr-3 py-1 bg-surface border border-border font-sans text-xs focus:outline-hidden"
+              />
+            </div>
+
+            {/* Scrollable list */}
+            <div className="max-h-36 overflow-y-auto border border-border-hairline divide-y divide-border-hairline">
+              {loadingBooks ? (
+                <div className="p-2 text-center font-mono text-[10px] text-muted">
+                  Memuat katalog buku...
+                </div>
+              ) : catalogBooks.length === 0 ? (
+                <div className="p-2 text-center font-mono text-[10px] text-muted">
+                  Tidak ada koleksi buku ditemukan.
+                </div>
+              ) : (
+                catalogBooks
+                  .filter((b) => {
+                    if (!bookSearch.trim()) return true;
+                    const q = bookSearch.toLowerCase();
+                    return b.title.toLowerCase().includes(q) || b.author.toLowerCase().includes(q);
+                  })
+                  .slice(0, 25)
+                  .map((b) => {
+                    const isSelected = relatedBookIds.includes(b.id);
+                    return (
+                      <button
+                        key={b.id}
+                        type="button"
+                        onClick={() => {
+                          let updated: string[];
+                          if (isSelected) {
+                            updated = relatedBookIds.filter((id) => id !== b.id);
+                          } else {
+                            updated = [...relatedBookIds, b.id];
+                          }
+                          setRelatedBookIds(updated);
+                          persistLocalBackup({ relatedBookIds: updated });
+                        }}
+                        className={`w-full px-2.5 py-1.5 text-left flex items-center justify-between text-xs transition-colors ${
+                          isSelected
+                            ? 'bg-foreground/5 font-semibold text-foreground'
+                            : 'hover:bg-surface-muted text-foreground'
+                        }`}
+                      >
+                        <div className="flex items-center gap-1.5 truncate pr-2">
+                          <span
+                            className={`w-3 h-3 border flex items-center justify-center text-[9px] shrink-0 ${
+                              isSelected
+                                ? 'bg-foreground border-foreground text-background font-bold'
+                                : 'border-border-hairline'
+                            }`}
+                          >
+                            {isSelected ? '✓' : ''}
+                          </span>
+                          <span className="truncate text-xs">{b.title}</span>
+                          <span className="text-[10px] text-muted truncate">— {b.author}</span>
+                        </div>
+                      </button>
+                    );
+                  })
+              )}
+            </div>
           </div>
 
           {/* Public Preview Link */}

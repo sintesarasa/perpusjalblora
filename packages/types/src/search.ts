@@ -30,6 +30,7 @@ export interface SearchBookItem {
   synopsis?: string | null;
   coverImage?: string | null;
   category?: { name: string; slug: string } | null;
+  isBorrowable?: boolean;
 }
 
 export interface SearchResultsData {

@@ -35,6 +35,9 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 4000;
 
+// Trust reverse proxy (Vercel & Render load balancers) so rate limiting reads real client IP
+app.set('trust proxy', 1);
+
 app.set('etag', false);
 
 // Security & Utility Middleware
@@ -88,8 +91,8 @@ app.use('/api', (req, res, next) => {
     res.set('Pragma', 'no-cache');
     res.set('Expires', '0');
   } else {
-    // Public GET endpoints (landing, public book catalog, public articles) get lightweight cache
-    res.set('Cache-Control', 'public, max-age=60, s-maxage=120, stale-while-revalidate=300');
+    // Public GET endpoints (landing, public book catalog, public articles) get lightweight edge/browser cache
+    res.set('Cache-Control', 'public, max-age=60, s-maxage=120, stale-while-revalidate=600');
   }
   next();
 });
@@ -162,14 +165,24 @@ app.get('/api/v1/landing/config', (req, res, next) =>
   adminController.getPublicLandingConfig(req, res, next)
 );
 
-// Health check handler (PRD §23.2, §31.2) - Available at /health, /api/health, and /api/v1/health
-const healthHandler = async (req: express.Request, res: express.Response) => {
+// 1. Lightweight Liveness check (0 DB queries - Safe for Render Health Checks & external uptime pingers without waking Neon)
+const livenessHandler = (_req: express.Request, res: express.Response) => {
+  res.status(200).json({
+    status: 'ok',
+    service: 'perpusjal-api',
+    check: 'liveness',
+    timestamp: new Date().toISOString(),
+  });
+};
+
+// 2. Readiness check (Verifies active connection to Neon PostgreSQL on demand)
+const readinessHandler = async (_req: express.Request, res: express.Response) => {
   try {
-    // Quick DB ping
     await prisma.$queryRaw`SELECT 1`;
     res.status(200).json({
       status: 'ok',
       service: 'perpusjal-api',
+      check: 'readiness',
       timestamp: new Date().toISOString(),
       database: 'connected',
     });
@@ -177,15 +190,31 @@ const healthHandler = async (req: express.Request, res: express.Response) => {
     res.status(503).json({
       status: 'degraded',
       service: 'perpusjal-api',
+      check: 'readiness',
       timestamp: new Date().toISOString(),
       database: 'disconnected',
     });
   }
 };
 
-app.get('/health', healthLimiter, healthHandler);
-app.get('/api/health', healthLimiter, healthHandler);
-app.get('/api/v1/health', healthLimiter, healthHandler);
+// Explicit liveness endpoints (0 DB queries)
+app.get('/health/live', healthLimiter, livenessHandler);
+app.get('/api/health/live', healthLimiter, livenessHandler);
+app.get('/api/v1/health/live', healthLimiter, livenessHandler);
+
+// Explicit readiness endpoints (Deep DB verification)
+app.get('/health/ready', healthLimiter, readinessHandler);
+app.get('/api/health/ready', healthLimiter, readinessHandler);
+app.get('/api/v1/health/ready', healthLimiter, readinessHandler);
+
+// Standard /health endpoints: Defaults to liveness to protect Neon compute hours from uptime pings,
+// unless explicit ?check=db or ?check=ready query is provided
+app.get(['/health', '/api/health', '/api/v1/health'], healthLimiter, (req, res, next) => {
+  if (req.query.check === 'db' || req.query.check === 'ready') {
+    return readinessHandler(req, res);
+  }
+  return livenessHandler(req, res);
+});
 
 // API Root Information
 app.get('/api/v1', (req, res) => {

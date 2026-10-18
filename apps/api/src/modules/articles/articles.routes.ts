@@ -12,6 +12,7 @@ router.get('/tags', (req, res, next) => articlesController.getTags(req, res, nex
 router.post('/tags', requireAuth, (req, res, next) => articlesController.createTag(req, res, next));
 
 // Author routes (Protected)
+router.get('/me', requireAuth, (req, res, next) => articlesController.getMyArticles(req, res, next));
 router.get('/me/list', requireAuth, (req, res, next) => articlesController.getMyArticles(req, res, next));
 router.get('/id/:id', requireAuth, (req, res, next) => articlesController.getArticleById(req, res, next));
 router.post('/', requireAuth, requireVerified, (req, res, next) => articlesController.createArticle(req, res, next));

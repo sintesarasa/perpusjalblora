@@ -115,3 +115,36 @@ export const healthLimiter = rateLimit({
   },
 });
 
+/**
+ * Comment submission rate limiter (Anti Spam / Flooding: max 15 comments per 10 minutes per IP)
+ */
+export const commentLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000, // 10 minutes
+  limit: 15,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  message: {
+    error: {
+      code: 'COMMENT_RATE_LIMIT_EXCEEDED',
+      message: 'Pengiriman tanggapan komentar terlalu cepat. Silakan tunggu beberapa saat.',
+    },
+  },
+});
+
+/**
+ * Reader Letter submission rate limiter (Anti Spam: max 5 letters per 30 minutes per IP)
+ */
+export const letterLimiter = rateLimit({
+  windowMs: 30 * 60 * 1000, // 30 minutes
+  limit: 5,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  message: {
+    error: {
+      code: 'LETTER_RATE_LIMIT_EXCEEDED',
+      message: 'Pengiriman surat pembaca terlalu sering. Silakan tunggu beberapa waktu sebelum mengirim kembali.',
+    },
+  },
+});
+
+

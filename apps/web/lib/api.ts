@@ -71,12 +71,28 @@ export interface ApiFetchOptions extends RequestInit {
     revalidate?: number | false;
     tags?: string[];
   };
+  timeoutMs?: number;
+  retryOnColdStart?: boolean;
+}
+
+export function isServerColdStart(error: ApiError | undefined): boolean {
+  if (!error) return false;
+  return (
+    error.code === 'SERVER_COLD_START' ||
+    error.code === 'HTTP_504' ||
+    error.code === 'HTTP_502' ||
+    error.message.includes('504') ||
+    error.message.includes('502') ||
+    error.message.includes('cold start')
+  );
 }
 
 export async function apiClient<T>(
   endpoint: string,
   options: ApiFetchOptions = {}
 ): Promise<ApiResponse<T>> {
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
   try {
     let apiUrl = getApiUrl();
     if (!apiUrl || apiUrl === 'undefined' || apiUrl === 'null') {
@@ -89,7 +105,7 @@ export async function apiClient<T>(
         ? `${apiUrl.slice(0, -7)}${cleanEndpoint}`
         : `${apiUrl}${cleanEndpoint}`;
 
-    const { next, cache, headers, ...restOptions } = options;
+    const { next, cache, headers, timeoutMs, retryOnColdStart, ...restOptions } = options;
     const fetchInit: RequestInit & { next?: { revalidate?: number | false; tags?: string[] } } = {
       credentials: 'include',
       headers: {
@@ -99,18 +115,100 @@ export async function apiClient<T>(
       ...restOptions,
     };
 
+    const method = (options.method || 'GET').toUpperCase();
+    const isPublicGet =
+      method === 'GET' &&
+      !endpoint.includes('/me') &&
+      !endpoint.includes('/admin') &&
+      !endpoint.includes('/dashboard') &&
+      !endpoint.includes('/auth/');
+
+    // Cache strategy: Public GET requests can leverage Vercel Edge Cache and browser caching,
+    // while mutations and private routes always stay no-store.
     if (next) {
       fetchInit.next = next;
     } else if (cache) {
       fetchInit.cache = cache;
+    } else if (isPublicGet) {
+      if (typeof window === 'undefined') {
+        fetchInit.next = { revalidate: 120 };
+      } else {
+        fetchInit.cache = 'default';
+      }
     } else {
       fetchInit.cache = 'no-store';
     }
 
-    const res = await fetch(targetUrl, fetchInit);
+    // AbortController timeout to prevent hanging on Render cold starts (default 9s for public, 15s for mutations)
+    const effectiveTimeoutMs = timeoutMs ?? (isPublicGet ? 9000 : 15000);
+    const controller = new AbortController();
+
+    if (options.signal) {
+      if (options.signal.aborted) {
+        controller.abort(options.signal.reason);
+      } else {
+        options.signal.addEventListener('abort', () => controller.abort(options.signal?.reason));
+      }
+    }
+
+    timeoutId = setTimeout(() => {
+      controller.abort(new Error('TIMEOUT_COLD_START'));
+    }, effectiveTimeoutMs);
+
+    fetchInit.signal = controller.signal;
+
+    let res: Response;
+    try {
+      res = await fetch(targetUrl, fetchInit);
+    } catch (fetchErr: unknown) {
+      if (timeoutId) clearTimeout(timeoutId);
+      const isAbortOrTimeout =
+        (fetchErr instanceof Error &&
+          (fetchErr.name === 'AbortError' || fetchErr.message.includes('TIMEOUT_COLD_START'))) ||
+        controller.signal.aborted;
+
+      // 1-time automatic retry for public GET if initial call was caught in a Render spin-up
+      if (isPublicGet && isAbortOrTimeout && retryOnColdStart !== false) {
+        try {
+          const retryController = new AbortController();
+          const retryTimeoutId = setTimeout(() => retryController.abort(), 12000);
+          fetchInit.signal = retryController.signal;
+          const retryRes = await fetch(targetUrl, fetchInit);
+          clearTimeout(retryTimeoutId);
+          res = retryRes;
+        } catch {
+          return {
+            error: {
+              code: 'SERVER_COLD_START',
+              message: 'Server sedang bersiap (cold start). Silakan coba lagi dalam beberapa saat.',
+            },
+          };
+        }
+      } else if (isAbortOrTimeout) {
+        return {
+          error: {
+            code: 'SERVER_COLD_START',
+            message: 'Server sedang bersiap (cold start). Silakan coba lagi dalam beberapa saat.',
+          },
+        };
+      } else {
+        throw fetchErr;
+      }
+    } finally {
+      if (timeoutId) clearTimeout(timeoutId);
+    }
 
     if (res.status === 204) {
       return { data: undefined as unknown as T };
+    }
+
+    if (res.status === 504 || res.status === 502) {
+      return {
+        error: {
+          code: 'SERVER_COLD_START',
+          message: 'Server sedang bersiap (cold start). Membuka koneksi ulang...',
+        },
+      };
     }
 
     const json = await res.json().catch(() => null);
@@ -163,6 +261,7 @@ export async function apiClient<T>(
 
     return { data: json as T };
   } catch (err: unknown) {
+    if (timeoutId) clearTimeout(timeoutId);
     const message = err instanceof Error ? err.message : 'Tidak dapat terhubung ke server perpusjal.';
     return {
       error: {

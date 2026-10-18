@@ -35,6 +35,7 @@ import {
   ChevronDown,
   Quote,
   Radio,
+  Navigation,
 } from 'lucide-react';
 import { getWhatsAppUrl } from '@/lib/contact';
 import { cn } from '@/lib/utils';
@@ -149,9 +150,64 @@ const GRASSROOTS_FAQS: GrassrootsFAQ[] = [
   },
 ];
 
+interface HeadquarterSpot {
+  id: string;
+  badge: string;
+  name: string;
+  address: string;
+  schedule: string;
+  description: string;
+  highlight: string;
+  googleMapsUrl: string;
+}
+
+const HEADQUARTERS_DATA: HeadquarterSpot[] = [
+  {
+    id: 'basecamp',
+    badge: 'POS UTAMA // SEKRETARIAT',
+    name: 'Basecamp & Gudang Kolektif Jl. Pemuda',
+    address: 'Jl. Pemuda No. 12, Tempelan, Blora (Depan deretan ruko / 300m barat Tugu Pancasila)',
+    schedule: 'Buka Setiap Hari (10.00 – 21.00 WIB) • Drop Box Buku 24 Jam',
+    description: 'Pusat inventarisasi buku kolektif, tempat kawan relawan menyortir titipan donasi buku, arsip zine perlawanan, dan drop box pengembalian buku 24 jam tanpa bertemu orang.',
+    highlight: 'Titik kumpul diskusi malam, sortir buku, dan ngopi santai relawan.',
+    googleMapsUrl: 'https://www.google.com/maps/search/?api=1&query=Jl.+Pemuda+No.+12+Blora',
+  },
+  {
+    id: 'lapak-cfd',
+    badge: 'RUTIN MINGGUAN // CAR FREE DAY',
+    name: 'Lapak Terpal Alun-Alun Blora',
+    address: 'Trotoar Timur Alun-Alun Blora (Depan Kantor Bupati / Sebelah barat beringin kembar)',
+    schedule: 'Setiap Minggu Pagi (06.00 – 09.30 WIB saat CFD)',
+    description: 'Ruang baca terbuka tempat terpal biru legendaris digelar. Ratusan buku gratis, alas mewarnai anak-anak, tempat nongkrong santai warga, dan peminjaman buku langsung.',
+    highlight: 'Titik temu utama warga kota sejak 2017. Ramah anak dan keluarga.',
+    googleMapsUrl: 'https://www.google.com/maps/search/?api=1&query=Alun-Alun+Blora',
+  },
+  {
+    id: 'talang-bocor',
+    badge: 'BENGKEL KRIYA // STUDIO MANDIRI',
+    name: 'Markas Omah Talang Bocor Kridosono',
+    address: 'Kawasan Stadion Kridosono, Jl. Kolonel Sunandar, Blora',
+    schedule: 'Jumat Sore & Sabtu Malam (16.00 – 22.00 WIB)',
+    description: 'Laboratorium kriya mandiri rakyat: bengkel sablon cukil kayu murah, percetakan zine fotokopian independen, ruang temu pegiat musik jalanan, dan daur ulang kreatif.',
+    highlight: 'Pusat belajar berdikari melalui seni grafis dan cetak tangan.',
+    googleMapsUrl: 'https://www.google.com/maps/search/?api=1&query=Stadion+Kridosono+Blora',
+  },
+  {
+    id: 'dope-alas',
+    badge: 'SAYAP SELATAN // MATA AIR HUTAN',
+    name: 'Pos Sendang Salak Tanggel (Perpusjal Dope)',
+    address: 'Mata Air Sendang Salak, Desa Tanggel, Kec. Jati (Doplang), Blora',
+    schedule: 'Sabtu & Minggu (Agenda Kemah Alas & Taman Baca Berkala)',
+    description: 'Pos literasi alam sayap selatan di bawah kanopi jati. Menyelenggarakan kemah literasi tahunan Nginep Alas, ecoprint daun jati bersama warga desa, dan ruang baca pelosok.',
+    highlight: 'Menghubungkan kecintaan buku dengan pelestarian mata air dan hutan.',
+    googleMapsUrl: 'https://www.google.com/maps/search/?api=1&query=Sendang+Salak+Tanggel+Blora',
+  },
+];
+
 export default function AboutPage() {
   const [activeWing, setActiveWing] = React.useState<'KOTA' | 'DOPE'>('KOTA');
   const [openFaq, setOpenFaq] = React.useState<string | null>('faq-1');
+  const [activeMilestoneYear, setActiveMilestoneYear] = React.useState<string>('2017');
 
   // GPU-Accelerated Timeline Scroll Progress (direct DOM transforms & lerp, zero React re-renders)
   const timelineTrackRef = React.useRef<HTMLDivElement>(null);
@@ -312,7 +368,7 @@ export default function AboutPage() {
 
       <Header />
 
-      <main className="flex-1 pb-16 sm:pb-24">
+      <main className="flex-1 pb-28 sm:pb-24">
         {/* ========================================================= */}
         {/* 1. CINEMATIC BROADSHEET OPENING SCENE                     */}
         {/* ========================================================= */}
@@ -459,6 +515,105 @@ export default function AboutPage() {
         </section>
 
         {/* ========================================================= */}
+        {/* 2.5 MANIFESTO SIRKULASI: TIGA PILAR KOLEKTIF              */}
+        {/* ========================================================= */}
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 border-b-2 border-foreground bg-surface-muted/20">
+          <RevealOnScroll variant="cinematic">
+            <div className="border-b-2 border-foreground pb-4 mb-8 sm:mb-12 flex flex-col md:flex-row md:items-end justify-between gap-3">
+              <div>
+                <div className="font-mono text-xs uppercase tracking-widest text-muted flex items-center gap-2">
+                  <ShieldCheck className="w-3.5 h-3.5 text-foreground shrink-0" />
+                  <span>KEDAULATAN LITERASI WARGA</span>
+                </div>
+                <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground tracking-tight mt-1">
+                  Tiga Sumpah Sirkulasi Terbuka
+                </h2>
+              </div>
+              <p className="font-mono text-xs text-muted max-w-sm">
+                Nilai dasar yang kami pegang teguh sejak 2017: menjaga sirkulasi buku tetap suci dari denda uang dan sekat birokrasi.
+              </p>
+            </div>
+          </RevealOnScroll>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
+            {/* Pilar 1 */}
+            <RevealOnScroll variant="stamp" delayMs={50}>
+              <div className="border-2 border-foreground bg-surface p-6 sm:p-7 h-full flex flex-col justify-between space-y-4">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between font-mono text-[10px] text-muted border-b border-border-hairline pb-2">
+                    <span className="font-bold text-foreground">[ PILAR I ]</span>
+                    <span className="px-1.5 py-0.5 bg-foreground text-background font-bold">MUTLAK</span>
+                  </div>
+                  <div className="font-serif font-black text-2xl sm:text-3xl text-foreground tracking-tight">
+                    Nol Denda Finansial
+                  </div>
+                  <div className="font-mono text-xs font-semibold text-muted uppercase">
+                    Zero Monetary Penalties
+                  </div>
+                  <p className="font-sans text-xs sm:text-sm text-foreground/85 leading-relaxed pt-1">
+                    Buku adalah jembatan persaudaraan, bukan instrumen komersil. Kami tidak pernah dan tidak akan pernah mengenakan denda uang rupiah bagi peminjam yang terlambat. Keterlambatan diselesaikan lewat sapaan hangat dan komunikasi jujur.
+                  </p>
+                </div>
+                <div className="pt-4 border-t border-dashed border-foreground/30 flex items-center gap-2 text-xs font-mono font-bold text-foreground">
+                  <CheckCircle2 className="w-4 h-4 shrink-0 text-foreground" />
+                  <span>0 Rupiah Denda Selamanya</span>
+                </div>
+              </div>
+            </RevealOnScroll>
+
+            {/* Pilar 2 */}
+            <RevealOnScroll variant="stamp" delayMs={100}>
+              <div className="border-2 border-foreground bg-surface p-6 sm:p-7 h-full flex flex-col justify-between space-y-4">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between font-mono text-[10px] text-muted border-b border-border-hairline pb-2">
+                    <span className="font-bold text-foreground">[ PILAR II ]</span>
+                    <span className="px-1.5 py-0.5 bg-foreground text-background font-bold">AMANAH</span>
+                  </div>
+                  <div className="font-serif font-black text-2xl sm:text-3xl text-foreground tracking-tight">
+                    Nol Jaminan Uang &amp; KTP
+                  </div>
+                  <div className="font-mono text-xs font-semibold text-muted uppercase">
+                    Trust-Based Lending
+                  </div>
+                  <p className="font-sans text-xs sm:text-sm text-foreground/85 leading-relaxed pt-1">
+                    Tanpa fotokopi KTP, tanpa kartu anggota berbayar, dan tanpa deposit uang sepeser pun. Cukup nama dan kontak WhatsApp aktif. Kami bertaruh pada keluhuran budi dan amanah sesama warga Blora untuk merawat buku bersama.
+                  </p>
+                </div>
+                <div className="pt-4 border-t border-dashed border-foreground/30 flex items-center gap-2 text-xs font-mono font-bold text-foreground">
+                  <CheckCircle2 className="w-4 h-4 shrink-0 text-foreground" />
+                  <span>Bebas Birokrasi &amp; Sekat Kertas</span>
+                </div>
+              </div>
+            </RevealOnScroll>
+
+            {/* Pilar 3 */}
+            <RevealOnScroll variant="stamp" delayMs={150}>
+              <div className="border-2 border-foreground bg-surface p-6 sm:p-7 h-full flex flex-col justify-between space-y-4">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between font-mono text-[10px] text-muted border-b border-border-hairline pb-2">
+                    <span className="font-bold text-foreground">[ PILAR III ]</span>
+                    <span className="px-1.5 py-0.5 bg-foreground text-background font-bold">MERDEKA</span>
+                  </div>
+                  <div className="font-serif font-black text-2xl sm:text-3xl text-foreground tracking-tight">
+                    Sirkulasi Terbuka &amp; Egaliter
+                  </div>
+                  <div className="font-mono text-xs font-semibold text-muted uppercase">
+                    Radical Open Access
+                  </div>
+                  <p className="font-sans text-xs sm:text-sm text-foreground/85 leading-relaxed pt-1">
+                    Buku tidak boleh membusuk di lemari terkunci. Ia harus berputar dari tangan ke tangan. Di atas selembar terpal biru, anak punk, petani, pelajar desa, mahasiswa, hingga pegawai negeri duduk setara tanpa sekat status sosial.
+                  </p>
+                </div>
+                <div className="pt-4 border-t border-dashed border-foreground/30 flex items-center gap-2 text-xs font-mono font-bold text-foreground">
+                  <CheckCircle2 className="w-4 h-4 shrink-0 text-foreground" />
+                  <span>Ruang Publik Setara Untuk Semua</span>
+                </div>
+              </div>
+            </RevealOnScroll>
+          </div>
+        </section>
+
+        {/* ========================================================= */}
         {/* 3. THE CINEMATIC TIMELINE RIVER (SCROLL-DRIVEN VOYAGE)     */}
         {/* ========================================================= */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 overflow-x-clip">
@@ -479,8 +634,100 @@ export default function AboutPage() {
             </div>
           </RevealOnScroll>
 
-          {/* Cinematic Vertical Timeline Track with Progressive Thread Line */}
-          <div ref={timelineTrackRef} className="relative">
+          {/* Mobile Swipeable Milestone Carousel (md:hidden) — Ergonomic, touch-friendly, horizontal snap */}
+          <div className="block md:hidden space-y-4">
+            {/* Quick Jump Year Pills */}
+            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none snap-x">
+              {TIMELINE_EVENTS.map((ev) => {
+                const isActive = activeMilestoneYear === ev.year;
+                return (
+                  <button
+                    key={ev.year}
+                    type="button"
+                    onClick={() => {
+                      setActiveMilestoneYear(ev.year);
+                      const el = document.getElementById(`mobile-milestone-${ev.year}`);
+                      el?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+                    }}
+                    className={cn(
+                      'px-3.5 py-1.5 font-mono text-xs font-bold border-2 transition-all shrink-0 snap-start active:scale-95 touch-tactile rounded-none min-h-[36px]',
+                      isActive
+                        ? 'bg-foreground text-background border-foreground'
+                        : 'bg-surface text-foreground border-border-hairline hover:border-foreground'
+                    )}
+                  >
+                    TAHUN {ev.year}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Swipeable Track */}
+            <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-4 -mx-4 px-4 scrollbar-none">
+              {TIMELINE_EVENTS.map((event) => (
+                <div
+                  key={event.year}
+                  id={`mobile-milestone-${event.year}`}
+                  className="w-[86vw] max-w-[340px] shrink-0 snap-center border-2 border-foreground bg-surface p-5 space-y-3.5 relative overflow-hidden flex flex-col justify-between"
+                >
+                  {/* Watermark Year */}
+                  <div className="absolute -right-2 -bottom-4 font-serif font-black text-[80px] text-foreground/5 select-none pointer-events-none leading-none">
+                    {event.year}
+                  </div>
+
+                  <div className="space-y-3 relative z-10">
+                    <div className="flex items-center justify-between border-b border-border-hairline pb-2 font-mono text-[10px]">
+                      <span className="font-bold text-muted uppercase">{event.badge}</span>
+                      <span className="px-1.5 py-0.5 bg-foreground text-background font-bold tracking-wider">{event.year}</span>
+                    </div>
+
+                    <div className="inline-block px-2 py-0.5 bg-surface-muted border border-foreground/30 font-mono text-[9px] font-bold uppercase tracking-wider text-foreground">
+                      BABAK: {event.phase}
+                    </div>
+
+                    <h3 className="font-serif text-xl font-bold text-foreground tracking-tight leading-snug">
+                      {event.title}
+                    </h3>
+
+                    <p className="font-sans text-xs text-foreground/85 leading-relaxed">
+                      {event.summary}
+                    </p>
+
+                    <div className="p-2.5 bg-surface-muted/60 border-l-2 border-foreground font-mono text-[11px] space-y-1">
+                      <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase text-foreground">
+                        <MapPin className="w-3 h-3 shrink-0" />
+                        <span className="truncate">{event.location}</span>
+                      </div>
+                      <p className="font-sans text-[11px] text-muted leading-relaxed">
+                        {event.fieldNotes}
+                      </p>
+                    </div>
+
+                    <div className="pt-2 border-t border-border-hairline">
+                      <blockquote className="font-serif italic text-xs text-foreground/90">
+                        &ldquo;{event.quote}&rdquo;
+                      </blockquote>
+                      <span className="block font-mono text-[9px] uppercase tracking-wider text-muted mt-0.5">
+                        — {event.quoteAuthor}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="pt-2.5 border-t border-dashed border-border-hairline font-mono text-[10px] text-muted flex items-center justify-between relative z-10">
+                    <span className="truncate italic max-w-[200px]">&ldquo;{event.atmosphere}&rdquo;</span>
+                    <span className="font-bold text-foreground shrink-0">PERPUSJAL</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="text-center font-mono text-[10px] text-muted pt-1 flex items-center justify-center gap-1.5">
+              <span>← Geser layar ke samping untuk linimasa lainnya →</span>
+            </div>
+          </div>
+
+          {/* Desktop Cinematic Vertical Timeline Track (hidden md:block) with Progressive Thread Line */}
+          <div ref={timelineTrackRef} className="relative hidden md:block">
             {/* Background Spine Guide (Faint) */}
             <div className="absolute left-6 md:left-1/2 top-4 bottom-4 w-0.5 -translate-x-1/2 bg-foreground/15" />
 
@@ -767,6 +1014,80 @@ export default function AboutPage() {
         </section>
 
         {/* ========================================================= */}
+        {/* 4.5 KARTU SAKU PANDUAN MARKAS & TITIK TEMU               */}
+        {/* ========================================================= */}
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-20 border-t-2 border-foreground bg-surface-muted/20">
+          <RevealOnScroll variant="cinematic">
+            <div className="border-b-2 border-foreground pb-4 mb-8 sm:mb-12 flex flex-col md:flex-row md:items-end justify-between gap-3">
+              <div>
+                <div className="font-mono text-xs uppercase tracking-widest text-muted flex items-center gap-2">
+                  <MapPin className="w-3.5 h-3.5 text-foreground shrink-0" />
+                  <span>KARTU SAKU TITIK TEMU &amp; MARKAS</span>
+                </div>
+                <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground tracking-tight mt-1">
+                  Panduan Pos Lapak Terpal &amp; Basecamp
+                </h2>
+              </div>
+              <p className="font-mono text-xs text-muted max-w-sm">
+                Temukan pos fisik kami di sekeliling Blora. Klik tombol rute untuk navigasi instan lewat Google Maps di ponselmu.
+              </p>
+            </div>
+          </RevealOnScroll>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
+            {HEADQUARTERS_DATA.map((spot, idx) => (
+              <RevealOnScroll key={spot.id} variant="stamp" delayMs={idx * 60}>
+                <div className="border-2 border-foreground bg-surface p-5 sm:p-7 flex flex-col justify-between h-full space-y-4">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between border-b border-border-hairline pb-2 font-mono text-[10px]">
+                      <span className="font-bold text-muted uppercase tracking-wider">{spot.badge}</span>
+                      <span className="px-1.5 py-0.5 bg-foreground text-background font-bold tracking-widest">[POS 0{idx + 1}]</span>
+                    </div>
+
+                    <h3 className="font-serif text-xl sm:text-2xl font-bold text-foreground tracking-tight">
+                      {spot.name}
+                    </h3>
+
+                    <div className="p-3 bg-surface-muted/60 border-l-2 border-foreground font-mono text-xs space-y-1.5">
+                      <div className="flex items-start gap-1.5 text-[11px] text-foreground font-medium">
+                        <MapPin className="w-3.5 h-3.5 shrink-0 mt-0.5 text-foreground" />
+                        <span className="leading-snug">{spot.address}</span>
+                      </div>
+                      <div className="flex items-start gap-1.5 text-[10px] text-muted font-bold uppercase">
+                        <Clock className="w-3.5 h-3.5 shrink-0 mt-0.5 text-muted" />
+                        <span>{spot.schedule}</span>
+                      </div>
+                    </div>
+
+                    <p className="font-sans text-xs sm:text-sm text-foreground/85 leading-relaxed pt-1">
+                      {spot.description}
+                    </p>
+
+                    <div className="text-[11px] font-mono text-muted italic flex items-center gap-1.5">
+                      <Sparkles className="w-3 h-3 text-foreground shrink-0" />
+                      <span>{spot.highlight}</span>
+                    </div>
+                  </div>
+
+                  <div className="pt-3 border-t border-dashed border-border-hairline">
+                    <a
+                      href={spot.googleMapsUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="min-h-[44px] px-4 py-2.5 bg-foreground text-background font-mono text-xs uppercase tracking-wider font-bold inline-flex items-center justify-center gap-2 hover:opacity-90 transition-all active:scale-95 touch-tactile w-full text-center rounded-none"
+                    >
+                      <Navigation className="w-3.5 h-3.5" />
+                      <span>Buka Rute di Google Maps</span>
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  </div>
+                </div>
+              </RevealOnScroll>
+            ))}
+          </div>
+        </section>
+
+        {/* ========================================================= */}
         {/* 5. TABEL SIMBIOSIS: DPK PERPUSDA VS PERPUSJAL TERPAL     */}
         {/* ========================================================= */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16">
@@ -878,7 +1199,7 @@ export default function AboutPage() {
                     <button
                       type="button"
                       onClick={() => toggleFaq(faq.id)}
-                      className="w-full p-4 sm:p-5 text-left font-mono flex items-center justify-between gap-4 hover:bg-surface-muted/40 transition-colors focus:outline-none min-h-[44px]"
+                      className="w-full p-4 sm:p-5 text-left font-mono flex items-center justify-between gap-4 hover:bg-surface-muted/40 transition-all active:scale-[0.99] focus:outline-none min-h-[44px] rounded-none"
                       aria-expanded={isOpen}
                     >
                       <div className="flex items-start sm:items-center gap-3">
@@ -1003,7 +1324,7 @@ export default function AboutPage() {
                 </span>
                 <Link
                   href="/buku"
-                  className="min-h-[44px] px-6 py-2.5 bg-foreground text-background uppercase tracking-wider font-bold inline-flex items-center justify-center gap-2 hover:opacity-90 transition-opacity w-full sm:w-auto text-center"
+                  className="min-h-[44px] px-6 py-2.5 bg-foreground text-background uppercase tracking-wider font-bold inline-flex items-center justify-center gap-2 hover:opacity-90 transition-all active:scale-95 w-full sm:w-auto text-center rounded-none"
                 >
                   <BookOpen className="w-4 h-4" />
                   <span>Telusuri Katalog Buku Terpal</span>

@@ -48,6 +48,8 @@ export function AdminAddBookModal({
   const [initialCopies, setInitialCopies] = React.useState<number>(1);
   const [isBorrowable, setIsBorrowable] = React.useState(true);
   const [isPublished, setIsPublished] = React.useState(true);
+  const [isFeatured, setIsFeatured] = React.useState(false);
+  const [curatorNote, setCuratorNote] = React.useState('');
   const [description, setDescription] = React.useState('');
   const [coverImage, setCoverImage] = React.useState('');
 
@@ -95,6 +97,8 @@ export function AdminAddBookModal({
     setInitialCopies(1);
     setIsBorrowable(true);
     setIsPublished(true);
+    setIsFeatured(false);
+    setCuratorNote('');
     setDescription('');
     setCoverImage('');
     setError(null);
@@ -124,6 +128,8 @@ export function AdminAddBookModal({
       initialCopies: Math.max(0, Math.min(20, initialCopies || 1)),
       isBorrowable,
       isPublished,
+      isFeatured,
+      curatorNote: isFeatured ? (curatorNote.trim() || null) : null,
       description: description.trim() || null,
       coverImage: coverImage.trim() || null,
     };
@@ -159,8 +165,8 @@ export function AdminAddBookModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-xs font-sans">
-      <div className="relative w-full max-w-4xl bg-surface border-2 border-foreground rounded-none max-h-[94dvh] flex flex-col animate-in fade-in zoom-in-95 duration-150">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-xs font-sans">
+      <div className="relative w-full max-w-4xl bg-surface border-2 border-foreground max-md:rounded-t-2xl max-md:border-b-0 max-h-[94dvh] flex flex-col animate-in slide-in-from-bottom duration-200 sm:zoom-in-95">
         {/* Modal Header */}
         <div className="p-4 sm:p-5 border-b border-border-hairline flex items-start justify-between bg-surface-muted/30">
           <div>
@@ -397,6 +403,37 @@ export function AdminAddBookModal({
                           Terbitkan ke Katalog Publik
                         </span>
                       </label>
+
+                      {/* Curator Spotlight Option */}
+                      <div className="p-3 border border-border-hairline bg-surface-muted/30 space-y-2">
+                        <label className="flex items-center gap-2 cursor-pointer select-none">
+                          <input
+                            type="checkbox"
+                            checked={isFeatured}
+                            onChange={(e) => setIsFeatured(e.target.checked)}
+                            className="w-4 h-4 accent-foreground"
+                          />
+                          <span className="font-bold text-foreground text-[11px] uppercase tracking-wider">
+                            ★ Jadikan Sorotan / Rekomendasi Lapak
+                          </span>
+                        </label>
+
+                        {isFeatured && (
+                          <div className="pt-1">
+                            <label className="block text-[10px] uppercase font-bold text-muted mb-1 font-mono">
+                              Catatan Kurator / Alasan Menarik (Maks 300 Karakter)
+                            </label>
+                            <textarea
+                              rows={2}
+                              maxLength={300}
+                              value={curatorNote}
+                              onChange={(e) => setCuratorNote(e.target.value)}
+                              placeholder="Tuliskan mengapa kawan pembaca wajib membaca karya ini di lapak..."
+                              className="w-full px-2.5 py-1.5 border border-border-hairline bg-surface text-foreground font-serif text-xs focus:border-foreground focus:outline-none"
+                            />
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -491,21 +528,21 @@ export function AdminAddBookModal({
         </div>
 
         {/* Modal Footer Actions */}
-        <div className="p-4 border-t border-border-hairline bg-surface-muted/30 flex flex-col sm:flex-row items-center justify-between gap-3 font-mono text-xs">
+        <div className="sticky bottom-0 bg-surface/95 backdrop-blur-xs p-3 sm:p-4 border-t border-border-hairline flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-2.5 sm:gap-3 font-mono text-xs">
           <button
             type="button"
             onClick={onClose}
-            className="w-full sm:w-auto px-4 py-2 border border-border-hairline text-muted hover:text-foreground text-xs uppercase"
+            className="w-full sm:w-auto min-h-[44px] sm:min-h-0 px-4 py-2 border border-border-hairline hover:border-foreground text-muted hover:text-foreground active:scale-[0.98] transition-all touch-tactile text-xs uppercase font-semibold inline-flex items-center justify-center"
           >
             Batal
           </button>
 
-          <div className="flex items-center gap-2 w-full sm:w-auto">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
             <button
               type="button"
               onClick={() => handleSave(true)}
               disabled={submitting}
-              className="flex-1 sm:flex-initial px-4 py-2 border border-foreground bg-surface hover:bg-surface-muted text-foreground font-bold uppercase tracking-wider text-xs inline-flex items-center justify-center gap-1.5 disabled:opacity-50"
+              className="w-full sm:w-auto min-h-[44px] sm:min-h-0 px-4 py-2 border border-foreground bg-surface hover:bg-surface-muted active:scale-[0.98] text-foreground font-bold uppercase tracking-wider text-xs inline-flex items-center justify-center gap-1.5 disabled:opacity-50 transition-all touch-tactile"
             >
               <PlusCircle className="w-3.5 h-3.5" />
               <span>Simpan & Tambah Lagi</span>
@@ -515,7 +552,7 @@ export function AdminAddBookModal({
               type="button"
               onClick={() => handleSave(false)}
               disabled={submitting}
-              className="flex-1 sm:flex-initial px-5 py-2 bg-foreground text-background font-bold uppercase tracking-wider text-xs hover:opacity-90 transition-opacity disabled:opacity-50 inline-flex items-center justify-center gap-1.5"
+              className="w-full sm:w-auto min-h-[44px] sm:min-h-0 px-5 py-2 border-2 border-foreground bg-foreground text-background font-bold uppercase tracking-wider text-xs hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50 inline-flex items-center justify-center gap-1.5 touch-tactile"
             >
               <Sparkles className="w-3.5 h-3.5" />
               <span>{submitting ? 'Menyimpan...' : 'Simpan & Terbitkan'}</span>

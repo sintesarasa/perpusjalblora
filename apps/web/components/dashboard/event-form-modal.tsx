@@ -17,9 +17,11 @@ import {
   Plus,
   Trash2,
   ExternalLink,
+  BookOpen,
+  Search,
 } from 'lucide-react';
 import { apiClient } from '@/lib/api';
-import { EventItem, EventDetail, EventType, EventStatus } from '@perpusjal/types';
+import { EventItem, EventDetail, EventType, EventStatus, BookItem } from '@perpusjal/types';
 import { EventCoverUploader } from '@/components/events/event-cover-uploader';
 
 interface EventFormModalProps {
@@ -89,6 +91,13 @@ export function EventFormModal({
   const [isParticipantListPublic, setIsParticipantListPublic] = React.useState(false);
   const [description, setDescription] = React.useState('');
 
+  // Announcement and Featured Books
+  const [announcementText, setAnnouncementText] = React.useState('');
+  const [featuredBookIds, setFeaturedBookIds] = React.useState<string[]>([]);
+  const [catalogBooks, setCatalogBooks] = React.useState<BookItem[]>([]);
+  const [bookSearch, setBookSearch] = React.useState('');
+  const [loadingBooks, setLoadingBooks] = React.useState(false);
+
   // Historical Archive / Post-Event Specific Fields
   const [summary, setSummary] = React.useState('');
   const [galleryUrls, setGalleryUrls] = React.useState<string[]>([]);
@@ -96,6 +105,32 @@ export function EventFormModal({
 
   const [loading, setLoading] = React.useState(false);
   const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
+
+  // Fetch catalog books on open
+  React.useEffect(() => {
+    if (!isOpen) return;
+    let active = true;
+    async function loadCatalog() {
+      setLoadingBooks(true);
+      try {
+        const res = await apiClient<any>('/books?perPage=100');
+        const list: BookItem[] = Array.isArray(res.data)
+          ? res.data
+          : Array.isArray(res.data?.data)
+          ? res.data.data
+          : [];
+        if (active) setCatalogBooks(list);
+      } catch (err) {
+        console.error('Failed to load books catalog', err);
+      } finally {
+        if (active) setLoadingBooks(false);
+      }
+    }
+    loadCatalog();
+    return () => {
+      active = false;
+    };
+  }, [isOpen]);
 
   // Initialize or reset form state
   React.useEffect(() => {
@@ -120,6 +155,9 @@ export function EventFormModal({
       setMapUrl(detailed.mapUrl || '');
       setMeetingUrl(detailed.meetingUrl || '');
       setIsParticipantListPublic(Boolean(detailed.isParticipantListPublic));
+
+      setAnnouncementText((detailed as any).announcementText || '');
+      setFeaturedBookIds((detailed as any).featuredBookIds || []);
 
       if (typeof detailed.description === 'string') {
         setDescription(detailed.description);
@@ -157,6 +195,8 @@ export function EventFormModal({
         setStatus(EventStatus.COMPLETED);
         setIsParticipantListPublic(false);
         setDescription('Dokumentasi lapak baca dan perjumpaan literasi warga yang telah selesai terselenggara.');
+        setAnnouncementText('');
+        setFeaturedBookIds([]);
         setSummary('');
         setGalleryUrls([]);
       } else {
@@ -184,6 +224,8 @@ export function EventFormModal({
         setDescription(
           'Hamparan terpal biru di trotoar depan Pendopo Kabupaten Blora. Ambil buku yang kamu pesan lewat website ini, baca bersila di bawah naungan pohon trembesi, nikmati mewarnai gambar fabel untuk anak-anak, atau sekadar berbincang hangat.'
         );
+        setAnnouncementText('📍 Lapak Minggu Ini: CFD Alun-Alun Blora (06:00 - 09:00 WIB)');
+        setFeaturedBookIds([]);
         setSummary('');
         setGalleryUrls([]);
       }
@@ -212,6 +254,7 @@ export function EventFormModal({
     setCoverImage(COVER_PRESETS[0].url);
     setIsOnline(false);
     setStatus(EventStatus.PUBLISHED);
+    setAnnouncementText('📍 Lapak Minggu Ini: CFD Alun-Alun Blora (06:00 - 09:00 WIB)');
     setDescription(
       'Hamparan terpal biru di trotoar depan Pendopo Kabupaten Blora. Ambil buku yang kamu pesan lewat website ini, baca bersila di bawah naungan pohon trembesi, nikmati mewarnai gambar fabel untuk anak-anak, atau sekadar berbincang hangat.'
     );
@@ -296,6 +339,8 @@ export function EventFormModal({
       status: formMode === 'archive' ? EventStatus.COMPLETED : status,
       isParticipantListPublic,
       description: description.trim() || 'Kegiatan literasi merdeka Perpustakaan Jalanan Blora.',
+      announcementText: announcementText.trim() || null,
+      featuredBookIds: featuredBookIds,
       summary: summary.trim() || null,
       gallery: galleryUrls.length > 0 ? galleryUrls : null,
     };
@@ -496,6 +541,29 @@ export function EventFormModal({
                   <option value={EventStatus.CANCELLED}>Dibatalkan (Cancelled)</option>
                 </select>
               </div>
+            </div>
+
+            {/* Teks Banner Pengumuman Header */}
+            <div className="space-y-1.5 p-3 bg-surface-muted/30 border border-border-hairline">
+              <div className="flex items-center justify-between">
+                <label className="block font-mono text-[11px] uppercase tracking-wider font-bold text-foreground">
+                  Teks Banner Pengumuman Header (Micro-Announcement Strip)
+                </label>
+                <span className="font-mono text-[10px] text-muted">
+                  {announcementText.length} / 160
+                </span>
+              </div>
+              <input
+                type="text"
+                maxLength={160}
+                value={announcementText}
+                onChange={(e) => setAnnouncementText(e.target.value)}
+                placeholder="Contoh: 📍 Lapak Minggu Ini: CFD Alun-Alun Blora (06:00 - 09:00 WIB)"
+                className="w-full px-3 py-1.5 bg-surface border border-border-hairline font-mono text-xs focus:outline-hidden"
+              />
+              <span className="font-mono text-[9px] text-muted block">
+                * Ditampilkan pada micro-strip navigasi atas saat kegiatan mendekat atau sedang berlangsung.
+              </span>
             </div>
           </div>
 
@@ -699,6 +767,117 @@ export function EventFormModal({
               </span>
             </div>
           )}
+
+          {/* Section: Etalase Buku Lapak (Koleksi yang Dibawa ke Terpal) */}
+          <div className="space-y-3 p-4 border border-border-hairline bg-surface">
+            <div className="flex items-center justify-between border-b border-border-hairline pb-2">
+              <label className="font-mono text-xs uppercase tracking-wider font-bold text-foreground flex items-center gap-1.5">
+                <BookOpen className="w-3.5 h-3.5 text-amber-500" />
+                <span>Etalase Buku Lapak ({featuredBookIds.length} Buku Dipilih)</span>
+              </label>
+              <span className="font-mono text-[10px] text-muted">
+                Koleksi khusus yang dipajang di lapak
+              </span>
+            </div>
+
+            {/* Selected books preview chips */}
+            {featuredBookIds.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 pb-2 border-b border-border-hairline">
+                {featuredBookIds.map((bId) => {
+                  const b = catalogBooks.find((item) => item.id === bId);
+                  return (
+                    <span
+                      key={bId}
+                      className="inline-flex items-center gap-1.5 px-2 py-1 bg-surface-muted border border-border-hairline font-mono text-[10px] text-foreground"
+                    >
+                      <span className="truncate max-w-[160px]">{b?.title || bId}</span>
+                      <button
+                        type="button"
+                        onClick={() => setFeaturedBookIds(featuredBookIds.filter((id) => id !== bId))}
+                        className="hover:text-destructive text-muted ml-0.5 font-bold"
+                        title="Hapus buku dari etalase lapak"
+                      >
+                        &times;
+                      </button>
+                    </span>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Search filter for catalog */}
+            <div className="relative">
+              <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted" />
+              <input
+                type="text"
+                value={bookSearch}
+                onChange={(e) => setBookSearch(e.target.value)}
+                placeholder="Cari koleksi katalog untuk dibawa ke lapak..."
+                className="w-full pl-8 pr-3 py-1.5 bg-surface border border-border-hairline font-sans text-xs focus:outline-hidden"
+              />
+            </div>
+
+            {/* Catalog book list selection */}
+            <div className="max-h-40 overflow-y-auto border border-border-hairline divide-y divide-border-hairline">
+              {loadingBooks ? (
+                <div className="p-3 text-center font-mono text-xs text-muted">
+                  Memuat katalog buku...
+                </div>
+              ) : catalogBooks.length === 0 ? (
+                <div className="p-3 text-center font-mono text-xs text-muted">
+                  Belum ada koleksi buku di katalog.
+                </div>
+              ) : (
+                catalogBooks
+                  .filter((b) => {
+                    if (!bookSearch.trim()) return true;
+                    const q = bookSearch.toLowerCase();
+                    return b.title.toLowerCase().includes(q) || b.author.toLowerCase().includes(q);
+                  })
+                  .slice(0, 30)
+                  .map((b) => {
+                    const isSelected = featuredBookIds.includes(b.id);
+                    return (
+                      <button
+                        key={b.id}
+                        type="button"
+                        onClick={() => {
+                          if (isSelected) {
+                            setFeaturedBookIds(featuredBookIds.filter((id) => id !== b.id));
+                          } else {
+                            setFeaturedBookIds([...featuredBookIds, b.id]);
+                          }
+                        }}
+                        className={`w-full px-3 py-2 text-left flex items-center justify-between transition-colors text-xs ${
+                          isSelected
+                            ? 'bg-foreground/5 font-semibold text-foreground'
+                            : 'hover:bg-surface-muted text-foreground'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 truncate pr-2">
+                          <span
+                            className={`w-3.5 h-3.5 border flex items-center justify-center text-[10px] shrink-0 ${
+                              isSelected
+                                ? 'bg-foreground border-foreground text-background font-bold'
+                                : 'border-border-hairline'
+                            }`}
+                          >
+                            {isSelected ? '✓' : ''}
+                          </span>
+                          <span className="truncate">{b.title}</span>
+                          <span className="text-[10px] text-muted truncate">— {b.author}</span>
+                        </div>
+                        {isSelected && (
+                          <span className="font-mono text-[9px] uppercase tracking-wider text-muted shrink-0">
+                            Terpilih
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })
+              )}
+            </div>
+          </div>
 
           {/* Section 6: Narasi / Deskripsi Terbuka */}
           <div className="space-y-1.5">

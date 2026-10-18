@@ -1,5 +1,5 @@
 import * as React from 'react';
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Playfair_Display, Inter } from 'next/font/google';
 import './globals.css';
 import { ThemeProvider } from '@/components/theme-provider';
@@ -8,6 +8,18 @@ import { NotificationsProvider } from '@/contexts/notifications-context';
 import { NotificationToast } from '@/components/notifications/notification-toast';
 import { ToastContainer } from '@/components/ui/toast';
 import { PageProgressBar } from '@/components/ui/page-progress-bar';
+import { MobileBottomNav } from '@/components/layout/mobile-bottom-nav';
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  viewportFit: 'cover',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#f9f9f7' },
+    { media: '(prefers-color-scheme: dark)', color: '#0a0a0a' },
+  ],
+};
 
 const playfair = Playfair_Display({
   subsets: ['latin'],
@@ -80,6 +92,7 @@ export const metadata: Metadata = {
     shortcut: ['/icon.svg'],
     apple: [{ url: '/icon.svg', type: 'image/svg+xml' }],
   },
+  manifest: '/manifest.webmanifest',
   other: {
     'geo.region': 'ID-JT',
     'geo.placename': 'Blora',
@@ -185,6 +198,7 @@ export default function RootLayout({
                 <PageProgressBar />
               </React.Suspense>
               {children}
+              <MobileBottomNav />
               <NotificationToast />
               <ToastContainer />
             </NotificationsProvider>

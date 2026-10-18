@@ -102,7 +102,7 @@ export function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModalProps) {
       } finally {
         setLoading(false);
       }
-    }, 220);
+    }, 380);
 
     return () => clearTimeout(timer);
   }, [query, activeTab]);
@@ -150,7 +150,7 @@ export function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModalProps) {
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-start justify-center pt-16 sm:pt-24 px-4 pb-4 overflow-y-auto"
+      className="fixed inset-0 z-[100] flex items-end sm:items-start justify-center sm:pt-20 p-0 sm:p-4 overflow-hidden"
       role="dialog"
       aria-modal="true"
       aria-label="Pencarian Global Perpustakaan Jalanan Blora"
@@ -162,13 +162,18 @@ export function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModalProps) {
         aria-hidden="true"
       />
 
-      {/* Modal Dialog */}
+      {/* Modal / Slide-up Bottom-Sheet Dialog */}
       <div
-        className="relative w-full max-w-2xl bg-surface border-2 border-foreground rounded-none overflow-hidden font-mono animate-in fade-in zoom-in-95 duration-150"
+        className="relative w-full sm:max-w-2xl bg-surface border-t-2 sm:border-2 border-foreground rounded-none max-h-[90dvh] sm:max-h-[82vh] flex flex-col font-mono animate-in slide-in-from-bottom sm:slide-in-from-top-6 sm:zoom-in-95 duration-200 shadow-2xl overflow-hidden pb-safe"
         onKeyDown={handleKeyDown}
       >
+        {/* Mobile Tactile Drag Pill */}
+        <div className="sm:hidden flex justify-center pt-2.5 pb-1 bg-background shrink-0">
+          <div className="w-12 h-1 bg-foreground/30 rounded-none" />
+        </div>
+
         {/* Top Header & Search Bar */}
-        <div className="p-3 sm:p-4 border-b-2 border-foreground bg-background flex items-center gap-3">
+        <div className="p-3 sm:p-4 border-b-2 border-foreground bg-background flex items-center gap-3 shrink-0">
           <Search className="w-5 h-5 text-foreground shrink-0" />
           <input
             ref={inputRef}
@@ -252,7 +257,7 @@ export function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModalProps) {
         </div>
 
         {/* Body Content */}
-        <div className="max-h-[60vh] overflow-y-auto p-4 sm:p-5 space-y-5">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-5 min-h-0">
           {/* STATE 1: Empty Query - Pintas Navigasi & Kata Kunci Populer */}
           {!isQuerying && (
             <div className="space-y-4">

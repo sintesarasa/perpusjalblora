@@ -61,8 +61,38 @@ function detectImageFormat(buffer: Buffer): { valid: boolean; ext: string; mime:
   return { valid: false, ext: '', mime: '' };
 }
 
+// In-memory sliding rate-limit tracker for Next.js upload endpoint (anti-flooding)
+const uploadRateLimitMap = new Map<string, { count: number; resetTime: number }>();
+
+function isUploadRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const windowMs = 10 * 60 * 1000; // 10 minutes
+  const maxUploads = 25;
+
+  const entry = uploadRateLimitMap.get(ip);
+  if (!entry || now > entry.resetTime) {
+    uploadRateLimitMap.set(ip, { count: 1, resetTime: now + windowMs });
+    return false;
+  }
+
+  if (entry.count >= maxUploads) {
+    return true;
+  }
+
+  entry.count++;
+  return false;
+}
+
 export async function POST(req: NextRequest) {
   try {
+    const clientIp = req.headers.get('x-forwarded-for')?.split(',')[0].trim() || '127.0.0.1';
+    if (isUploadRateLimited(clientIp)) {
+      return NextResponse.json(
+        { error: 'Batas unggah berkas tercapai dari perangkat ini. Harap tunggu beberapa menit.' },
+        { status: 429 }
+      );
+    }
+
     // Note: In split frontend/backend deployments (Vercel + Render), the HttpOnly
     // session cookie is scoped to the API domain. Actual database mutations
     // (PATCH /users/me/profile, POST /books, etc.) strictly enforce requireAuth on the API.
@@ -179,8 +209,18 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 6. FALLBACK: PERSISTENT INLINE DATA URI (Serverless & Cross-Origin Safe)
-    // Works reliably on Vercel read-only filesystems and persists in PostgreSQL TEXT columns
+    // 6. FALLBACK: SAFE PERSISTENT INLINE DATA URI (Strict Size Limit < 150KB to Prevent DB Bloat)
+    // Only tiny thumbnails/avatars are permitted to fall back to inline base64 to protect Neon DB storage.
+    const MAX_INLINE_FALLBACK_BYTES = 150 * 1024; // 150 KB
+    if (buffer.length > MAX_INLINE_FALLBACK_BYTES) {
+      return NextResponse.json(
+        {
+          error: `Penyimpanan media eksternal (Cloudinary) belum terkonfigurasi atau gagal terhubung, dan ukuran berkas (${Math.round(buffer.length / 1024)} KB) melampaui batas aman basis data lokal (maks 150 KB). Harap periksa kredensial CLOUDINARY_API_KEY di .env atau kompres gambar lebih kecil.`,
+        },
+        { status: 400 }
+      );
+    }
+
     return NextResponse.json({
       url: base64DataUrl,
       storage: 'inline',

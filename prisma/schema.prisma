@@ -261,6 +261,7 @@ model User {
   @@index([role])
   @@index([status])
   @@index([createdAt])
+  @@index([status, deletedAt])
 }
 
 model Session {
@@ -368,6 +369,10 @@ model Article {
   seoDescription String?       @db.VarChar(160)
   ogImage        String?
   previewToken   String?       @unique
+
+  // Nilai Tambah & Cross-Linking Buku
+  pullQuote      String?       @db.VarChar(400)
+  relatedBookIds String[]      @default([])
 
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
@@ -618,6 +623,7 @@ model Waitlist {
 
   @@index([bookId, status, position])
   @@index([userId, status])
+  @@index([bookId, userId, status])
 }
 
 // ─────────────────────────────────────────────
@@ -648,9 +654,11 @@ model Event {
   organizerId             String
   status                  EventStatus @default(DRAFT)
 
-  // Dokumentasi pascakegiatan
+  // Dokumentasi pascakegiatan & Etalase Lapak
   summary                 String?     @db.Text
   gallery                 Json?
+  featuredBookIds         String[]    @default([])
+  announcementText        String?     @db.VarChar(160)
 
   createdAt               DateTime    @default(now())
   updatedAt               DateTime    @updatedAt

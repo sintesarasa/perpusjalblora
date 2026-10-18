@@ -302,11 +302,11 @@ export default function DashboardKegiatanPage() {
         </div>
 
         {/* Search & Type Select */}
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
           <select
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value)}
-            className="px-2.5 py-1.5 bg-surface border border-foreground font-mono text-xs uppercase focus:outline-hidden"
+            className="px-3 py-2 min-h-[44px] sm:min-h-0 bg-surface border border-foreground font-mono text-base sm:text-xs uppercase focus:outline-hidden"
           >
             <option value="ALL">Semua Tipe</option>
             <option value={EventType.LAPAK}>Lapak Baca</option>
@@ -317,14 +317,14 @@ export default function DashboardKegiatanPage() {
             <option value={EventType.LAINNYA}>Lainnya</option>
           </select>
 
-          <div className="relative">
-            <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted" />
+          <div className="relative flex-1 sm:flex-initial">
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Cari judul / lokasi..."
-              className="pl-8 pr-3 py-1.5 bg-surface border border-foreground font-mono text-xs focus:outline-hidden w-40 sm:w-56"
+              className="w-full sm:w-56 pl-9 pr-3 py-2 min-h-[44px] sm:min-h-0 bg-surface border border-foreground font-mono text-base sm:text-xs focus:outline-hidden"
             />
           </div>
         </div>
@@ -458,10 +458,10 @@ export default function DashboardKegiatanPage() {
                       {ev.organizer?.name || 'Panitia'}
                     </span>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5 shrink-0">
                       <Link
                         href={`/dashboard/kegiatan/${ev.id}`}
-                        className="px-3 py-1.5 bg-foreground text-background font-mono text-[11px] uppercase tracking-wider font-bold hover:bg-foreground/90 transition-colors inline-flex items-center gap-1"
+                        className="min-h-[40px] px-3.5 py-2 bg-foreground text-background font-mono text-xs uppercase tracking-wider font-bold hover:bg-foreground/90 active:scale-95 transition-all inline-flex items-center justify-center gap-1.5 touch-tactile"
                       >
                         <CalendarCheck className="w-3.5 h-3.5" />
                         <span>Presensi</span>
@@ -473,10 +473,10 @@ export default function DashboardKegiatanPage() {
                           setEditingEvent(ev);
                           setIsFormModalOpen(true);
                         }}
-                        className="p-1.5 border border-border-hairline hover:border-foreground bg-surface text-foreground transition-colors"
+                        className="min-h-[40px] w-10 border border-border-hairline hover:border-foreground active:scale-95 bg-surface text-foreground transition-all touch-tactile inline-flex items-center justify-center"
                         title="Sunting Agenda"
                       >
-                        <Edit3 className="w-3.5 h-3.5" />
+                        <Edit3 className="w-4 h-4" />
                       </button>
 
                       <button
@@ -485,23 +485,23 @@ export default function DashboardKegiatanPage() {
                           setCompletingEvent(ev);
                           setIsCompleteModalOpen(true);
                         }}
-                        className={`p-1.5 border transition-colors ${
+                        className={`min-h-[40px] w-10 border transition-all active:scale-95 touch-tactile inline-flex items-center justify-center ${
                           isCompleted
                             ? 'border-amber-500/50 bg-amber-500/10 text-amber-600 dark:text-amber-400'
                             : 'border-border-hairline hover:border-foreground bg-surface text-foreground'
                         }`}
                         title="Dokumentasi & Selesaikan"
                       >
-                        <Camera className="w-3.5 h-3.5" />
+                        <Camera className="w-4 h-4" />
                       </button>
 
                       <button
                         type="button"
                         onClick={() => handleDeleteEvent(ev)}
-                        className="p-1.5 border border-border-hairline hover:border-destructive hover:bg-destructive hover:text-destructive-foreground text-muted transition-colors"
+                        className="min-h-[40px] w-10 border border-border-hairline hover:border-destructive hover:bg-destructive hover:text-destructive-foreground active:scale-95 text-muted transition-all touch-tactile inline-flex items-center justify-center"
                         title="Hapus Agenda"
                       >
-                        <Trash2 className="w-3.5 h-3.5" />
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
                   </div>

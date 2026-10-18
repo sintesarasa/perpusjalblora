@@ -175,7 +175,7 @@ export function DashboardSidebar({ user, onNavigate, onClose }: DashboardSidebar
                   href={item.href}
                   onClick={onNavigate}
                   className={cn(
-                    'flex items-center justify-between px-3 py-2.5 min-h-[40px] transition-colors border-l-2',
+                    'flex items-center justify-between px-3 py-2.5 min-h-[44px] transition-all active:scale-95 touch-tactile border-l-2',
                     isActive
                       ? 'border-foreground bg-foreground text-background font-bold'
                       : 'border-transparent text-foreground/80 hover:bg-surface-muted hover:text-foreground'
@@ -220,7 +220,7 @@ export function DashboardSidebar({ user, onNavigate, onClose }: DashboardSidebar
                 href="/dashboard/sirkulasi"
                 onClick={onNavigate}
                 className={cn(
-                  'flex items-center justify-between px-3 py-2.5 min-h-[40px] transition-colors border-l-2',
+                  'flex items-center justify-between px-3 py-2.5 min-h-[44px] transition-all active:scale-95 touch-tactile border-l-2',
                   pathname.startsWith('/dashboard/sirkulasi') || pathname.startsWith('/admin/sirkulasi')
                     ? 'border-foreground bg-foreground text-background font-bold'
                     : 'border-transparent text-foreground/80 hover:bg-surface-muted hover:text-foreground'
@@ -236,7 +236,7 @@ export function DashboardSidebar({ user, onNavigate, onClose }: DashboardSidebar
                 href="/dashboard/buku"
                 onClick={onNavigate}
                 className={cn(
-                  'flex items-center justify-between px-3 py-2.5 min-h-[40px] transition-colors border-l-2',
+                  'flex items-center justify-between px-3 py-2.5 min-h-[44px] transition-all active:scale-95 touch-tactile border-l-2',
                   pathname.startsWith('/dashboard/buku') || pathname.startsWith('/admin/buku')
                     ? 'border-foreground bg-foreground text-background font-bold'
                     : 'border-transparent text-foreground/80 hover:bg-surface-muted hover:text-foreground'
@@ -252,7 +252,7 @@ export function DashboardSidebar({ user, onNavigate, onClose }: DashboardSidebar
                 href="/dashboard/kurasi"
                 onClick={onNavigate}
                 className={cn(
-                  'flex items-center justify-between px-3 py-2.5 min-h-[40px] transition-colors border-l-2',
+                  'flex items-center justify-between px-3 py-2.5 min-h-[44px] transition-all active:scale-95 touch-tactile border-l-2',
                   pathname.startsWith('/dashboard/kurasi') || pathname.startsWith('/admin/kurasi')
                     ? 'border-foreground bg-foreground text-background font-bold'
                     : 'border-transparent text-foreground/80 hover:bg-surface-muted hover:text-foreground'
@@ -268,7 +268,7 @@ export function DashboardSidebar({ user, onNavigate, onClose }: DashboardSidebar
                 href="/dashboard/kegiatan"
                 onClick={onNavigate}
                 className={cn(
-                  'flex items-center justify-between px-3 py-2.5 min-h-[40px] transition-colors border-l-2',
+                  'flex items-center justify-between px-3 py-2.5 min-h-[44px] transition-all active:scale-95 touch-tactile border-l-2',
                   pathname.startsWith('/dashboard/kegiatan')
                     ? 'border-foreground bg-foreground text-background font-bold'
                     : 'border-transparent text-foreground/80 hover:bg-surface-muted hover:text-foreground'
@@ -284,7 +284,7 @@ export function DashboardSidebar({ user, onNavigate, onClose }: DashboardSidebar
                 href="/dashboard/laporan"
                 onClick={onNavigate}
                 className={cn(
-                  'flex items-center justify-between px-3 py-2.5 min-h-[40px] transition-colors border-l-2',
+                  'flex items-center justify-between px-3 py-2.5 min-h-[44px] transition-all active:scale-95 touch-tactile border-l-2',
                   pathname.startsWith('/dashboard/laporan')
                     ? 'border-foreground bg-foreground text-background font-bold'
                     : 'border-transparent text-foreground/80 hover:bg-surface-muted hover:text-foreground'
@@ -300,7 +300,7 @@ export function DashboardSidebar({ user, onNavigate, onClose }: DashboardSidebar
                 href="/admin/beranda"
                 onClick={onNavigate}
                 className={cn(
-                  'flex items-center justify-between px-3 py-2.5 min-h-[40px] transition-colors border-l-2',
+                  'flex items-center justify-between px-3 py-2.5 min-h-[44px] transition-all active:scale-95 touch-tactile border-l-2',
                   pathname.startsWith('/admin/beranda')
                     ? 'border-foreground bg-foreground text-background font-bold'
                     : 'border-transparent text-foreground/80 hover:bg-surface-muted hover:text-foreground'
@@ -329,7 +329,7 @@ export function DashboardSidebar({ user, onNavigate, onClose }: DashboardSidebar
                 href="/admin"
                 onClick={onNavigate}
                 className={cn(
-                  'flex items-center justify-between px-3 py-2.5 min-h-[40px] transition-colors border-l-2',
+                  'flex items-center justify-between px-3 py-2.5 min-h-[44px] transition-all active:scale-95 touch-tactile border-l-2',
                   pathname === '/admin'
                     ? 'border-foreground bg-foreground text-background font-bold'
                     : 'border-transparent text-foreground/80 hover:bg-surface-muted hover:text-foreground'
@@ -345,7 +345,7 @@ export function DashboardSidebar({ user, onNavigate, onClose }: DashboardSidebar
                 href="/admin/pengguna"
                 onClick={onNavigate}
                 className={cn(
-                  'flex items-center justify-between px-3 py-2.5 min-h-[40px] transition-colors border-l-2',
+                  'flex items-center justify-between px-3 py-2.5 min-h-[44px] transition-all active:scale-95 touch-tactile border-l-2',
                   pathname.startsWith('/admin/pengguna')
                     ? 'border-foreground bg-foreground text-background font-bold'
                     : 'border-transparent text-foreground/80 hover:bg-surface-muted hover:text-foreground'

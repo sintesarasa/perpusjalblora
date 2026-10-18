@@ -48,6 +48,11 @@ export function ArticleFeatured({
         </div>
 
         <div className="flex items-center gap-2.5 text-foreground font-bold">
+          {article.relatedBooks && article.relatedBooks.length > 0 && (
+            <span className="hidden sm:inline-flex px-2 py-0.5 border border-foreground/40 bg-surface font-mono text-[9px] uppercase tracking-wider text-muted">
+              📚 {article.relatedBooks.length} Pustaka Lapak
+            </span>
+          )}
           {article.isFeatured && (
             <span className="px-2 py-0.5 border border-foreground bg-surface-muted font-mono text-[9px] uppercase tracking-wider">
               ★ PILIHAN KURATOR

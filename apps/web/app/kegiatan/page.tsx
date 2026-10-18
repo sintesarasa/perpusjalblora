@@ -33,6 +33,8 @@ import {
   CheckCircle2,
   Tent,
   Archive,
+  BookOpen,
+  Camera,
 } from 'lucide-react';
 import { getWhatsAppUrl } from '@/lib/contact';
 
@@ -84,6 +86,7 @@ function EventCatalogContent() {
   // Independent Hero Spotlight & Upcoming Counter
   const [heroSpotlightEvent, setHeroSpotlightEvent] = React.useState<EventItem | null>(null);
   const [upcomingTotal, setUpcomingTotal] = React.useState<number>(0);
+  const [lapakBooks, setLapakBooks] = React.useState<any[]>([]);
 
   React.useEffect(() => {
     async function loadSpotlight() {
@@ -101,6 +104,25 @@ function EventCatalogContent() {
       }
     }
     loadSpotlight();
+  }, []);
+
+  React.useEffect(() => {
+    async function loadLapakBooks() {
+      try {
+        const res = await apiClient<{ data: any[] }>('/books?isFeatured=true&perPage=4');
+        if (res.data?.data && res.data.data.length > 0) {
+          setLapakBooks(res.data.data);
+        } else {
+          const fallbackRes = await apiClient<{ data: any[] }>('/books?perPage=4&isBorrowable=true');
+          if (fallbackRes.data?.data) {
+            setLapakBooks(fallbackRes.data.data);
+          }
+        }
+      } catch {
+        // silent fallback
+      }
+    }
+    loadLapakBooks();
   }, []);
 
   const fetchEvents = React.useCallback(async () => {
@@ -151,6 +173,15 @@ function EventCatalogContent() {
   const spotlightEvent = heroSpotlightEvent;
 
   const sundaySession = React.useMemo(() => getNextSundayLapakSession(), []);
+
+  const isLiveSundayLapak = React.useMemo(() => {
+    const now = new Date();
+    const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+    const wib = new Date(utc + 3600000 * 7);
+    const day = wib.getDay();
+    const timeNum = wib.getHours() + wib.getMinutes() / 60;
+    return day === 0 && timeNum >= 6 && timeNum <= 9.5;
+  }, []);
 
   const googleCalUrl = React.useMemo(() => {
     if (spotlightEvent) {
@@ -238,7 +269,7 @@ function EventCatalogContent() {
     <div className="flex flex-col min-h-screen bg-background text-foreground font-sans selection:bg-foreground selection:text-background editorial-grain">
       <Header />
 
-      <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 sm:py-14 space-y-12 sm:space-y-16">
+      <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-8 pb-28 sm:pt-14 sm:pb-16 space-y-12 sm:space-y-16">
         {/* ========================================================= */}
         {/* 1. EDITORIAL GAZETTE MASTHEAD                             */}
         {/* ========================================================= */}
@@ -290,11 +321,20 @@ function EventCatalogContent() {
           <div className="border-2 border-foreground bg-surface p-4 sm:p-6 md:p-8 relative overflow-hidden space-y-5 sm:space-y-7">
             {/* Top Gazette Status Bar */}
             <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-border-hairline text-xs font-mono">
-              <div className="flex items-center gap-2.5">
-                <span className="w-2 h-2 rounded-none bg-foreground animate-pulse" />
-                <span className="font-bold text-foreground uppercase tracking-wider text-[11px]">
-                  {spotlightEvent ? `AGENDA // ${spotlightEvent.type}` : 'SESI RUTIN // LAPAK BACA CFD'}
-                </span>
+              <div className="flex items-center gap-2.5 flex-wrap">
+                {isLiveSundayLapak ? (
+                  <span className="px-2.5 py-0.5 bg-emerald-600 text-white font-mono text-[9px] font-bold uppercase tracking-widest animate-pulse inline-flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-white" />
+                    LIVE SEKARANG DI ALUN-ALUN
+                  </span>
+                ) : (
+                  <>
+                    <span className="w-2 h-2 rounded-none bg-foreground animate-pulse" />
+                    <span className="font-bold text-foreground uppercase tracking-wider text-[11px]">
+                      {spotlightEvent ? `AGENDA // ${spotlightEvent.type}` : 'SESI RUTIN // LAPAK BACA CFD'}
+                    </span>
+                  </>
+                )}
                 <span className="text-muted hidden sm:inline">&bull;</span>
                 <span className="text-muted hidden sm:inline text-[11px]">Kolektif Trotoar Blora</span>
               </div>
@@ -428,19 +468,31 @@ function EventCatalogContent() {
                 <div className="pt-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-t border-border-hairline">
                   <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full sm:w-auto">
                     {spotlightEvent ? (
-                      <Link
-                        href={`/kegiatan/${spotlightEvent.slug}`}
-                        className="px-5 py-2.5 bg-foreground text-background font-mono text-xs font-bold uppercase tracking-wider hover:bg-foreground/90 transition-colors inline-flex items-center justify-center gap-2 text-center"
-                      >
-                        <span>RINCIAN &amp; TIKET QR</span>
-                        <ArrowRight className="w-3.5 h-3.5" />
-                      </Link>
+                      <>
+                        <Link
+                          href={`/kegiatan/${spotlightEvent.slug}`}
+                          className="min-h-[44px] px-5 py-2.5 bg-foreground text-background font-mono text-xs font-bold uppercase tracking-wider hover:bg-foreground/90 transition-all active:scale-95 inline-flex items-center justify-center gap-2 text-center rounded-none"
+                        >
+                          <span>RINCIAN &amp; TIKET QR</span>
+                          <ArrowRight className="w-3.5 h-3.5" />
+                        </Link>
+                        <a
+                          href={spotlightEvent.mapUrl || `https://maps.google.com/?q=${encodeURIComponent(spotlightEvent.locationName || 'Alun-Alun Blora')}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="min-h-[44px] px-4 py-2.5 border-2 border-foreground bg-surface hover:bg-foreground hover:text-background font-mono text-xs font-bold uppercase tracking-wider transition-all active:scale-95 inline-flex items-center justify-center gap-1.5 text-center rounded-none"
+                        >
+                          <MapPin className="w-3.5 h-3.5" />
+                          <span>PETA LOKASI</span>
+                          <ExternalLink className="w-3 h-3" />
+                        </a>
+                      </>
                     ) : (
                       <a
                         href="https://maps.google.com/?q=Alun-Alun+Blora"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="px-4 py-2.5 bg-foreground text-background font-mono text-xs font-bold uppercase tracking-wider hover:bg-foreground/90 transition-colors inline-flex items-center justify-center gap-2 text-center"
+                        className="min-h-[44px] px-4 py-2.5 bg-foreground text-background font-mono text-xs font-bold uppercase tracking-wider hover:bg-foreground/90 transition-all active:scale-95 inline-flex items-center justify-center gap-2 text-center rounded-none"
                       >
                         <MapPin className="w-3.5 h-3.5 text-background" />
                         <span>PETUNJUK LOKASI DI GOOGLE MAPS</span>
@@ -452,7 +504,7 @@ function EventCatalogContent() {
                       href={googleCalUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="px-4 py-2.5 border-2 border-foreground bg-surface hover:bg-foreground hover:text-background font-mono text-xs font-bold uppercase tracking-wider transition-colors inline-flex items-center justify-center gap-1.5 text-center"
+                      className="min-h-[44px] px-4 py-2.5 border-2 border-foreground bg-surface hover:bg-foreground hover:text-background font-mono text-xs font-bold uppercase tracking-wider transition-all active:scale-95 inline-flex items-center justify-center gap-1.5 text-center rounded-none"
                     >
                       <CalendarPlus className="w-3.5 h-3.5 text-foreground" />
                       <span>SIMPAN KE GOOGLE CALENDAR</span>
@@ -463,7 +515,7 @@ function EventCatalogContent() {
                     href={getWhatsAppUrl('Halo Perpusjal Blora, saya ingin bertanya tentang sesi lapak berikutnya')}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="font-mono text-xs uppercase font-bold text-foreground hover:underline inline-flex items-center justify-center sm:justify-start gap-1.5 pt-1 sm:pt-0"
+                    className="min-h-[44px] px-3 font-mono text-xs uppercase font-bold text-foreground hover:underline inline-flex items-center justify-center sm:justify-start gap-1.5 active:scale-95 transition-all"
                   >
                     <MessageCircle className="w-3.5 h-3.5" />
                     <span>TANYA RELAWAN &rarr;</span>
@@ -471,6 +523,78 @@ function EventCatalogContent() {
                 </div>
               </div>
             </div>
+
+            {/* ========================================================= */}
+            {/* ETALASE BUKU LAPAK: BUKU SPESIAL DI TITIK KUMPUL INI      */}
+            {/* ========================================================= */}
+            {lapakBooks.length > 0 && (
+              <div className="pt-6 border-t-2 border-foreground space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div>
+                    <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-muted font-bold">
+                      <BookOpen className="w-3.5 h-3.5 text-foreground" />
+                      <span>[ ETALASE BUKU LAPAK // DIBAWA KE TERPAL MINGGU INI ]</span>
+                    </div>
+                    <h3 className="font-serif font-bold text-lg sm:text-xl text-foreground mt-0.5">
+                      Pustaka Pilihan yang Dibawa Relawan ke Lapak
+                    </h3>
+                  </div>
+                  <Link
+                    href="/buku"
+                    className="font-mono text-xs uppercase tracking-wider text-foreground hover:underline inline-flex items-center gap-1 font-bold shrink-0"
+                  >
+                    <span>Katalog Seluruh Pustaka &rarr;</span>
+                  </Link>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+                  {lapakBooks.slice(0, 4).map((book) => (
+                    <Link
+                      key={book.id}
+                      href={`/buku/${book.slug}`}
+                      className="group border border-border-hairline hover:border-foreground bg-surface p-3 flex flex-col justify-between transition-all hover:-translate-y-0.5 rounded-none"
+                    >
+                      <div className="space-y-2">
+                        <div className="aspect-[3/4] w-full bg-surface-muted border border-border-hairline overflow-hidden relative shadow-xs">
+                          {book.coverImage ? (
+                            <img
+                              src={book.coverImage}
+                              alt={book.title}
+                              className="w-full h-full object-cover grayscale contrast-105 group-hover:grayscale-0 group-hover:scale-105 transition-all duration-300"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center font-mono text-[9px] text-muted p-1 text-center">
+                              Sampul Buku
+                            </div>
+                          )}
+                          <div className="absolute inset-y-0 left-0 w-1.5 bg-gradient-to-r from-black/40 to-transparent pointer-events-none" />
+                        </div>
+                        <div>
+                          <span className="block font-mono text-[8.5px] uppercase text-muted truncate">
+                            {book.category?.name || 'Koleksi Lapak'}
+                          </span>
+                          <h4 className="font-serif font-bold text-xs sm:text-sm text-foreground group-hover:underline line-clamp-2 leading-snug">
+                            {book.title}
+                          </h4>
+                          <p className="font-serif italic text-[11px] text-muted truncate mt-0.5">
+                            {book.author}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="pt-2 mt-2 border-t border-border-hairline flex items-center justify-between font-mono text-[9.5px]">
+                        <span className="font-bold text-foreground">
+                          {book.availableCopies > 0 ? '● Siap Diambil' : '○ Baca di Terpal'}
+                        </span>
+                        <span className="group-hover:translate-x-1 transition-transform text-foreground font-bold">
+                          &rarr;
+                        </span>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </section>
       </RevealOnScroll>
@@ -506,7 +630,7 @@ function EventCatalogContent() {
                   type="button"
                   onClick={() => updateFilters({ status: 'selesai', page: '1' })}
                   className={cn(
-                    'px-4 py-2 border-2 transition-all cursor-pointer font-bold',
+                    'min-h-[44px] px-4 py-2 border-2 transition-all active:scale-95 cursor-pointer font-bold rounded-none',
                     statusTab === 'selesai'
                       ? 'bg-foreground text-background border-foreground'
                       : 'bg-surface text-foreground border-border-hairline hover:border-foreground'
@@ -518,7 +642,7 @@ function EventCatalogContent() {
                   type="button"
                   onClick={() => updateFilters({ status: 'mendatang', page: '1' })}
                   className={cn(
-                    'px-4 py-2 border-2 transition-all cursor-pointer font-bold flex items-center gap-1.5',
+                    'min-h-[44px] px-4 py-2 border-2 transition-all active:scale-95 cursor-pointer font-bold flex items-center gap-1.5 rounded-none',
                     statusTab === 'mendatang'
                       ? 'bg-foreground text-background border-foreground'
                       : 'bg-surface text-foreground border-border-hairline hover:border-foreground'
@@ -542,7 +666,7 @@ function EventCatalogContent() {
                 <button
                   type="button"
                   onClick={() => updateFilters({ status: 'mendatang', page: '1' })}
-                  className="px-3 py-1 bg-foreground hover:bg-foreground/90 text-background font-bold uppercase tracking-wider text-[11px] border border-foreground cursor-pointer transition-colors"
+                  className="min-h-[40px] px-3.5 py-1.5 bg-foreground hover:bg-foreground/90 text-background font-bold uppercase tracking-wider text-[11px] border border-foreground cursor-pointer transition-all active:scale-95 rounded-none"
                 >
                   Buka Agenda Mendatang &rarr;
                 </button>
@@ -568,7 +692,7 @@ function EventCatalogContent() {
                   type="button"
                   onClick={() => updateFilters({ type: chip.val || null, page: '1' })}
                   className={cn(
-                    'px-3 py-1 border transition-colors cursor-pointer text-[11px] font-bold',
+                    'min-h-[38px] sm:min-h-[32px] px-3.5 py-1.5 border transition-all active:scale-95 cursor-pointer text-xs sm:text-[11px] font-bold rounded-none',
                     typeFilter === chip.val
                       ? 'bg-foreground text-background border-foreground'
                       : 'bg-surface text-foreground border-border-hairline hover:border-foreground'
@@ -658,8 +782,8 @@ function EventCatalogContent() {
                         )}
                       >
                         <div>
-                          {/* Optional Card Cover Image Thumbnail */}
-                          {event.coverImage && (
+                          {/* Card Cover Image or Photo-Essay Frame */}
+                          {event.coverImage ? (
                             <Link href={`/kegiatan/${event.slug}`} className="block relative aspect-[16/9] w-full overflow-hidden border-b-2 border-foreground bg-zinc-950">
                               <img
                                 src={event.coverImage}
@@ -667,11 +791,25 @@ function EventCatalogContent() {
                                 className="w-full h-full object-cover grayscale contrast-105 group-hover:grayscale-0 group-hover:scale-105 transition-all duration-500"
                               />
                               <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-transparent pointer-events-none" />
-                              <div className="absolute top-2.5 left-2.5 px-2 py-0.5 bg-black/80 text-white font-mono text-[8.5px] font-bold uppercase tracking-widest border border-white/30 backdrop-blur-xs">
-                                {statusTab === 'selesai' ? '✦ DOKUMENTASI TERPAL ✦' : '✦ POSTER AGENDA ✦'}
+                              <div className="absolute top-2.5 left-2.5 px-2 py-0.5 bg-black/80 text-white font-mono text-[8.5px] font-bold uppercase tracking-widest border border-white/30 backdrop-blur-xs flex items-center gap-1">
+                                {statusTab === 'selesai' ? (
+                                  <>
+                                    <Camera className="w-2.5 h-2.5" />
+                                    <span>✦ ESAI FOTO DOKUMENTASI ✦</span>
+                                  </>
+                                ) : (
+                                  <span>✦ POSTER AGENDA ✦</span>
+                                )}
                               </div>
                             </Link>
-                          )}
+                          ) : statusTab === 'selesai' ? (
+                            <Link href={`/kegiatan/${event.slug}`} className="block aspect-[16/9] w-full bg-surface-muted/50 border-b-2 border-foreground flex flex-col items-center justify-center p-4 text-center space-y-1.5 select-none hover:bg-surface-muted transition-colors">
+                              <Camera className="w-6 h-6 text-foreground/40" />
+                              <span className="font-mono text-[9px] uppercase tracking-widest text-muted font-bold">
+                                DOKUMENTASI JEJAK TERPAL #{event.slug.slice(-4).toUpperCase()}
+                              </span>
+                            </Link>
+                          ) : null}
 
                           {/* Top Header Card: Calendar Stamp Date & Status Badge */}
                           <div className="p-3.5 sm:p-5 border-b border-border-hairline bg-surface-muted/30 flex items-start justify-between gap-3 sm:gap-4">
@@ -745,9 +883,9 @@ function EventCatalogContent() {
                           </span>
                           <Link
                             href={`/kegiatan/${event.slug}`}
-                            className="font-bold text-foreground hover:underline inline-flex items-center gap-1 uppercase tracking-wider transition-colors"
+                            className="min-h-[44px] inline-flex items-center gap-1.5 font-bold text-foreground hover:underline uppercase tracking-wider transition-all active:scale-95 text-xs"
                           >
-                            <span>{statusTab === 'selesai' ? 'REKAM JEJAK' : 'RINCIAN'}</span>
+                            <span>{statusTab === 'selesai' ? 'ESAI FOTO & DOKUMENTASI' : 'RINCIAN & TIKET QR'}</span>
                             <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
                           </Link>
                         </div>
@@ -801,7 +939,7 @@ function EventCatalogContent() {
                   href={getWhatsAppUrl('Halo Perpusjal Blora, kami ingin berkolaborasi kegiatan bersama')}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-6 py-3.5 bg-background text-foreground hover:bg-background/90 font-mono text-xs font-bold uppercase tracking-wider text-center transition-colors inline-flex items-center justify-center gap-2 border border-foreground"
+                  className="min-h-[44px] px-6 py-3.5 bg-background text-foreground hover:bg-background/90 font-mono text-xs font-bold uppercase tracking-wider text-center transition-all active:scale-95 inline-flex items-center justify-center gap-2 border border-foreground rounded-none"
                 >
                   <MessageCircle className="w-4 h-4 text-foreground" />
                   <span>KOLABORASI VIA WHATSAPP</span>
@@ -809,7 +947,7 @@ function EventCatalogContent() {
 
                 <Link
                   href="/tentang"
-                  className="px-5 py-3.5 border border-background/40 bg-transparent hover:bg-background/10 text-background font-mono text-xs font-bold uppercase tracking-wider text-center transition-colors inline-flex items-center justify-center gap-1.5"
+                  className="min-h-[44px] px-5 py-3.5 border border-background/40 bg-transparent hover:bg-background/10 text-background font-mono text-xs font-bold uppercase tracking-wider text-center transition-all active:scale-95 inline-flex items-center justify-center gap-1.5 rounded-none"
                 >
                   <Compass className="w-4 h-4" />
                   <span>KRONIK GERAKAN</span>

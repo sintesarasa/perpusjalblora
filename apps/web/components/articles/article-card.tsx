@@ -60,10 +60,15 @@ export function ArticleCard({
           <div className="space-y-3">
             {/* Top Bar: Category & Duration (Single Occurrence) */}
             <div className="flex flex-wrap items-center justify-between font-mono text-[10px] uppercase tracking-wider text-muted border-b border-border-hairline pb-2.5">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <span className="font-bold text-foreground bg-surface-muted px-2 py-0.5 border border-foreground/30">
                   [{article.category?.name || 'WARTA'}]
                 </span>
+                {article.relatedBooks && article.relatedBooks.length > 0 && (
+                  <span className="text-[9px] text-muted border border-border-hairline px-1.5 py-0.5">
+                    📚 {article.relatedBooks.length} Buku Lapak
+                  </span>
+                )}
                 {article.isFeatured && (
                   <span className="px-1.5 py-0.5 bg-foreground text-background font-bold text-[8.5px] tracking-wider">
                     TAJUK PILIHAN
@@ -185,9 +190,16 @@ export function ArticleCard({
 
         {/* Category & Reading Time (Single Clean Bar) */}
         <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-wider text-muted border-b border-border-hairline pb-2.5">
-          <span className="font-bold text-foreground bg-surface-muted px-2 py-0.5 border border-foreground/30">
-            [{article.category?.name || 'WARTA'}]
-          </span>
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <span className="font-bold text-foreground bg-surface-muted px-2 py-0.5 border border-foreground/30">
+              [{article.category?.name || 'WARTA'}]
+            </span>
+            {article.relatedBooks && article.relatedBooks.length > 0 && (
+              <span className="text-[9px] text-muted border border-border-hairline px-1.5 py-0.5">
+                📚 {article.relatedBooks.length} Buku
+              </span>
+            )}
+          </div>
           <span className="flex items-center gap-1 font-semibold text-foreground">
             <Clock className="w-3 h-3 text-foreground" />
             {article.readingTime} Menit Baca
@@ -255,12 +267,19 @@ export function ArticleCard({
             <button
               type="button"
               onClick={() => onQuickRead(article)}
-              className="text-foreground font-bold hover:underline flex items-center gap-1 uppercase tracking-wider text-[10px] cursor-pointer"
+              className="min-h-[34px] px-2.5 py-1 border border-border-hairline hover:border-foreground bg-surface text-foreground font-bold hover:underline flex items-center gap-1 uppercase tracking-wider text-[10px] cursor-pointer active:scale-95 touch-tactile rounded-none"
             >
               <BookOpen className="w-3 h-3" />
-              <span>Baca Kilas &rarr;</span>
+              <span>Baca Kilas</span>
             </button>
           )}
+          <Link
+            href={`/artikel/${article.slug}`}
+            className="min-h-[34px] px-3 py-1 bg-foreground text-background font-bold flex items-center gap-1 uppercase tracking-wider text-[10px] hover:bg-foreground/90 transition-all active:scale-95 touch-tactile rounded-none"
+          >
+            <span>Baca</span>
+            <ArrowRight className="w-3 h-3" />
+          </Link>
         </div>
       </div>
     </article>

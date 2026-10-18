@@ -86,6 +86,7 @@ export default function DashboardBookManagementPage() {
   const [actionError, setActionError] = React.useState<string | null>(null);
   const [togglingBookId, setTogglingBookId] = React.useState<string | null>(null);
   const [togglingFeaturedId, setTogglingFeaturedId] = React.useState<string | null>(null);
+  const [togglingBorrowableId, setTogglingBorrowableId] = React.useState<string | null>(null);
 
   // Spotlight Modal State
   const [spotlightModalBook, setSpotlightModalBook] = React.useState<BookItem | null>(null);
@@ -333,7 +334,37 @@ export default function DashboardBookManagementPage() {
     }
   };
 
-  // 4b. Toggle Featured / Curator's Spotlight
+  // 4b. Quick 1-Click Toggle Borrowable (Bisa Dipinjam vs Baca di Tempat)
+  const handleToggleBorrowable = async (book: BookItem) => {
+    setTogglingBorrowableId(book.id);
+    setActionError(null);
+    setActionMessage(null);
+    try {
+      const nextBorrowable = !book.isBorrowable;
+      const res = await apiClient<{ data: { isBorrowable: boolean }; message: string }>(
+        `/books/${book.id}/borrowable`,
+        {
+          method: 'PATCH',
+          body: JSON.stringify({ isBorrowable: nextBorrowable }),
+        }
+      );
+
+      if (res.error) {
+        setActionError(res.error.message);
+      } else {
+        setActionMessage(res.data?.message || 'Status hak pinjam buku berhasil diperbarui.');
+        setBooks((prev) =>
+          prev.map((b) => (b.id === book.id ? { ...b, isBorrowable: nextBorrowable } : b))
+        );
+      }
+    } catch {
+      setActionError('Terjadi kendala saat mengubah status hak pinjam.');
+    } finally {
+      setTogglingBorrowableId(null);
+    }
+  };
+
+  // 4c. Toggle Featured / Curator's Spotlight
   const handleOpenSpotlightModal = (book: BookItem) => {
     setSpotlightModalBook(book);
     setSpotlightNoteInput(book.curatorNote || '');
@@ -569,12 +600,12 @@ export default function DashboardBookManagementPage() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Cari judul, pengarang, ISBN..."
-            className="w-full pl-9 pr-3 py-2 border border-border-hairline bg-surface text-foreground font-mono text-xs focus:border-foreground focus:outline-none"
+            className="w-full pl-9 pr-3 py-2 min-h-[44px] sm:min-h-0 border border-border-hairline bg-surface text-foreground font-mono text-base sm:text-xs focus:border-foreground focus:outline-none"
           />
         </div>
 
         {/* Filters & Sorotan Button */}
-        <div className="flex items-center gap-3 w-full md:w-auto flex-wrap">
+        <div className="flex items-center gap-2 sm:gap-3 w-full md:w-auto flex-wrap">
           {/* Quick Button: Kelola Sorotan Lapak */}
           <button
             type="button"
@@ -583,7 +614,7 @@ export default function DashboardBookManagementPage() {
               setCurrentPage(1);
             }}
             className={cn(
-              "px-3 py-2 border font-mono text-xs uppercase tracking-wider font-bold inline-flex items-center gap-1.5 transition-colors cursor-pointer",
+              "min-h-[44px] sm:min-h-0 px-3 py-2 border font-mono text-xs uppercase tracking-wider font-bold inline-flex items-center gap-1.5 transition-colors cursor-pointer touch-tactile active:scale-95",
               publishFilter === 'featured'
                 ? "bg-foreground text-background border-foreground"
                 : "bg-surface text-foreground border-border-hairline hover:border-foreground"
@@ -618,7 +649,7 @@ export default function DashboardBookManagementPage() {
               setPublishFilter(e.target.value);
               setCurrentPage(1);
             }}
-            className="px-3 py-2 border border-border-hairline bg-surface text-foreground font-mono text-xs focus:border-foreground focus:outline-none"
+            className="min-h-[44px] sm:min-h-0 px-3 py-2 border border-border-hairline bg-surface text-foreground font-mono text-base sm:text-xs focus:border-foreground focus:outline-none"
           >
             <option value="all">Semua Status (Publik &amp; Draft)</option>
             <option value="featured">★ Pilihan Sorotan Lapak ({featuredTotal})</option>
@@ -628,14 +659,14 @@ export default function DashboardBookManagementPage() {
 
           {/* Kategori Filter */}
           <div className="flex items-center gap-1.5">
-            <Filter className="w-3.5 h-3.5 text-muted" />
+            <Filter className="w-3.5 h-3.5 text-muted shrink-0" />
             <select
               value={selectedCategory}
               onChange={(e) => {
                 setSelectedCategory(e.target.value);
                 setCurrentPage(1);
               }}
-              className="px-3 py-2 border border-border-hairline bg-surface text-foreground font-mono text-xs focus:border-foreground focus:outline-none"
+              className="min-h-[44px] sm:min-h-0 px-3 py-2 border border-border-hairline bg-surface text-foreground font-mono text-base sm:text-xs focus:border-foreground focus:outline-none"
             >
               <option value="">Semua Kategori</option>
               {categories.map((c) => (
@@ -653,7 +684,7 @@ export default function DashboardBookManagementPage() {
               setAvailabilityFilter(e.target.value);
               setCurrentPage(1);
             }}
-            className="px-3 py-2 border border-border-hairline bg-surface text-foreground font-mono text-xs focus:border-foreground focus:outline-none"
+            className="min-h-[44px] sm:min-h-0 px-3 py-2 border border-border-hairline bg-surface text-foreground font-mono text-base sm:text-xs focus:border-foreground focus:outline-none"
           >
             <option value="all">Semua Ketersediaan</option>
             <option value="available">Hanya yang Tersedia</option>
@@ -662,7 +693,7 @@ export default function DashboardBookManagementPage() {
           <button
             type="button"
             onClick={fetchBooks}
-            className="p-2 border border-border-hairline hover:border-foreground text-muted hover:text-foreground transition-colors"
+            className="min-h-[44px] sm:min-h-0 p-2 sm:px-2.5 border border-border-hairline hover:border-foreground text-muted hover:text-foreground transition-colors touch-tactile active:scale-95 inline-flex items-center justify-center"
             title="Segarkan data"
           >
             <RefreshCw className="w-4 h-4" />
@@ -891,8 +922,8 @@ export default function DashboardBookManagementPage() {
                     </div>
                   </div>
 
-                  {/* Right: Actions */}
-                  <div className="flex items-center gap-2 self-end md:self-center font-mono text-xs shrink-0 flex-wrap sm:flex-nowrap">
+                  {/* Desktop Inline Actions (>= md) */}
+                  <div className="hidden md:flex items-center gap-2 self-center font-mono text-xs shrink-0 flex-nowrap">
                     {/* Toggle Status Terbit / Draft */}
                     <button
                       type="button"
@@ -916,6 +947,26 @@ export default function DashboardBookManagementPage() {
                           <span>Draft-kan</span>
                         </>
                       )}
+                    </button>
+
+                    {/* 1-Click Toggle Bisa Dipinjam / Di Tempat */}
+                    <button
+                      type="button"
+                      onClick={() => handleToggleBorrowable(book)}
+                      disabled={togglingBorrowableId === book.id}
+                      className={cn(
+                        'px-2.5 py-1.5 border text-[11px] font-semibold uppercase tracking-wider inline-flex items-center gap-1.5 transition-colors disabled:opacity-50 touch-tactile',
+                        book.isBorrowable
+                          ? 'border-foreground bg-surface-muted text-foreground hover:bg-foreground hover:text-background'
+                          : 'border-dashed border-border-hairline text-muted hover:border-foreground hover:text-foreground'
+                      )}
+                      title={
+                        book.isBorrowable
+                          ? 'Status: BISA DIPINJAM. Klik untuk ubah ke HANYA BACA DI TEMPAT.'
+                          : 'Status: BACA DI TEMPAT. Klik untuk ubah ke BISA DIPINJAM.'
+                      }
+                    >
+                      <span>{book.isBorrowable ? '● Bisa Pinjam' : '◓ Di Tempat'}</span>
                     </button>
 
                     {/* Kelola Eksemplar Fisik */}
@@ -1015,6 +1066,128 @@ export default function DashboardBookManagementPage() {
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
+                  </div>
+
+                  {/* Mobile Stacked Action Controls (< md) */}
+                  <div className="md:hidden w-full pt-3 border-t border-border-hairline space-y-2 font-mono text-xs">
+                    {/* Primary Row: 3 columns */}
+                    <div className="grid grid-cols-3 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setCopiesModalBook(book)}
+                        className="min-h-[40px] px-2 py-1.5 border-2 border-foreground bg-surface hover:bg-surface-muted active:scale-95 text-foreground font-bold inline-flex items-center justify-center gap-1.5 transition-all touch-tactile"
+                      >
+                        <Layers className="w-3.5 h-3.5" />
+                        <span>Kopi ({total})</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setEditModalBookId(book.id)}
+                        className="min-h-[40px] px-2 py-1.5 border border-border-hairline hover:border-foreground active:scale-95 bg-surface text-foreground font-bold inline-flex items-center justify-center gap-1.5 transition-all touch-tactile"
+                      >
+                        <Edit3 className="w-3.5 h-3.5" />
+                        <span>Sunting</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleOpenSpotlightModal(book)}
+                        className={cn(
+                          'min-h-[40px] px-2 py-1.5 border font-bold inline-flex items-center justify-center gap-1 transition-all touch-tactile active:scale-95',
+                          book.isFeatured
+                            ? 'border-foreground bg-foreground text-background'
+                            : 'border-border-hairline hover:border-foreground bg-surface text-foreground'
+                        )}
+                      >
+                        <Star className={cn('w-3.5 h-3.5', book.isFeatured && 'fill-current')} />
+                        <span>{book.isFeatured ? 'Sorotan' : '+ Sorot'}</span>
+                      </button>
+                    </div>
+
+                    {/* Secondary Row: 4 columns */}
+                    <div className="grid grid-cols-4 gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => handleToggleBorrowable(book)}
+                        disabled={togglingBorrowableId === book.id}
+                        className={cn(
+                          'min-h-[38px] px-1 border text-[10.5px] font-bold uppercase inline-flex items-center justify-center transition-all touch-tactile active:scale-95 disabled:opacity-50',
+                          book.isBorrowable
+                            ? 'border-foreground bg-surface-muted text-foreground'
+                            : 'border-dashed border-border-hairline text-muted'
+                        )}
+                        title={book.isBorrowable ? 'Ubah ke Hanya Baca di Tempat' : 'Ubah ke Bisa Dipinjam'}
+                      >
+                        <span>{book.isBorrowable ? 'Pinjam' : 'Tempat'}</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleTogglePublish(book)}
+                        disabled={isToggling}
+                        className={cn(
+                          'min-h-[38px] px-1 border text-[10.5px] font-bold uppercase inline-flex items-center justify-center transition-all touch-tactile active:scale-95 disabled:opacity-50',
+                          isDraft
+                            ? 'border-amber-600 bg-amber-50 text-amber-900'
+                            : 'border-border-hairline bg-surface text-muted'
+                        )}
+                      >
+                        <span>{isDraft ? 'Terbitkan' : 'Draft'}</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          try {
+                            const res = await apiClient<{ data: any[] }>(`/books/${book.id}/copies`);
+                            const raw = res.data;
+                            const copies: any[] = Array.isArray(raw)
+                              ? raw
+                              : Array.isArray((raw as any)?.data)
+                              ? (raw as any).data
+                              : [];
+                            if (copies.length === 0) {
+                              setActionError(`Buku "${book.title}" belum memiliki eksemplar fisik untuk dicetak.`);
+                              return;
+                            }
+                            addMultipleToQueue(
+                              copies.map((c: any, idx: number) => ({
+                                bookId: book.id,
+                                bookTitle: book.title,
+                                bookSlug: book.slug,
+                                author: book.author,
+                                categoryName: book.category?.name,
+                                categorySlug: book.category?.slug,
+                                shelfLocation: book.shelfLocation,
+                                inventoryCode: c.inventoryCode,
+                                copyNumber: idx + 1,
+                                count: 1,
+                              }))
+                            );
+                            setActionMessage(`${copies.length} stiker untuk "${book.title}" berhasil dimasukkan ke antrean cetak!`);
+                            setIsQueueOpen(true);
+                          } catch {
+                            setActionError('Gagal mengambil data eksemplar untuk stiker.');
+                          }
+                        }}
+                        className="min-h-[38px] px-1 border border-border-hairline hover:border-foreground active:scale-95 bg-surface text-foreground text-[10.5px] font-bold uppercase inline-flex items-center justify-center gap-1 transition-all touch-tactile"
+                        title="Masukkan ke antrean stiker"
+                      >
+                        <Tag className="w-3.5 h-3.5" />
+                        <span>Stiker</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setDeleteTarget({ id: book.id, title: book.title })}
+                        className="min-h-[38px] px-1 border border-border-hairline text-red-700 hover:border-red-400 active:scale-95 bg-surface text-[10.5px] font-bold uppercase inline-flex items-center justify-center gap-1 transition-all touch-tactile"
+                        title="Hapus / arsipkan buku"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>Hapus</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               );

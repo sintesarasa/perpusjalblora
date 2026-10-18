@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { lettersController } from './letters.controller.js';
 import { requireAuth, requireVerified, requireRole } from '../../middleware/auth.js';
+import { letterLimiter } from '../../middleware/rate-limit.js';
 import { Role } from '@perpusjal/types';
 
 const router = Router();
@@ -17,7 +18,7 @@ router.get('/moderation/queue', requireRole(Role.KURATOR), (req, res, next) =>
 router.get('/:slug', (req, res, next) => lettersController.getLetterBySlug(req, res, next));
 
 // Registered member submission (U+)
-router.post('/', requireAuth, requireVerified, (req, res, next) =>
+router.post('/', requireAuth, requireVerified, letterLimiter, (req, res, next) =>
   lettersController.createLetter(req, res, next)
 );
 

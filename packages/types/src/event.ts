@@ -30,6 +30,8 @@ export const eventCreateSchema = z.object({
   status: z.nativeEnum(EventStatus).default(EventStatus.PUBLISHED),
   summary: z.string().optional().nullable(),
   gallery: z.array(z.string()).optional().nullable(),
+  featuredBookIds: z.array(z.string()).optional().default([]),
+  announcementText: z.string().max(160).optional().nullable(),
 });
 
 export type EventCreateInput = z.infer<typeof eventCreateSchema>;
@@ -60,6 +62,7 @@ export interface EventItem {
   startAt: string;
   endAt: string;
   locationName: string;
+  mapUrl?: string | null;
   isOnline: boolean;
   quota: number | null;
   registeredCount: number;
@@ -99,6 +102,18 @@ export interface EventDetail extends EventItem {
   isParticipantListPublic: boolean;
   summary: string | null;
   gallery: string[] | null;
+  featuredBookIds?: string[];
+  announcementText?: string | null;
+  featuredBooks?: Array<{
+    id: string;
+    title: string;
+    slug: string;
+    author: string;
+    coverImage: string | null;
+    isBorrowable: boolean;
+    availableCopies: number;
+    category?: { id: string; name: string; slug: string };
+  }>;
   myRegistration?: EventRegistrationItem | null;
   participants?: Array<{ name: string; registeredAt: string }>;
 }

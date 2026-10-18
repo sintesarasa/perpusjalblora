@@ -8,7 +8,8 @@ import { Footer } from '@/components/layout/footer';
 import { BrandStamp } from '@/components/ui/brand-stamp';
 import { RevealOnScroll } from '@/components/ui/reveal-on-scroll';
 import { Logo } from '@/components/logo';
-import { apiClient } from '@/lib/api';
+import { apiClient, isServerColdStart } from '@/lib/api';
+import { ColdStartBanner } from '@/components/ui/cold-start-banner';
 import { BookItem, LandingPublicConfigResponse, DEFAULT_LANDING_SETTINGS } from '@perpusjal/types';
 import { LapakWartaTicker } from '@/components/home/lapak-warta-ticker';
 import { InteractiveLiteraryIndex } from '@/components/home/interactive-literary-index';
@@ -27,8 +28,35 @@ import {
   Award,
   BookMarked,
   AlertTriangle,
+  Search,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+
+// Helper to calculate current time in WIB (UTC+7)
+function checkIsLiveSundayLapak(): { isSunday: boolean; isLiveNow: boolean; timeText: string } {
+  try {
+    const now = new Date();
+    const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+    const wib = new Date(utc + 3600000 * 7);
+    const day = wib.getDay(); // 0 is Sunday
+    const hours = wib.getHours();
+    const minutes = wib.getMinutes();
+
+    const isSunday = day === 0;
+    const isLiveNow = isSunday && (hours > 6 || (hours === 6 && minutes >= 0)) && (hours < 9 || (hours === 9 && minutes <= 30));
+
+    let timeText = 'SETIAP MINGGU PAGI // 06.00 - 09.30 WIB';
+    if (isLiveNow) {
+      timeText = 'SEDANG DIGELAR SEKARANG DI ALUN-ALUN BLORA!';
+    } else if (isSunday && hours < 6) {
+      timeText = 'MENGGELAR LAPAK PAGI INI MULAI 06.00 WIB';
+    }
+
+    return { isSunday, isLiveNow, timeText };
+  } catch {
+    return { isSunday: false, isLiveNow: false, timeText: 'SETIAP MINGGU PAGI // 06.00 - 09.30 WIB' };
+  }
+}
 
 // Rotating active verbs for the broadsheet hero
 const ROTATING_WORDS = [
@@ -58,13 +86,11 @@ function LoadingUnderlineHeadline() {
       timerId = setTimeout(() => {
         if (!isMounted) return;
         setIsExiting(true);
-
         // Step 2: Smooth dissolve-out transition (220ms)
         timerId = setTimeout(() => {
           if (!isMounted) return;
           setCurrentIdx((prev) => (prev + 1) % ROTATING_WORDS.length);
           setIsExiting(false);
-
           // Step 3: Run the next cycle
           runCycle();
         }, 220);
@@ -174,36 +200,61 @@ export default function HomePage() {
     });
   };
 
-  // Fetch real books and landing config from backend
+  const [isColdStart, setIsColdStart] = React.useState(false);
+
+  // Live Sunday Lapak status
+  const [liveLapakStatus, setLiveLapakStatus] = React.useState({
+    isSunday: false,
+    isLiveNow: false,
+    timeText: 'SETIAP MINGGU PAGI // 06.00 - 09.30 WIB',
+  });
+
   React.useEffect(() => {
-    let isMounted = true;
-    async function loadInitialData() {
-      try {
-        const [booksRes, landingRes] = await Promise.all([
-          apiClient<BooksApiResponse>('/books?perPage=12&sort=terbaru'),
-          apiClient<LandingPublicConfigResponse>('/landing/config'),
-        ]);
-
-        if (!isMounted) return;
-
-        if (booksRes.data?.data) {
-          setBooks(booksRes.data.data);
-        }
-
-        if (landingRes.data?.settings) {
-          setLandingConfig(landingRes.data);
-        }
-      } catch (err) {
-        console.error('Failed to load initial data from API:', err);
-      } finally {
-        if (isMounted) setLoadingBooks(false);
-      }
-    }
-    loadInitialData();
-    return () => {
-      isMounted = false;
-    };
+    setLiveLapakStatus(checkIsLiveSundayLapak());
+    const interval = setInterval(() => {
+      setLiveLapakStatus(checkIsLiveSundayLapak());
+    }, 60000); // recheck every 1 minute
+    return () => clearInterval(interval);
   }, []);
+
+  // Fetch real books and landing config from backend
+  const loadInitialData = React.useCallback(async () => {
+    try {
+      setLoadingBooks(true);
+      const [booksRes, landingRes] = await Promise.all([
+        apiClient<BooksApiResponse>('/books?perPage=12&sort=terbaru'),
+        apiClient<LandingPublicConfigResponse>('/landing/config'),
+      ]);
+
+      if (isServerColdStart(booksRes.error) || isServerColdStart(landingRes.error)) {
+        setIsColdStart(true);
+      } else {
+        setIsColdStart(false);
+      }
+
+      if (booksRes.data?.data) {
+        setBooks(booksRes.data.data);
+      }
+
+      if (landingRes.data?.settings) {
+        setLandingConfig(landingRes.data);
+      }
+    } catch (err) {
+      console.error('Failed to load initial data from API:', err);
+    } finally {
+      setLoadingBooks(false);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    loadInitialData();
+  }, [loadInitialData]);
+
+  const handleOpenGlobalSearch = () => {
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('open-global-search'));
+    }
+  };
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground selection:bg-foreground selection:text-background editorial-grain">
@@ -220,7 +271,7 @@ export default function HomePage() {
         {/* ========================================================= */}
         <section
           onMouseMove={handleHeroMouseMove}
-          className="border-b-2 border-foreground max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-14 pb-14 sm:pb-20 relative overflow-hidden"
+          className="border-b-2 border-foreground max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-14 pb-12 sm:pb-16 relative overflow-hidden"
         >
           {/* Subtle Typography Watermark */}
           <div
@@ -235,7 +286,7 @@ export default function HomePage() {
 
           {/* Authentic Gazette Masthead Top Ledger */}
           <RevealOnScroll variant="fade" delayMs={60}>
-            <div className="flex flex-wrap items-center justify-between border-b border-border-hairline pb-3 mb-6 sm:mb-10 text-[10px] sm:text-[11px] font-mono uppercase tracking-widest text-muted gap-2 relative z-10">
+            <div className="flex flex-wrap items-center justify-between border-b border-border-hairline pb-3 mb-6 sm:mb-8 text-[10px] sm:text-[11px] font-mono uppercase tracking-widest text-muted gap-2 relative z-10">
               <div className="flex items-center gap-2 sm:gap-3">
                 <BrandStamp edition="KRONIK UTAMA" year="2026" />
                 <span className="hidden sm:inline font-bold text-foreground">[ EDISI RESMI // GERAKAN SWADAYA ]</span>
@@ -243,23 +294,28 @@ export default function HomePage() {
                   VOL. III // 2026
                 </span>
               </div>
-              {landingConfig?.settings?.cfdSchedule?.isActive !== false && (
-                <div className="flex items-center gap-2">
-                  <span
-                    className={cn(
-                      'w-1.5 h-1.5 rounded-none animate-pulse shrink-0',
-                      landingConfig?.settings?.cfdSchedule?.status === 'LIBUR_CFD'
-                        ? 'bg-red-600'
-                        : landingConfig?.settings?.cfdSchedule?.status === 'PINDAH_LOKASI'
-                        ? 'bg-amber-600'
-                        : 'bg-foreground'
-                    )}
-                  />
-                  <span className="text-foreground font-semibold text-[10px] sm:text-[11px] tracking-wider">
-                    {landingConfig?.settings?.cfdSchedule?.badgeText || 'LAPAK CFD: SETIAP MINGGU PAGI'}
-                  </span>
-                </div>
-              )}
+
+              {/* Dynamic Live Status Badge */}
+              <div className="flex items-center gap-2">
+                <span
+                  className={cn(
+                    'w-2 h-2 rounded-none shrink-0',
+                    liveLapakStatus.isLiveNow
+                      ? 'bg-red-600 animate-ping'
+                      : landingConfig?.settings?.cfdSchedule?.status === 'LIBUR_CFD'
+                      ? 'bg-red-600'
+                      : landingConfig?.settings?.cfdSchedule?.status === 'PINDAH_LOKASI'
+                      ? 'bg-amber-600'
+                      : 'bg-foreground animate-pulse'
+                  )}
+                />
+                <span className="text-foreground font-semibold text-[10px] sm:text-[11px] tracking-wider">
+                  {liveLapakStatus.isLiveNow
+                    ? '🔴 SEDANG GELAR LAPAK DI ALUN-ALUN'
+                    : landingConfig?.settings?.cfdSchedule?.badgeText || liveLapakStatus.timeText}
+                </span>
+              </div>
+
               <div className="hidden lg:block font-semibold text-foreground">BLORA, JAWA TENGAH &bull; RUANG BACA RAKYAT</div>
             </div>
           </RevealOnScroll>
@@ -267,7 +323,7 @@ export default function HomePage() {
           {/* Urgent / Special Lapak CFD Notice Banner */}
           {landingConfig?.settings?.cfdSchedule?.alertNotice && (
             <RevealOnScroll variant="cinematic" delayMs={100}>
-              <div className="mb-8 p-3.5 sm:p-4 border-2 border-foreground bg-surface font-mono text-xs flex items-start sm:items-center gap-3 relative z-10 rounded-none">
+              <div className="mb-6 p-3.5 sm:p-4 border-2 border-foreground bg-surface font-mono text-xs flex items-start sm:items-center gap-3 relative z-10 rounded-none">
                 <AlertTriangle className="w-4 h-4 text-foreground shrink-0 mt-0.5 sm:mt-0" />
                 <div className="flex-1">
                   <span className="font-bold uppercase tracking-wider mr-2 text-[11px]">
@@ -281,9 +337,9 @@ export default function HomePage() {
             </RevealOnScroll>
           )}
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 relative z-10 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 relative z-10 items-start">
             {/* Left Lead: Pure Typographic Masterpiece (7 cols) */}
-            <div className="lg:col-span-7 flex flex-col justify-center space-y-6 sm:space-y-8">
+            <div className="lg:col-span-7 flex flex-col justify-center space-y-6 sm:space-y-7">
               <RevealOnScroll variant="cinematic" delayMs={120}>
                 <div className="space-y-4 sm:space-y-6">
                   {/* Eyecatching Gazette Micro-Header */}
@@ -322,9 +378,9 @@ export default function HomePage() {
                   </div>
 
                   {/* Concise, Poetic Body Text with Editorial Margin Line */}
-                  <div className="border-l-2 border-foreground pl-4 py-1 my-4 sm:my-6">
+                  <div className="border-l-2 border-foreground pl-4 py-1 my-3 sm:my-5">
                     <p className="font-serif text-[15px] sm:text-lg md:text-xl text-foreground/90 leading-relaxed font-normal">
-                      Buku dihamparkan di atas selembar terpal Alun-Alun Blora. Bebas dibaca bersila, gratis dipinjam tanpa syarat, tanpa jaminan, dan tanpa denda.
+                      Buku dihamparkan di atas selembar terpal Alun-Alun Blora. Bebas dibaca bersila, gratis dipinjam tanpa syarat, tanpa jaminan, dan tanpa denda sepeser pun.
                     </p>
                     <span className="block font-mono text-[9.5px] sm:text-[10.5px] uppercase tracking-widest text-muted mt-2">
                       &bull; RUANG BACA RAKYAT // SWADAYA WARGA
@@ -335,7 +391,7 @@ export default function HomePage() {
 
               {/* Simple & Inviting Action Bar (CTA) */}
               <RevealOnScroll variant="cinematic" delayMs={240}>
-                <div className="space-y-3 sm:space-y-4 pt-1 sm:pt-2">
+                <div className="space-y-3 sm:space-y-4 pt-1">
                   <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch sm:items-center">
                     {/* Primary CTA */}
                     <Link
@@ -356,8 +412,50 @@ export default function HomePage() {
                     </Link>
                   </div>
 
+                  {/* Quick Action Pills (Mobile Snap-Scroll Track, Desktop Flex) */}
+                  <div className="pt-2">
+                    <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none snap-x snap-mandatory">
+                      <span className="text-[10px] font-mono uppercase tracking-widest text-muted shrink-0 flex items-center gap-1 mr-1">
+                        Akses Cepat:
+                      </span>
+
+                      <button
+                        type="button"
+                        onClick={handleOpenGlobalSearch}
+                        className="px-3 py-1.5 border border-border-hairline bg-surface hover:border-foreground font-mono text-[11px] uppercase tracking-wider text-foreground inline-flex items-center gap-1.5 shrink-0 snap-start active:scale-95 transition-transform"
+                      >
+                        <Search className="w-3 h-3 text-foreground" />
+                        <span>Cari Cepat (⌘K)</span>
+                      </button>
+
+                      <Link
+                        href="/cara-meminjam"
+                        className="px-3 py-1.5 border border-border-hairline bg-surface hover:border-foreground font-mono text-[11px] uppercase tracking-wider text-foreground inline-flex items-center gap-1.5 shrink-0 snap-start active:scale-95 transition-transform"
+                      >
+                        <BookMarked className="w-3 h-3 text-foreground" />
+                        <span>Cara Pinjam</span>
+                      </Link>
+
+                      <Link
+                        href="/kegiatan"
+                        className="px-3 py-1.5 border border-border-hairline bg-surface hover:border-foreground font-mono text-[11px] uppercase tracking-wider text-foreground inline-flex items-center gap-1.5 shrink-0 snap-start active:scale-95 transition-transform"
+                      >
+                        <MapPin className="w-3 h-3 text-foreground" />
+                        <span>Titik Lapak CFD</span>
+                      </Link>
+
+                      <Link
+                        href="/artikel"
+                        className="px-3 py-1.5 border border-border-hairline bg-surface hover:border-foreground font-mono text-[11px] uppercase tracking-wider text-foreground inline-flex items-center gap-1.5 shrink-0 snap-start active:scale-95 transition-transform"
+                      >
+                        <Feather className="w-3 h-3 text-foreground" />
+                        <span>Warta Warga</span>
+                      </Link>
+                    </div>
+                  </div>
+
                   {/* Clean Minimalist Micro-Note */}
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] sm:text-[11px] font-mono uppercase tracking-widest text-muted pt-0.5 px-0.5">
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] sm:text-[11px] font-mono uppercase tracking-widest text-muted pt-1 px-0.5">
                     <span>● 100% Bebas Biaya Seumur Hidup</span>
                     <span className="hidden sm:inline opacity-30">&bull;</span>
                     <span>● Terbuka Untuk Seluruh Warga</span>
@@ -370,25 +468,59 @@ export default function HomePage() {
             <RevealOnScroll
               variant="cinematic"
               delayMs={180}
-              className="lg:col-span-5 border-t border-border-hairline lg:border-t-0 lg:border-l lg:border-border-hairline pt-8 sm:pt-10 lg:pt-0 lg:pl-10 flex flex-col justify-between space-y-6 sm:space-y-8"
+              className="lg:col-span-5 border-t border-border-hairline lg:border-t-0 lg:border-l lg:border-border-hairline pt-6 sm:pt-8 lg:pt-0 lg:pl-10 flex flex-col justify-between space-y-5 sm:space-y-6"
             >
-              {/* Quote Card (Catatan Pinggir Falsafah) - Cleaned for mobile to prevent quote clutter */}
-              <div className="hidden sm:block space-y-3 sm:space-y-4">
-                <div className="text-[10px] font-mono uppercase tracking-ultra text-muted flex items-center gap-1.5">
-                  <Quote className="w-3.5 h-3.5 text-foreground" />
-                  <span>[ CATATAN PINGGIR // FALSAFAH ]</span>
+              {/* Lapak CFD Live Spotlight Card */}
+              <div
+                className={cn(
+                  'border-2 border-foreground p-5 bg-surface font-mono space-y-3 relative',
+                  liveLapakStatus.isLiveNow && 'bg-surface-muted ring-1 ring-foreground'
+                )}
+              >
+                <div className="flex items-center justify-between pb-2 border-b border-border-hairline text-[10px] uppercase tracking-widest">
+                  <span className="flex items-center gap-1.5 font-bold text-foreground">
+                    <span
+                      className={cn(
+                        'w-2 h-2 rounded-none inline-block',
+                        liveLapakStatus.isLiveNow ? 'bg-red-600 animate-ping' : 'bg-foreground'
+                      )}
+                    />
+                    {liveLapakStatus.isLiveNow ? 'LIVE SEKARANG // CFD ALUN-ALUN' : 'JADWAL LAPAK TERPAL'}
+                  </span>
+                  <span className="text-muted">MINGGU PAGI</span>
                 </div>
-                <blockquote className="font-serif italic text-xl sm:text-2xl lg:text-3xl text-foreground leading-snug">
-                  &ldquo;Buku tidak bernilai jika hanya berdebu di lemari kaca. Ia hidup saat disentuh
-                  jemari dan diperdebatkan di lapak trotoar.&rdquo;
-                </blockquote>
-                <cite className="block font-mono text-[10px] sm:text-[11px] uppercase tracking-wider text-muted not-italic">
-                  — Dewan Kolektif Perpusjal Blora
-                </cite>
+
+                <div className="space-y-1.5">
+                  <h3 className="font-serif font-black text-lg sm:text-xl text-foreground">
+                    Alun-Alun Blora (Depan Pendopo)
+                  </h3>
+                  <p className="font-sans text-xs text-muted leading-relaxed">
+                    Hadir rutin setiap hari Minggu pukul 06.00 – 09.30 WIB. Baca di tempat beralas tikar, pinjam buku gratis, atau ngobrol literasi santai.
+                  </p>
+                </div>
+
+                <div className="pt-2 border-t border-border-hairline flex flex-wrap items-center justify-between gap-2 text-xs">
+                  <a
+                    href="https://maps.google.com/?q=Alun-alun+Blora"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-3 py-1.5 bg-foreground text-background font-mono text-[10.5px] uppercase font-bold tracking-wider hover:bg-foreground/90 transition-colors inline-flex items-center gap-1.5 active:scale-95"
+                  >
+                    <MapPin className="w-3 h-3" />
+                    <span>BUKA GOOGLE MAPS</span>
+                  </a>
+
+                  <Link
+                    href="/kegiatan"
+                    className="text-foreground hover:underline inline-flex items-center gap-1 font-mono text-[10.5px] uppercase tracking-wider font-bold"
+                  >
+                    <span>AGENDA LENGKAP &rarr;</span>
+                  </Link>
+                </div>
               </div>
 
               {/* Chronicle Movement Manifesto Card */}
-              <div className="border-2 border-foreground p-5 sm:p-6 bg-surface font-mono space-y-3">
+              <div className="border-2 border-foreground p-5 bg-surface font-mono space-y-3">
                 <div className="flex items-center justify-between pb-2.5 border-b border-border-hairline text-[10px] uppercase tracking-widest text-muted">
                   <span>KRONIK GERAKAN // BLORA</span>
                   <span className="font-bold text-foreground">SWADAYA RAKYAT</span>
@@ -412,6 +544,61 @@ export default function HomePage() {
                 </div>
               </div>
             </RevealOnScroll>
+          </div>
+        </section>
+
+        {/* ========================================================= */}
+        {/* 1.25. 4-PILLAR BROADSHEET COMMUNITY METRIC TICKER         */}
+        {/* ========================================================= */}
+        <section className="border-b-2 border-foreground bg-surface text-foreground py-6 sm:py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 divide-y sm:divide-y-0 sm:divide-x divide-border-hairline">
+            <div className="pt-2 sm:pt-0 sm:px-4 first:pl-0 flex flex-col justify-center space-y-1">
+              <span className="font-mono text-[10px] sm:text-[11px] uppercase tracking-widest text-muted font-bold">
+                KOLEKSI BUKU
+              </span>
+              <div className="font-serif font-black text-2xl sm:text-3xl lg:text-4xl text-foreground">
+                350+ <span className="text-xs font-mono font-normal uppercase text-muted">Judul</span>
+              </div>
+              <p className="font-sans text-[11px] sm:text-xs text-muted leading-snug">
+                Sastra, filsafat, sejarah, warta, hingga dongeng anak di atas terpal.
+              </p>
+            </div>
+
+            <div className="pt-3 sm:pt-0 sm:px-4 flex flex-col justify-center space-y-1">
+              <span className="font-mono text-[10px] sm:text-[11px] uppercase tracking-widest text-muted font-bold">
+                BIAYA &amp; DENDA
+              </span>
+              <div className="font-serif font-black text-2xl sm:text-3xl lg:text-4xl text-foreground">
+                100% <span className="text-xs font-mono font-normal uppercase text-muted">Gratis</span>
+              </div>
+              <p className="font-sans text-[11px] sm:text-xs text-muted leading-snug">
+                Tanpa uang jaminan, tanpa denda rupiah, berlandaskan amanah warga.
+              </p>
+            </div>
+
+            <div className="pt-3 sm:pt-0 sm:px-4 flex flex-col justify-center space-y-1">
+              <span className="font-mono text-[10px] sm:text-[11px] uppercase tracking-widest text-muted font-bold">
+                KONSISTENSI CFD
+              </span>
+              <div className="font-serif font-black text-2xl sm:text-3xl lg:text-4xl text-foreground">
+                52+ <span className="text-xs font-mono font-normal uppercase text-muted">Pekan/Tahun</span>
+              </div>
+              <p className="font-sans text-[11px] sm:text-xs text-muted leading-snug">
+                Gelar terpal rutin setiap Minggu pagi di Alun-Alun Blora.
+              </p>
+            </div>
+
+            <div className="pt-3 sm:pt-0 sm:px-4 last:pr-0 flex flex-col justify-center space-y-1">
+              <span className="font-mono text-[10px] sm:text-[11px] uppercase tracking-widest text-muted font-bold">
+                KONTRIBUTOR WARGA
+              </span>
+              <div className="font-serif font-black text-2xl sm:text-3xl lg:text-4xl text-foreground">
+                24+ <span className="text-xs font-mono font-normal uppercase text-muted">Penulis</span>
+              </div>
+              <p className="font-sans text-[11px] sm:text-xs text-muted leading-snug">
+                Esai reflektif, catatan buku, dan arsip kebudayaan rakyat Blora.
+              </p>
+            </div>
           </div>
         </section>
 
@@ -759,6 +946,12 @@ export default function HomePage() {
       <RevealOnScroll variant="fade" delayMs={60}>
         <Footer />
       </RevealOnScroll>
+
+      <ColdStartBanner
+        isVisible={isColdStart}
+        onRetry={() => loadInitialData()}
+        onDismiss={() => setIsColdStart(false)}
+      />
     </div>
   );
 }

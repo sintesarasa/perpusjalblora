@@ -243,11 +243,11 @@ export default function AdminBerandaPage() {
             </p>
           </div>
 
-          <div className="flex items-center gap-3 font-mono text-xs shrink-0">
+          <div className="flex flex-wrap sm:flex-nowrap items-center gap-3 font-mono text-xs shrink-0 w-full sm:w-auto">
             <Link
               href="/"
               target="_blank"
-              className="px-4 py-2.5 border border-border-hairline bg-surface hover:border-foreground text-foreground font-semibold uppercase tracking-wider transition-colors inline-flex items-center gap-2 rounded-none"
+              className="flex-1 sm:flex-none justify-center px-4 py-2.5 min-h-[44px] border border-border-hairline bg-surface hover:border-foreground text-foreground font-semibold uppercase tracking-wider transition-colors inline-flex items-center gap-2 rounded-none"
             >
               <ExternalLink className="w-3.5 h-3.5" />
               <span>Lihat Beranda Publik</span>
@@ -258,7 +258,7 @@ export default function AdminBerandaPage() {
               size="md"
               onClick={handleSave}
               isLoading={isSaving}
-              className="inline-flex items-center gap-2"
+              className="flex-1 sm:flex-none justify-center inline-flex items-center gap-2 min-h-[44px]"
             >
               <Save className="w-3.5 h-3.5" />
               <span>Simpan Perubahan</span>
@@ -450,7 +450,7 @@ export default function AdminBerandaPage() {
                           },
                         }))
                       }
-                      className="w-full h-11 px-3.5 bg-background border border-foreground text-sm font-sans rounded-none focus:outline-none"
+                      className="w-full min-h-[44px] px-3.5 bg-background border border-foreground text-base sm:text-sm font-sans rounded-none focus:outline-none"
                     >
                       <option value="">-- Pilih Kegiatan untuk Disorot --</option>
                       {events.map((ev) => (
@@ -521,7 +521,7 @@ export default function AdminBerandaPage() {
                         }))
                       }
                       placeholder="MAKLUMAT RESMI REDAKSI // EDISI KHUSUS"
-                      className="font-mono text-xs uppercase tracking-wider"
+                      className="font-mono text-base sm:text-xs min-h-[44px] sm:min-h-0 uppercase tracking-wider"
                     />
                     <span className="font-mono text-[10px] text-muted">
                       Ditampilkan pada pita hitam di pojok kiri atas dossier.
@@ -545,7 +545,7 @@ export default function AdminBerandaPage() {
                         }))
                       }
                       placeholder="Agenda akbar literasi komunitas swadaya Blora terbuka untuk seluruh warga."
-                      className="w-full p-3 bg-background border border-border hover:border-foreground text-sm font-serif italic text-foreground rounded-none focus:outline-none focus:ring-1 focus:ring-foreground"
+                      className="w-full p-3 bg-background border border-border hover:border-foreground text-base sm:text-sm font-serif italic text-foreground rounded-none focus:outline-none focus:ring-1 focus:ring-foreground"
                     />
                     <span className="font-mono text-[10px] text-muted">
                       Kutipan tebal bergaya editorial sastra di bawah judul kegiatan.
@@ -781,7 +781,7 @@ export default function AdminBerandaPage() {
                           value={item.tag}
                           onChange={(e) => handleUpdateTickerItem(idx, 'tag', e.target.value)}
                           placeholder="WARTA LAPAK"
-                          className="w-full h-9 px-2.5 bg-background border border-border text-xs uppercase font-mono tracking-wider focus:outline-none focus:ring-1 focus:ring-foreground"
+                          className="w-full min-h-[44px] sm:min-h-0 sm:h-9 px-3 bg-background border border-border text-base sm:text-xs uppercase font-mono tracking-wider focus:outline-none focus:ring-1 focus:ring-foreground"
                         />
                       </div>
 
@@ -794,7 +794,7 @@ export default function AdminBerandaPage() {
                           value={item.text}
                           onChange={(e) => handleUpdateTickerItem(idx, 'text', e.target.value)}
                           placeholder="Lesehan terpal setiap minggu pagi di Alun-Alun Blora..."
-                          className="w-full h-9 px-2.5 bg-background border border-border text-xs font-serif focus:outline-none focus:ring-1 focus:ring-foreground"
+                          className="w-full min-h-[44px] sm:min-h-0 sm:h-9 px-3 bg-background border border-border text-base sm:text-xs font-serif focus:outline-none focus:ring-1 focus:ring-foreground"
                         />
                       </div>
 
@@ -807,7 +807,7 @@ export default function AdminBerandaPage() {
                           value={item.link || ''}
                           onChange={(e) => handleUpdateTickerItem(idx, 'link', e.target.value)}
                           placeholder="/kegiatan atau /buku"
-                          className="w-full h-9 px-2.5 bg-background border border-border text-xs font-mono focus:outline-none focus:ring-1 focus:ring-foreground"
+                          className="w-full min-h-[44px] sm:min-h-0 sm:h-9 px-3 bg-background border border-border text-base sm:text-xs font-mono focus:outline-none focus:ring-1 focus:ring-foreground"
                         />
                       </div>
                     </div>
@@ -940,7 +940,7 @@ export default function AdminBerandaPage() {
                         }))
                       }
                       placeholder="LAPAK CFD: SETIAP MINGGU PAGI"
-                      className="font-mono text-xs uppercase tracking-wider"
+                      className="font-mono text-base sm:text-xs min-h-[44px] sm:min-h-0 uppercase tracking-wider"
                     />
                     <span className="font-mono text-[10px] text-muted">
                       Ditampilkan di garis atas masthead Hero beranda depan.
@@ -964,7 +964,7 @@ export default function AdminBerandaPage() {
                         }))
                       }
                       placeholder="Lapak Terbuka: Setiap Minggu 06.00–10.00 WIB di hamparan terpal trotoar Alun-Alun Blora."
-                      className="w-full p-3 bg-background border border-border hover:border-foreground text-xs font-mono text-foreground rounded-none focus:outline-none focus:ring-1 focus:ring-foreground"
+                      className="w-full p-3 bg-background border border-border hover:border-foreground text-base sm:text-xs font-mono text-foreground rounded-none focus:outline-none focus:ring-1 focus:ring-foreground"
                     />
                   </div>
 
@@ -986,7 +986,7 @@ export default function AdminBerandaPage() {
                         }))
                       }
                       placeholder="Contoh: Maklumat Darurat — Dikarenakan hujan lebat dan angin di Alun-Alun, lapak baca minggu ini dialihkan ke pendopo."
-                      className="w-full p-3 bg-background border border-border hover:border-foreground text-xs font-mono text-foreground rounded-none focus:outline-none focus:ring-1 focus:ring-foreground"
+                      className="w-full p-3 bg-background border border-border hover:border-foreground text-base sm:text-xs font-mono text-foreground rounded-none focus:outline-none focus:ring-1 focus:ring-foreground"
                     />
                     <span className="font-mono text-[10px] text-muted">
                       Jika diisi, pesan ini akan muncul sebagai banner maklumat tegas bergaris ganda di halaman depan. Kosongkan jika tidak ada pemberitahuan mendesak.

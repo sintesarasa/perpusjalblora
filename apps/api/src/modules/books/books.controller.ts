@@ -83,6 +83,17 @@ export class BooksController {
     }
   }
 
+  async toggleBorrowable(req: Request, res: Response, next: NextFunction) {
+    try {
+      const id = req.params.id as string;
+      const isBorrowable = typeof req.body?.isBorrowable === 'boolean' ? req.body.isBorrowable : undefined;
+      const result = await booksService.toggleBorrowable(id, isBorrowable);
+      res.status(200).json({ data: result, message: result.message });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async deleteBook(req: Request, res: Response, next: NextFunction) {
     try {
       const id = req.params.id as string;

@@ -216,7 +216,7 @@ export default function AdminEditBookPage() {
                       required
                       value={title}
                       onChange={(e) => setTitle(e.target.value)}
-                      className="w-full px-3 py-2 border border-border-hairline bg-surface text-foreground font-sans text-sm focus:border-foreground focus:outline-none"
+                      className="w-full px-3 py-2.5 min-h-[44px] sm:min-h-0 border border-border-hairline bg-surface text-foreground font-sans text-base sm:text-sm focus:border-foreground focus:outline-none"
                     />
                   </div>
 
@@ -230,7 +230,7 @@ export default function AdminEditBookPage() {
                         required
                         value={author}
                         onChange={(e) => setAuthor(e.target.value)}
-                        className="w-full px-3 py-2 border border-border-hairline bg-surface text-foreground font-sans text-sm focus:border-foreground focus:outline-none"
+                        className="w-full px-3 py-2.5 min-h-[44px] sm:min-h-0 border border-border-hairline bg-surface text-foreground font-sans text-base sm:text-sm focus:border-foreground focus:outline-none"
                       />
                     </div>
 
@@ -243,7 +243,7 @@ export default function AdminEditBookPage() {
                         value={categoryId}
                         onChange={(e) => setCategoryId(e.target.value)}
                         disabled={loading || categories.length === 0}
-                        className="w-full px-3 py-2 border border-border-hairline bg-surface text-foreground font-sans text-sm focus:border-foreground focus:outline-none disabled:opacity-60"
+                        className="w-full px-3 py-2.5 min-h-[44px] sm:min-h-0 border border-border-hairline bg-surface text-foreground font-sans text-base sm:text-sm focus:border-foreground focus:outline-none disabled:opacity-60"
                       >
                         {categories.length === 0 ? (
                           <option value="" disabled>
@@ -273,7 +273,7 @@ export default function AdminEditBookPage() {
                       <select
                         value={language}
                         onChange={(e) => setLanguage(e.target.value as Language)}
-                        className="w-full px-3 py-2 border border-border-hairline bg-surface text-foreground font-sans text-sm focus:border-foreground focus:outline-none"
+                        className="w-full px-3 py-2.5 min-h-[44px] sm:min-h-0 border border-border-hairline bg-surface text-foreground font-sans text-base sm:text-sm focus:border-foreground focus:outline-none"
                       >
                         <option value={Language.ID}>Bahasa Indonesia (ID)</option>
                         <option value={Language.JV}>Basa Jawa (JV)</option>
@@ -291,7 +291,7 @@ export default function AdminEditBookPage() {
                         min="1"
                         value={pages}
                         onChange={(e) => setPages(e.target.value)}
-                        className="w-full px-3 py-2 border border-border-hairline bg-surface text-foreground font-sans text-sm focus:border-foreground focus:outline-none"
+                        className="w-full px-3 py-2.5 min-h-[44px] sm:min-h-0 border border-border-hairline bg-surface text-foreground font-sans text-base sm:text-sm focus:border-foreground focus:outline-none"
                       />
                     </div>
                   </div>
@@ -316,7 +316,7 @@ export default function AdminEditBookPage() {
                       maxLength={13}
                       value={isbn}
                       onChange={(e) => setIsbn(e.target.value)}
-                      className="w-full px-3 py-2 border border-border-hairline bg-surface text-foreground font-mono text-xs focus:border-foreground focus:outline-none"
+                      className="w-full px-3 py-2.5 min-h-[44px] sm:min-h-0 border border-border-hairline bg-surface text-foreground font-mono text-base sm:text-xs focus:border-foreground focus:outline-none"
                     />
                   </div>
 
@@ -328,7 +328,7 @@ export default function AdminEditBookPage() {
                       type="text"
                       value={publisher}
                       onChange={(e) => setPublisher(e.target.value)}
-                      className="w-full px-3 py-2 border border-border-hairline bg-surface text-foreground font-sans text-sm focus:border-foreground focus:outline-none"
+                      className="w-full px-3 py-2.5 min-h-[44px] sm:min-h-0 border border-border-hairline bg-surface text-foreground font-sans text-base sm:text-sm focus:border-foreground focus:outline-none"
                     />
                   </div>
 
@@ -342,7 +342,7 @@ export default function AdminEditBookPage() {
                       max="2100"
                       value={publicationYear}
                       onChange={(e) => setPublicationYear(e.target.value)}
-                      className="w-full px-3 py-2 border border-border-hairline bg-surface text-foreground font-mono text-xs focus:border-foreground focus:outline-none"
+                      className="w-full px-3 py-2.5 min-h-[44px] sm:min-h-0 border border-border-hairline bg-surface text-foreground font-mono text-base sm:text-xs focus:border-foreground focus:outline-none"
                     />
                   </div>
                 </div>
@@ -367,7 +367,7 @@ export default function AdminEditBookPage() {
                         value={shelfLocation}
                         onChange={(e) => setShelfLocation(e.target.value)}
                         placeholder="Contoh: Dus Alun-Alun A, Rak Basecamp 02"
-                        className="w-full px-3 py-2 border border-border-hairline bg-surface text-foreground font-mono text-xs focus:border-foreground focus:outline-none"
+                        className="w-full px-3 py-2.5 min-h-[44px] sm:min-h-0 border border-border-hairline bg-surface text-foreground font-mono text-base sm:text-xs focus:border-foreground focus:outline-none"
                       />
                     </div>
 
@@ -380,13 +380,13 @@ export default function AdminEditBookPage() {
                         value={donatedBy}
                         onChange={(e) => setDonatedBy(e.target.value)}
                         placeholder="Contoh: Donasi Warga CFD, Anonim"
-                        className="w-full px-3 py-2 border border-border-hairline bg-surface text-foreground font-sans text-sm focus:border-foreground focus:outline-none"
+                        className="w-full px-3 py-2.5 min-h-[44px] sm:min-h-0 border border-border-hairline bg-surface text-foreground font-sans text-base sm:text-sm focus:border-foreground focus:outline-none"
                       />
                     </div>
                   </div>
 
                   <div className="pt-2 border-t border-border-hairline">
-                    <label className="flex items-center gap-2 cursor-pointer select-none">
+                    <label className="flex items-center gap-2 cursor-pointer select-none min-h-[36px]">
                       <input
                         type="checkbox"
                         checked={isBorrowable}
@@ -415,7 +415,7 @@ export default function AdminEditBookPage() {
                     maxLength={2000}
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    className="w-full p-3 border border-border-hairline bg-surface text-foreground font-sans text-sm focus:border-foreground focus:outline-none leading-relaxed"
+                    className="w-full p-3 border border-border-hairline bg-surface text-foreground font-sans text-base sm:text-sm focus:border-foreground focus:outline-none leading-relaxed"
                   />
                   <div className="flex justify-end text-[10px] text-muted mt-1">
                     <span>{description.length} / 2000 Karakter</span>
@@ -447,7 +447,7 @@ export default function AdminEditBookPage() {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="w-full py-3 bg-foreground text-background font-bold text-xs uppercase tracking-widest hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="w-full py-3 min-h-[44px] bg-foreground text-background font-bold text-xs uppercase tracking-widest hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer shadow-xs"
                 >
                   <Save className="w-4 h-4" />
                   <span>{submitting ? 'Menyimpan Perubahan...' : 'Simpan Perubahan'}</span>
@@ -455,7 +455,7 @@ export default function AdminEditBookPage() {
 
                 <Link
                   href="/dashboard/buku"
-                  className="w-full py-2.5 border border-border-hairline text-center block text-muted hover:text-foreground hover:bg-surface-muted transition-colors uppercase tracking-wider font-semibold"
+                  className="w-full py-2.5 min-h-[44px] flex items-center justify-center border border-border-hairline text-center text-muted hover:text-foreground hover:bg-surface-muted transition-colors uppercase tracking-wider font-semibold"
                 >
                   Batal
                 </Link>

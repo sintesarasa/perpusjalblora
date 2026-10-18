@@ -47,6 +47,8 @@ export function AdminEditBookModal({
   const [shelfLocation, setShelfLocation] = React.useState('');
   const [donatedBy, setDonatedBy] = React.useState('');
   const [isBorrowable, setIsBorrowable] = React.useState(true);
+  const [isFeatured, setIsFeatured] = React.useState(false);
+  const [curatorNote, setCuratorNote] = React.useState('');
   const [description, setDescription] = React.useState('');
   const [coverImage, setCoverImage] = React.useState('');
 
@@ -89,6 +91,8 @@ export function AdminEditBookModal({
           setShelfLocation(b.shelfLocation || '');
           setDonatedBy(b.donatedBy || '');
           setIsBorrowable(b.isBorrowable ?? true);
+          setIsFeatured(Boolean((b as any).isFeatured));
+          setCuratorNote((b as any).curatorNote || '');
           setDescription(b.description || '');
           setCoverImage(b.coverImage || '');
         } else if (bookRes.error) {
@@ -126,6 +130,8 @@ export function AdminEditBookModal({
       shelfLocation: shelfLocation.trim() || null,
       donatedBy: donatedBy.trim() || null,
       isBorrowable,
+      isFeatured,
+      curatorNote: isFeatured ? (curatorNote.trim() || null) : null,
       description: description.trim() || null,
       coverImage: coverImage.trim() || null,
     };
@@ -330,7 +336,7 @@ export function AdminEditBookModal({
                       </div>
                     </div>
 
-                    <div className="pt-1">
+                    <div className="pt-1 space-y-2.5">
                       <label className="flex items-center gap-2 cursor-pointer select-none">
                         <input
                           type="checkbox"
@@ -342,6 +348,37 @@ export function AdminEditBookModal({
                           Buku Boleh Dipinjam Pulang (Sirkulasi Terbuka)
                         </span>
                       </label>
+
+                      {/* Curator Spotlight Option */}
+                      <div className="p-3 border border-border-hairline bg-surface-muted/30 space-y-2">
+                        <label className="flex items-center gap-2 cursor-pointer select-none">
+                          <input
+                            type="checkbox"
+                            checked={isFeatured}
+                            onChange={(e) => setIsFeatured(e.target.checked)}
+                            className="w-4 h-4 accent-foreground"
+                          />
+                          <span className="font-bold text-foreground text-[11px] uppercase tracking-wider">
+                            ★ Jadikan Sorotan / Rekomendasi Lapak
+                          </span>
+                        </label>
+
+                        {isFeatured && (
+                          <div className="pt-1">
+                            <label className="block text-[10px] uppercase font-bold text-muted mb-1 font-mono">
+                              Catatan Kurator / Alasan Menarik (Maks 300 Karakter)
+                            </label>
+                            <textarea
+                              rows={2}
+                              maxLength={300}
+                              value={curatorNote}
+                              onChange={(e) => setCuratorNote(e.target.value)}
+                              placeholder="Tuliskan mengapa kawan pembaca wajib membaca karya ini di lapak..."
+                              className="w-full px-2.5 py-1.5 border border-border-hairline bg-surface text-foreground font-serif text-xs focus:border-foreground focus:outline-none"
+                            />
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
 

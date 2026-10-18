@@ -7,9 +7,47 @@ import {
   ArticleStatus,
 } from '@perpusjal/types';
 
+interface CacheEntry<T> {
+  data: T;
+  expiresAt: number;
+}
+
+class SearchMemoryCache {
+  private cache = new Map<string, CacheEntry<unknown>>();
+  private maxEntries = 400;
+  private ttlMs = 60 * 1000; // 60 seconds TTL
+
+  get<T>(key: string): T | null {
+    const entry = this.cache.get(key);
+    if (!entry) return null;
+    if (Date.now() > entry.expiresAt) {
+      this.cache.delete(key);
+      return null;
+    }
+    return entry.data as T;
+  }
+
+  set<T>(key: string, data: T): void {
+    if (this.cache.size >= this.maxEntries) {
+      const oldestKey = this.cache.keys().next().value;
+      if (oldestKey) this.cache.delete(oldestKey);
+    }
+    this.cache.set(key, {
+      data,
+      expiresAt: Date.now() + this.ttlMs,
+    });
+  }
+
+  clear(): void {
+    this.cache.clear();
+  }
+}
+
+export const searchMemoryCache = new SearchMemoryCache();
+
 export class SearchService {
   /**
-   * Global search across Articles and Books
+   * Global search across Articles and Books with in-memory TTL caching
    */
   async search(query: SearchQueryInput): Promise<SearchResultsData> {
     const { q, type = 'all', page = 1, perPage = 10 } = query;
@@ -23,6 +61,12 @@ export class SearchService {
 
     if (!trimmed) {
       return emptyResult;
+    }
+
+    const cacheKey = `search:${trimmed.toLowerCase()}:${type}:${page}:${perPage}`;
+    const cached = searchMemoryCache.get<SearchResultsData>(cacheKey);
+    if (cached) {
+      return cached;
     }
 
     const shouldSearchArticles = type === 'all' || type === 'artikel';
@@ -120,6 +164,7 @@ export class SearchService {
             isbn: true,
             description: true,
             coverImage: true,
+            isBorrowable: true,
             category: {
               select: {
                 name: true,
@@ -141,23 +186,34 @@ export class SearchService {
           synopsis: b.description,
           coverImage: b.coverImage,
           category: b.category,
+          isBorrowable: b.isBorrowable,
         })),
       };
     }
 
-    return {
+    const result: SearchResultsData = {
       articles: articlesData,
       books: booksData,
     };
+
+    searchMemoryCache.set(cacheKey, result);
+
+    return result;
   }
 
   /**
-   * Fast suggestions for live dropdown
+   * Fast suggestions for live dropdown with in-memory TTL caching
    */
   async suggest(q: string) {
     const trimmed = q.trim();
     if (!trimmed || trimmed.length < 2) {
       return { articles: [], books: [] };
+    }
+
+    const suggestCacheKey = `suggest:${trimmed.toLowerCase()}`;
+    const cachedSuggest = searchMemoryCache.get<{ articles: any[]; books: any[] }>(suggestCacheKey);
+    if (cachedSuggest) {
+      return cachedSuggest;
     }
 
     const [articles, books] = await Promise.all([
@@ -201,7 +257,10 @@ export class SearchService {
       }),
     ]);
 
-    return { articles, books };
+    const suggestResult = { articles, books };
+    searchMemoryCache.set(suggestCacheKey, suggestResult);
+
+    return suggestResult;
   }
 }
 

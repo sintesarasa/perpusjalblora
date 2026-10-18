@@ -58,9 +58,30 @@ export async function withDbRetry<T>(
   }
 }
 
+function optimizeConnectionString(raw: string): string {
+  if (!raw || (!raw.startsWith('postgresql://') && !raw.startsWith('postgres://'))) {
+    return raw;
+  }
+  try {
+    const url = new URL(raw);
+    // Enforce safe connection limit (5) and pool timeout (10s) on Free Tier if not explicitly set
+    if (!url.searchParams.has('connection_limit')) {
+      url.searchParams.set('connection_limit', process.env.DB_CONNECTION_LIMIT || '5');
+    }
+    if (!url.searchParams.has('pool_timeout')) {
+      url.searchParams.set('pool_timeout', process.env.DB_POOL_TIMEOUT || '10');
+    }
+    return url.toString();
+  } catch {
+    return raw;
+  }
+}
+
 function createPrismaClient() {
-  const connectionString =
+  const rawConnectionString =
     process.env.DATABASE_POOLED_URL || process.env.DATABASE_URL || '';
+  const connectionString = optimizeConnectionString(rawConnectionString);
+
   const isNeon =
     connectionString.includes('neon.tech') ||
     process.env.USE_NEON_ADAPTER === 'true';

@@ -31,12 +31,18 @@ import {
   MessageSquare,
   Sparkles,
   Quote,
+  Share2,
+  MessageCircle,
 } from 'lucide-react';
+import { getWhatsAppUrl } from '@/lib/contact';
+import { cn } from '@/lib/utils';
 
 export function BookDetailClient({ slug: initialSlug }: { slug?: string } = {}) {
   const params = useParams();
   const router = useRouter();
   const slug = initialSlug || (params?.slug as string);
+
+  const [copied, setCopied] = React.useState(false);
 
   const [book, setBook] = React.useState<BookDetail | null>(null);
   const [availability, setAvailability] = React.useState<BookAvailabilityResponse | null>(null);
@@ -72,6 +78,26 @@ export function BookDetailClient({ slug: initialSlug }: { slug?: string } = {}) 
   const [waitlistLoading, setWaitlistLoading] = React.useState(false);
   const [waitlistSuccess, setWaitlistSuccess] = React.useState<WaitlistItem | null>(null);
   const [waitlistError, setWaitlistError] = React.useState<string | null>(null);
+
+  const handleShare = async () => {
+    if (typeof window === 'undefined') return;
+    const url = window.location.href;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: book ? `${book.title} — Perpusjal Blora` : 'Perpusjal Blora',
+          text: book ? `Pinjam buku "${book.title}" karya ${book.author} gratis tanpa denda di Perpusjal Blora.` : '',
+          url,
+        });
+        return;
+      } catch {
+        // fallback to clipboard
+      }
+    }
+    await navigator.clipboard.writeText(url);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const handleJoinWaitlist = async () => {
     if (!book) return;
@@ -280,7 +306,11 @@ export function BookDetailClient({ slug: initialSlug }: { slug?: string } = {}) 
           <div className="lg:col-span-4 space-y-6">
             <RevealOnScroll variant="cinematic" delayMs={50}>
               <div className="border-2 border-foreground bg-surface p-2">
-                <div className="relative aspect-[3/4] bg-surface-muted border border-border-hairline overflow-hidden">
+                <div className="relative aspect-[3/4] bg-surface-muted border border-border-hairline overflow-hidden shadow-[-8px_8px_18px_rgba(0,0,0,0.25)]">
+                  {/* Left Spine Shadow & Crease */}
+                  <div className="absolute left-0 top-0 bottom-0 w-3.5 bg-gradient-to-r from-black/40 via-black/15 to-transparent z-10 pointer-events-none" />
+                  <div className="absolute left-3 top-0 bottom-0 w-[1px] bg-white/20 z-10 pointer-events-none" />
+
                   {book.coverImage ? (
                     <img
                       src={book.coverImage}
@@ -464,56 +494,64 @@ export function BookDetailClient({ slug: initialSlug }: { slug?: string } = {}) 
 
                 {/* Bibliographic Specs Grid */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 p-5 bg-surface border border-border-hairline font-mono text-xs">
-              <div>
-                <span className="block text-[10px] text-muted uppercase">Penerbit:</span>
-                <span className="font-bold text-foreground">{book.publisher || '—'}</span>
-              </div>
-              <div>
-                <span className="block text-[10px] text-muted uppercase">Tahun Terbit:</span>
-                <span className="font-bold text-foreground">{book.publicationYear || '—'}</span>
-              </div>
-              <div>
-                <span className="block text-[10px] text-muted uppercase">Nomor ISBN:</span>
-                <span className="font-bold text-foreground">{book.isbn || '—'}</span>
-              </div>
-              <div>
-                <span className="block text-[10px] text-muted uppercase">Jumlah Halaman:</span>
-                <span className="font-bold text-foreground">
-                  {book.pages ? `${book.pages} hlm.` : '—'}
-                </span>
-              </div>
-              <div>
-                <span className="block text-[10px] text-muted uppercase">Lokasi Rak Fisik:</span>
-                <span className="font-bold text-foreground flex items-center gap-1">
-                  <MapPin className="w-3 h-3 text-muted" />
-                  {book.shelfLocation || 'Basecamp'}
-                </span>
-              </div>
-                <div>
-                  <span className="block text-[10px] text-muted uppercase">Donatur Koleksi:</span>
-                  <span className="font-bold text-foreground flex items-center gap-1">
-                    <HeartHandshake className="w-3 h-3 text-muted" />
-                    {book.donatedBy || 'Koleksi Komunitas'}
-                  </span>
+                  <div>
+                    <span className="block text-[10px] text-muted uppercase">Penerbit:</span>
+                    <span className="font-bold text-foreground">{book.publisher || '—'}</span>
+                  </div>
+                  <div>
+                    <span className="block text-[10px] text-muted uppercase">Tahun Terbit:</span>
+                    <span className="font-bold text-foreground">{book.publicationYear || '—'}</span>
+                  </div>
+                  <div>
+                    <span className="block text-[10px] text-muted uppercase">Nomor ISBN:</span>
+                    <span className="font-bold text-foreground">{book.isbn || '—'}</span>
+                  </div>
+                  <div>
+                    <span className="block text-[10px] text-muted uppercase">Jumlah Halaman:</span>
+                    <span className="font-bold text-foreground">
+                      {book.pages ? `${book.pages} hlm.` : '—'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="block text-[10px] text-muted uppercase">Durasi Baca:</span>
+                    <span className="font-bold text-foreground">
+                      {book.pages
+                        ? book.pages < 150
+                          ? 'Ringan (~1.5 Jam)'
+                          : book.pages <= 350
+                          ? 'Menengah (~4 Jam)'
+                          : 'Mendalam (>6 Jam)'
+                        : '—'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="block text-[10px] text-muted uppercase">Lokasi Rak Fisik:</span>
+                    <span className="font-bold text-foreground flex items-center gap-1">
+                      <MapPin className="w-3 h-3 text-muted" />
+                      {book.shelfLocation || 'Basecamp'}
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
-          </RevealOnScroll>
+            </RevealOnScroll>
 
-            {/* Curator Note / Catatan Kurator Lapak */}
+            {/* Curator Note / Catatan Kurator Lapak (Editorial Memorandum Block) */}
             {book.curatorNote && (
               <RevealOnScroll variant="cinematic" delayMs={90}>
-                <div className="p-4 sm:p-5 border-2 border-foreground bg-surface-muted/40 font-mono text-xs space-y-2.5">
-                  <div className="flex items-center justify-between border-b border-border-hairline pb-2 text-[10px] uppercase tracking-widest text-muted">
+                <div className="p-5 sm:p-6 border-2 border-foreground bg-surface-muted/60 font-mono text-xs space-y-3 relative overflow-hidden">
+                  <div className="flex items-center justify-between border-b border-border-hairline pb-2.5 text-[10px] uppercase tracking-widest text-muted">
                     <span className="font-bold text-foreground flex items-center gap-1.5">
-                      <Sparkles className="w-3.5 h-3.5 text-foreground" />
-                      [ CATATAN KURATOR LAPAK // REKOMENDASI RELAWAN ]
+                      <Sparkles className="w-4 h-4 text-foreground" />
+                      [ CATATAN MEJA KURASI // REKOMENDASI RELAWAN ]
                     </span>
-                    <span className="hidden sm:inline">PERPUSJAL BLORA</span>
+                    <span className="font-bold text-foreground">PERPUSJAL BLORA</span>
                   </div>
-                  <blockquote className="font-serif italic text-sm sm:text-base text-foreground leading-relaxed pt-1">
+                  <blockquote className="font-serif italic text-base sm:text-lg text-foreground leading-relaxed pt-1">
                     &ldquo;{book.curatorNote}&rdquo;
                   </blockquote>
+                  <div className="text-right text-[10px] uppercase text-muted font-bold pt-1">
+                    — Dewan Kolektif &amp; Relawan Lapak
+                  </div>
                 </div>
               </RevealOnScroll>
             )}
@@ -874,12 +912,12 @@ export function BookDetailClient({ slug: initialSlug }: { slug?: string } = {}) 
                 <span>// REKOMENDASI PUSTAKA</span>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="flex sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-4 overflow-x-auto scrollbar-none snap-x snap-mandatory pb-2">
                 {book.similarBooks.map((sim) => (
                   <Link
                     key={sim.id}
                     href={`/buku/${sim.slug}`}
-                    className="p-4 border border-border-hairline bg-surface hover:border-foreground transition-colors group block"
+                    className="min-w-[240px] sm:min-w-0 p-4 border-2 border-foreground bg-surface hover:bg-surface-muted/30 transition-colors group block shrink-0 snap-start active:scale-95"
                   >
                     <span className="font-mono text-[10px] uppercase text-muted block mb-1">
                       {sim.author}
@@ -899,6 +937,71 @@ export function BookDetailClient({ slug: initialSlug }: { slug?: string } = {}) 
             </section>
           </RevealOnScroll>
         )}
+
+        {/* Sticky Bottom Action Bar (Khusus Layar HP / Mobile Only) */}
+        <aside
+          aria-label="Aksi Cepat Peminjaman"
+          className="fixed bottom-16 inset-x-0 z-40 sm:hidden bg-background/95 backdrop-blur-md border-t-2 border-foreground p-3 px-4 flex items-center justify-between gap-2 shadow-2xl pb-safe"
+        >
+          <div className="flex-1 min-w-0 pr-2">
+            <span className="block font-serif font-bold text-xs text-foreground truncate">
+              {book.title}
+            </span>
+            <div className="flex items-center gap-1.5 font-mono text-[9px] text-muted">
+              <span className={cn('w-1.5 h-1.5 rounded-none', canBorrow ? 'bg-foreground' : 'bg-muted')} />
+              <span>{canBorrow ? 'SIAP PINJAM' : book.availableCopies <= 0 ? 'ANTREAN' : 'BACA DI LAPAK'}</span>
+              <span>&bull;</span>
+              <span className="truncate">{book.author}</span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1.5 shrink-0">
+            <button
+              type="button"
+              onClick={handleShare}
+              className="min-h-[44px] min-w-[44px] flex items-center justify-center border border-border-hairline text-foreground active:scale-95 transition-transform"
+              title="Bagikan Tautan Buku"
+            >
+              {copied ? <CheckCircle2 className="w-4 h-4 text-foreground" /> : <Share2 className="w-4 h-4" />}
+            </button>
+
+            <a
+              href={getWhatsAppUrl({ type: 'book_inquiry', bookTitle: book.title })}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="min-h-[44px] min-w-[44px] flex items-center justify-center border border-border-hairline text-foreground active:scale-95 transition-transform"
+              title="Tanya Kurator via WhatsApp"
+            >
+              <MessageCircle className="w-4 h-4" />
+            </a>
+
+            {book.isBorrowable ? (
+              book.availableCopies > 0 ? (
+                <button
+                  type="button"
+                  onClick={() => setModalOpen(true)}
+                  className="min-h-[44px] px-4 bg-foreground text-background font-mono text-xs font-bold uppercase tracking-wider active:scale-95 transition-transform border border-foreground flex items-center gap-1.5"
+                >
+                  <BookOpen className="w-3.5 h-3.5" />
+                  <span>PINJAM</span>
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleJoinWaitlist}
+                  disabled={waitlistLoading}
+                  className="min-h-[44px] px-3.5 border-2 border-foreground bg-surface font-mono text-xs font-bold uppercase tracking-wider active:scale-95 transition-transform text-foreground"
+                >
+                  <span>ANTRE</span>
+                </button>
+              )
+            ) : (
+              <span className="min-h-[44px] px-3 border border-border-hairline text-muted font-mono text-[10px] uppercase flex items-center">
+                DI LAPAK
+              </span>
+            )}
+          </div>
+        </aside>
       </main>
 
       {/* Borrow Request Modal */}

@@ -291,6 +291,60 @@ export class ArticlesService {
         options.user.role === Role.KURATOR ||
         options.user.role === Role.ADMIN);
 
+    // Fetch related books if relatedBookIds is populated
+    let relatedBooks: any[] = [];
+    if (article.relatedBookIds && article.relatedBookIds.length > 0) {
+      relatedBooks = await prisma.book.findMany({
+        where: {
+          id: { in: article.relatedBookIds },
+          isPublished: true,
+          deletedAt: null,
+        },
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          author: true,
+          coverImage: true,
+          isBorrowable: true,
+          availableCopies: true,
+          curatorNote: true,
+          category: {
+            select: { id: true, name: true, slug: true },
+          },
+        },
+      });
+    }
+
+    // Fallback: If no manually curated books, fetch up to 3 borrowable books to convert article readers to borrowers
+    if (relatedBooks.length === 0) {
+      relatedBooks = await prisma.book.findMany({
+        where: {
+          isPublished: true,
+          deletedAt: null,
+          isBorrowable: true,
+        },
+        take: 3,
+        orderBy: [
+          { isFeatured: 'desc' },
+          { borrowCount: 'desc' },
+        ],
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          author: true,
+          coverImage: true,
+          isBorrowable: true,
+          availableCopies: true,
+          curatorNote: true,
+          category: {
+            select: { id: true, name: true, slug: true },
+          },
+        },
+      });
+    }
+
     return {
       id: article.id,
       title: article.title,
@@ -309,6 +363,9 @@ export class ArticlesService {
       isFeatured: article.isFeatured,
       allowComments: article.allowComments,
       status: article.status as unknown as ArticleStatus,
+      pullQuote: article.pullQuote,
+      relatedBookIds: article.relatedBookIds,
+      relatedBooks,
       author: {
         id: article.author.id,
         name: article.author.name,
@@ -684,6 +741,8 @@ export class ArticlesService {
         readingTime,
         wordCount,
         allowComments: input.allowComments ?? true,
+        pullQuote: input.pullQuote || null,
+        relatedBookIds: input.relatedBookIds || [],
         previewToken: Math.random().toString(36).substring(2) + Math.random().toString(36).substring(2),
         ...(input.tagIds && input.tagIds.length > 0
           ? { tags: { connect: input.tagIds.map((id: string) => ({ id })) } }
@@ -742,6 +801,8 @@ export class ArticlesService {
     if (input.coverCredit !== undefined) updateData.coverCredit = input.coverCredit;
     if (input.categoryId !== undefined) updateData.categoryId = input.categoryId;
     if (input.allowComments !== undefined) updateData.allowComments = input.allowComments;
+    if (input.pullQuote !== undefined) updateData.pullQuote = input.pullQuote;
+    if (input.relatedBookIds !== undefined) updateData.relatedBookIds = input.relatedBookIds;
 
     if (input.content !== undefined) {
       updateData.content = input.content;

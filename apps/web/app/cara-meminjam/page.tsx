@@ -326,7 +326,7 @@ export default function CaraMeminjamPage() {
 
       <Header />
 
-      <main className="flex-1 pb-16 sm:pb-24">
+      <main className="flex-1 pb-28 sm:pb-24">
         {/* ========================================================= */}
         {/* 1. EDITORIAL BROADSHEET MASTHEAD                          */}
         {/* ========================================================= */}
@@ -458,7 +458,7 @@ export default function CaraMeminjamPage() {
                       type="button"
                       onClick={() => setActiveTab(index)}
                       className={cn(
-                        'p-3 text-left border-2 transition-all font-mono shrink-0 snap-center min-w-[170px] sm:min-w-0 select-none min-h-[56px] focus:outline-none focus:ring-2 focus:ring-foreground',
+                        'p-3 text-left border-2 transition-all active:scale-95 touch-tactile rounded-none font-mono shrink-0 snap-center min-w-[170px] sm:min-w-0 select-none min-h-[56px] focus:outline-none focus:ring-2 focus:ring-foreground',
                         isSelected
                           ? 'border-foreground bg-foreground text-background'
                           : 'border-border-hairline bg-surface hover:border-foreground text-foreground'
@@ -676,33 +676,48 @@ export default function CaraMeminjamPage() {
                   </p>
                 </div>
 
-                {/* Step Action / Navigation Buttons — Fully mobile-friendly touch targets */}
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-2">
+                {/* Step Action / Navigation Buttons — Fully mobile-friendly touch targets with step indicator */}
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-3 border-t border-border-hairline">
                   <button
                     type="button"
                     disabled={activeTab === 0}
                     onClick={() => setActiveTab((prev) => Math.max(0, prev - 1))}
-                    className="min-h-[44px] px-4 py-2 border border-border bg-surface font-mono text-xs uppercase tracking-wider disabled:opacity-30 disabled:pointer-events-none hover:border-foreground transition-colors order-2 sm:order-1 text-center font-semibold"
+                    className="min-h-[44px] px-4 py-2 border border-border bg-surface font-mono text-xs uppercase tracking-wider disabled:opacity-30 disabled:pointer-events-none hover:border-foreground transition-all active:scale-95 touch-tactile order-2 sm:order-1 text-center font-semibold"
                   >
                     ← Langkah Sebelumnya
                   </button>
 
-                  <div className="font-mono text-xs text-muted text-center order-1 sm:order-2">
-                    {activeTab + 1} dari {STEPS_DATA.length}
+                  {/* Interactive Step Dots & Counter */}
+                  <div className="flex items-center justify-center gap-2 order-1 sm:order-2 py-1 sm:py-0">
+                    {STEPS_DATA.map((_, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => setActiveTab(i)}
+                        className={cn(
+                          'h-2 transition-all rounded-none',
+                          activeTab === i ? 'w-6 bg-foreground' : 'w-2 bg-foreground/20 hover:bg-foreground/50'
+                        )}
+                        aria-label={`Ke langkah ${i + 1}`}
+                      />
+                    ))}
+                    <span className="font-mono text-xs text-muted ml-2 font-bold">
+                      {activeTab + 1} / {STEPS_DATA.length}
+                    </span>
                   </div>
 
                   {activeTab < STEPS_DATA.length - 1 ? (
                     <button
                       type="button"
                       onClick={() => setActiveTab((prev) => Math.min(STEPS_DATA.length - 1, prev + 1))}
-                      className="min-h-[44px] px-5 py-2 bg-foreground text-background font-mono text-xs uppercase tracking-wider font-bold hover:opacity-90 transition-opacity order-3 text-center"
+                      className="min-h-[44px] px-5 py-2 bg-foreground text-background font-mono text-xs uppercase tracking-wider font-bold hover:opacity-90 transition-all active:scale-95 touch-tactile order-3 text-center"
                     >
                       Langkah Berikutnya →
                     </button>
                   ) : (
                     <Link
                       href="/buku"
-                      className="min-h-[44px] px-5 py-2 bg-foreground text-background font-mono text-xs uppercase tracking-wider font-bold inline-flex items-center justify-center gap-2 hover:opacity-90 transition-opacity order-3 text-center"
+                      className="min-h-[44px] px-5 py-2 bg-foreground text-background font-mono text-xs uppercase tracking-wider font-bold inline-flex items-center justify-center gap-2 hover:opacity-90 transition-all active:scale-95 touch-tactile order-3 text-center"
                     >
                       <span>Mulai Cari Buku Sekarang</span>
                       <ArrowRight className="w-3.5 h-3.5" />
@@ -1182,23 +1197,27 @@ export default function CaraMeminjamPage() {
             </div>
           </RevealOnScroll>
 
-          <div className="space-y-3 max-w-4xl">
-            {FAQ_LIST.map((faq, idx) => {
-              const isOpen = openFaq === faq.id;
-              return (
-                <RevealOnScroll key={faq.id} variant="cinematic" delayMs={idx * 40}>
-                  <div className="border-2 border-foreground bg-surface overflow-hidden transition-all">
+          {/* Compact Gazette Accordion Block — Saves >50% mobile vertical scroll space */}
+          <RevealOnScroll variant="cinematic" delayMs={100}>
+            <div className="border-2 border-foreground divide-y-2 divide-foreground bg-surface max-w-4xl">
+              {FAQ_LIST.map((faq, idx) => {
+                const isOpen = openFaq === faq.id;
+                return (
+                  <div key={faq.id} className="transition-colors">
                     <button
                       type="button"
                       onClick={() => toggleFaq(faq.id)}
-                      className="w-full p-4 sm:p-5 text-left font-mono flex items-center justify-between gap-4 hover:bg-surface-muted/40 transition-colors focus:outline-none"
+                      className={cn(
+                        'w-full py-3.5 px-4 sm:py-4 sm:px-5 text-left font-mono flex items-center justify-between gap-3 transition-colors focus:outline-none min-h-[48px] active:bg-surface-muted/60',
+                        isOpen ? 'bg-surface-muted/50' : 'hover:bg-surface-muted/30'
+                      )}
                       aria-expanded={isOpen}
                     >
-                      <div className="flex items-start sm:items-center gap-3">
-                        <span className="text-[10px] text-muted uppercase font-bold shrink-0 pt-0.5 sm:pt-0">
+                      <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                        <span className="text-[10px] sm:text-xs text-muted font-bold font-mono shrink-0 px-1.5 py-0.5 border border-border-hairline bg-surface">
                           [Q{idx + 1}]
                         </span>
-                        <span className="font-serif text-base sm:text-lg font-bold text-foreground">
+                        <span className="font-serif text-sm sm:text-base font-bold text-foreground leading-snug">
                           {faq.q}
                         </span>
                       </div>
@@ -1211,15 +1230,15 @@ export default function CaraMeminjamPage() {
                     </button>
 
                     {isOpen && (
-                      <div className="px-4 sm:px-5 pb-5 pt-1 border-t border-border-hairline bg-surface-muted/20 font-sans text-xs sm:text-sm text-muted leading-relaxed">
+                      <div className="px-4 sm:px-5 pb-4 pt-2 border-t border-dashed border-foreground/30 bg-background/50 font-sans text-xs sm:text-sm text-foreground/85 leading-relaxed pl-10 sm:pl-12">
                         {faq.a}
                       </div>
                     )}
                   </div>
-                </RevealOnScroll>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          </RevealOnScroll>
 
           {/* Quick Volunteer Help Strip */}
           <RevealOnScroll variant="stamp" delayMs={100}>
@@ -1277,7 +1296,7 @@ export default function CaraMeminjamPage() {
                 <div className="pt-3 sm:pt-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 sm:gap-4 font-mono text-xs">
                   <Link
                     href="/buku"
-                    className="min-h-[44px] px-6 py-3 bg-background text-foreground uppercase tracking-wider font-bold inline-flex items-center justify-center gap-2 hover:bg-surface-muted transition-colors"
+                    className="min-h-[44px] px-6 py-3 bg-background text-foreground uppercase tracking-wider font-bold inline-flex items-center justify-center gap-2 hover:bg-surface-muted transition-all active:scale-95 rounded-none"
                   >
                     <BookOpen className="w-4 h-4" />
                     <span>BUKA KATALOG BUKU SEKARANG</span>
@@ -1286,7 +1305,7 @@ export default function CaraMeminjamPage() {
 
                   <Link
                     href="/dashboard/pinjaman"
-                    className="min-h-[44px] px-6 py-3 border border-background text-background uppercase tracking-wider font-semibold hover:bg-background/10 transition-colors inline-flex items-center justify-center"
+                    className="min-h-[44px] px-6 py-3 border border-background text-background uppercase tracking-wider font-semibold hover:bg-background/10 transition-all active:scale-95 rounded-none inline-flex items-center justify-center"
                   >
                     <span>CEK STATUS PINJAMAN SAYA</span>
                   </Link>

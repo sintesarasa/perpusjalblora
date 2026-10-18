@@ -707,7 +707,7 @@ export default function DashboardProfileSettingsPage() {
                       onChange={(e) =>
                         setProfile({ ...profile, equippedTitle: e.target.value || null })
                       }
-                      className="w-full sm:w-72 px-3 py-2 border border-border-hairline bg-background text-foreground font-mono text-xs focus:outline-none focus:border-foreground"
+                      className="w-full sm:w-72 px-3 py-2 min-h-[44px] sm:min-h-0 border border-border-hairline bg-background text-foreground font-mono text-base sm:text-xs focus:outline-none focus:border-foreground"
                     >
                       <option value="">-- Tanpa Gelar Tersemat --</option>
                       {availableTitles.map((t) => (
@@ -749,7 +749,7 @@ export default function DashboardProfileSettingsPage() {
                       required
                       value={profile.name}
                       onChange={(e) => setProfile({ ...profile, name: e.target.value })}
-                      className="w-full px-3 py-2 border border-border-hairline bg-background text-foreground font-serif text-sm focus:outline-none focus:border-foreground"
+                      className="w-full px-3 py-2 min-h-[44px] sm:min-h-0 border border-border-hairline bg-background text-foreground font-serif text-base sm:text-sm focus:outline-none focus:border-foreground"
                     />
                   </div>
 
@@ -761,7 +761,7 @@ export default function DashboardProfileSettingsPage() {
                       type="text"
                       disabled
                       value={`@${profile.username}`}
-                      className="w-full px-3 py-2 border border-border-hairline bg-surface-muted/50 text-muted font-mono text-xs cursor-not-allowed"
+                      className="w-full px-3 py-2 min-h-[44px] sm:min-h-0 border border-border-hairline bg-surface-muted/50 text-muted font-mono text-base sm:text-xs cursor-not-allowed"
                     />
                     <span className="font-mono text-[10px] text-muted block mt-1">
                       Username bersifat permanen untuk catatan kearsipan.
@@ -778,7 +778,7 @@ export default function DashboardProfileSettingsPage() {
                       type="email"
                       disabled
                       value={profile.email}
-                      className="w-full px-3 py-2 border border-border-hairline bg-surface-muted/50 text-muted font-mono text-xs cursor-not-allowed"
+                      className="w-full px-3 py-2 min-h-[44px] sm:min-h-0 border border-border-hairline bg-surface-muted/50 text-muted font-mono text-base sm:text-xs cursor-not-allowed"
                     />
                     <span className="font-mono text-[10px] text-muted block mt-1">
                       Email terverifikasi untuk warta &amp; sirkulasi.
@@ -794,7 +794,7 @@ export default function DashboardProfileSettingsPage() {
                       placeholder="08123456789"
                       value={profile.phoneNumber}
                       onChange={(e) => setProfile({ ...profile, phoneNumber: e.target.value })}
-                      className="w-full px-3 py-2 border border-border-hairline bg-background text-foreground font-mono text-xs focus:outline-none focus:border-foreground"
+                      className="w-full px-3 py-2 min-h-[44px] sm:min-h-0 border border-border-hairline bg-background text-foreground font-mono text-base sm:text-xs focus:outline-none focus:border-foreground"
                     />
                     <span className="font-mono text-[10px] text-muted block mt-1">
                       Untuk koordinasi lapak &amp; pengingat pinjaman buku.
@@ -812,7 +812,7 @@ export default function DashboardProfileSettingsPage() {
                     value={profile.bio}
                     onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
                     placeholder="Tuliskan latar belakang, keresahan sastra, atau catatan ringkas tentang dirimu..."
-                    className="w-full px-3 py-2 border border-border-hairline bg-background text-foreground font-serif text-sm focus:outline-none focus:border-foreground leading-relaxed"
+                    className="w-full px-3 py-2 border border-border-hairline bg-background text-foreground font-serif text-base sm:text-sm focus:outline-none focus:border-foreground leading-relaxed"
                   />
                   <span className="font-mono text-[10px] text-muted block mt-1">
                     {profile.bio.length} / 200 karakter
@@ -829,7 +829,7 @@ export default function DashboardProfileSettingsPage() {
                       placeholder="https://instagram.com/username"
                       value={profile.instagramUrl}
                       onChange={(e) => setProfile({ ...profile, instagramUrl: e.target.value })}
-                      className="w-full px-3 py-2 border border-border-hairline bg-background text-foreground font-serif text-sm focus:outline-none focus:border-foreground"
+                      className="w-full px-3 py-2 min-h-[44px] sm:min-h-0 border border-border-hairline bg-background text-foreground font-serif text-base sm:text-sm focus:outline-none focus:border-foreground"
                     />
                   </div>
 
@@ -842,7 +842,7 @@ export default function DashboardProfileSettingsPage() {
                       placeholder="https://tulisanmu.com"
                       value={profile.websiteUrl}
                       onChange={(e) => setProfile({ ...profile, websiteUrl: e.target.value })}
-                      className="w-full px-3 py-2 border border-border-hairline bg-background text-foreground font-serif text-sm focus:outline-none focus:border-foreground"
+                      className="w-full px-3 py-2 min-h-[44px] sm:min-h-0 border border-border-hairline bg-background text-foreground font-serif text-base sm:text-sm focus:outline-none focus:border-foreground"
                     />
                   </div>
                 </div>
@@ -892,7 +892,7 @@ export default function DashboardProfileSettingsPage() {
                   <button
                     type="submit"
                     disabled={savingProfile}
-                    className="px-6 py-2.5 border-2 border-foreground bg-foreground text-background font-mono text-xs uppercase tracking-wider font-bold hover:bg-foreground/90 disabled:opacity-50 flex items-center gap-2 cursor-pointer"
+                    className="w-full sm:w-auto min-h-[44px] px-6 py-2.5 border-2 border-foreground bg-foreground text-background font-mono text-xs uppercase tracking-wider font-bold hover:bg-foreground/90 active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer touch-tactile transition-all"
                   >
                     <Save className="w-3.5 h-3.5" />
                     {savingProfile ? 'Menyimpan...' : 'Simpan Perubahan'}
@@ -924,7 +924,7 @@ export default function DashboardProfileSettingsPage() {
                     required
                     value={passwordState.currentPassword}
                     onChange={(e) => setPasswordState({ ...passwordState, currentPassword: e.target.value })}
-                    className="w-full px-3 py-2 border border-border-hairline bg-background text-foreground font-mono text-xs focus:outline-none focus:border-foreground"
+                    className="w-full px-3 py-2 min-h-[44px] sm:min-h-0 border border-border-hairline bg-background text-foreground font-mono text-base sm:text-xs focus:outline-none focus:border-foreground"
                   />
                 </div>
 
@@ -937,7 +937,7 @@ export default function DashboardProfileSettingsPage() {
                     required
                     value={passwordState.newPassword}
                     onChange={(e) => setPasswordState({ ...passwordState, newPassword: e.target.value })}
-                    className="w-full px-3 py-2 border border-border-hairline bg-background text-foreground font-mono text-xs focus:outline-none focus:border-foreground"
+                    className="w-full px-3 py-2 min-h-[44px] sm:min-h-0 border border-border-hairline bg-background text-foreground font-mono text-base sm:text-xs focus:outline-none focus:border-foreground"
                   />
                 </div>
 
@@ -950,7 +950,7 @@ export default function DashboardProfileSettingsPage() {
                     required
                     value={passwordState.confirmPassword}
                     onChange={(e) => setPasswordState({ ...passwordState, confirmPassword: e.target.value })}
-                    className="w-full px-3 py-2 border border-border-hairline bg-background text-foreground font-mono text-xs focus:outline-none focus:border-foreground"
+                    className="w-full px-3 py-2 min-h-[44px] sm:min-h-0 border border-border-hairline bg-background text-foreground font-mono text-base sm:text-xs focus:outline-none focus:border-foreground"
                   />
                 </div>
 
@@ -958,7 +958,7 @@ export default function DashboardProfileSettingsPage() {
                   <button
                     type="submit"
                     disabled={savingPassword}
-                    className="px-5 py-2 border border-foreground bg-surface text-foreground font-mono text-xs uppercase tracking-wider font-bold hover:bg-foreground hover:text-background disabled:opacity-50 transition-colors cursor-pointer"
+                    className="w-full sm:w-auto min-h-[44px] px-5 py-2 border border-foreground bg-surface text-foreground font-mono text-xs uppercase tracking-wider font-bold hover:bg-foreground hover:text-background active:scale-[0.98] disabled:opacity-50 transition-all cursor-pointer inline-flex items-center justify-center touch-tactile"
                   >
                     {savingPassword ? 'Memperbarui...' : 'Perbarui Kata Sandi'}
                   </button>

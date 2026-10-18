@@ -12,6 +12,8 @@ export const articleDraftSchema = z.object({
   tagIds: z.array(z.string()).max(5, 'Maksimal 5 tag.').optional().default([]),
   allowComments: z.boolean().optional().default(true),
   isDraft: z.boolean().optional().default(true),
+  pullQuote: z.string().max(400, 'Kutipan sorotan maksimal 400 karakter.').optional().nullable(),
+  relatedBookIds: z.array(z.string()).max(10, 'Maksimal 10 buku terkait.').optional().default([]),
 });
 
 export const articleSubmitSchema = articleDraftSchema.extend({
@@ -111,6 +113,19 @@ export interface ArticleSummary {
   viewCount: number;
   commentCount: number;
   isFeatured: boolean;
+  pullQuote?: string | null;
+  relatedBookIds?: string[];
+  relatedBooks?: Array<{
+    id: string;
+    title: string;
+    slug: string;
+    author: string;
+    coverImage: string | null;
+    isBorrowable: boolean;
+    availableCopies: number;
+    curatorNote?: string | null;
+    category?: { id: string; name: string; slug: string };
+  }>;
   author: ArticleAuthor;
   category: ArticleCategory;
   tags?: ArticleTag[];

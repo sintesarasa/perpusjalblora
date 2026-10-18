@@ -242,6 +242,29 @@ export class EventsService {
       }));
     }
 
+    let featuredBooks: any[] = [];
+    if (event.featuredBookIds && event.featuredBookIds.length > 0) {
+      featuredBooks = await prisma.book.findMany({
+        where: {
+          id: { in: event.featuredBookIds },
+          isPublished: true,
+          deletedAt: null,
+        },
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          author: true,
+          coverImage: true,
+          isBorrowable: true,
+          availableCopies: true,
+          category: {
+            select: { id: true, name: true, slug: true },
+          },
+        },
+      });
+    }
+
     return {
       id: event.id,
       title: event.title,
@@ -264,6 +287,9 @@ export class EventsService {
       status: event.status as unknown as EventStatus,
       summary: event.summary,
       gallery: event.gallery ? (event.gallery as string[]) : null,
+      featuredBookIds: event.featuredBookIds,
+      announcementText: event.announcementText,
+      featuredBooks,
       organizer: event.organizer,
       myRegistration,
       participants,
@@ -299,6 +325,8 @@ export class EventsService {
         status: input.status as unknown as any,
         summary: input.summary ? input.summary.trim() : null,
         gallery: input.gallery ? (input.gallery as any) : null,
+        featuredBookIds: input.featuredBookIds || [],
+        announcementText: input.announcementText ? input.announcementText.trim() : null,
         organizerId: user.userId,
       },
     });
@@ -354,6 +382,8 @@ export class EventsService {
         ...(input.status ? { status: input.status as unknown as any } : {}),
         ...(input.summary !== undefined ? { summary: input.summary ? input.summary.trim() : null } : {}),
         ...(input.gallery !== undefined ? { gallery: input.gallery ? (input.gallery as any) : null } : {}),
+        ...(input.featuredBookIds !== undefined ? { featuredBookIds: input.featuredBookIds } : {}),
+        ...(input.announcementText !== undefined ? { announcementText: input.announcementText ? input.announcementText.trim() : null } : {}),
       },
     });
 

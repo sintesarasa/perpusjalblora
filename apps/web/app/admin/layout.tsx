@@ -10,6 +10,7 @@ import { ThemeToggle } from '@/components/theme-toggle';
 import { NotificationBell } from '@/components/layout/notification-bell';
 import { Role } from '@perpusjal/types';
 import { ShieldAlert, ArrowLeft, Users, Layers, ExternalLink, Megaphone } from 'lucide-react';
+import { AdminBottomNav } from '@/components/admin/admin-bottom-nav';
 
 export default function AdminLayout({
   children,
@@ -167,7 +168,10 @@ export default function AdminLayout({
       </header>
 
       {/* Main Admin Content */}
-      <main className="flex-1 min-w-0 bg-background">{children}</main>
+      <main className="flex-1 min-w-0 bg-background pb-24 md:pb-8">{children}</main>
+
+      {/* Admin Mobile Bottom Navigation */}
+      <AdminBottomNav />
     </div>
   );
 }

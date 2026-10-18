@@ -12,7 +12,8 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { BookQuickPeekDrawer } from '@/components/books/book-quick-peek-drawer';
 import { BookShowcaseSlider } from '@/components/books/book-showcase-slider';
 import { BookGridSkeleton } from '@/components/books/book-card-skeleton';
-import { apiClient } from '@/lib/api';
+import { apiClient, isServerColdStart } from '@/lib/api';
+import { ColdStartBanner } from '@/components/ui/cold-start-banner';
 import { BookItem, Language, BookAvailabilityStatus } from '@perpusjal/types';
 import {
   BookOpen,
@@ -31,7 +32,8 @@ import {
   Send,
   Gift,
   Printer,
-  Compass,
+  Sparkles,
+  Star,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getWhatsAppUrl } from '@/lib/contact';
@@ -55,6 +57,13 @@ const QUICK_CATEGORIES = [
   { slug: 'pendidikan', label: 'Pedagogi Kritis' },
 ];
 
+const READING_DURATIONS = [
+  { key: '', label: 'Semua Ketebalan' },
+  { key: 'RINGAN', label: 'Ringan (<150 hlm)' },
+  { key: 'MENENGAH', label: 'Menengah (150–350 hlm)' },
+  { key: 'MENDALAM', label: 'Mendalam (>350 hlm)' },
+];
+
 function BookCatalogContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -66,6 +75,9 @@ function BookCatalogContent() {
 
   // Quick Peek Drawer State
   const [peekBook, setPeekBook] = React.useState<BookItem | null>(null);
+
+  // Mobile Bottom Sheet Filter State
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = React.useState(false);
 
   // Request & Drop Box State
   const [boxTab, setBoxTab] = React.useState<'request' | 'donate'>('request');
@@ -81,6 +93,7 @@ function BookCatalogContent() {
   const kategori = searchParams.get('kategori') || '';
   const tersedia = searchParams.get('tersedia') === 'true';
   const bahasa = (searchParams.get('bahasa') as Language) || '';
+  const pageRange = (searchParams.get('pageRange') as 'RINGAN' | 'MENENGAH' | 'MENDALAM') || '';
   const sort = searchParams.get('sort') || 'terbaru';
   const page = parseInt(searchParams.get('page') || '1', 10);
 
@@ -107,6 +120,8 @@ function BookCatalogContent() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
+  const [isColdStart, setIsColdStart] = React.useState(false);
+
   const fetchBooks = React.useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -116,6 +131,7 @@ function BookCatalogContent() {
     if (kategori) queryParams.set('kategori', kategori);
     if (tersedia) queryParams.set('tersedia', 'true');
     if (bahasa) queryParams.set('bahasa', bahasa);
+    if (pageRange) queryParams.set('pageRange', pageRange);
     if (sort) queryParams.set('sort', sort);
     queryParams.set('page', page.toString());
     queryParams.set('perPage', '24');
@@ -123,6 +139,12 @@ function BookCatalogContent() {
     const res = await apiClient<BooksApiResponse>(`/books?${queryParams.toString()}`);
 
     setLoading(false);
+
+    if (isServerColdStart(res.error)) {
+      setIsColdStart(true);
+    } else {
+      setIsColdStart(false);
+    }
 
     if (res.error) {
       setError(res.error.message);
@@ -139,11 +161,15 @@ function BookCatalogContent() {
       searchSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
     isFirstRender.current = false;
-  }, [q, kategori, tersedia, bahasa, sort, page]);
+  }, [q, kategori, tersedia, bahasa, pageRange, sort, page]);
 
   React.useEffect(() => {
     fetchBooks();
   }, [fetchBooks]);
+
+  const featuredBook = React.useMemo(() => {
+    return books.find((b) => b.isFeatured) || (books.length > 0 ? books[0] : null);
+  }, [books]);
 
   const updateFilters = (newParams: Record<string, string | null>, options?: { scrollToSearch?: boolean }) => {
     const next = new URLSearchParams(searchParams.toString());
@@ -360,6 +386,136 @@ function BookCatalogContent() {
         )}
 
         {/* ========================================================= */}
+        {/* 2.5. SOROTAN BUKU PILIHAN MINGGU INI (BOOK OF THE WEEK)    */}
+        {/* ========================================================= */}
+        {!hasActiveFilters && featuredBook && !loading && (
+          <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <RevealOnScroll variant="cinematic" delayMs={120}>
+              <div className="border-2 border-foreground bg-surface p-5 sm:p-8 relative overflow-hidden">
+                {/* Top Tag & Badges */}
+                <div className="flex flex-wrap items-center justify-between border-b border-border-hairline pb-3 mb-6 font-mono text-xs text-muted uppercase gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 bg-foreground animate-ping" />
+                    <span className="font-bold text-foreground tracking-wider">
+                      ★ BUKU PILIHAN MINGGU INI // REKOMENDASI KURATOR
+                    </span>
+                  </div>
+                  <span className="text-[10px]">EDISI LAPAK TERPAL 2026</span>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-10 items-center">
+                  {/* 3D Realistic Book Spine Mockup Cover */}
+                  <div className="md:col-span-4 flex justify-center">
+                    <Link href={`/buku/${featuredBook.slug}`} className="group block perspective-[1000px]">
+                      <div className="relative w-44 sm:w-56 aspect-[3/4] bg-surface-muted border-2 border-foreground shadow-[-8px_8px_18px_rgba(0,0,0,0.25)] group-hover:shadow-[-12px_12px_24px_rgba(0,0,0,0.35)] transition-all duration-300 transform -rotate-1 group-hover:rotate-0 overflow-hidden">
+                        {/* Realistic book spine shadow & creases */}
+                        <div className="absolute left-0 top-0 bottom-0 w-3.5 bg-gradient-to-r from-black/40 via-black/15 to-transparent z-10 pointer-events-none" />
+                        <div className="absolute left-3 top-0 bottom-0 w-[1px] bg-white/20 z-10 pointer-events-none" />
+
+                        {featuredBook.coverImage ? (
+                          <img
+                            src={featuredBook.coverImage}
+                            alt={featuredBook.title}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full p-6 flex flex-col justify-between bg-[#f4f4ee] dark:bg-[#151515] text-foreground text-center">
+                            <span className="font-mono text-[9px] uppercase tracking-widest text-muted">
+                              PERPUSJAL BLORA
+                            </span>
+                            <div className="space-y-2">
+                              <BookOpen className="w-8 h-8 mx-auto text-foreground/40" />
+                              <h3 className="font-serif font-black text-sm uppercase line-clamp-3">
+                                {featuredBook.title}
+                              </h3>
+                              <p className="font-mono text-xs text-muted italic">{featuredBook.author}</p>
+                            </div>
+                            <span className="font-mono text-[8px] text-muted tracking-wider">
+                              PILIHAN PEGIAT
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </Link>
+                  </div>
+
+                  {/* Right Editorial Info */}
+                  <div className="md:col-span-8 space-y-4">
+                    <div className="flex flex-wrap items-center gap-2 font-mono text-xs">
+                      <span className="px-2.5 py-1 bg-foreground text-background font-bold uppercase text-[10px]">
+                        {featuredBook.category?.name || 'UMUM'}
+                      </span>
+                      {featuredBook.pages && (
+                        <span className="px-2 py-1 border border-border-hairline text-muted uppercase text-[10px]">
+                          📖 {featuredBook.pages} Halaman
+                        </span>
+                      )}
+                      <span className="px-2 py-1 border border-border-hairline text-foreground font-semibold text-[10px] uppercase">
+                        {featuredBook.isBorrowable !== false ? '● Siap Dipinjam' : '○ Baca di Tempat'}
+                      </span>
+                    </div>
+
+                    <div>
+                      <Link href={`/buku/${featuredBook.slug}`}>
+                        <h2 className="font-serif text-2xl sm:text-4xl font-black text-foreground hover:underline underline-offset-4 tracking-tight leading-tight">
+                          {featuredBook.title}
+                        </h2>
+                      </Link>
+                      <p className="font-serif italic text-base sm:text-lg text-foreground/80 mt-1">
+                        Karya {featuredBook.author}
+                      </p>
+                    </div>
+
+                    {/* Curator Note or Description Excerpt */}
+                    {featuredBook.curatorNote ? (
+                      <div className="p-4 bg-surface-muted/60 border-l-4 border-foreground font-serif italic text-sm sm:text-base text-foreground/90 space-y-1">
+                        <p>&ldquo;{featuredBook.curatorNote}&rdquo;</p>
+                        <span className="block font-mono text-[10px] uppercase text-muted not-italic font-bold">
+                          — Catatan Meja Kurasi Perpusjal Blora
+                        </span>
+                      </div>
+                    ) : featuredBook.description ? (
+                      <p className="font-sans text-sm text-foreground/80 line-clamp-3 leading-relaxed">
+                        {featuredBook.description}
+                      </p>
+                    ) : null}
+
+                    {/* Action Buttons */}
+                    <div className="pt-2 flex flex-wrap items-center gap-3">
+                      <Link
+                        href={`/buku/${featuredBook.slug}`}
+                        className="px-6 py-3 bg-foreground text-background font-mono text-xs font-bold uppercase tracking-wider hover:bg-foreground/90 transition-all active:scale-95 border-2 border-foreground inline-flex items-center gap-2"
+                      >
+                        <span>PINJAM BUKU INI</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </Link>
+
+                      <button
+                        type="button"
+                        onClick={() => setPeekBook(featuredBook)}
+                        className="px-5 py-3 border-2 border-foreground bg-background hover:bg-foreground hover:text-background font-mono text-xs font-bold uppercase tracking-wider transition-colors inline-flex items-center gap-2 active:scale-95"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                        <span>INTIP SINOPSIS CEPAT</span>
+                      </button>
+
+                      <a
+                        href={getWhatsAppUrl({ type: 'book_inquiry', bookTitle: featuredBook.title })}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-4 py-3 border border-border-hairline text-muted hover:text-foreground hover:border-foreground font-mono text-xs uppercase tracking-wider transition-colors inline-flex items-center gap-1.5 active:scale-95"
+                      >
+                        <span>TANYA VIA WA</span>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </RevealOnScroll>
+          </section>
+        )}
+
+        {/* ========================================================= */}
         {/* 3. DIREKTORI SELURUH PUSTAKA & BILAH PENCARIAN TERPADU    */}
         {/* ========================================================= */}
         <section
@@ -375,9 +531,18 @@ function BookCatalogContent() {
                 DIREKTORI SELURUH PUSTAKA LAPAK
               </span>
             </div>
-            <span>
-              TOTAL {meta.total} KOLEKSI TERDATA
-            </span>
+            <div className="flex items-center gap-3">
+              <span>TOTAL {meta.total} KOLEKSI TERDATA</span>
+              {/* Mobile Filter Sheet Trigger */}
+              <button
+                type="button"
+                onClick={() => setIsMobileFilterOpen(true)}
+                className="sm:hidden px-2.5 py-1 bg-foreground text-background text-[10px] font-bold uppercase tracking-wider inline-flex items-center gap-1"
+              >
+                <SlidersHorizontal className="w-3 h-3" />
+                <span>Filter</span>
+              </button>
+            </div>
           </div>
 
           {/* Search & Filter Toolbar */}
@@ -391,22 +556,22 @@ function BookCatalogContent() {
                   value={searchInput}
                   onChange={(e) => setSearchInput(e.target.value)}
                   placeholder="Cari judul, pengarang, tokoh Blora, ISBN..."
-                  className="w-full h-10 sm:h-11 pl-9 sm:pl-10 pr-20 sm:pr-24 bg-background border border-border text-xs sm:text-sm font-sans focus:outline-none focus:border-foreground rounded-none text-foreground transition-colors"
+                  className="w-full h-11 pl-10 pr-24 bg-background border border-border text-xs sm:text-sm font-sans focus:outline-none focus:border-foreground rounded-none text-foreground transition-colors"
                 />
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 sm:w-4 sm:h-4 text-muted pointer-events-none" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted pointer-events-none" />
 
                 {searchInput && (
                   <button
                     type="button"
                     onClick={clearSearch}
-                    className="absolute right-12 sm:right-16 top-1/2 -translate-y-1/2 text-muted hover:text-foreground p-1 transition-colors cursor-pointer"
+                    className="absolute right-14 top-1/2 -translate-y-1/2 text-muted hover:text-foreground p-1 transition-colors cursor-pointer"
                     title="Hapus kata kunci"
                   >
-                    <X className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                    <X className="w-4 h-4" />
                   </button>
                 )}
 
-                <div className="absolute right-2 top-1/2 -translate-y-1/2 hidden sm:flex items-center gap-0.5 font-mono text-[9px] text-muted border border-border px-1.5 py-0.5 bg-surface select-none pointer-events-none">
+                <div className="absolute right-2.5 top-1/2 -translate-y-1/2 hidden sm:flex items-center gap-0.5 font-mono text-[9px] text-muted border border-border px-1.5 py-0.5 bg-surface select-none pointer-events-none">
                   <span>⌘</span>
                   <span>K</span>
                 </div>
@@ -415,7 +580,7 @@ function BookCatalogContent() {
               {/* Submit Search */}
               <button
                 type="submit"
-                className="px-4 sm:px-5 h-10 sm:h-11 bg-foreground text-background font-mono text-[10px] uppercase tracking-wider font-semibold hover:opacity-85 transition-opacity shrink-0 cursor-pointer"
+                className="px-5 sm:px-6 h-11 bg-foreground text-background font-mono text-xs uppercase tracking-wider font-bold hover:opacity-85 transition-opacity shrink-0 cursor-pointer active:scale-95"
               >
                 CARI
               </button>
@@ -435,13 +600,39 @@ function BookCatalogContent() {
                     type="button"
                     onClick={() => updateFilters({ kategori: chip.slug || null }, { scrollToSearch: false })}
                     className={cn(
-                      'px-2.5 sm:px-3 py-1 sm:py-1.5 border transition-colors select-none cursor-pointer shrink-0 whitespace-nowrap',
+                      'px-2.5 sm:px-3 py-1.5 border transition-colors select-none cursor-pointer shrink-0 whitespace-nowrap active:scale-95',
                       isSelected
                         ? 'bg-foreground text-background border-foreground font-bold'
                         : 'bg-transparent text-muted border-border hover:border-foreground'
                     )}
                   >
                     {chip.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Reading Duration Filter Strip (Ketebalan Bacaan) */}
+            <div className="pt-2 border-t border-border-hairline flex items-center gap-1.5 font-mono text-[10px] sm:text-[11px] uppercase tracking-wider overflow-x-auto no-scrollbar sm:flex-wrap py-0.5">
+              <span className="text-muted mr-1 flex items-center gap-1 text-[9.5px] sm:text-[10px] shrink-0 font-bold">
+                <Clock className="w-3 h-3 text-muted" />
+                DURASI / TEBAL:
+              </span>
+              {READING_DURATIONS.map((dur) => {
+                const isSelected = (!pageRange && dur.key === '') || pageRange === dur.key;
+                return (
+                  <button
+                    key={dur.key}
+                    type="button"
+                    onClick={() => updateFilters({ pageRange: dur.key || null }, { scrollToSearch: false })}
+                    className={cn(
+                      'px-2.5 sm:px-3 py-1.5 border transition-colors select-none cursor-pointer shrink-0 whitespace-nowrap active:scale-95',
+                      isSelected
+                        ? 'bg-foreground text-background border-foreground font-bold'
+                        : 'bg-transparent text-muted border-border hover:border-foreground'
+                    )}
+                  >
+                    {dur.label}
                   </button>
                 );
               })}
@@ -455,7 +646,7 @@ function BookCatalogContent() {
                   type="button"
                   onClick={() => updateFilters({ tersedia: tersedia ? null : 'true' }, { scrollToSearch: false })}
                   className={cn(
-                    'px-2.5 sm:px-3 py-1.5 border transition-colors inline-flex items-center gap-1.5 cursor-pointer text-[10px] sm:text-[11px] uppercase font-semibold select-none shrink-0',
+                    'min-h-[44px] px-3.5 py-2 sm:min-h-0 sm:py-1.5 border transition-colors inline-flex items-center gap-1.5 cursor-pointer text-[10px] sm:text-[11px] uppercase font-semibold select-none shrink-0 active:scale-95',
                     tersedia
                       ? 'bg-foreground text-background border-foreground font-bold'
                       : 'bg-background text-foreground border-border hover:border-foreground'
@@ -463,7 +654,7 @@ function BookCatalogContent() {
                 >
                   <span
                     className={cn(
-                      'w-1.5 h-1.5 rounded-none',
+                      'w-2 h-2 rounded-none',
                       tersedia ? 'bg-foreground' : 'bg-muted'
                     )}
                   />
@@ -476,7 +667,7 @@ function BookCatalogContent() {
                   <select
                     value={bahasa}
                     onChange={(e) => updateFilters({ bahasa: e.target.value || null }, { scrollToSearch: false })}
-                    className="w-full sm:w-auto px-2 py-1.5 bg-background border border-border text-foreground focus:outline-none focus:border-foreground rounded-none uppercase text-[11px] sm:text-xs cursor-pointer font-mono"
+                    className="w-full sm:w-auto min-h-[44px] sm:min-h-0 px-2 py-1.5 bg-background border border-border text-foreground focus:outline-none focus:border-foreground rounded-none uppercase text-[11px] sm:text-xs cursor-pointer font-mono"
                   >
                     <option value="">Semua</option>
                     <option value="ID">Indonesia</option>
@@ -488,12 +679,12 @@ function BookCatalogContent() {
 
               {/* Sorting */}
               <div className="flex items-center gap-1.5 w-full sm:w-auto justify-end text-[10px] sm:text-[11px]">
-                <SlidersHorizontal className="w-3 h-3 text-muted shrink-0 hidden sm:inline" />
+                <SlidersHorizontal className="w-3.5 h-3.5 text-muted shrink-0 hidden sm:inline" />
                 <span className="text-muted uppercase shrink-0">Urutan:</span>
                 <select
                   value={sort}
                   onChange={(e) => updateFilters({ sort: e.target.value }, { scrollToSearch: false })}
-                  className="flex-1 sm:flex-initial px-2 py-1.5 bg-background border border-border text-foreground focus:outline-none focus:border-foreground rounded-none text-[11px] sm:text-xs font-mono uppercase cursor-pointer"
+                  className="flex-1 sm:flex-initial min-h-[44px] sm:min-h-0 px-2.5 py-1.5 bg-background border border-border text-foreground focus:outline-none focus:border-foreground rounded-none text-[11px] sm:text-xs font-mono uppercase cursor-pointer"
                 >
                   <option value="terbaru">Terbaru</option>
                   <option value="populer">Paling Sering Dipinjam</option>
@@ -520,6 +711,11 @@ function BookCatalogContent() {
                       Kategori: {QUICK_CATEGORIES.find((c) => c.slug === kategori)?.label || kategori}
                     </span>
                   )}
+                  {pageRange && (
+                    <span className="px-1.5 py-0.5 bg-foreground/10 text-foreground font-bold text-[9px] uppercase">
+                      Tebal: {READING_DURATIONS.find((d) => d.key === pageRange)?.label || pageRange}
+                    </span>
+                  )}
                   {tersedia && (
                     <span className="px-1.5 py-0.5 border border-foreground bg-surface-muted text-foreground font-bold text-[9px] uppercase">
                       Siap Pinjam
@@ -537,7 +733,7 @@ function BookCatalogContent() {
                   onClick={clearAllFilters}
                   className="text-[10px] font-semibold text-muted hover:text-foreground underline underline-offset-2 tracking-wider uppercase transition-colors"
                 >
-                  [ Reset Pencarian ]
+                  [ Reset Semua Filter ]
                 </button>
               </div>
             )}
@@ -629,6 +825,14 @@ function BookCatalogContent() {
                           {getStatusBadge(book.availability, book.isBorrowable)}
                         </div>
 
+                        {/* Top-Left Curator Favorite Star if Featured */}
+                        {book.isFeatured && (
+                          <div className="absolute top-2 left-2 z-20 px-1.5 py-0.5 bg-foreground text-background font-mono text-[8px] uppercase tracking-wider font-bold inline-flex items-center gap-1 shadow-xs">
+                            <Star className="w-2.5 h-2.5 fill-background" />
+                            <span>PILIHAN KURATOR</span>
+                          </div>
+                        )}
+
                         {/* Quick Peek Eye Trigger Overlay */}
                         <button
                           type="button"
@@ -676,12 +880,14 @@ function BookCatalogContent() {
                           <span className="uppercase text-foreground font-bold truncate max-w-[110px]">
                             {book.category.name}
                           </span>
-                          {book.shelfLocation && (
+                          {book.pages ? (
+                            <span>{book.pages} hlm.</span>
+                          ) : book.shelfLocation ? (
                             <span className="inline-flex items-center gap-0.5 text-[9px] truncate max-w-[90px]">
                               <MapPin className="w-2.5 h-2.5 text-muted shrink-0" />
                               {book.shelfLocation}
                             </span>
-                          )}
+                          ) : null}
                         </div>
 
                         <Link href={`/buku/${book.slug}`} className="block group/title">
@@ -908,6 +1114,179 @@ function BookCatalogContent() {
       </section>
       </main>
 
+      {/* Floating Filter Button (Mobile Screen Only) */}
+      <div className="fixed bottom-20 right-4 z-40 sm:hidden">
+        <button
+          type="button"
+          onClick={() => setIsMobileFilterOpen(true)}
+          className="h-12 px-4 bg-foreground text-background font-mono text-xs font-bold uppercase tracking-wider flex items-center gap-2 border-2 border-foreground shadow-xl active:scale-95 transition-transform rounded-none"
+        >
+          <SlidersHorizontal className="w-4 h-4 text-background" />
+          <span>FILTER KOLEKSI {hasActiveFilters ? '●' : ''}</span>
+        </button>
+      </div>
+
+      {/* Mobile Slide-Up Bottom Sheet Filter Modal */}
+      {isMobileFilterOpen && (
+        <div className="fixed inset-0 z-50 sm:hidden flex flex-col justify-end">
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-background/80 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
+            onClick={() => setIsMobileFilterOpen(false)}
+            aria-hidden="true"
+          />
+
+          {/* Bottom Sheet Panel */}
+          <div className="relative w-full max-h-[85dvh] bg-surface border-t-2 border-foreground flex flex-col font-mono text-xs pb-safe animate-in slide-in-from-bottom duration-250 z-10 shadow-2xl overflow-hidden rounded-none">
+            {/* Drag Pill & Header */}
+            <div className="pt-3 pb-2 px-4 border-b border-border-hairline flex flex-col items-center shrink-0">
+              <div className="w-10 h-1 bg-foreground/25 mb-3" />
+              <div className="w-full flex items-center justify-between">
+                <div className="flex items-center gap-2 text-foreground font-bold uppercase tracking-wider">
+                  <SlidersHorizontal className="w-4 h-4" />
+                  <span>SARING &amp; URUTKAN KOLEKSI</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsMobileFilterOpen(false)}
+                  className="p-1.5 border border-border-hairline text-muted hover:text-foreground"
+                  aria-label="Tutup"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Scrollable Sheet Content */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-5">
+              {/* Category Filter */}
+              <div className="space-y-2">
+                <span className="text-[10px] text-muted uppercase font-bold tracking-wider block">
+                  PILIH KATEGORI / GENRE:
+                </span>
+                <div className="flex flex-wrap gap-1.5">
+                  {QUICK_CATEGORIES.map((chip) => {
+                    const isSelected = (!kategori && chip.slug === '') || kategori === chip.slug;
+                    return (
+                      <button
+                        key={chip.slug}
+                        type="button"
+                        onClick={() => updateFilters({ kategori: chip.slug || null }, { scrollToSearch: false })}
+                        className={cn(
+                          'min-h-[40px] px-3 py-2 border text-[11px] uppercase tracking-wider active:scale-95 transition-transform',
+                          isSelected
+                            ? 'bg-foreground text-background border-foreground font-bold'
+                            : 'bg-surface text-foreground border-border-hairline hover:border-foreground'
+                        )}
+                      >
+                        {chip.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Reading Duration Filter */}
+              <div className="space-y-2 pt-2 border-t border-border-hairline">
+                <span className="text-[10px] text-muted uppercase font-bold tracking-wider block">
+                  KETEBALAN HALAMAN / DURASI BACA:
+                </span>
+                <div className="flex flex-wrap gap-1.5">
+                  {READING_DURATIONS.map((dur) => {
+                    const isSelected = (!pageRange && dur.key === '') || pageRange === dur.key;
+                    return (
+                      <button
+                        key={dur.key}
+                        type="button"
+                        onClick={() => updateFilters({ pageRange: dur.key || null }, { scrollToSearch: false })}
+                        className={cn(
+                          'min-h-[40px] px-3 py-2 border text-[11px] uppercase tracking-wider active:scale-95 transition-transform',
+                          isSelected
+                            ? 'bg-foreground text-background border-foreground font-bold'
+                            : 'bg-surface text-foreground border-border-hairline hover:border-foreground'
+                        )}
+                      >
+                        {dur.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Availability Filter */}
+              <div className="space-y-2 pt-2 border-t border-border-hairline">
+                <span className="text-[10px] text-muted uppercase font-bold tracking-wider block">
+                  STATUS SIRKULASI:
+                </span>
+                <button
+                  type="button"
+                  onClick={() => updateFilters({ tersedia: tersedia ? null : 'true' }, { scrollToSearch: false })}
+                  className={cn(
+                    'w-full min-h-[44px] px-4 py-2.5 border uppercase font-bold text-xs inline-flex items-center justify-between active:scale-95 transition-transform',
+                    tersedia
+                      ? 'bg-foreground text-background border-foreground'
+                      : 'bg-surface text-foreground border-border-hairline'
+                  )}
+                >
+                  <span>HANYA BUKU YANG SIAP DIPINJAM</span>
+                  <span className={cn('w-2 h-2 rounded-none', tersedia ? 'bg-background' : 'bg-muted')} />
+                </button>
+              </div>
+
+              {/* Language & Sorting */}
+              <div className="grid grid-cols-2 gap-3 pt-2 border-t border-border-hairline">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] text-muted uppercase font-bold block">Bahasa</label>
+                  <select
+                    value={bahasa}
+                    onChange={(e) => updateFilters({ bahasa: e.target.value || null }, { scrollToSearch: false })}
+                    className="w-full min-h-[44px] p-2 bg-background border border-border text-xs uppercase"
+                  >
+                    <option value="">Semua Bahasa</option>
+                    <option value="ID">Indonesia</option>
+                    <option value="JV">Jawa</option>
+                    <option value="EN">English</option>
+                  </select>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[10px] text-muted uppercase font-bold block">Urutan</label>
+                  <select
+                    value={sort}
+                    onChange={(e) => updateFilters({ sort: e.target.value }, { scrollToSearch: false })}
+                    className="w-full min-h-[44px] p-2 bg-background border border-border text-xs uppercase"
+                  >
+                    <option value="terbaru">Terbaru</option>
+                    <option value="populer">Paling Sering Dipinjam</option>
+                    <option value="judul">Judul (A — Z)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom Sheet Actions Footer */}
+            <div className="p-4 border-t border-border-hairline bg-surface flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  clearAllFilters();
+                  setIsMobileFilterOpen(false);
+                }}
+                className="flex-1 min-h-[44px] border border-border-hairline text-muted hover:text-foreground uppercase font-bold text-xs active:scale-95 transition-transform"
+              >
+                Reset Semua
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsMobileFilterOpen(false)}
+                className="flex-1 min-h-[44px] bg-foreground text-background uppercase font-bold text-xs active:scale-95 transition-transform"
+              >
+                Terapkan Filter
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Quick Peek Drawer Component */}
       <BookQuickPeekDrawer
         book={peekBook}
@@ -918,6 +1297,12 @@ function BookCatalogContent() {
       <RevealOnScroll variant="fade" delayMs={60}>
         <Footer />
       </RevealOnScroll>
+
+      <ColdStartBanner
+        isVisible={isColdStart}
+        onRetry={fetchBooks}
+        onDismiss={() => setIsColdStart(false)}
+      />
     </div>
   );
 }

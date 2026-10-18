@@ -26,6 +26,9 @@ import {
   Clock,
   Calendar,
   Link2,
+  Quote,
+  BookOpen,
+  ArrowRight,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -46,12 +49,22 @@ export function ArticleDetailClient({
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
   const [copied, setCopied] = React.useState(false);
+  const [quoteCopied, setQuoteCopied] = React.useState(false);
 
   // Reader Controls
   const [textScale, setTextScale] = React.useState<TextScale>('base');
   const [isZenMode, setIsZenMode] = React.useState(false);
 
   const commentsRef = React.useRef<HTMLDivElement>(null);
+  const [showMobileReaderPill, setShowMobileReaderPill] = React.useState(false);
+
+  React.useEffect(() => {
+    const handleScroll = () => {
+      setShowMobileReaderPill(window.scrollY > 350);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   // Handle ESC key for Zen mode
   React.useEffect(() => {
@@ -114,6 +127,23 @@ export function ArticleDetailClient({
       navigator.clipboard.writeText(window.location.href);
       setCopied(true);
       setTimeout(() => setCopied(false), 2500);
+    }
+  };
+
+  const activePullQuote = article?.pullQuote || (article?.excerpt && article.excerpt.length > 25 ? article.excerpt : null);
+
+  const handleCopyQuote = () => {
+    if (typeof window !== 'undefined' && activePullQuote) {
+      navigator.clipboard.writeText(`“${activePullQuote}” — ${article?.author?.name || 'Redaksi Perpusjal'}\n\nSumber: ${window.location.href}`);
+      setQuoteCopied(true);
+      setTimeout(() => setQuoteCopied(false), 2000);
+    }
+  };
+
+  const handleShareQuoteWhatsApp = () => {
+    if (typeof window !== 'undefined' && activePullQuote) {
+      const text = encodeURIComponent(`“${activePullQuote}”\n\n— ${article?.author?.name || 'Redaksi Perpusjal Blora'}\n\nBaca catatan selengkapnya di Perpusjal Blora:\n${window.location.href}`);
+      window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
     }
   };
 
@@ -199,10 +229,24 @@ export function ArticleDetailClient({
     xl: 'text-[22px] sm:text-[24px] leading-[1.95] sm:leading-[2.05]',
   };
 
+  const nextScale: Record<TextScale, TextScale> = {
+    sm: 'base',
+    base: 'lg',
+    lg: 'xl',
+    xl: 'sm',
+  };
+
+  const scaleLabel: Record<TextScale, string> = {
+    sm: '16px',
+    base: '18px',
+    lg: '20px',
+    xl: '22px',
+  };
+
   return (
     <div className={cn('flex flex-col min-h-screen bg-background transition-colors', isZenMode && 'editorial-paper-bg')}>
-      {/* Scroll reading progress: Header already has ScrollProgress. In Zen mode when Header is hidden, show fixed top bar */}
-      {isZenMode && <ScrollProgress className="fixed top-0 bottom-auto h-[3px] z-50" />}
+      {/* Universal Scroll reading progress: pinned at top of viewport with subtle track */}
+      <ScrollProgress className="fixed top-0 left-0 right-0 h-[3px] bg-foreground/15 z-50 pointer-events-none" />
 
       {/* Hide standard header in Zen reading mode */}
       {!isZenMode && <Header />}
@@ -215,7 +259,7 @@ export function ArticleDetailClient({
         </div>
       )}
 
-      <main className="flex-1 w-full pb-16">
+      <main className="flex-1 w-full pb-28 sm:pb-20">
         {/* Core Reading Column */}
         <div
           className={cn(
@@ -376,6 +420,47 @@ export function ArticleDetailClient({
             onScrollToComments={scrollToComments}
           />
 
+          {/* Editorial Pull-Quote Block (Curated pull-quote or excerpt spotlight) */}
+          {activePullQuote && (
+            <RevealOnScroll variant="cinematic" delayMs={60}>
+              <div className="my-6 p-5 sm:p-7 bg-surface border-l-4 border-foreground border-y border-r border-border-hairline shadow-xs space-y-4">
+                <div className="flex items-center justify-between text-[10px] font-mono uppercase tracking-widest text-muted border-b border-border-hairline pb-2.5">
+                  <span className="flex items-center gap-1.5 font-bold text-foreground">
+                    <Quote className="w-3.5 h-3.5 text-foreground rotate-180" />
+                    KUTIPAN UTAMA // PULL-QUOTE
+                  </span>
+                  <span>PERPUSJAL BLORA</span>
+                </div>
+                <blockquote className="font-serif italic text-lg sm:text-2xl text-foreground font-normal leading-relaxed">
+                  &ldquo;{activePullQuote}&rdquo;
+                </blockquote>
+                <div className="flex flex-wrap items-center justify-between gap-3 pt-2 text-xs">
+                  <span className="font-mono text-muted text-[11px]">
+                    — {article.author?.name || 'Redaksi Perpusjal Blora'}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={handleCopyQuote}
+                      className="h-8 px-3 border border-border-hairline hover:border-foreground bg-surface hover:bg-foreground hover:text-background transition-colors font-mono text-[10px] uppercase font-bold tracking-wider inline-flex items-center gap-1.5 active:scale-95 touch-tactile cursor-pointer"
+                    >
+                      {quoteCopied ? <Check className="w-3 h-3 text-emerald-600" /> : <Quote className="w-3 h-3" />}
+                      <span>{quoteCopied ? 'Tersalin!' : 'Salin Kutipan'}</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleShareQuoteWhatsApp}
+                      className="h-8 px-3 border border-border-hairline hover:border-foreground bg-surface hover:bg-foreground hover:text-background transition-colors font-mono text-[10px] uppercase font-bold tracking-wider inline-flex items-center gap-1.5 active:scale-95 touch-tactile cursor-pointer"
+                    >
+                      <Share2 className="w-3 h-3" />
+                      <span>Ke WA</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </RevealOnScroll>
+          )}
+
           {/* Article Body Content with dynamic text scale & centered reading column */}
           <article className={cn('pt-4 font-serif text-foreground/90 antialiased', textScaleClasses[textScale])}>
             <RichTextRenderer
@@ -483,6 +568,105 @@ export function ArticleDetailClient({
             </div>
           )}
 
+          {/* Cross-Linking Buku: Buku di Perpusjal yang Berkaitan dengan Naskah Ini */}
+          {!isZenMode && article.relatedBooks && article.relatedBooks.length > 0 && (
+            <RevealOnScroll variant="cinematic" delayMs={90}>
+              <section className="pt-8 sm:pt-10 border-t-2 border-foreground space-y-5">
+                <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 border-b border-border-hairline pb-3">
+                  <div>
+                    <div className="flex items-center gap-2 text-muted font-mono text-[10px] uppercase tracking-widest font-bold">
+                      <BookOpen className="w-3.5 h-3.5 text-foreground" />
+                      <span>PUSTAKA TERKAIT DI LAPAK TERPAL</span>
+                    </div>
+                    <h3 className="font-serif text-xl sm:text-2xl font-bold text-foreground mt-1">
+                      Buku yang Berkaitan dengan Naskah Ini
+                    </h3>
+                    <p className="font-sans text-xs text-muted mt-0.5">
+                      Koleksi buku fisik yang dibawa ke lapak Perpusjal Blora untuk mendalami gagasan ini secara menyeluruh.
+                    </p>
+                  </div>
+                  <Link
+                    href="/buku"
+                    className="font-mono text-xs uppercase tracking-wider text-foreground hover:underline inline-flex items-center gap-1 shrink-0"
+                  >
+                    <span>Katalog Lengkap</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </Link>
+                </div>
+
+                {/* Horizontal snap-scroll on mobile, neat grid on sm+ */}
+                <div className="flex sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-4 overflow-x-auto no-scrollbar snap-x snap-mandatory pb-3 -mx-4 px-4 sm:mx-0 sm:px-0">
+                  {article.relatedBooks.map((book) => (
+                    <div
+                      key={book.id}
+                      className="min-w-[250px] sm:min-w-0 border border-border-hairline bg-surface p-3.5 sm:p-4 flex flex-col justify-between space-y-3 snap-start transition-all hover:border-foreground group rounded-none"
+                    >
+                      <div className="flex gap-3">
+                        {/* Book Spine / Cover Mockup */}
+                        <div className="w-16 h-22 shrink-0 bg-surface-muted border border-border-hairline overflow-hidden shadow-xs relative group-hover:shadow-sm transition-shadow">
+                          {book.coverImage ? (
+                            <img
+                              src={book.coverImage}
+                              alt={book.title}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-muted/10 text-[9px] font-mono text-muted text-center p-1">
+                              Sampul Buku
+                            </div>
+                          )}
+                          <div className="absolute inset-y-0 left-0 w-1.5 bg-gradient-to-r from-black/40 to-transparent pointer-events-none" />
+                        </div>
+
+                        <div className="min-w-0 flex-1 space-y-1">
+                          <span className="inline-block px-1.5 py-0.5 bg-foreground/5 border border-border-hairline font-mono text-[9px] uppercase text-muted truncate max-w-full">
+                            {book.category?.name || 'Koleksi Lapak'}
+                          </span>
+                          <Link href={`/buku/${book.slug}`}>
+                            <h4 className="font-serif font-bold text-sm text-foreground group-hover:underline line-clamp-2 leading-snug">
+                              {book.title}
+                            </h4>
+                          </Link>
+                          <p className="font-serif italic text-xs text-muted truncate">
+                            {book.author}
+                          </p>
+                          {book.curatorNote && (
+                            <p className="font-serif italic text-[11px] text-foreground/80 line-clamp-2 border-l border-foreground/40 pl-1.5 pt-0.5 mt-1">
+                              &ldquo;{book.curatorNote}&rdquo;
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="pt-2 border-t border-border-hairline flex items-center justify-between font-mono text-[10px]">
+                        <span className={cn(
+                          'px-2 py-0.5 font-bold uppercase tracking-wider',
+                          book.isBorrowable && book.availableCopies > 0
+                            ? 'bg-foreground text-background'
+                            : 'border border-border-hairline text-muted'
+                        )}>
+                          {book.isBorrowable && book.availableCopies > 0
+                            ? '● Siap Pinjam'
+                            : !book.isBorrowable
+                            ? '○ Di Tempat'
+                            : '× Dipinjam'}
+                        </span>
+
+                        <Link
+                          href={`/buku/${book.slug}`}
+                          className="min-h-[34px] px-2.5 py-1 text-foreground border border-border-hairline hover:border-foreground bg-surface hover:bg-foreground hover:text-background inline-flex items-center gap-1 font-semibold touch-tactile active:scale-95 transition-all rounded-none uppercase text-[9.5px]"
+                        >
+                          <span>Pinjam Buku</span>
+                          <ArrowRight className="w-3 h-3" />
+                        </Link>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            </RevealOnScroll>
+          )}
+
           {/* Author Colophon (hidden in Zen mode) */}
           {!isZenMode && (
             <RevealOnScroll variant="cinematic" delayMs={100}>
@@ -511,6 +695,49 @@ export function ArticleDetailClient({
           </RevealOnScroll>
         )}
       </main>
+
+      {/* Mobile Floating Reader Controls (Sticky thumb-accessible mini-pill) */}
+      {!isZenMode && showMobileReaderPill && (
+        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-40 sm:hidden bg-background/95 backdrop-blur-md border-2 border-foreground px-3 py-1.5 flex items-center gap-2 shadow-xl animate-in fade-in slide-in-from-bottom-4 duration-200">
+          <button
+            type="button"
+            onClick={() => setTextScale(nextScale[textScale])}
+            className="px-2 py-1 border border-border-hairline bg-surface text-foreground font-mono text-[10px] font-bold uppercase active:scale-95 touch-tactile flex items-center gap-1 cursor-pointer"
+            title="Ubah ukuran huruf"
+          >
+            <span>Aa</span>
+            <span className="text-[9px] text-muted">{scaleLabel[textScale]}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setIsZenMode(true)}
+            className="px-2 py-1 border border-border-hairline bg-surface text-foreground font-mono text-[10px] font-bold uppercase active:scale-95 touch-tactile cursor-pointer"
+            title="Mode fokus membaca"
+          >
+            Fokus
+          </button>
+
+          <button
+            type="button"
+            onClick={scrollToComments}
+            className="px-2 py-1 border border-border-hairline bg-surface text-foreground font-mono text-[10px] font-bold uppercase active:scale-95 touch-tactile flex items-center gap-1 cursor-pointer"
+            title="Lihat komentar warga"
+          >
+            <span>Respon</span>
+            {article.commentCount > 0 && <span className="text-muted">({article.commentCount})</span>}
+          </button>
+
+          <button
+            type="button"
+            onClick={handleShareWhatsApp}
+            className="p-1 border border-foreground bg-foreground text-background font-mono text-[10px] font-bold uppercase active:scale-95 touch-tactile flex items-center justify-center min-w-[28px] cursor-pointer"
+            title="Bagikan naskah ke WhatsApp"
+          >
+            <Share2 className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
 
       {!isZenMode && (
         <RevealOnScroll variant="fade" delayMs={60}>

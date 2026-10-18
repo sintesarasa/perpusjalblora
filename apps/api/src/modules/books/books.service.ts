@@ -82,6 +82,7 @@ export class BooksService {
       sort = 'terbaru',
       includeDraft = false,
       featured,
+      pageRange,
       page = 1,
       perPage = 24,
     } = query;
@@ -97,6 +98,14 @@ export class BooksService {
 
     if (featured === true) {
       where.isFeatured = true;
+    }
+
+    if (pageRange === 'ringan') {
+      where.pages = { lte: 150 };
+    } else if (pageRange === 'menengah') {
+      where.pages = { gt: 150, lte: 350 };
+    } else if (pageRange === 'mendalam') {
+      where.pages = { gt: 350 };
     }
 
     if (q && q.trim()) {
@@ -157,6 +166,7 @@ export class BooksService {
           isPublished: true,
           isFeatured: true,
           curatorNote: true,
+          pages: true,
           description: true,
           shelfLocation: true,
           publicationYear: true,
@@ -213,6 +223,7 @@ export class BooksService {
       isPublished: b.isPublished,
       isFeatured: b.isFeatured,
       curatorNote: b.curatorNote,
+      pages: b.pages,
       description: b.description,
       shelfLocation: b.shelfLocation,
       publicationYear: b.publicationYear,
@@ -671,6 +682,34 @@ export class BooksService {
       message: updated.isFeatured
         ? `Buku "${updated.title}" berhasil diangkat sebagai Sorotan Rekomendasi Lapak.`
         : `Buku "${updated.title}" telah dihapus dari Sorotan Lapak.`,
+    };
+  }
+
+  /**
+   * Toggle borrowable status (Bisa Dipinjam vs Baca di Tempat)
+   */
+  async toggleBorrowable(id: string, isBorrowableExplicit?: boolean) {
+    const existing = await prisma.book.findUnique({ where: { id } });
+    if (!existing || existing.deletedAt) {
+      throw HttpError.notFound('Buku tidak ditemukan.');
+    }
+
+    const nextBorrowable = typeof isBorrowableExplicit === 'boolean' ? isBorrowableExplicit : !existing.isBorrowable;
+
+    const updated = await prisma.book.update({
+      where: { id },
+      data: {
+        isBorrowable: nextBorrowable,
+      },
+    });
+
+    return {
+      id: updated.id,
+      title: updated.title,
+      isBorrowable: updated.isBorrowable,
+      message: updated.isBorrowable
+        ? `Buku "${updated.title}" kini berstatus BISA DIPINJAM ke rumah.`
+        : `Buku "${updated.title}" kini berstatus HANYA BACA DI TEMPAT / LAPAK.`,
     };
   }
 

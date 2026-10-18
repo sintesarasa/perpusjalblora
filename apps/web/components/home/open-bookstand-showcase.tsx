@@ -229,10 +229,17 @@ export function OpenBookstandShowcase({ books, loading = false }: OpenBookstandS
 
                     {/* Editorial Details & Critique Note */}
                     <div className="space-y-2.5">
-                      <div className="font-mono text-[10px] uppercase tracking-wider text-muted flex items-center gap-1.5">
-                        <span className="font-bold text-foreground">{spotlightBook.category?.name || 'Koleksi Lapak'}</span>
-                        <span>&bull;</span>
-                        <span>KARYA {spotlightBook.author}</span>
+                      <div className="font-mono text-[10px] uppercase tracking-wider text-muted flex items-center justify-between gap-1.5">
+                        <div className="flex items-center gap-1.5 truncate">
+                          <span className="font-bold text-foreground">{spotlightBook.category?.name || 'Koleksi Lapak'}</span>
+                          <span>&bull;</span>
+                          <span className="truncate">KARYA {spotlightBook.author}</span>
+                        </div>
+                        {spotlightBook.isFeatured && (
+                          <span className="px-1.5 py-0.5 bg-foreground text-background font-mono text-[9px] font-bold uppercase tracking-wider shrink-0">
+                            ★ REKOMENDASI KURATOR
+                          </span>
+                        )}
                       </div>
 
                       <h3 className="font-serif text-2xl sm:text-3xl font-black text-foreground leading-tight hover:underline">
@@ -241,7 +248,7 @@ export function OpenBookstandShowcase({ books, loading = false }: OpenBookstandS
                         </Link>
                       </h3>
 
-                      <blockquote className="border-l-4 border-foreground pl-3.5 py-1.5 font-serif text-xs sm:text-sm text-foreground/90 leading-relaxed italic bg-surface-muted/40">
+                      <blockquote className="border-l-4 border-foreground pl-3.5 py-2 font-serif text-xs sm:text-sm text-foreground/90 leading-relaxed italic bg-surface-muted/40">
                         &ldquo;
                         {spotlightBook.curatorNote ||
                           spotlightBook.description ||
@@ -265,7 +272,7 @@ export function OpenBookstandShowcase({ books, loading = false }: OpenBookstandS
                               : 'border border-border-hairline text-muted'
                           )}
                         >
-                          {spotlightBook.availability === 'AVAILABLE' ? 'TERSEDIA DI LAPAK' : 'SEDANG DIPINJAM'}
+                          {spotlightBook.availability === 'AVAILABLE' ? '● TERSEDIA DI LAPAK' : '○ SEDANG DIPINJAM'}
                         </span>
                       </div>
                       <span className="text-[10px] text-muted font-bold">
@@ -274,13 +281,26 @@ export function OpenBookstandShowcase({ books, loading = false }: OpenBookstandS
                     </div>
 
                     {/* Action Button */}
-                    <Link
-                      href={`/buku/${spotlightBook.slug || spotlightBook.id}`}
-                      className="w-full h-11 bg-foreground text-background font-mono text-xs font-bold uppercase tracking-widest hover:bg-foreground/90 transition-colors inline-flex items-center justify-center gap-2 border-2 border-foreground"
-                    >
-                      <span>PINJAM PUSTAKA INI</span>
-                      <ArrowRight className="w-4 h-4" />
-                    </Link>
+                    <div className="flex items-center gap-2">
+                      <Link
+                        href={`/buku/${spotlightBook.slug || spotlightBook.id}`}
+                        className="flex-1 h-11 bg-foreground text-background font-mono text-xs font-bold uppercase tracking-widest hover:bg-foreground/90 active:scale-95 transition-all inline-flex items-center justify-center gap-2 border-2 border-foreground touch-tactile"
+                      >
+                        <span>PINJAM PUSTAKA INI</span>
+                        <ArrowRight className="w-4 h-4" />
+                      </Link>
+                      <a
+                        href={`https://wa.me/6281234567890?text=${encodeURIComponent(
+                          `Halo Pegiat Perpusjal Blora, saya ingin bertanya tentang buku "${spotlightBook.title}" karya ${spotlightBook.author} yang ada di lapak.`
+                        )}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="h-11 px-3 border-2 border-foreground bg-surface hover:bg-surface-muted text-foreground font-mono text-xs font-bold uppercase tracking-wider active:scale-95 transition-all inline-flex items-center justify-center shrink-0 touch-tactile"
+                        title="Tanya via WhatsApp"
+                      >
+                        <span>WA</span>
+                      </a>
+                    </div>
                   </div>
                 </div>
               </RevealOnScroll>
@@ -292,106 +312,106 @@ export function OpenBookstandShowcase({ books, loading = false }: OpenBookstandS
           {/* ========================================================================= */}
           <div className="lg:col-span-7 flex flex-col h-full justify-between space-y-5">
             <div className="flex items-center justify-between pb-2.5 border-b-2 border-foreground text-[10px] font-mono uppercase tracking-widest font-bold shrink-0">
-              <span>[ KATALOG HAMPARAN TERPAL // BUKU LAINNYA ]</span>
+              <div className="flex items-center gap-2">
+                <span>[ KATALOG HAMPARAN TERPAL // BUKU LAINNYA ]</span>
+                <span className="sm:hidden text-[9px] text-muted font-normal">✦ Geser &rarr;</span>
+              </div>
               <span className="text-muted">{shelfBooks.length} DARI {filteredBooks.length} TERPILIH</span>
             </div>
 
-            {/* The Open Shelf Grid: 2 cols on mobile, 3 cols on tablet/desktop */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-5 gap-y-7 sm:gap-x-6 sm:gap-y-8">
+            {/* The Open Shelf Grid: Horizontal snap-scroll on mobile, 3 cols on tablet/desktop */}
+            <div className="flex sm:grid sm:grid-cols-3 overflow-x-auto sm:overflow-x-visible snap-x snap-mandatory gap-4 sm:gap-x-6 sm:gap-y-8 pb-3 sm:pb-0 scrollbar-none -mx-4 px-4 sm:mx-0 sm:px-0">
               {shelfBooks.map((book, idx) => {
                 const bookSlug = book.slug || book.id;
                 const isAvailable = book.availability === 'AVAILABLE';
                 const shelf = book.shelfLocation || 'RAK-CFD';
 
                 return (
-                  <RevealOnScroll
+                  <div
                     key={book.id || idx}
-                    variant="cinematic"
-                    delayMs={(idx % 3) * 70}
+                    className="w-[165px] sm:w-auto shrink-0 snap-start flex flex-col justify-between h-full space-y-2.5 group"
                   >
-                    <div className="group flex flex-col justify-between h-full space-y-2.5">
-                      {/* Floating Book Cover (Aspect 2/3, Crisp Flat Contrast) */}
-                      <Link
-                        href={`/buku/${bookSlug}`}
-                        className="block relative aspect-[2/3] w-full overflow-hidden border border-border-hairline group-hover:border-foreground bg-surface transition-transform duration-200 group-hover:-translate-y-1"
-                      >
-                        {book.coverImage ? (
-                          <>
-                            {/* Realistic Spine Fold Shadow */}
-                            <div className="absolute left-0 top-0 bottom-0 w-2.5 bg-gradient-to-r from-black/50 via-black/20 to-transparent z-10 pointer-events-none" />
-                            <div className="absolute left-2.5 top-0 bottom-0 w-px bg-white/25 z-10 pointer-events-none" />
+                    {/* Floating Book Cover (Aspect 2/3, Crisp Flat Contrast with realistic spine) */}
+                    <Link
+                      href={`/buku/${bookSlug}`}
+                      className="block relative aspect-[2/3] w-full overflow-hidden border border-border-hairline group-hover:border-foreground bg-surface transition-transform duration-200 group-hover:-translate-y-1 active:scale-95 touch-tactile"
+                    >
+                      {book.coverImage ? (
+                        <>
+                          {/* Realistic Spine Fold Shadow */}
+                          <div className="absolute left-0 top-0 bottom-0 w-2.5 bg-gradient-to-r from-black/50 via-black/20 to-transparent z-10 pointer-events-none" />
+                          <div className="absolute left-2.5 top-0 bottom-0 w-px bg-white/25 z-10 pointer-events-none" />
 
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img
-                              src={book.coverImage}
-                              alt={book.title}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                            />
-                          </>
-                        ) : (
-                          /* Broadsheet Fallback Jacket */
-                          <div className="w-full h-full p-3 sm:p-4 flex flex-col justify-between bg-[#f4f4ee] dark:bg-[#151515] text-foreground select-none relative">
-                            <div className="absolute left-0 top-0 bottom-0 w-2 bg-foreground border-r border-white/20" />
-                            <div className="pl-1.5 font-mono text-[8px] uppercase tracking-widest text-muted truncate">
-                              {book.category?.name || 'Pustaka'}
-                            </div>
-                            <div className="pl-1.5 space-y-1 my-auto">
-                              <BookOpen className="w-5 h-5 text-foreground/30 mb-1" />
-                              <h4 className="font-serif font-black text-xs uppercase leading-tight line-clamp-3 text-foreground">
-                                {book.title}
-                              </h4>
-                              <p className="font-mono text-[9.5px] text-muted italic line-clamp-1">
-                                {book.author}
-                              </p>
-                            </div>
-                            <div className="pl-1.5 font-mono text-[8px] text-muted uppercase tracking-wider border-t border-border-hairline pt-1">
-                              {shelf} &bull; {book.publicationYear || 2024}
-                            </div>
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={book.coverImage}
+                            alt={book.title}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          />
+                        </>
+                      ) : (
+                        /* Broadsheet Fallback Jacket */
+                        <div className="w-full h-full p-3 sm:p-4 flex flex-col justify-between bg-[#f4f4ee] dark:bg-[#151515] text-foreground select-none relative">
+                          <div className="absolute left-0 top-0 bottom-0 w-2 bg-foreground border-r border-white/20" />
+                          <div className="pl-1.5 font-mono text-[8px] uppercase tracking-widest text-muted truncate">
+                            {book.category?.name || 'Pustaka'}
                           </div>
-                        )}
-                      </Link>
-
-                      {/* Tactile Shelf Line Beneath Book */}
-                      <div className="w-full h-px bg-border-hairline group-hover:bg-foreground transition-colors" />
-
-                      {/* Book Metadata & Title (Stark Broadsheet Typography) */}
-                      <div className="space-y-1 flex-1 flex flex-col justify-between">
-                        <div>
-                          <div className="font-mono text-[9px] uppercase tracking-wider text-muted truncate">
-                            {book.category?.name || 'Pustaka Lapak'}
+                          <div className="pl-1.5 space-y-1 my-auto">
+                            <BookOpen className="w-5 h-5 text-foreground/30 mb-1" />
+                            <h4 className="font-serif font-black text-xs uppercase leading-tight line-clamp-3 text-foreground">
+                              {book.title}
+                            </h4>
+                            <p className="font-mono text-[9.5px] text-muted italic line-clamp-1">
+                              {book.author}
+                            </p>
                           </div>
+                          <div className="pl-1.5 font-mono text-[8px] text-muted uppercase tracking-wider border-t border-border-hairline pt-1">
+                            {shelf} &bull; {book.publicationYear || 2024}
+                          </div>
+                        </div>
+                      )}
+                    </Link>
 
-                          <h4 className="font-serif font-bold text-sm sm:text-base text-foreground leading-snug group-hover:underline line-clamp-2 transition-colors mt-0.5">
-                            <Link href={`/buku/${bookSlug}`}>{book.title}</Link>
-                          </h4>
+                    {/* Tactile Shelf Line Beneath Book */}
+                    <div className="w-full h-px bg-border-hairline group-hover:bg-foreground transition-colors" />
 
-                          <p className="font-mono text-[11px] text-muted truncate italic mt-0.5">
-                            {book.author}
-                          </p>
+                    {/* Book Metadata & Title (Stark Broadsheet Typography) */}
+                    <div className="space-y-1 flex-1 flex flex-col justify-between">
+                      <div>
+                        <div className="font-mono text-[9px] uppercase tracking-wider text-muted truncate">
+                          {book.category?.name || 'Pustaka Lapak'}
                         </div>
 
-                        {/* Status & Quick Borrow Link (Pure Monochrome) */}
-                        <div className="pt-2 border-t border-border-hairline/60 flex items-center justify-between font-mono text-[10px] mt-1.5">
-                          <span
-                            className={cn(
-                              'font-bold tracking-wider uppercase text-[9px]',
-                              isAvailable ? 'text-foreground' : 'text-muted line-through'
-                            )}
-                          >
-                            {isAvailable ? '[ TERSEDIA ]' : '[ DIPINJAM ]'}
-                          </span>
+                        <h4 className="font-serif font-bold text-sm sm:text-base text-foreground leading-snug group-hover:underline line-clamp-2 transition-colors mt-0.5">
+                          <Link href={`/buku/${bookSlug}`}>{book.title}</Link>
+                        </h4>
 
-                          <Link
-                            href={`/buku/${bookSlug}`}
-                            className="font-bold uppercase tracking-wider text-foreground hover:underline inline-flex items-center gap-0.5 text-[9.5px]"
-                          >
-                            <span>PINJAM</span>
-                            <ArrowUpRight className="w-3 h-3 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-                          </Link>
-                        </div>
+                        <p className="font-mono text-[11px] text-muted truncate italic mt-0.5">
+                          {book.author}
+                        </p>
+                      </div>
+
+                      {/* Status & Quick Borrow Link (Pure Monochrome) */}
+                      <div className="pt-2 border-t border-border-hairline/60 flex items-center justify-between font-mono text-[10px] mt-1.5">
+                        <span
+                          className={cn(
+                            'font-bold tracking-wider uppercase text-[9px]',
+                            isAvailable ? 'text-foreground' : 'text-muted line-through'
+                          )}
+                        >
+                          {isAvailable ? '● TERSEDIA' : '○ DIPINJAM'}
+                        </span>
+
+                        <Link
+                          href={`/buku/${bookSlug}`}
+                          className="font-bold uppercase tracking-wider text-foreground hover:underline inline-flex items-center gap-0.5 text-[9.5px] touch-tactile active:scale-90"
+                        >
+                          <span>PINJAM</span>
+                          <ArrowUpRight className="w-3 h-3 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                        </Link>
                       </div>
                     </div>
-                  </RevealOnScroll>
+                  </div>
                 );
               })}
             </div>
