@@ -245,8 +245,10 @@ export function ArticleDetailClient({
 
   return (
     <div className={cn('flex flex-col min-h-screen bg-background transition-colors', isZenMode && 'editorial-paper-bg')}>
-      {/* Universal Scroll reading progress: pinned at top of viewport with subtle track */}
-      <ScrollProgress className="fixed top-0 left-0 right-0 h-[3px] bg-foreground/15 z-50 pointer-events-none" />
+      {/* Zen Mode Reading Progress (Header provides pinned progress bar in standard mode) */}
+      {isZenMode && (
+        <ScrollProgress className="fixed top-0 left-0 right-0 h-[2.5px] bg-foreground/15 z-[60] pointer-events-none" />
+      )}
 
       {/* Hide standard header in Zen reading mode */}
       {!isZenMode && <Header />}

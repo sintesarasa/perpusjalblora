@@ -59,10 +59,10 @@ export function UserMenu() {
   // GUEST STATE
   if (!user) {
     return (
-      <div className="flex items-center space-x-2">
+      <div className="flex items-center space-x-1.5 sm:space-x-2">
         <Link
           href="/masuk"
-          className="hidden sm:inline-flex items-center px-3 py-1 border border-foreground font-mono text-[11px] uppercase tracking-wider font-semibold hover:bg-foreground hover:text-background transition-colors"
+          className="inline-flex items-center px-2.5 sm:px-3 py-1 border border-foreground font-mono text-[10px] sm:text-[11px] uppercase tracking-wider font-semibold hover:bg-foreground hover:text-background transition-colors touch-tactile"
         >
           Masuk
         </Link>

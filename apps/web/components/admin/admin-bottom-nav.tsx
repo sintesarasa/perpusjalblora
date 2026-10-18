@@ -86,59 +86,91 @@ export function AdminBottomNav() {
       {/* ── FIXED MOBILE BOTTOM NAVIGATION BAR ── */}
       <nav
         aria-label="Navigasi Pengurus Mobile"
-        className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-surface/95 backdrop-blur-md border-t border-border-hairline h-16 px-2 flex items-center justify-around select-none shadow-[0_-4px_16px_rgba(0,0,0,0.06)] dark:shadow-[0_-4px_16px_rgba(0,0,0,0.4)]"
+        className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-background/95 backdrop-blur-md border-t border-border-hairline print:hidden pb-[env(safe-area-inset-bottom,0px)] shadow-[0_-2px_12px_rgba(0,0,0,0.04)]"
       >
-        {navItems.map((item) => {
-          const Icon = item.icon;
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
+        <div className={cn('grid h-16 items-center px-1', isAdmin ? 'grid-cols-5' : 'grid-cols-4')}>
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                aria-current={item.isActive ? 'page' : undefined}
+                className={cn(
+                  'flex flex-col items-center justify-center h-full w-full py-1 text-center touch-tactile active:scale-95 transition-all select-none relative',
+                  item.isActive
+                    ? 'text-foreground font-bold'
+                    : 'text-muted hover:text-foreground'
+                )}
+              >
+                {/* Crisp top active hairline indicator */}
+                {item.isActive && (
+                  <span
+                    aria-hidden="true"
+                    className="absolute top-0 inset-x-3 h-[2px] bg-foreground"
+                  />
+                )}
+
+                {/* Icon Container with solid fill and spacing */}
+                <div className="w-7 h-7 flex items-center justify-center relative">
+                  <Icon
+                    className={cn(
+                      'w-5 h-5 transition-all duration-150',
+                      item.isActive
+                        ? 'text-foreground fill-current stroke-[2]'
+                        : 'text-muted stroke-[1.75]'
+                    )}
+                  />
+                </div>
+                <span
+                  className={cn(
+                    'text-[10px] font-mono uppercase tracking-wider mt-1.5 leading-none',
+                    item.isActive ? 'font-bold text-foreground' : 'text-muted'
+                  )}
+                >
+                  {item.label}
+                </span>
+              </Link>
+            );
+          })}
+
+          {/* Menu Drawer Trigger */}
+          <button
+            type="button"
+            onClick={() => setDrawerOpen(true)}
+            className={cn(
+              'flex flex-col items-center justify-center h-full w-full py-1 text-center touch-tactile active:scale-95 transition-all select-none relative',
+              drawerOpen
+                ? 'text-foreground font-bold'
+                : 'text-muted hover:text-foreground'
+            )}
+            aria-expanded={drawerOpen}
+            aria-label="Buka Menu Pengurus Tambahan"
+          >
+            {drawerOpen && (
+              <span
+                aria-hidden="true"
+                className="absolute top-0 inset-x-3 h-[2px] bg-foreground"
+              />
+            )}
+            <div className="w-7 h-7 flex items-center justify-center relative">
+              <Menu
+                className={cn(
+                  'w-5 h-5 transition-all duration-150',
+                  drawerOpen ? 'text-foreground stroke-[2.5]' : 'text-muted stroke-[1.75]'
+                )}
+              />
+            </div>
+            <span
               className={cn(
-                'flex-1 flex flex-col items-center justify-center py-1 min-h-[48px] rounded-none transition-all duration-150 touch-tactile active:scale-95',
-                item.isActive
-                  ? 'text-foreground font-bold'
-                  : 'text-muted hover:text-foreground'
+                'text-[10px] font-mono uppercase tracking-wider mt-1.5 leading-none',
+                drawerOpen ? 'font-bold text-foreground' : 'text-muted'
               )}
             >
-              <div className="relative">
-                <Icon
-                  className={cn(
-                    'w-5 h-5 transition-transform duration-150',
-                    item.isActive ? 'scale-110 stroke-[2.25]' : 'stroke-[1.75]'
-                  )}
-                />
-                {item.isActive && (
-                  <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-foreground rounded-full" />
-                )}
-              </div>
-              <span className="font-mono text-[10px] tracking-tight mt-1">
-                {item.label}
-              </span>
-            </Link>
-          );
-        })}
-
-        {/* Menu Drawer Trigger */}
-        <button
-          type="button"
-          onClick={() => setDrawerOpen(true)}
-          className={cn(
-            'flex-1 flex flex-col items-center justify-center py-1 min-h-[48px] rounded-none transition-all duration-150 touch-tactile active:scale-95',
-            drawerOpen
-              ? 'text-foreground font-bold'
-              : 'text-muted hover:text-foreground'
-          )}
-          aria-expanded={drawerOpen}
-          aria-label="Buka Menu Pengurus Tambahan"
-        >
-          <div className="relative">
-            <Menu className="w-5 h-5 stroke-[1.75]" />
-          </div>
-          <span className="font-mono text-[10px] tracking-tight mt-1">
-            Lainnya
-          </span>
-        </button>
+              Lainnya
+            </span>
+          </button>
+        </div>
       </nav>
 
       {/* ── SMOOTH SLIDE-UP BOTTOM SHEET / DRAWER UNTUK MENU LAINNYA ── */}

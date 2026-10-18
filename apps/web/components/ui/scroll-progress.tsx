@@ -31,8 +31,8 @@ export function ScrollProgress({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        'absolute bottom-0 left-0 right-0 h-[2px] bg-transparent pointer-events-none overflow-hidden z-10',
-        className
+        'pointer-events-none overflow-hidden z-50',
+        className ? className : 'absolute bottom-0 left-0 right-0 h-[2px] bg-transparent'
       )}
     >
       <div

@@ -11,6 +11,8 @@ import { NotificationBell } from '@/components/layout/notification-bell';
 import { UserMenu } from '@/components/layout/user-menu';
 import { GlobalSearchModal } from '@/components/layout/global-search-modal';
 import { apiClient } from '@/lib/api';
+import { useAuth } from '@/contexts/auth-context';
+import { UserAvatar } from '@/components/ui/user-avatar';
 import {
   Menu,
   X,
@@ -33,6 +35,7 @@ interface LapakScheduleStatus {
 }
 
 export function Header() {
+  const { user, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const [searchModalOpen, setSearchModalOpen] = React.useState(false);
   const [isScrolled, setIsScrolled] = React.useState(false);
@@ -184,6 +187,9 @@ export function Header() {
 
   return (
     <>
+      {/* 0. INDEPENDENT PINNED READING PROGRESS BAR — Pinned permanently at the very top of viewport (Z-60), unaffected by header translateY auto-hide */}
+      <ScrollProgress className="fixed top-0 inset-x-0 z-[60] h-[2.5px] bg-foreground/10 pointer-events-none" />
+
       <header
         className={cn(
           'sticky top-0 z-50 transition-all duration-300 ease-in-out print:hidden',
@@ -193,9 +199,6 @@ export function Header() {
             : 'bg-background/85 backdrop-blur-md border-b border-border-hairline'
         )}
       >
-        {/* Scroll reading progress indicator at bottom hairline */}
-        <ScrollProgress />
-
         {/* 1. EDITORIAL TOP ANNOUNCEMENT TICKER (MICRO-STRIP) */}
         <div className="border-b border-border-hairline/80 bg-surface-muted/60 text-[9px] sm:text-[10px] font-mono uppercase tracking-wider py-1 px-4 sm:px-6">
           <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
@@ -236,7 +239,7 @@ export function Header() {
             </span>
           </div>
 
-          {/* CENTER: DESKTOP NAVIGATION (5 DIRECT LINKS) */}
+          {/* CENTER: DESKTOP NAVIGATION (5 COMPACT DIRECT LINKS) */}
           <nav className="hidden lg:flex items-center space-x-1 font-mono text-[11px] uppercase tracking-wider">
             {/* Artikel */}
             <Link
@@ -249,7 +252,7 @@ export function Header() {
                   : 'text-foreground/75 hover:text-foreground hover:bg-surface-muted/50 border-transparent'
               )}
             >
-              Artikel &amp; Warta
+              Artikel
             </Link>
 
             {/* Buku */}
@@ -263,7 +266,7 @@ export function Header() {
                   : 'text-foreground/75 hover:text-foreground hover:bg-surface-muted/50 border-transparent'
               )}
             >
-              Katalog Buku
+              Buku
             </Link>
 
             {/* Kegiatan */}
@@ -277,10 +280,10 @@ export function Header() {
                   : 'text-foreground/75 hover:text-foreground hover:bg-surface-muted/50 border-transparent'
               )}
             >
-              Agenda Lapak
+              Kegiatan
             </Link>
 
-            {/* Cara Meminjam */}
+            {/* Cara Pinjam */}
             <Link
               href="/cara-meminjam"
               aria-current={pathname === '/cara-meminjam' || pathname?.startsWith('/cara-meminjam/') ? 'page' : undefined}
@@ -291,7 +294,7 @@ export function Header() {
                   : 'text-foreground/75 hover:text-foreground hover:bg-surface-muted/50 border-transparent'
               )}
             >
-              Cara Meminjam
+              Cara Pinjam
             </Link>
 
             {/* Tentang */}
@@ -362,6 +365,59 @@ export function Header() {
               aria-hidden="true"
             />
             <div className="relative z-50 lg:hidden border-t border-b-2 border-border-hairline border-b-foreground bg-surface p-5 max-h-[calc(100vh-6rem)] overflow-y-auto font-mono text-xs shadow-xl pb-24">
+              {/* User Authentication Status Banner (Mobile-Visible) */}
+              {user ? (
+                <div className="p-3 border border-border-hairline bg-surface-muted/60 mb-3 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="relative shrink-0">
+                      <UserAvatar
+                        src={user.avatarUrl}
+                        name={user.name}
+                        username={user.username}
+                        size="sm"
+                        className="border border-foreground"
+                      />
+                      <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 rounded-full border border-background shadow-xs" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="font-bold text-foreground text-xs truncate flex items-center gap-1.5">
+                        <span className="truncate">{user.name}</span>
+                        <span className="inline-flex items-center px-1 py-0.2 text-[9px] font-mono uppercase bg-foreground text-background font-semibold shrink-0">
+                          {user.role}
+                        </span>
+                      </div>
+                      <div className="text-[10px] text-muted font-mono truncate">
+                        @{user.username || user.email}
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      setMobileMenuOpen(false);
+                      await logout();
+                    }}
+                    className="shrink-0 px-2.5 py-1 text-[10px] font-mono uppercase text-muted hover:text-red-600 transition-colors border border-border-hairline hover:border-red-600 touch-tactile"
+                  >
+                    Keluar
+                  </button>
+                </div>
+              ) : (
+                <div className="p-3 border border-border-hairline bg-surface-muted/60 mb-3 flex items-center justify-between gap-3">
+                  <div>
+                    <div className="text-xs font-bold text-foreground font-serif">Selamat Datang di Perpusjal</div>
+                    <div className="text-[10px] text-muted font-mono">Status: Pengunjung (Belum Masuk)</div>
+                  </div>
+                  <Link
+                    href="/masuk"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="shrink-0 px-3 py-1 bg-foreground text-background text-[11px] font-mono font-bold uppercase tracking-wider touch-tactile hover:opacity-90 transition-opacity"
+                  >
+                    Masuk
+                  </Link>
+                </div>
+              )}
+
               {/* Quick Search in Mobile Drawer */}
               <div className="pb-3 border-b border-border-hairline">
                 <button
@@ -489,30 +545,51 @@ export function Header() {
                   <ThemeToggle />
                 </div>
 
-                <Link
-                  href="/dashboard"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="w-full text-center py-2.5 bg-foreground text-background font-bold text-xs tracking-wider uppercase hover:opacity-90 transition-opacity touch-tactile"
-                >
-                  Dasbor Anggota
-                </Link>
-                <div className="flex gap-2">
+                {user ? (
+                  <>
+                    <Link
+                      href="/dashboard"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="w-full text-center py-2.5 bg-foreground text-background font-bold text-xs tracking-wider uppercase hover:opacity-90 transition-opacity touch-tactile"
+                    >
+                      Dasbor Anggota
+                    </Link>
+                    {(user.role === 'ADMIN' || user.role === 'KURATOR') && (
+                      <Link
+                        href="/admin"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="w-full text-center py-2 border border-foreground bg-surface text-foreground font-bold text-xs tracking-wider uppercase hover:bg-surface-muted transition-colors touch-tactile"
+                      >
+                        Meja Pengurus Pusat &rarr;
+                      </Link>
+                    )}
+                    <div className="flex gap-2">
+                      <Link
+                        href="/dashboard/tulisan/tulis"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="flex-1 text-center py-2 border border-foreground text-foreground text-xs font-bold uppercase hover:bg-surface-muted transition-colors touch-tactile"
+                      >
+                        + Tulis Naskah
+                      </Link>
+                      <Link
+                        href="/dashboard/notifikasi"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="flex-1 text-center py-2 border border-border-hairline text-foreground text-xs font-bold uppercase hover:bg-surface-muted transition-colors flex items-center justify-center gap-1.5 touch-tactile"
+                      >
+                        <NotificationBell />
+                        <span>Warta</span>
+                      </Link>
+                    </div>
+                  </>
+                ) : (
                   <Link
-                    href="/dashboard/tulisan/tulis"
+                    href="/masuk"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="flex-1 text-center py-2 border border-foreground text-foreground text-xs font-bold uppercase hover:bg-surface-muted transition-colors touch-tactile"
+                    className="w-full text-center py-2.5 bg-foreground text-background font-bold text-xs tracking-wider uppercase hover:opacity-90 transition-opacity touch-tactile"
                   >
-                    + Tulis Naskah
+                    Masuk ke Akun Anggota
                   </Link>
-                  <Link
-                    href="/dashboard/notifikasi"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex-1 text-center py-2 border border-border-hairline text-foreground text-xs font-bold uppercase hover:bg-surface-muted transition-colors flex items-center justify-center gap-1.5 touch-tactile"
-                  >
-                    <NotificationBell />
-                    <span>Warta</span>
-                  </Link>
-                </div>
+                )}
               </div>
             </div>
           </>
